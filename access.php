@@ -118,6 +118,22 @@
              <a href="code/home/checkentornoHogar.php" class="nav_link sublink">Encuestas Realizadas</a>
             </ul>
           </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+              <i class="fa-solid fa-people-roof"></i>
+              </span>
+
+              <span class="navlink">Salud y Familia</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+            <a href="code/student/showHealthFamily.php" class="nav_link sublink">Aplicar Encuesta</a>
+             <a href="code/student/checkHealthFamily.php" class="nav_link sublink">Encuestas Realizadas</a>
+            </ul>
+          </li>
+
 
 
           <li class="item">

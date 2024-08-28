@@ -24,5 +24,6 @@ if ($num_doc_est) {
 }
 
 $mysqli->close();
-header("Location: showprePostnatales.php");
+//puse la redireccion mejor en el js para que poder usar la funcion en los demas archivos
+// header("Location: showprePostnatales.php");
 ?>
