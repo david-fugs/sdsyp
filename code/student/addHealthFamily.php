@@ -193,7 +193,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                     <td><input type="radio" name="relacion_padre_familiaSalud" value="disfuncionales"></td>
                                     <td><input type="radio" name="relacion_padre_familiaSalud" value="no aplica"></td>
                                 </tr>
-                                <!-- Repite para otros familiares -->
+
                                 <tr>
                                     <td>Hermanos</td>
                                     <td><input type="radio" name="relacion_hermanos_familiaSalud" value="satisfactorias"></td>
@@ -228,15 +228,15 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                     <td><input type="radio" name="relacion_tios_familiaSalud" value="no aplica"></td>
                                 </tr>
                                 <tr>
-                                    <td>Abuelos</td>
-                                    <td><input type="radio" name="relacion_abuelos_familiaSalud" value="satisfactorias"></td>
-                                    <td><input type="radio" name="relacion_abuelos_familiaSalud" value="llevaderas"></td>
-                                    <td><input type="radio" name="relacion_abuelos_familiaSalud" value="tensionadas"></td>
-                                    <td><input type="radio" name="relacion_abuelos_familiaSalud" value="hostiles"></td>
-                                    <td><input type="radio" name="relacion_abuelos_familiaSalud" value="conflictivas"></td>
-                                    <td><input type="radio" name="relacion_abuelos_familiaSalud" value="incomunicadas"></td>
-                                    <td><input type="radio" name="relacion_abuelos_familiaSalud" value="disfuncionales"></td>
-                                    <td><input type="radio" name="relacion_abuelos_familiaSalud" value="no aplica"></td>
+                                    <td>Otros familiares</td>
+                                    <td><input type="radio" name="relacion_otros_familiaSalud" value="satisfactorias"></td>
+                                    <td><input type="radio" name="relacion_otros_familiaSalud" value="llevaderas"></td>
+                                    <td><input type="radio" name="relacion_otros_familiaSalud" value="tensionadas"></td>
+                                    <td><input type="radio" name="relacion_otros_familiaSalud" value="hostiles"></td>
+                                    <td><input type="radio" name="relacion_otros_familiaSalud" value="conflictivas"></td>
+                                    <td><input type="radio" name="relacion_otros_familiaSalud" value="incomunicadas"></td>
+                                    <td><input type="radio" name="relacion_otros_familiaSalud" value="disfuncionales"></td>
+                                    <td><input type="radio" name="relacion_otros_familiaSalud" value="no aplica"></td>
 
                             </tbody>
                         </table>
@@ -258,21 +258,21 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         <div class="form-control" id="Afecciones" style="height: auto;">
                             <div class="row">
                                 <div class="col-8 col-sm-6 col-md-4">
-                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud" value="ambiente familiar"> Ambiente familiar<br>
-                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud" value="factor economico"> Factor economico<br>
-                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud" value="calidad educacion"> Calidad Educacion<br>
-                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud" value="salud mental"> Salud Mental<br>
+                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud[]" value="ambiente familiar"> Ambiente familiar<br>
+                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud[]" value="factor economico"> Factor economico<br>
+                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud[]" value="calidad educacion"> Calidad Educacion<br>
+                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud[]" value="salud mental"> Salud Mental<br>
                                 </div>
                                 <div class="col-8 col-sm-6 col-md-4">
-                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud" value="traumas"> Experiencias traumaticas<br>
-                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud" value="nutricion"> Nutricion<br>
-                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud" value="dificultades aprendizaje"> Dificultades de aprendizaje<br>
-                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud" value="habilidades sociales"> Habilidades Sociales<br>
+                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud[]" value="traumas"> Experiencias traumaticas<br>
+                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud[]" value="nutricion"> Nutricion<br>
+                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud[]" value="dificultades aprendizaje"> Dificultades de aprendizaje<br>
+                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud[]" value="habilidades sociales"> Habilidades Sociales<br>
                                 </div>
                                 <div class="col-8 col-sm-6 col-md-4">
-                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud" value="acoso"> Discriminacion o acoso<br>
-                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud" value="lenguaje"> Barreras de lenguaje<br>
-                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud" value="motivacion"> Falta motivacion<br>
+                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud[]" value="acoso"> Discriminacion o acoso<br>
+                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud[]" value="lenguaje"> Barreras de lenguaje<br>
+                                    <input type="checkbox" name="afecta_aprendizaje_familiaSalud[]" value="motivacion"> Falta motivacion<br>
 
                                 </div>
                             </div>

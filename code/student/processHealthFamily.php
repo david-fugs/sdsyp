@@ -32,14 +32,14 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 </head>
 
 <body>
-
     <?php
-    echo '<pre>'; // Hace que la salida sea más legible
-    print_r($_POST);
-    echo '</pre>';
+
     include("../../conexion.php");
     date_default_timezone_set("America/Bogota");
     $mysqli->set_charset('utf8');
+    echo '<pre>';
+   
+
     if (isset($_POST)) {
         $fecha_dig_familiaSalud               = $_POST['fecha_dig_familiaSalud'];
         $mun_dig_familiaSalud                 = $_POST['mun_dig_familiaSalud'];
@@ -52,6 +52,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         $relacion_hermanos_familiaSalud       = $_POST['relacion_hermanos_familiaSalud'];
         $relacion_tios_familiaSalud           = $_POST['relacion_tios_familiaSalud'];
         $relacion_abuelos_familiaSalud        = $_POST['relacion_abuelos_familiaSalud'];
+        $relacion_otros_familiaSalud          = $_POST['relacion_otros_familiaSalud'];
         $discapacidad_est_familiaSalud        = $_POST['discapacidad_est_familiaSalud'];
         $afecta_aprendizaje_familiaSalud      = $_POST['afecta_aprendizaje_familiaSalud'];
         $beneficiario_pae_familiaSalud        = $_POST['beneficiario_pae_familiaSalud'];
@@ -70,12 +71,53 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         $vacunacion_familiaSalud              = $_POST['vacunacion_familiaSalud'];
         $id_usu                             =   $_SESSION['id'];
 
-        $sql = "INSERT INTO saludfamilia ";
-
-
+        $sql = "INSERT INTO familiasalud
+        (fecha_dig_familiaSalud, mun_dig_familiaSalud, nombre_encuestador_familiaSalud, rol_encuestador_familiaSalud, num_doc_est, nom_ape_est, relacion_madre_familiaSalud, relacion_padre_familiaSalud, relacion_hermanos_familiaSalud, relacion_tios_familiaSalud, relacion_abuelos_familiaSalud,relacion_otros_familiaSalud,
+         discapacidad_est_familiaSalud, afecta_aprendizaje_familiaSalud, beneficiario_pae_familiaSalud, comida_dia_familiaSalud, eps_estudiante_familiaSalud, nombre_eps_familiaSalud, afiliado_eps_familiaSalud, presenta_diagnostico_familiaSalud, diagnostico_familiaSalud, terapia_familiaSalud, frecuencia_terapia_familiaSalud, condicion_particular_familiaSalud, frecuencia_atencion_familiaSalud, alergia_familiaSalud, tipo_alergia_familiaSalud, vacunacion_familiaSalud, id_usu)
+        VALUES ('$fecha_dig_familiaSalud', '$mun_dig_familiaSalud', '$nombre_encuestador_familiaSalud', '$rol_encuestador_familiaSalud', '$num_doc_est', '$nom_ape_est', '$relacion_madre_familiaSalud', '$relacion_padre_familiaSalud', '$relacion_hermanos_familiaSalud', '$relacion_tios_familiaSalud', '$relacion_abuelos_familiaSalud',
+        '$relacion_otros_familiaSalud','$discapacidad_est_familiaSalud', '$afecta_aprendizaje_familiaSalud', '$beneficiario_pae_familiaSalud', '$comida_dia_familiaSalud', '$eps_estudiante_familiaSalud', '$nombre_eps_familiaSalud', '$afiliado_eps_familiaSalud', '$presenta_diagnostico_familiaSalud', '$diagnostico_familiaSalud', '$terapia_familiaSalud', '$frecuencia_terapia_familiaSalud', '$condicion_particular_familiaSalud', '$frecuencia_atencion_familiaSalud', '$alergia_familiaSalud', '$tipo_alergia_familiaSalud', '$vacunacion_familiaSalud', '$id_usu')";
         $resultado = $mysqli->query($sql);
-        
-    }
-           
 
-   
+        echo "
+            <!DOCTYPE html>
+                    <html lang='es'>
+                        <head>
+                            <meta charset='utf-8' />
+                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                            <meta http-equiv='X-UA-Compatible' content='ie=edge'>
+                            <link href='https://fonts.googleapis.com/css?family=Lobster' rel='stylesheet'>
+                            <link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet'>
+                            <link rel='stylesheet' href='../../css/bootstrap.min.css'>
+                            <link href='../../fontawesome/css/all.css' rel='stylesheet'>
+                            <title>FICHA</title>
+                            <style>
+                                .responsive {
+                                    max-width: 100%;
+                                    height: auto;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <center>
+                               <img src='../../img/logo_educacion.png' width=600 height=121 class='responsive'>
+                            <div class='container'>
+                                <br />
+                           ";
+                            if ($mysqli->query($sql) === TRUE) {
+                                echo "  <h3><b><i class='fas fa-users'></i> SE CREO DE FORMA EXITOSA EL REGISTRO</b></h3><br />";
+                            } else {
+                                echo "Error al insertar el registro: ";
+                            }
+                            echo "    
+                            <p align='center'><a href='../../access.php'><img src='../../img/atras.png' width=96 height=96></a></p>
+                            </div>
+                            </center>
+                        </body>
+                    </html>
+            ";
+    }
+    ?>
+
+</body>
+
+</html>
