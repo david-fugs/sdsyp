@@ -175,7 +175,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                     
                     if($row['estado_desempeno'] == 0) {
                         echo '
-                        <td data-label="APLICAR"><a href="addHealthFamily.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/aplicar.png" width=28 height=28></a></td>
+                        <td data-label="APLICAR"><a href="addPerformance.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/aplicar.png" width=28 height=28></a></td>
                         ';
                     }
                     else {

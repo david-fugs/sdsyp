@@ -449,8 +449,18 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                     <div class="form-group">
                         <div class="row">
                             <div class="col-6 col-sm-4 mt-4">
-                                <label for="vacunacion_familiaSalud">* TIPO Y FACTOR SANGUINEO:</label>
-                                <input class="form-control" type="text" name="vacunacion_familiaSalud">
+                                <label for="sangre_familiaSalud">* TIPO Y FACTOR SANGUINEO:</label>
+                                <select class="form-control" name="sangre_familiaSalud" id="sangre_familiaSalud">
+                                    <option value=""></option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                
                             </div>
                         </div>
                     </div>

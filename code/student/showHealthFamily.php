@@ -184,16 +184,12 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         <td data-label="GRADO">' . $row['grado_est'] . '</td>
                     ';
                     
-                    if($row['estado_familiasalud'] == 0) {
+                  
                         echo '
                         <td data-label="APLICAR"><a href="addHealthFamily.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/aplicar.png" width=28 height=28></a></td>
                         ';
-                    }
-                    else {
-                        echo '
-                        <td data-label="APLICAR"></a></td>
-                        ';
-                    }
+                    
+                   
                     
                     echo '
                         <td data-label="ELIMINAR"><a href="#" onclick="cambiarEstado(' . $row['num_doc_est'] . ')"><img src="../../img/delete1.png" width=28 height=28></a></td>
