@@ -80,7 +80,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
         <div class="flex">
             <div class="box">
-                <form action="showprePostnatales.php" method="get">
+                <form action="showHealthFamily.php" method="get">
                     <input name="num_doc_est" type="text" placeholder="Ingrese el Documento" size=20>
                     <input name="nom_ape_est" type="text" placeholder="Escriba el nombre del estudiante" size=30>
                     <input name="grado_est" type="text" placeholder="Grado">
@@ -101,16 +101,22 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         @$grado_est = $_GET['grado_est'] ?? '';
 
 
-        $query = "SELECT estudiantes.*, usuarios.*, ie.*
-          FROM estudiantes 
+        $query = "SELECT estudiantes.*, usuarios.*, ie.*, familiasalud.fecha_dig_familiaSalud, familiasalud.estado_familiaSalud
+        FROM estudiantes 
           INNER JOIN ieSede ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede 
           INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie 
-         
           INNER JOIN usuarios ON estudiantes.id_usu = usuarios.id
+          LEFT JOIN familiasalud ON estudiantes.num_doc_est = familiasalud.num_doc_est
           WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
           AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
           AND (estudiantes.grado_est LIKE '%$grado_est%')
-          AND ie.cod_dane_ie = $cod_dane_ie ";
+          AND ie.cod_dane_ie = $cod_dane_ie 
+          AND (familiasalud.num_doc_est IS NULL OR familiasalud.estado_familiasalud= 1)
+          AND (familiasalud.num_doc_est IS NULL OR familiasalud.estado_familiasalud = 1)
+          ORDER BY ISNULL(familiasalud.fecha_dig_familiasalud) DESC, familiasalud.fecha_dig_familiasalud ASC, estudiantes.num_doc_est ASC";
+
+
+        // AND (familiasalud.fecha_alta_prePostnatales IS NULL OR prePostnatales.estado_prePostnatales = 0);
         // AND (prePostnatales.num_doc_est IS NULL OR prePostnatales.estado_prePostnatales = 1)
 
         // ORDER BY ISNULL(prePostnatales.fecha_alta_prePostnatales) DESC, prePostnatales.fecha_alta_prePostnatales ASC, estudiantes.num_doc_est ASC";
@@ -120,21 +126,27 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         $resul_x_pagina = 50;
 
         if ($res) {
+          
             $paginacion = new Zebra_Pagination();
             $paginacion->records($num_registros);
             $paginacion->records_per_page($resul_x_pagina);
 
-            $consulta = "SELECT estudiantes.*, usuarios.*, ie.*
-                 FROM estudiantes 
-                 INNER JOIN ieSede ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede 
-                 INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie 
-               
-                 INNER JOIN usuarios ON estudiantes.id_usu = usuarios.id
-                 WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
-                 AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
-                 AND (estudiantes.grado_est LIKE '%$grado_est%')
-                 AND ie.cod_dane_ie = $cod_dane_ie 
-                
+            $consulta = "
+            SELECT estudiantes.*, usuarios.*, ie.*, 
+                   MAX(familiasalud.fechacreacion_familiasalud) AS fechacreacion_familiasalud, 
+                   MAX(familiasalud.estado_familiasalud) AS estado_familiasalud
+            FROM estudiantes 
+            INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
+            INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
+            INNER JOIN usuarios ON estudiantes.id_usu = usuarios.id
+            LEFT JOIN familiasalud ON estudiantes.num_doc_est = familiasalud.num_doc_est
+            WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
+            AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
+            AND (estudiantes.grado_est LIKE '%$grado_est%')
+            AND ie.cod_dane_ie = $cod_dane_ie
+            GROUP BY estudiantes.num_doc_est
+            ORDER BY ISNULL(familiasalud.fechacreacion_familiasalud) DESC, familiasalud.fechacreacion_familiasalud ASC, estudiantes.num_doc_est ASC
+                    
                  LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . "," . $resul_x_pagina;
             $result = $mysqli->query($consulta);
 
@@ -161,8 +173,8 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
                 $i = 1;
                 while ($row = mysqli_fetch_array($result)) {
-                    $estado_encuesta = '' ? 'OK' : 'PENDIENTE';
-                    $clase_estado = '' ? 'ok' : 'pendiente';
+                    $estado_encuesta = $row['estado_familiasalud'] == 1 ? 'REALIZADO' : 'PENDIENTE';
+                    $clase_estado =  $row['estado_familiasalud'] == 1 ? 'ok' : 'pendiente';
 
                     echo '
                     <tr>
@@ -170,12 +182,26 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         <td data-label="DTO">' . $row['num_doc_est'] . '</td>
                         <td data-label="ESTUDIANTE">' . utf8_encode($row['nom_ape_est']) . '</td>
                         <td data-label="GRADO">' . $row['grado_est'] . '</td>
+                    ';
+                    
+                    if($row['estado_familiasalud'] == 0) {
+                        echo '
                         <td data-label="APLICAR"><a href="addHealthFamily.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/aplicar.png" width=28 height=28></a></td>
+                        ';
+                    }
+                    else {
+                        echo '
+                        <td data-label="APLICAR"></a></td>
+                        ';
+                    }
+                    
+                    echo '
                         <td data-label="ELIMINAR"><a href="#" onclick="cambiarEstado(' . $row['num_doc_est'] . ')"><img src="../../img/delete1.png" width=28 height=28></a></td>
                         <td data-label="REALIZADO" class="' . $clase_estado . '">' . $estado_encuesta . '</td>
                     </tr>';
+                    
                     $i++;
-                }
+                                    }
 
                 echo '</tbody></table></div></div></section>';
             } else {

@@ -156,7 +156,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                 <i class="fa-solid fa-book-bookmark"></i>
               </span>
 
-              <span class="navlink">DESEMPEÑO ACADEMICO</span>
+              <span class="navlink">Desempeño Academico</span>
               <i class="bx bx-chevron-right arrow-left"></i>
             </div>
 

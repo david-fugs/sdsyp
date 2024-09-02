@@ -86,18 +86,18 @@ require_once("../../zebra.php");
 @$nom_ape_est = $_GET['nom_ape_est'] ?? '';
 @$grado_est = $_GET['grado_est'] ?? '';
 
-$query = "SELECT prePostnatales.*, estudiantes.*, ie.*, COUNT(prePostnatales.num_doc_est) as veces_aplicada 
-          FROM prePostnatales 
-          INNER JOIN estudiantes ON prePostnatales.num_doc_est = estudiantes.num_doc_est 
+$query = "SELECT familiasalud.*, estudiantes.*, ie.*, COUNT(familiasalud.num_doc_est) as veces_aplicada 
+          FROM familiasalud 
+          INNER JOIN estudiantes ON familiasalud.num_doc_est = estudiantes.num_doc_est 
           INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
           INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
           WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
           AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
           AND (estudiantes.grado_est LIKE '%$grado_est%')
-          AND fecha_alta_prePostnatales >= '2023-10-01' 
+          AND fechacreacion_familiasalud >= '2023-10-01' 
           AND ie.cod_dane_ie = $cod_dane_ie 
-          GROUP BY prePostnatales.num_doc_est 
-          ORDER BY prePostnatales.num_doc_est ASC";
+          GROUP BY familiasalud.num_doc_est 
+          ORDER BY familiasalud.num_doc_est ASC";
 $res = $mysqli->query($query);
 $num_registros = mysqli_num_rows($res);
 $resul_x_pagina = 200;
@@ -127,20 +127,20 @@ $paginacion = new Zebra_Pagination();
 $paginacion->records($num_registros);
 $paginacion->records_per_page($resul_x_pagina);
 
-// $consulta = "SELECT prePostnatales.*, estudiantes.*, ie.*, COUNT(prePostnatales.num_doc_est) as veces_aplicada 
-//              FROM prePostnatales 
-//              INNER JOIN estudiantes ON prePostnatales.num_doc_est = estudiantes.num_doc_est 
-//              INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
-//              INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
-//              WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
-//              AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
-//              AND (estudiantes.grado_est LIKE '%$grado_est%')
-//              AND fecha_alta_prePostnatales >= '2023-10-01' 
-//              AND ie.cod_dane_ie = $cod_dane_ie 
-//              GROUP BY prePostnatales.num_doc_est 
-//              ORDER BY prePostnatales.num_doc_est ASC 
-//              LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . ", " . $resul_x_pagina;
-// $result = $mysqli->query($consulta);
+$consulta = "SELECT familiasalud.*, estudiantes.*, ie.*, COUNT(familiasalud.num_doc_est) as veces_aplicada 
+             FROM familiasalud 
+             INNER JOIN estudiantes ON familiasalud.num_doc_est = estudiantes.num_doc_est 
+             INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
+             INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
+             WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
+             AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
+             AND (estudiantes.grado_est LIKE '%$grado_est%')
+             AND fechacreacion_familiasalud >= '2023-10-01' 
+             AND ie.cod_dane_ie = $cod_dane_ie 
+             GROUP BY familiasalud.num_doc_est 
+             ORDER BY familiasalud.num_doc_est ASC 
+             LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . ", " . $resul_x_pagina;
+$result = $mysqli->query($consulta);
 
 $i = 1;
 while ($row = mysqli_fetch_array($result)) {
@@ -153,11 +153,11 @@ while ($row = mysqli_fetch_array($result)) {
                 <td data-label="DTO">' . $row['num_doc_est'] . '</td>
                 <td data-label="ESTUDIANTE">' . utf8_encode($row['nom_ape_est']) . '</td>
                 <td data-label="GRADO">'.$row['grado_est'].'</td>
-                <td data-label="APLICADA EL">' . $row['fecha_alta_prePostnatales'] . '</td>
-                <td data-label="REALIZÓ">' . utf8_encode($row['nombre_encuestador_prePostnatales']) . '</td>
-                <td data-label="MODIFICADA EL">' . $row['fecha_edit_prePostnatales'] . '</td>
+                <td data-label="APLICADA EL">' . $row['fechacreacion_familiaSalud'] . '</td>
+                <td data-label="REALIZÓ">' . utf8_encode($row['nombre_encuestador_familiaSalud']) . '</td>
+                <td data-label="MODIFICADA EL">' . $row['fechaedicion_familiaSalud'] . '</td>
                 <td data-label="VECES APLICADA" class="' . $veces_clase . '">' . $row['veces_aplicada'] . '</td>
-                <td data-label="VER ENCUESTAS"><a href="viewSurveys.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/search.png" width=28 height=28></a></td>
+                <td data-label="VER ENCUESTAS"><a href="viewHealthFamilySurvey.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/search.png" width=28 height=28></a></td>
                 <td data-label="EDITAR"><a href="editprePostnatales.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/editar.png" width=28 height=28></a></td>
             </tr>';
 }

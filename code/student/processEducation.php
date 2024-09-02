@@ -59,13 +59,15 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         $id_usu                             =   $_SESSION['id'];
         //convertir array a string
         $anios_repet_educacion = implode(',', $_POST['anios_repet_educacion']);
+        $fechacreacion_educacion         =   date('Y-m-d H:i:s');
+
 
 
         //lo que trae $$anios_repet_educacion     es un array ya que vienen varios valores y loq ue necesito es que en la insercion se metan todos digamos si viene [1,2,3] ingrese en la base de datos 1,2,3
         $sql = "INSERT INTO educacion 
-    (num_doc_est, fecha_dig_educacion, mun_dig_educacion, nombre_encuestador_educacion, rol_encuestador_educacion, nom_ape_est, vinculacion_inst_educacion, nom_inst_educacion, modalidad_inst_educacion, complementario_educacion, program_complement_educacion, repetir_year_educacion, anios_repet_educacion, talento_educacion, talento_descrip_educacion, vinculacion_club_educacion, club_descrip_educacion,id_usu)
+    (num_doc_est, fecha_dig_educacion, mun_dig_educacion, nombre_encuestador_educacion, rol_encuestador_educacion, nom_ape_est, vinculacion_inst_educacion, nom_inst_educacion, modalidad_inst_educacion, complementario_educacion, program_complement_educacion, repetir_year_educacion, anios_repet_educacion, talento_educacion, talento_descrip_educacion, vinculacion_club_educacion, club_descrip_educacion,id_usu,estado_educacion,fechacreacion_educacion)
   
-    values ('$num_doc_est','$fecha_dig_educacion', '$mun_dig_educacion', '$nombre_encuestador_educacion', '$rol_encuestador_educacion', '$nom_ape_est', '$vinculacion_inst_educacion', '$nom_inst_educacion', '$modalidad_inst_educacion', '$complementario_educacion', '$program_complement_educacion', '$repetir_year_educacion', '$anios_repet_educacion', '$talento_educacion', '$talento_descrip_educacion', '$vinculacion_club_educacion', '$club_descrip_educacion','$id_usu')";
+    values ('$num_doc_est','$fecha_dig_educacion', '$mun_dig_educacion', '$nombre_encuestador_educacion', '$rol_encuestador_educacion', '$nom_ape_est', '$vinculacion_inst_educacion', '$nom_inst_educacion', '$modalidad_inst_educacion', '$complementario_educacion', '$program_complement_educacion', '$repetir_year_educacion', '$anios_repet_educacion', '$talento_educacion', '$talento_descrip_educacion', '$vinculacion_club_educacion', '$club_descrip_educacion','$id_usu','1','$fechacreacion_educacion')";
         $resultado = $mysqli->query($sql);
 
         echo "
@@ -93,12 +95,8 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                             <div class='container'>
                                 <br />
                                 ";
-        if ($mysqli->query($sql) === TRUE) {
             echo "  <h3><b><i class='fas fa-users'></i> SE CREO DE FORMA EXITOSA EL REGISTRO</b></h3><br />";
-        } else {
-            echo "Error al insertar el registro: ";
-        }
-        echo "
+            echo "
                                 <p align='center'><a href='../../access.php'><img src='../../img/atras.png' width=96 height=96></a></p>
                             </div>
                             </center>

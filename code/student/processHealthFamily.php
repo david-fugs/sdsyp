@@ -37,8 +37,6 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
     include("../../conexion.php");
     date_default_timezone_set("America/Bogota");
     $mysqli->set_charset('utf8');
-    echo '<pre>';
-   
 
     if (isset($_POST)) {
         $fecha_dig_familiaSalud               = $_POST['fecha_dig_familiaSalud'];
@@ -47,6 +45,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         $rol_encuestador_familiaSalud         = $_POST['rol_encuestador_familiaSalud'];
         $num_doc_est                          = $_POST['num_doc_est'];
         $nom_ape_est                          = $_POST['nom_ape_est'];
+        
         $relacion_madre_familiaSalud          = $_POST['relacion_madre_familiaSalud'];
         $relacion_padre_familiaSalud          = $_POST['relacion_padre_familiaSalud'];
         $relacion_hermanos_familiaSalud       = $_POST['relacion_hermanos_familiaSalud'];
@@ -54,7 +53,8 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         $relacion_abuelos_familiaSalud        = $_POST['relacion_abuelos_familiaSalud'];
         $relacion_otros_familiaSalud          = $_POST['relacion_otros_familiaSalud'];
         $discapacidad_est_familiaSalud        = $_POST['discapacidad_est_familiaSalud'];
-        $afecta_aprendizaje_familiaSalud      = $_POST['afecta_aprendizaje_familiaSalud'];
+        //convertir array a string
+        $afecta_aprendizaje_familiaSalud      = implode(',', $_POST['afecta_aprendizaje_familiaSalud']);
         $beneficiario_pae_familiaSalud        = $_POST['beneficiario_pae_familiaSalud'];
         $comida_dia_familiaSalud              = $_POST['comida_dia_familiaSalud'];
         $eps_estudiante_familiaSalud          = $_POST['eps_estudiante_familiaSalud'];
@@ -70,12 +70,13 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         $tipo_alergia_familiaSalud            = $_POST['tipo_alergia_familiaSalud'];
         $vacunacion_familiaSalud              = $_POST['vacunacion_familiaSalud'];
         $id_usu                             =   $_SESSION['id'];
+        $fechacreacion_familiaSalud         =   date('Y-m-d H:i:s');
 
         $sql = "INSERT INTO familiasalud
         (fecha_dig_familiaSalud, mun_dig_familiaSalud, nombre_encuestador_familiaSalud, rol_encuestador_familiaSalud, num_doc_est, nom_ape_est, relacion_madre_familiaSalud, relacion_padre_familiaSalud, relacion_hermanos_familiaSalud, relacion_tios_familiaSalud, relacion_abuelos_familiaSalud,relacion_otros_familiaSalud,
-         discapacidad_est_familiaSalud, afecta_aprendizaje_familiaSalud, beneficiario_pae_familiaSalud, comida_dia_familiaSalud, eps_estudiante_familiaSalud, nombre_eps_familiaSalud, afiliado_eps_familiaSalud, presenta_diagnostico_familiaSalud, diagnostico_familiaSalud, terapia_familiaSalud, frecuencia_terapia_familiaSalud, condicion_particular_familiaSalud, frecuencia_atencion_familiaSalud, alergia_familiaSalud, tipo_alergia_familiaSalud, vacunacion_familiaSalud, id_usu)
+         discapacidad_est_familiaSalud, afecta_aprendizaje_familiaSalud, beneficiario_pae_familiaSalud, comida_dia_familiaSalud, eps_estudiante_familiaSalud, nombre_eps_familiaSalud, afiliado_eps_familiaSalud, presenta_diagnostico_familiaSalud, diagnostico_familiaSalud, terapia_familiaSalud, frecuencia_terapia_familiaSalud, condicion_particular_familiaSalud, frecuencia_atencion_familiaSalud, alergia_familiaSalud, tipo_alergia_familiaSalud, vacunacion_familiaSalud, id_usu , estado_familiasalud,fechacreacion_familiasalud)
         VALUES ('$fecha_dig_familiaSalud', '$mun_dig_familiaSalud', '$nombre_encuestador_familiaSalud', '$rol_encuestador_familiaSalud', '$num_doc_est', '$nom_ape_est', '$relacion_madre_familiaSalud', '$relacion_padre_familiaSalud', '$relacion_hermanos_familiaSalud', '$relacion_tios_familiaSalud', '$relacion_abuelos_familiaSalud',
-        '$relacion_otros_familiaSalud','$discapacidad_est_familiaSalud', '$afecta_aprendizaje_familiaSalud', '$beneficiario_pae_familiaSalud', '$comida_dia_familiaSalud', '$eps_estudiante_familiaSalud', '$nombre_eps_familiaSalud', '$afiliado_eps_familiaSalud', '$presenta_diagnostico_familiaSalud', '$diagnostico_familiaSalud', '$terapia_familiaSalud', '$frecuencia_terapia_familiaSalud', '$condicion_particular_familiaSalud', '$frecuencia_atencion_familiaSalud', '$alergia_familiaSalud', '$tipo_alergia_familiaSalud', '$vacunacion_familiaSalud', '$id_usu')";
+        '$relacion_otros_familiaSalud','$discapacidad_est_familiaSalud', '$afecta_aprendizaje_familiaSalud', '$beneficiario_pae_familiaSalud', '$comida_dia_familiaSalud', '$eps_estudiante_familiaSalud', '$nombre_eps_familiaSalud', '$afiliado_eps_familiaSalud', '$presenta_diagnostico_familiaSalud', '$diagnostico_familiaSalud', '$terapia_familiaSalud', '$frecuencia_terapia_familiaSalud', '$condicion_particular_familiaSalud', '$frecuencia_atencion_familiaSalud', '$alergia_familiaSalud', '$tipo_alergia_familiaSalud', '$vacunacion_familiaSalud', '$id_usu', '1', '$fechacreacion_familiaSalud')";
         $resultado = $mysqli->query($sql);
 
         echo "
@@ -103,11 +104,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                             <div class='container'>
                                 <br />
                            ";
-                            if ($mysqli->query($sql) === TRUE) {
                                 echo "  <h3><b><i class='fas fa-users'></i> SE CREO DE FORMA EXITOSA EL REGISTRO</b></h3><br />";
-                            } else {
-                                echo "Error al insertar el registro: ";
-                            }
                             echo "    
                             <p align='center'><a href='../../access.php'><img src='../../img/atras.png' width=96 height=96></a></p>
                             </div>

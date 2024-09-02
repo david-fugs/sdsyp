@@ -80,7 +80,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
         <div class="flex">
             <div class="box">
-                <form action="showprePostnatales.php" method="get">
+                <form action="showPerformance.php" method="get">
                     <input name="num_doc_est" type="text" placeholder="Ingrese el Documento" size=20>
                     <input name="nom_ape_est" type="text" placeholder="Escriba el nombre del estudiante" size=30>
                     <input name="grado_est" type="text" placeholder="Grado">
@@ -124,16 +124,17 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             $paginacion->records($num_registros);
             $paginacion->records_per_page($resul_x_pagina);
 
-            $consulta = "SELECT estudiantes.*, usuarios.*, ie.*
+            $consulta = "SELECT estudiantes.*, usuarios.*, ie.*, desempeno.fechacreacion_desempeno, desempeno.estado_desempeno
                  FROM estudiantes 
                  INNER JOIN ieSede ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede 
                  INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie 
-               
+               LEFT JOIN desempeno ON estudiantes.num_doc_est = desempeno.num_doc_est
                  INNER JOIN usuarios ON estudiantes.id_usu = usuarios.id
                  WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
                  AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
                  AND (estudiantes.grado_est LIKE '%$grado_est%')
                  AND ie.cod_dane_ie = $cod_dane_ie 
+                    ORDER BY ISNULL(desempeno.fechacreacion_desempeno) DESC, desempeno.fechacreacion_desempeno ASC, estudiantes.num_doc_est ASC
                 
                  LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . "," . $resul_x_pagina;
             $result = $mysqli->query($consulta);
@@ -161,8 +162,8 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
                 $i = 1;
                 while ($row = mysqli_fetch_array($result)) {
-                    $estado_encuesta = '' ? 'OK' : 'PENDIENTE';
-                    $clase_estado = '' ? 'ok' : 'pendiente';
+                    $estado_encuesta = $row['estado_desempeno'] == 1  ? 'OK' : 'PENDIENTE';
+                    $clase_estado = $row['estado_desempeno'] == 1 ? 'ok' : 'pendiente';
 
                     echo '
                     <tr>
@@ -170,10 +171,24 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         <td data-label="DTO">' . $row['num_doc_est'] . '</td>
                         <td data-label="ESTUDIANTE">' . utf8_encode($row['nom_ape_est']) . '</td>
                         <td data-label="GRADO">' . $row['grado_est'] . '</td>
-                        <td data-label="APLICAR"><a href="addPerformance.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/aplicar.png" width=28 height=28></a></td>
+                    ';
+                    
+                    if($row['estado_desempeno'] == 0) {
+                        echo '
+                        <td data-label="APLICAR"><a href="addHealthFamily.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/aplicar.png" width=28 height=28></a></td>
+                        ';
+                    }
+                    else {
+                        echo '
+                        <td data-label="APLICAR"></a></td>
+                        ';
+                    }
+                    
+                    echo '
                         <td data-label="ELIMINAR"><a href="#" onclick="cambiarEstado(' . $row['num_doc_est'] . ')"><img src="../../img/delete1.png" width=28 height=28></a></td>
                         <td data-label="REALIZADO" class="' . $clase_estado . '">' . $estado_encuesta . '</td>
                     </tr>';
+                    
                     $i++;
                 }
 
