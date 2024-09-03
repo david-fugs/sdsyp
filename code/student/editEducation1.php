@@ -7,11 +7,6 @@ if (!isset($_SESSION['id'])) {
 }
 
 header("Content-Type: text/html;charset=utf-8");
-$usuario      = $_SESSION['usuario'];
-$nombre       = $_SESSION['nombre'];
-$tipo_usuario = $_SESSION['tipo_usuario'];
-$cod_dane_ie  = $_SESSION['cod_dane_ie'];
-
 ?>
 
 <!DOCTYPE html>
@@ -38,6 +33,8 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
     date_default_timezone_set("America/Bogota");
     $mysqli->set_charset('utf8');
 
+    print_r($_POST);
+
     if (isset($_POST)) {
         $fecha_dig_educacion               = $_POST['fecha_dig_educacion'];
         $mun_dig_educacion                 = $_POST['mun_dig_educacion'];
@@ -58,13 +55,9 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         $club_descrip_educacion            = $_POST['club_descrip_educacion'];
         $id_usu                             =   $_SESSION['id'];
         //convertir array a string
-        $anios_repet_educacion               = implode(',', $_POST['anios_repet_educacion']);
+        $anios_repet_educacion = implode(',', $_POST['anios_repet_educacion']);
+        $fechaedicion_educacion         =   date('Y-m-d H:i:s');
         $id_registro                        = $_POST['id_registro'];
-        $fechacreacion_educacion         =   date('Y-m-d H:i:s');
-
-
-
-        //lo que trae $$anios_repet_educacion     es un array ya que vienen varios valores y loq ue necesito es que en la insercion se metan todos digamos si viene [1,2,3] ingrese en la base de datos 1,2,3
         $sql = "UPDATE educacion 
         SET num_doc_est = '$num_doc_est', 
             fecha_dig_educacion = '$fecha_dig_educacion', 
@@ -85,13 +78,13 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             club_descrip_educacion = '$club_descrip_educacion', 
             id_usu = '$id_usu', 
             estado_educacion = '1', 
-            fechacreacion_educacion = '$fechacreacion_educacion' 
-        WHERE id_educacion = '$id_registro'";
+            fechaedicion_educacion = '$fechaedicion_educacion' 
+              WHERE id_educacion = $id_registro";
 
-        $resultado = $mysqli->query($sql);
-
-        echo "
-    <!DOCTYPE html>
+        if ($mysqli->query($sql) === TRUE) {
+            // Si la consulta se ejecuta correctamente
+            echo "
+      <!DOCTYPE html>
                     <html lang='es'>
                         <head>
                             <meta charset='utf-8' />
@@ -114,18 +107,25 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                <img src='../../img/logo_educacion.png' width=600 height=121 class='responsive'>
                             <div class='container'>
                                 <br />
-                                ";
-            echo "  <h3><b><i class='fas fa-users'></i> SE CREO DE FORMA EXITOSA EL REGISTRO</b></h3><br />";
-            echo "
-                                <p align='center'><a href='../../access.php'><img src='../../img/atras.png' width=96 height=96></a></p>
+                           ";
+            echo "  <h3><b><i class='fas fa-users'></i> SE ACTUALIZO DE FORMA EXITOSA EL REGISTRO</b></h3><br />";
+            echo "    
+                            <p align='center'><a href='../../access.php'><img src='../../img/atras.png' width=96 height=96></a></p>
                             </div>
                             </center>
                         </body>
                     </html>
-    ";
+            ";
+        } else {
+            //  error 
+            echo "<div class='alert alert-danger' role='alert'>";
+            echo "Error al actualizar el registro: " . $mysqli->error . "<br>";
+            echo "Consulta ejecutada: " . $sql . "<br>";  // Muestra la consulta SQL
+            echo "</div>";
+        }
     }
-    ?>
 
+    ?>
 </body>
 
 </html>

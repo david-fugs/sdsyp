@@ -93,6 +93,7 @@ function Si1No2($value)
 
                         <th>Fecha de Aplicación</th>
                         <th>Fecha de Modificación</th>
+                        <th>EDITAR</th>
                         <th>ELIMINAR</th>
                     </tr>
                 </thead>
@@ -129,6 +130,7 @@ function Si1No2($value)
                         echo "<td>{$row['nom_dobletitu_desempeno']}</td>";
                         echo '<td>' . $row['fechacreacion_desempeno'] . '</td>';
                         echo '<td>' . $row['fechaedicion_desempeno'] . '</td>';
+                        echo '<td><a href="editPerformance.php?num_doc_est=' . $row['num_doc_est'] . '&id_desempeno=' . $row['id_desempeno'] . '"><img src="../../img/editar.png" width=28 height=28></a></td>';
                         echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_desempeno']})'>Eliminar</button></td>";
        echo "</tr>";
                     }

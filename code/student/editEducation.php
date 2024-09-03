@@ -7,7 +7,7 @@ if (!isset($_SESSION['id'])) {
 }
 
 header("Content-Type: text/html;charset=utf-8");
-$usuario      = $_SESSION['usuario'];
+
 $nombre       = $_SESSION['nombre'];
 $tipo_usuario = $_SESSION['tipo_usuario'];
 $cod_dane_ie  = $_SESSION['cod_dane_ie'];
@@ -29,18 +29,24 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+    <script>
+        
+function Si1No2($value)
+{
+    if ($value == 1) {
+        return "SI";
+    } else {
+        return "NO";
+    }
+}
+    </script>
+
     <style>
         .responsive {
             max-width: 100%;
             height: auto;
         }
     </style>
-    <script>
-        document.getElementById('eps_estudiante_familiaSalud').addEventListener('change', function() {
-            var displayStyle = this.value === '1' ? 'block' : 'none';
-            document.getElementById('eps-questions').style.display = displayStyle;
-        });
-    </script>
 </head>
 
 <body>
@@ -49,10 +55,10 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
     date_default_timezone_set("America/Bogota");
     $time = time();
     $num_doc_est  = $_GET['num_doc_est'];
+    $id_registro        = $_GET['id_educacion'];
     if (isset($_GET['num_doc_est'])) {
-        $sql = mysqli_query($mysqli, "SELECT * FROM estudiantes WHERE num_doc_est = '$num_doc_est'");
+        $sql = mysqli_query($mysqli, "SELECT * FROM estudiantes INNER JOIN educacion ON estudiantes.num_doc_est=educacion.num_doc_est WHERE estudiantes.num_doc_est = '$num_doc_est'");
         $row = mysqli_fetch_array($sql);
-
         //$row = $result->fetch_assoc();
         $fec_nac_est = $row['fec_nac_est'];
 
@@ -60,6 +66,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         $fecha_actual = new DateTime();
         $fec_nac_est = new DateTime($fec_nac_est);
         $edad = $fecha_actual->diff($fec_nac_est)->y;
+
+
+        //formulario de actualizacion
+        $sql_formulario =  mysqli_query($mysqli, "SELECT * FROM educacion WHERE id_educacion = '$id_registro' ");
+        $res_formulario =  mysqli_fetch_array($sql_formulario);
     }
     ?>
 
@@ -68,12 +79,12 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             <img src='../../img/logo_educacion.png' width=600 height=121 class='responsive'>
         </center>
 
-        <h1><b><img src="../../img/baby.png" width=35 height=35> ACTUALIZAR INFORMACIÓN PRE POSTNATAL DEL ESTUDIANTE <img src="../../img/baby.png" width=35 height=35></b></h1>
+        <h1><b><img src="../../img/baby.png" width=35 height=35> ACTUALIZAR INFORMACIÓN EDUCACION DEL ESTUDIANTE <img src="../../img/baby.png" width=35 height=35></b></h1>
         <p><i><b>
                     <font size=3 color=#c68615>* Datos obligatorios</i></b></font>
         </p>
 
-        <form action='processEducation.php' method="POST">
+        <form action='editEducation1.php' method="POST">
 
             <hr style="border: 2px solid #16087B; border-radius: 2px;">
             <div class="form-group">
@@ -93,7 +104,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         $num_reg = mysqli_num_rows($res);
                         while ($row1 = $res->fetch_array()) {
                         ?>
-                            <option value='<?php echo $row1['nombre_mun']; ?>' <?php if ($row['mun_dig_prePostnatales'] == $row1['nombre_mun']) {
+                            <option value='<?php echo $row1['nombre_mun']; ?>' <?php if ($row['mun_dig_educacion'] == $row1['nombre_mun']) {
                                                                                     echo 'selected';
                                                                                 } ?>>
                                 <?php echo $row1['nombre_mun']; ?>
@@ -144,34 +155,37 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         <label for="num_doc_est">No. DOCUMENTO ESTUDIANTE:</label>
                         <input type='number' name='num_doc_est' class='form-control' id="num_doc_est" value='<?php echo $row['num_doc_est']; ?>' readonly />
                     </div>
+
+
                     <div class="col-12 col-sm-9">
                         <label for="nom_ape_est">NOMBRES Y APELLIDOS COMPLETOS DEL ESTUDIANTE:</label>
-                        <input type='text' name='nom_ape_est' id="nom_ape_est" class='form-control' value='<?php echo utf8_encode($row['nom_ape_est']); ?>' readonly />
+                        <input type='text' name='nom_ape_est' id="nom_ape_est" class='form-control' value='<?php echo utf8_encode($res_formulario['nom_ape_est']); ?>' readonly />
                     </div>
                 </div>
             </div>
-
             <div class="form-group">
                 <div class="row">
                     <div class="col-6 col-sm-4">
                         <label for="vinculacion_inst_educacion">* ESTUDIANTE HA ESTADO VINCULADO A OTRA INSTUCION O FUNDACION: </label>
                         <select class="form-control" name="vinculacion_inst_educacion" id="vinculacion_inst_educacion">
-                            <option value=""></option>
-                            <option value="1">SI</option>
-                            <option value="2">NO</option>
+                            <option value=""<?php if ($res_formulario['vinculacion_inst_educacion'] == '') {echo 'selected';
+                            } ?>> </option>
+                            <option value="1"<?php if ($res_formulario['vinculacion_inst_educacion'] == 1) {echo 'selected';} ?>>SI</option> 
+                            <option value="2"<?php if ($res_formulario['vinculacion_inst_educacion'] == 2) {echo 'selected';} ?>>NO</option>
                         </select>
                     </div>
                     <div class="col-6 col-sm-4 mt-4">
                         <label for="nom_inst_educacion">* SI LA RESPUESTA FUE SI, ESPECIFIQUE CUAL: </label>
-                        <input class="form-control" type="text" name="nom_inst_educacion">
+                        <input class="form-control" type="text" name="nom_inst_educacion" value='<?php echo utf8_encode($res_formulario['nom_inst_educacion']); ?>'>
+                        
                     </div>
 
                     <div class="col-6 col-sm-4 ">
                         <label for="modalidad_inst_educacion">* SI CURSO GRADO 10 o 11 EN LA ANTERIOR INSTITUCION, CUAL FUE LA MODALIDAD : </label>
                         <select class="form-control" name="modalidad_inst_educacion" id="modalidad_inst_educacion">
-                            <option value=""></option>
-                            <option value="tecnica">TECNICA</option>
-                            <option value="academica">ACADEMICA</option>
+                            <option value=""<?php if ($res_formulario['modalidad_inst_educacion'] == '') {echo 'selected';} ?>> </option>
+                            <option value="tecnica"<?php if ($res_formulario['modalidad_inst_educacion'] == 'tecnica') {echo 'selected';} ?>>TECNICA</option>
+                            <option value="academica"<?php if ($res_formulario['modalidad_inst_educacion'] == 'academica') {echo 'selected';} ?>>ACADEMICA</option>
                         </select>
 
                     </div>
@@ -182,22 +196,22 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                     <div class="col-6 col-sm-4">
                         <label for="complementario_educacion">* ASISTE A PROGRAMAS COMPLEMENTARIO O EXTRACURRICULARES </label>
                         <select class="form-control" name="complementario_educacion" id="complementario_educacion">
-                            <option value=""></option>
-                            <option value="1">SI</option>
-                            <option value="2">NO</option>
+                            <option value=""<?php if ($res_formulario['complementario_educacion'] == '') {echo 'selected';} ?>> </option>
+                            <option value="1"<?php if ($res_formulario['complementario_educacion'] == 1) {echo 'selected';} ?>>SI</option>
+                            <option value="2"<?php if ($res_formulario['complementario_educacion'] == 2) {echo 'selected';} ?>>NO</option>
                         </select>
                     </div>
                     <div class="col-6 col-sm-4 mt-4">
                         <label for="program_complement_educacion">* SI LA RESPUESTA FUE SI, ESPECIFIQUE CUAL: </label>
-                        <input class="form-control" type="text" name="program_complement_educacion">
+                        <input class="form-control" type="text" name="program_complement_educacion" value='<?php echo utf8_encode($res_formulario['program_complement_educacion']); ?>'>
                     </div>
 
                     <div class="col-6 col-sm-4 mt-4">
                         <label for="repetir_year_educacion">* EL ESTUDIANTE HA REPETIDO ALGUN AÑO: </label>
                         <select class="form-control" name="repetir_year_educacion" id="repetir_year_educacion">
-                            <option value=""></option>
-                            <option value="1">SI</option>
-                            <option value="2">NO</option>
+                            <option value=""<?php if ($res_formulario['repetir_year_educacion'] == '') {echo 'selected';} ?>> </option>
+                            <option value="1"<?php if ($res_formulario['repetir_year_educacion'] == 1) {echo 'selected';} ?>>SI</option>
+                            <option value="2"<?php if ($res_formulario['repetir_year_educacion'] == 2) {echo 'selected';} ?>>NO</option>
                         </select>
                         
                     </div>
@@ -212,21 +226,21 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                             <div class="form-control" id="aniosrepetidos" style="height: auto;">
                                 <div class="row">
                                     <div class="col-8 col-sm-6 col-md-4">
-                                        <input type="checkbox" name="anios_repet_educacion[]" value="11"> 11<br>
-                                        <input type="checkbox" name="anios_repet_educacion[]" value="10"> 10<br>
-                                        <input type="checkbox" name="anios_repet_educacion[]" value="9"> 9<br>
-                                        <input type="checkbox" name="anios_repet_educacion[]" value="8"> 8<br>
+                                        <input type="checkbox" name="anios_repet_educacion[]" value="11" <?php if (strpos($res_formulario['anios_repet_educacion'], '11') !== false) {echo 'checked';} ?>> 11<br>
+                                        <input type="checkbox" name="anios_repet_educacion[]" value="10" <?php if (strpos($res_formulario['anios_repet_educacion'], '10') !== false) {echo 'checked';} ?>> 10<br>
+                                        <input type="checkbox" name="anios_repet_educacion[]" value="9" <?php if (strpos($res_formulario['anios_repet_educacion'], '9') !== false) {echo 'checked';} ?>> 9<br>
+                                        <input type="checkbox" name="anios_repet_educacion[]" value="8" <?php if (strpos($res_formulario['anios_repet_educacion'], '8') !== false) {echo 'checked';} ?>> 8<br>
                                     </div>
                                     <div class="col-8 col-sm-6 col-md-4">
-                                        <input type="checkbox" name="anios_repet_educacion[]" value="7"> 7<br>
-                                        <input type="checkbox" name="anios_repet_educacion[]" value="6"> 6<br>
-                                        <input type="checkbox" name="anios_repet_educacion[]" value="5"> 5<br>
-                                        <input type="checkbox" name="anios_repet_educacion[]" value="4"> 4<br>
+                                        <input type="checkbox" name="anios_repet_educacion[]" value="7" <?php if (strpos($res_formulario['anios_repet_educacion'], '7') !== false) {echo 'checked';} ?>> 7<br>
+                                        <input type="checkbox" name="anios_repet_educacion[]" value="6" <?php if (strpos($res_formulario['anios_repet_educacion'], '6') !== false) {echo 'checked';} ?>> 6<br>
+                                        <input type="checkbox" name="anios_repet_educacion[]" value="5" <?php if (strpos($res_formulario['anios_repet_educacion'], '5') !== false) {echo 'checked';} ?>> 5<br>
+                                        <input type="checkbox" name="anios_repet_educacion[]" value="4" <?php if (strpos($res_formulario['anios_repet_educacion'], '4') !== false) {echo 'checked';} ?>> 4<br>
                                     </div>
                                     <div class="col-8 col-sm-6 col-md-4">
-                                        <input type="checkbox" name="anios_repet_educacion[]" value="3"> 3<br>
-                                        <input type="checkbox" name="anios_repet_educacion[]" value="2"> 2<br>
-                                        <input type="checkbox" name="anios_repet_educacion[]" value="1"> 1<br>
+                                        <input type="checkbox" name="anios_repet_educacion[]" value="3" <?php if (strpos($res_formulario['anios_repet_educacion'], '3') !== false) {echo 'checked';} ?>> 3<br>
+                                        <input type="checkbox" name="anios_repet_educacion[]" value="2" <?php if (strpos($res_formulario['anios_repet_educacion'], '2') !== false) {echo 'checked';} ?>> 2<br>
+                                        <input type="checkbox" name="anios_repet_educacion[]" value="1" <?php if (strpos($res_formulario['anios_repet_educacion'], '1') !== false) {echo 'checked';} ?>> 1<br>
                                     </div>
                                 </div>
                             </div>
@@ -235,9 +249,9 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                     <div class="col-6 col-sm-4 mt-5">
                         <label for="talento_educacion">* HA SIDO RECONOCIDO POR ALGUN TALENTO O CAPACIDAD: </label>
                         <select class="form-control" name="talento_educacion" id="talento_educacion">
-                            <option value=""></option>
-                            <option value="1">SI</option>
-                            <option value="2">NO</option>
+                            <option value=""<?php if ($res_formulario['talento_educacion'] == '') {echo 'selected';} ?>> </option>
+                            <option value="1"<?php if ($res_formulario['talento_educacion'] == 1) {echo 'selected';} ?>>SI</option>
+                            <option value="2"<?php if ($res_formulario['talento_educacion'] == 2) {echo 'selected';} ?>>NO</option>
                         </select>
                     </div>
                 </div>
@@ -247,22 +261,28 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                 <div class="row">
                     <div class="col-6 col-sm-4 mt-4">
                         <label for="talento_descrip_educacion">* SI HA SIDO RECONOCIDO EL TALENTO, ESPECIFIQUE CUAL: </label>
-                        <input class="form-control" type="text" name="talento_descrip_educacion" >
+                        <input class="form-control" type="text" name="talento_descrip_educacion" value='<?php echo utf8_encode($res_formulario['talento_descrip_educacion']); ?>'>
                     </div>
                     <div class="col-6 col-sm-4 mt-4">
                         <label for="vinculacion_club_educacion">* SE ENCUENTRA VINCULADO A LIGA O CLUB DEPORTIVO O CULTURAL: </label>
                         <select class="form-control" name="vinculacion_club_educacion" id="vinculacion_club_educacion">
-                            <option value=""></option>
-                            <option value="1">SI</option>
-                            <option value="2">NO</option>
+                            <option value=""<?php if ($res_formulario['vinculacion_club_educacion'] == '') {echo 'selected';} ?>> </option>
+                            <option value="1"<?php if ($res_formulario['vinculacion_club_educacion'] == 1) {echo 'selected';} ?>>SI</option>
+                            <option value="2"<?php if ($res_formulario['vinculacion_club_educacion'] == 2) {echo 'selected';} ?>>NO</option>
                         </select>
                     </div>
 
                     <div class="col-6 col-sm-4 mt-5">
                         <label for="club_descrip_educacion">* SI LA RESPUESTA FUE SI, ESPECIFIQUE CUAL: </label>
-                        <input class="form-control" type="text" name="club_descrip_educacion">
+                        <input class="form-control" type="text" name="club_descrip_educacion" value='<?php echo utf8_encode($res_formulario['club_descrip_educacion']); ?>'>
+                        
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <input type="hidden" name="id_registro" value="<?= $id_registro ?>">
+                </div>
+
             </div>
             <button type="submit" class="btn btn-primary mt-5" name="btn-update">
                 <span class="spinner-border spinner-border-sm"></span>

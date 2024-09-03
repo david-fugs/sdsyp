@@ -7,7 +7,7 @@ if (!isset($_SESSION['id'])) {
 }
 
 header("Content-Type: text/html;charset=utf-8");
-$usuario      = $_SESSION['usuario'];
+
 $nombre       = $_SESSION['nombre'];
 $tipo_usuario = $_SESSION['tipo_usuario'];
 $cod_dane_ie  = $_SESSION['cod_dane_ie'];
@@ -29,18 +29,24 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+    <script>
+        
+function Si1No2($value)
+{
+    if ($value == 1) {
+        return "SI";
+    } else {
+        return "NO";
+    }
+}
+    </script>
+
     <style>
         .responsive {
             max-width: 100%;
             height: auto;
         }
     </style>
-    <script>
-        document.getElementById('eps_estudiante_familiaSalud').addEventListener('change', function() {
-            var displayStyle = this.value === '1' ? 'block' : 'none';
-            document.getElementById('eps-questions').style.display = displayStyle;
-        });
-    </script>
 </head>
 
 <body>
@@ -49,10 +55,10 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
     date_default_timezone_set("America/Bogota");
     $time = time();
     $num_doc_est  = $_GET['num_doc_est'];
+    $id_registro        = $_GET['id_desempeno'];
     if (isset($_GET['num_doc_est'])) {
-        $sql = mysqli_query($mysqli, "SELECT * FROM estudiantes WHERE num_doc_est = '$num_doc_est'");
+        $sql = mysqli_query($mysqli, "SELECT * FROM estudiantes INNER JOIN desempeno ON estudiantes.num_doc_est=desempeno.num_doc_est WHERE estudiantes.num_doc_est = '$num_doc_est'");
         $row = mysqli_fetch_array($sql);
-
         //$row = $result->fetch_assoc();
         $fec_nac_est = $row['fec_nac_est'];
 
@@ -60,6 +66,12 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         $fecha_actual = new DateTime();
         $fec_nac_est = new DateTime($fec_nac_est);
         $edad = $fecha_actual->diff($fec_nac_est)->y;
+
+
+        //formulario de actualizacion
+        $sql_formulario =  mysqli_query($mysqli, "SELECT * FROM desempeno WHERE id_desempeno = '$id_registro' ");
+        $res_formulario =  mysqli_fetch_array($sql_formulario);
+        print_r($res_formulario);
     }
     ?>
 
@@ -68,23 +80,23 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             <img src='../../img/logo_educacion.png' width=600 height=121 class='responsive'>
         </center>
 
-        <h1><b><img src="../../img/baby.png" width=35 height=35> ACTUALIZAR INFORMACIÓN PRE POSTNATAL DEL ESTUDIANTE <img src="../../img/baby.png" width=35 height=35></b></h1>
+        <h1><b><img src="../../img/baby.png" width=35 height=35> ACTUALIZAR INFORMACIÓN DESEMPEÑO DEL ESTUDIANTE <img src="../../img/baby.png" width=35 height=35></b></h1>
         <p><i><b>
                     <font size=3 color=#c68615>* Datos obligatorios</i></b></font>
         </p>
 
-        <form action='processPerformance.php' method="POST">
+        <form action='editEducation1.php' method="POST">
 
             <hr style="border: 2px solid #16087B; border-radius: 2px;">
             <div class="form-group">
                 <div class="row">
                     <div class="col-12 col-sm-2">
-                        <label for="fecha_dig_desempeno">FECHA DILIGENC.</label>
-                        <input type='text' name='fecha_dig_desempeno' id="fecha_dig_desempeno" class='form-control' value='<?php echo date("d-m-Y h:i", $time); ?>' readonly />
+                        <label for="fecha_dig_educacion">FECHA DILIGENC.</label>
+                        <input type='text' name='fecha_dig_educacion' id="fecha_dig_educacion" class='form-control' value='<?php echo date("d-m-Y h:i", $time); ?>' readonly />
                     </div>
                     <div class="col-12 col-sm-3">
-                        <label for="mun_dig_desempeno">* MUNICIPIO DILIGENCIAMIENTO:</label>
-                        <select name='mun_dig_desempeno' class='form-control' id='selectMunicipio' required />
+                        <label for="mun_dig_educacion">* MUNICIPIO DILIGENCIAMIENTO:</label>
+                        <select name='mun_dig_educacion' class='form-control' id='selectMunicipio' required />
                         <option value=''></option>
                         <?php
                         header('Content-Type: text/html;charset=utf-8');
@@ -93,7 +105,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         $num_reg = mysqli_num_rows($res);
                         while ($row1 = $res->fetch_array()) {
                         ?>
-                            <option value='<?php echo $row1['nombre_mun']; ?>' <?php if ($row['mun_dig_prePostnatales'] == $row1['nombre_mun']) {
+                            <option value='<?php echo $row1['nombre_mun']; ?>' <?php if ($row['mun_dig_educacion'] == $row1['nombre_mun']) {
                                                                                     echo 'selected';
                                                                                 } ?>>
                                 <?php echo $row1['nombre_mun']; ?>
@@ -104,12 +116,12 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         </select>
                     </div>
                     <div class="col-12 col-sm-4">
-                        <label for="nombre_encuestador_desempeno">NOMBRE DEL ENCUESTADOR:</label>
-                        <input type='text' name='nombre_encuestador_desempeno' class='form-control' id="nombre_encuestador_desempeno" value='<?php echo $nombre; ?>' readonly />
+                        <label for="nombre_encuestador_educacion">NOMBRE DEL ENCUESTADOR:</label>
+                        <input type='text' name='nombre_encuestador_educacion' class='form-control' id="nombre_encuestador_educacion" value='<?php echo $nombre; ?>' readonly />
                     </div>
                     <div class="col-12 col-sm-3">
-                        <label for="rol_encuestador_desempeno">TIPO DE ACCESO:</label>
-                        <select class="form-control" name="rol_encuestador_desempeno" readonly />
+                        <label for="rol_encuestador_educacion">TIPO DE ACCESO:</label>
+                        <select class="form-control" name="rol_encuestador_educacion" readonly />
                         <option value="">SELECCIONE:</option>
                         <option value="RECTOR" <?php if ($tipo_usuario == 1) {
                                                     echo 'selected';
@@ -144,12 +156,15 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         <label for="num_doc_est">No. DOCUMENTO ESTUDIANTE:</label>
                         <input type='number' name='num_doc_est' class='form-control' id="num_doc_est" value='<?php echo $row['num_doc_est']; ?>' readonly />
                     </div>
+
+
                     <div class="col-12 col-sm-9">
                         <label for="nom_ape_est">NOMBRES Y APELLIDOS COMPLETOS DEL ESTUDIANTE:</label>
-                        <input type='text' name='nom_ape_est' id="nom_ape_est" class='form-control' value='<?php echo utf8_encode($row['nom_ape_est']); ?>' readonly />
+                        <input type='text' name='nom_ape_est' id="nom_ape_est" class='form-control' value='<?php echo utf8_encode($res_formulario['nom_ape_est']); ?>' readonly />
                     </div>
                 </div>
             </div>
+
 
             <div class="form-group mt-4">
                 <div class="row">
@@ -170,14 +185,23 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                     <td>Ciencias Naturales</td>
                                     <td>
                                         <select  class="form-control" name="comprension_ciencia_desempeno">
-                                            <option   value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option   value="bajo" <?php 
+                                            if ($res_formulario['comprension_ciencia_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_ciencia_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_ciencia_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_ciencia_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="participacion_ciencia_desempeno">
+
                                             <option  value="bajo">Desempeño Bajo</option>
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
@@ -212,7 +236,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                         </select>
                                     </td>
                                     <td>
-                                        <select  class="form-control" name="participacion_sociales_desempeno">
+                                        <select  class="form-control" name="comprension_sociales_desempeno">
                                             <option  value="bajo">Desempeño Bajo</option>
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
@@ -220,7 +244,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                         </select>
                                     </td>
                                     <td>
-                                        <select  class="form-control" name="aplicacion_sociales_desempeno">
+                                        <select  class="form-control" name="comprension_sociales_desempeno">
                                             <option  value="bajo">Desempeño Bajo</option>
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
@@ -228,7 +252,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                         </select>
                                     </td>
                                     <td>
-                                        <select  class="form-control" name="consistencia_sociales_desempeno">
+                                        <select  class="form-control" name="comprension_sociales_desempeno">
                                             <option  value="bajo">Desempeño Bajo</option>
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
@@ -247,7 +271,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                         </select>
                                     </td>
                                     <td>
-                                        <select  class="form-control" name="participacion_edufisica_desempeno">
+                                        <select  class="form-control" name="comprension_edufisica_participacion">
                                             <option  value="bajo">Desempeño Bajo</option>
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
@@ -255,7 +279,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                         </select>
                                     </td>
                                     <td>
-                                        <select  class="form-control" name="aplicacion_edufisica_desempeno">
+                                        <select  class="form-control" name="comprension_edufisica_aplicacion">
                                             <option  value="bajo">Desempeño Bajo</option>
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
@@ -263,7 +287,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                         </select>
                                     </td>
                                     <td>
-                                        <select  class="form-control" name="consistencia_edufisica_desempeno">
+                                        <select  class="form-control" name="comprension_edufisica_consistencia">
                                             <option  value="bajo">Desempeño Bajo</option>
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
@@ -283,7 +307,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                         </select>
                                     </td>
                                     <td>
-                                        <select  class="form-control" name="participacion_etica_desempeno">
+                                        <select  class="form-control" name="comprension_etica_desempeno">
                                             <option  value="bajo">Desempeño Bajo</option>
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
@@ -291,7 +315,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                         </select>
                                     </td>
                                     <td>
-                                        <select  class="form-control" name="aplicacion_etica_desempeno">
+                                        <select  class="form-control" name="comprension_etica_desempeno">
                                             <option  value="bajo">Desempeño Bajo</option>
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
@@ -299,7 +323,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                         </select>
                                     </td>
                                     <td>
-                                        <select  class="form-control" name="consistencia_etica_desempeno">
+                                        <select  class="form-control" name="comprension_etica_desempeno">
                                             <option  value="bajo">Desempeño Bajo</option>
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
@@ -319,7 +343,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             </select>
                                         </td>
                                         <td>
-                                            <select  class="form-control" name="participacion_religion_desempeno">
+                                            <select  class="form-control" name="comprension_religion_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -327,7 +351,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             </select>
                                         </td>
                                         <td>
-                                            <select  class="form-control" name="aplicacion_religion_desempeno">
+                                            <select  class="form-control" name="comprension_religion_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -335,7 +359,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             </select>
                                         </td>
                                         <td>
-                                            <select  class="form-control" name="consistencia_religion_desempeno">
+                                            <select  class="form-control" name="comprension_religion_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -355,7 +379,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                          </select>
                                         </td>
                                         <td>
-                                         <select  class="form-control" name="participacion_artistica_desempeno">
+                                         <select  class="form-control" name="comprension_artistica_desempeno">
                                               <option  value="bajo">Desempeño Bajo</option>
                                               <option  value="basico">Desempeño Básico</option>
                                               <option  value="alto">Desempeño Alto</option>
@@ -363,7 +387,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                          </select>
                                         </td>
                                         <td>
-                                         <select  class="form-control" name="aplicacion_artistica_desempeno">
+                                         <select  class="form-control" name="comprension_artistica_desempeno">
                                               <option  value="bajo">Desempeño Bajo</option>
                                               <option  value="basico">Desempeño Básico</option>
                                               <option  value="alto">Desempeño Alto</option>
@@ -371,7 +395,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                          </select>
                                         </td>
                                         <td>
-                                         <select  class="form-control" name="consistencia_artistica_desempeno">
+                                         <select  class="form-control" name="comprension_artistica_desempeno">
                                               <option  value="bajo">Desempeño Bajo</option>
                                               <option  value="basico">Desempeño Básico</option>
                                               <option  value="alto">Desempeño Alto</option>
@@ -391,7 +415,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="participacion_humanidades_desempeno">
+                                             <select  class="form-control" name="comprension_humanidades_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -399,7 +423,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="aplicacion_humanidades_desempeno">
+                                             <select  class="form-control" name="comprension_humanidades_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -407,7 +431,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="consistencia_humanidades_desempeno">
+                                             <select  class="form-control" name="comprension_humanidades_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -427,7 +451,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="participacion_matematicas_desempeno">
+                                             <select  class="form-control" name="comprension_matematicas_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -435,7 +459,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="aplicacion_matematicas_desempeno">
+                                             <select  class="form-control" name="comprension_matematicas_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -443,7 +467,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="consistencia_matematicas_desempeno">
+                                             <select  class="form-control" name="comprension_matematicas_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -463,7 +487,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="participacion_fisica_desempeno">
+                                             <select  class="form-control" name="comprension_fisica_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -471,7 +495,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="aplicacion_fisica_desempeno">
+                                             <select  class="form-control" name="comprension_fisica_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -479,7 +503,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="consistencia_fisica_desempeno">
+                                             <select  class="form-control" name="comprension_fisica_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -499,7 +523,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="participacion_algebra_desempeno">
+                                             <select  class="form-control" name="comprension_algebra_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -507,7 +531,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="aplicacion_algebra_desempeno">
+                                             <select  class="form-control" name="comprension_algebra_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -515,7 +539,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="consistencia_algebra_desempeno">
+                                             <select  class="form-control" name="comprension_algebra_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -535,7 +559,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="participacion_calculo_desempeno">
+                                             <select  class="form-control" name="comprension_calculo_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -543,7 +567,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="aplicacion_calculo_desempeno">
+                                             <select  class="form-control" name="comprension_calculo_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -551,7 +575,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="consistencia_calculo_desempeno">
+                                             <select  class="form-control" name="comprension_calculo_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -571,7 +595,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="participacion_ingles_desempeno">
+                                             <select  class="form-control" name="comprension_ingles_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -579,7 +603,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="aplicacion_ingles_desempeno">
+                                             <select  class="form-control" name="comprension_ingles_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -587,7 +611,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="consistencia_ingles_desempeno">
+                                             <select  class="form-control" name="comprension_ingles_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -607,7 +631,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="participacion_tecno_desempeno">
+                                             <select  class="form-control" name="comprension_tecno_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -615,7 +639,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="aplicacion_tecno_desempeno">
+                                             <select  class="form-control" name="comprension_tecno_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -623,7 +647,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="consistencia_tecno_desempeno">
+                                             <select  class="form-control" name="comprension_tecno_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -643,7 +667,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="participacion_emprendimiento_desempeno">
+                                             <select  class="form-control" name="comprension_emprendimiento_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -651,7 +675,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="aplicacion_emprendimiento_desempeno">
+                                             <select  class="form-control" name="comprension_emprendimiento_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -659,7 +683,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="consistencia_emprendimiento_desempeno">
+                                             <select  class="form-control" name="comprension_emprendimiento_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -679,7 +703,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="participacion_areastec_desempeno">
+                                             <select  class="form-control" name="comprension_areastec_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -687,7 +711,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="aplicacion_areastec_desempeno">
+                                             <select  class="form-control" name="comprension_areastec_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -695,7 +719,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="consistencia_areastec_desempeno">
+                                             <select  class="form-control" name="comprension_areastec_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -715,7 +739,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="participacion_filosofia_desempeno">
+                                             <select  class="form-control" name="comprension_filosofia_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -723,7 +747,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="aplicacion_filosofia_desempeno">
+                                             <select  class="form-control" name="comprension_filosofia_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -731,7 +755,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="consistencia_filosofia_desempeno">
+                                             <select  class="form-control" name="comprension_filosofia_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -751,7 +775,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="participacion_cienciaseco_desempeno">
+                                             <select  class="form-control" name="comprension_cienciaseco_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -759,7 +783,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="aplicacion_cienciaseco_desempeno">
+                                             <select  class="form-control" name="comprension_cienciaseco_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
@@ -767,7 +791,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                              </select>
                                             </td>
                                             <td>
-                                             <select  class="form-control" name="consistencia_cienciaseco_desempeno">
+                                             <select  class="form-control" name="comprension_cienciaseco_desempeno">
                                                 <option  value="bajo">Desempeño Bajo</option>
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>

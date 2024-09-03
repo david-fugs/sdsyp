@@ -251,7 +251,12 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                 <div class="row">
                     <div class="col-6 col-sm-4">
                         <label for="discapacidad_est_familiaSalud">* ESTUDIANTE PRESENTA DISCAPACIDAD: </label>
-                        <input class='form-control' type="text" name="discapacidad_est_familiaSalud"> <br>
+                        <select class="form-control" name="discapacidad_est_familiaSalud" id="discapacidad_est_familiaSalud">
+                            <option value=""></option>
+                            <option value="0">SI</option>
+                            <option value="1">NO</option>
+                        </select>
+                        
                     </div>
                     <div class="col-8">
                         <label for="Afecciones">SITUACIONES QUE AFECTAN APRENDIZAJE DEL ESTUDIANTE:</label>
