@@ -33,7 +33,8 @@ function Si1No2($value)
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Detalles de Encuestas</title>
+    <title>Detalles de Encuestas</title> 
+    
     <link rel="stylesheet" href="../../css/bootstrap.min.css">
     <style>
         .table th,
@@ -57,6 +58,7 @@ function Si1No2($value)
 <body>
     <div class="container mt-5">
         <h1>Detalles de Encuestas Aplicadas</h1>
+        <h3 class="mt-4" > Las Materias se asignan (COMPRENSION,PARTICIPACION,APLICACION,CONSISTENCIA) </h3>
         <div class="table-responsive mt-5">
             <table class="table table-bordered table-striped">
                 <thead class="thead-dark">
@@ -71,20 +73,20 @@ function Si1No2($value)
                         <th>Desempeño Ciencias naturales</th>
                         <th>Desempeño Ciencias sociales</th>
                         <th>Desempeño Educacion Fisica</th>
-                        <th> Etica y valores</th>
-                        <th>Religion</th>
-                        <th>Artes</th>
-                        <th>Humanidades</th>
-                        <th>Matematicas</th>
-                        <th>Fisica</th>
-                        <th>Algebra</th>
-                        <th>Calculo</th>
-                        <th>Ingles</th>
-                        <th>Tecnologia Informatica</th>
-                        <th>Emprendimiento</th>
-                        <th>Areas Tecnicas</th>
-                        <th>Filosofia</th>
-                        <th>Ciencias Economicas</th>
+                        <th> Desempeño Etica y valores</th>
+                        <th> Desempeño Religion</th>
+                        <th>Desempeño Artes</th>
+                        <th>Desempeño Humanidades</th>
+                        <th>Desempeño Matematicas</th>
+                        <th>Desempeño Fisica</th>
+                        <th>Desempeño Algebra</th>
+                        <th>Desempeño Calculo</th>
+                        <th>Desempeño Ingles</th>
+                        <th>Desempeño Tecnologia Informatica</th>
+                        <th>Desempeño Emprendimiento</th>
+                        <th>Desempeño Areas Tecnicas</th>
+                        <th>Desempeño Filosofia</th>
+                        <th>Desempeño Ciencias Economicas</th>
                         <th>Vinculado doble titulacion</th>
                         <th>Cual programa</th>
 
@@ -96,6 +98,8 @@ function Si1No2($value)
                         <th>EDITAR</th>
                         <th>ELIMINAR</th>
                     </tr>
+                    <tr>
+           
                 </thead>
                 <tbody>
                     <?php
@@ -108,23 +112,24 @@ function Si1No2($value)
                             <td>{$row['mun_dig_desempeno']}</td>
                             <td>{$row['nombre_encuestador_desempeno']}</td>
                             <td>{$row['rol_encuestador_desempeno']}</td>
-                            <td>{$row['comprension_ciencia_desempeno']}</td>
-                            <td>{$row['comprension_sociales_desempeno']}</td>
-                            <td>{$row['comprension_edufisica_desempeno']}</td>
-                             <td>{$row['comprension_etica_desempeno']}</td>
-                            <td>{$row['comprension_religion_desempeno']}</td>
-                            <td>{$row['comprension_artistica_desempeno']}</td>
-                            <td>{$row['comprension_humanidades_desempeno']}</td>
-                            <td>{$row['comprension_matematicas_desempeno']}</td>
-                            <td>{$row['comprension_fisica_desempeno']}</td>
-                            <td>{$row['comprension_algebra_desempeno']}</td>
-                            <td>{$row['comprension_calculo_desempeno']}</td>
-                            <td>{$row['comprension_ingles_desempeno']}</td>
-                            <td>{$row['comprension_tecno_desempeno']}</td>
-                            <td>{$row['comprension_emprendimiento_desempeno']}</td>
-                            <td>{$row['comprension_areastec_desempeno']}</td>
-                            <td>{$row['comprension_filosofia_desempeno']}</td>
-                            <td>{$row['comprension_cienciaseco_desempeno']}</td>
+                             <td>{$row['comprension_ciencia_desempeno']}, {$row['participacion_ciencia_desempeno']}, {$row['aplicacion_ciencia_desempeno']}, {$row['consistencia_ciencia_desempeno']}</td>
+                            <td>{$row['comprension_sociales_desempeno']}, {$row['participacion_sociales_desempeno']}, {$row['aplicacion_sociales_desempeno']}, {$row['consistencia_sociales_desempeno']}</td>
+                            <td>{$row['comprension_edufisica_desempeno']}, {$row['participacion_edufisica_desempeno']}, {$row['aplicacion_edufisica_desempeno']}, {$row['consistencia_edufisica_desempeno']}</td>
+                            <td>{$row['comprension_etica_desempeno']}, {$row['participacion_etica_desempeno']}, {$row['aplicacion_etica_desempeno']}, {$row['consistencia_etica_desempeno']}</td>
+
+                            <td>{$row['comprension_religion_desempeno']}, {$row['participacion_religion_desempeno']}, {$row['aplicacion_religion_desempeno']}, {$row['consistencia_religion_desempeno']}</td>
+                            <td>{$row['comprension_artistica_desempeno']}, {$row['participacion_artistica_desempeno']}, {$row['aplicacion_artistica_desempeno']}, {$row['consistencia_artistica_desempeno']}</td>
+                            <td>{$row['comprension_humanidades_desempeno']}, {$row['participacion_humanidades_desempeno']}, {$row['aplicacion_humanidades_desempeno']}, {$row['consistencia_humanidades_desempeno']}</td>
+                            <td>{$row['comprension_matematicas_desempeno']}, {$row['participacion_matematicas_desempeno']}, {$row['aplicacion_matematicas_desempeno']}, {$row['consistencia_matematicas_desempeno']}</td>
+                            <td>{$row['comprension_fisica_desempeno']}, {$row['participacion_fisica_desempeno']}, {$row['aplicacion_fisica_desempeno']}, {$row['consistencia_fisica_desempeno']}</td>
+                            <td>{$row['comprension_algebra_desempeno']}, {$row['participacion_algebra_desempeno']}, {$row['aplicacion_algebra_desempeno']}, {$row['consistencia_algebra_desempeno']}</td>
+                            <td>{$row['comprension_calculo_desempeno']}, {$row['participacion_calculo_desempeno']}, {$row['aplicacion_calculo_desempeno']}, {$row['consistencia_calculo_desempeno']}</td>
+                            <td>{$row['comprension_ingles_desempeno']}, {$row['participacion_ingles_desempeno']}, {$row['aplicacion_ingles_desempeno']}, {$row['consistencia_ingles_desempeno']}</td>
+                            <td>{$row['comprension_tecno_desempeno']}, {$row['participacion_tecno_desempeno']}, {$row['aplicacion_tecno_desempeno']}, {$row['consistencia_tecno_desempeno']}</td>
+                            <td>{$row['comprension_emprendimiento_desempeno']}, {$row['participacion_emprendimiento_desempeno']}, {$row['aplicacion_emprendimiento_desempeno']}, {$row['consistencia_emprendimiento_desempeno']}</td>
+                            <td>{$row['comprension_areastec_desempeno']}, {$row['participacion_areastec_desempeno']}, {$row['aplicacion_areastec_desempeno']}, {$row['consistencia_areastec_desempeno']}</td>
+                            <td>{$row['comprension_filosofia_desempeno']}, {$row['participacion_filosofia_desempeno']}, {$row['aplicacion_filosofia_desempeno']}, {$row['consistencia_filosofia_desempeno']}</td>
+                            <td>{$row['comprension_cienciaseco_desempeno']}, {$row['participacion_cienciaseco_desempeno']}, {$row['aplicacion_cienciaseco_desempeno']}, {$row['consistencia_cienciaseco_desempeno']}</td>
                             ";
                         echo '<td>' . Si1No2($row['doble_titu_desempeno']) . '</td>';
                         echo "<td>{$row['nom_dobletitu_desempeno']}</td>";

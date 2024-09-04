@@ -42,7 +42,6 @@ header("Content-Type: text/html;charset=utf-8");
         $rol_encuestador_familiaSalud         = $_POST['rol_encuestador_familiaSalud'];
         $num_doc_est                          = $_POST['num_doc_est'];
         $nom_ape_est                          = $_POST['nom_ape_est'];
-        
         $relacion_madre_familiaSalud          = $_POST['relacion_madre_familiaSalud'];
         $relacion_padre_familiaSalud          = $_POST['relacion_padre_familiaSalud'];
         $relacion_hermanos_familiaSalud       = $_POST['relacion_hermanos_familiaSalud'];
@@ -77,7 +76,7 @@ header("Content-Type: text/html;charset=utf-8");
         rol_encuestador_familiaSalud = '$rol_encuestador_familiaSalud',
         num_doc_est = '$num_doc_est',
         nom_ape_est = '$nom_ape_est',
-        relacion_madre_familiaSalud = 'mala',
+        relacion_madre_familiaSalud = '$relacion_madre_familiaSalud',
         relacion_padre_familiaSalud = '$relacion_padre_familiaSalud',
         relacion_hermanos_familiaSalud = '$relacion_hermanos_familiaSalud',
         relacion_tios_familiaSalud = '$relacion_tios_familiaSalud',
@@ -103,7 +102,7 @@ header("Content-Type: text/html;charset=utf-8");
         id_usu = '$id_usu',
         estado_familiasalud = '1' ,
         fechaedicion_familiaSalud = '$fechaedicion_familiaSalud'
-        WHERE id_salud_familiaSalud = 16";
+        WHERE id_salud_familiaSalud = '$id_registro'";
 
 if ($mysqli->query($sql) === TRUE) {
     // Si la consulta se ejecuta correctamente

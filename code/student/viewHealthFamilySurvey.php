@@ -92,6 +92,7 @@ function Si1No2($value)
                         <th>Tipo de sangre</th>
                         <th>Fecha de Aplicación</th>
                         <th>Fecha de Modificación</th>
+                        <th>Exportar Excel</th>
                         <th>ELIMINAR</th>
                     </tr>
                 </thead>
@@ -132,6 +133,7 @@ function Si1No2($value)
                         echo "<td>{$row['sangre_familiaSalud']}</td>";
                         echo "<td>{$row['fechacreacion_familiaSalud']}</td>";
                         echo "<td>{$row['fechaedicion_familiaSalud']}</td>";
+                        echo "<td><a href='exportarHealthFamily/exportarIndivHealthFam.php?id_salud_familiaSalud={$row['id_salud_familiaSalud']}' class='btn btn-success'>Exportar</a></td>";
                         echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_salud_familiaSalud']})'>Eliminar</button></td>
                          </tr>";
                          $i++;

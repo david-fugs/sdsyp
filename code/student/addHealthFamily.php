@@ -465,7 +465,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                     <option value="B-">B-</option>
                                     <option value="AB+">AB+</option>
                                     <option value="AB-">AB-</option>
-                                
+                                </select>
                             </div>
                         </div>
                     </div>
