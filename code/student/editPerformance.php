@@ -197,31 +197,58 @@ function Si1No2($value)
                                             <option  value="superior" <?php
                                             if ($res_formulario['comprension_ciencia_desempeno'] == 'superior') {
                                                 echo 'selected';  }?>>Desempeño Superior</option>
+
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="participacion_ciencia_desempeno">
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['participacion_ciencia_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['participacion_ciencia_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['participacion_ciencia_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                                                                            <option  value="superior" <?php
+                                            if ($res_formulario['participacion_ciencia_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
 
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="aplicacion_ciencia_desempeno">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['aplicacion_ciencia_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['aplicacion_ciencia_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['aplicacion_ciencia_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['aplicacion_ciencia_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
+
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="consistencia_ciencia_desempeno">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['consistencia_ciencia_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['consistencia_ciencia_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['consistencia_ciencia_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['consistencia_ciencia_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                 </tr>
@@ -229,34 +256,66 @@ function Si1No2($value)
                                     <td>Ciencias Sociales</td>
                                     <td>
                                         <select  class="form-control" name="comprension_sociales_desempeno">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="comprension_sociales_desempeno">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="comprension_sociales_desempeno">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="comprension_sociales_desempeno">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_sociales_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                 </tr>
@@ -264,70 +323,133 @@ function Si1No2($value)
                                     <td>Educacion Fisica</td>
                                     <td>
                                         <select  class="form-control" name="comprension_edufisica_desempeno">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['comprension_edufisica_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_edufisica_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_edufisica_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_edufisica_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="comprension_edufisica_participacion">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['comprension_edufisica_participacion'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_edufisica_participacion'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_edufisica_participacion'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_edufisica_participacion'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="comprension_edufisica_aplicacion">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['comprension_edufisica_aplicacion'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_edufisica_aplicacion'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_edufisica_aplicacion'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_edufisica_aplicacion'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="comprension_edufisica_consistencia">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['comprension_edufisica_consistencia'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_edufisica_consistencia'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_edufisica_consistencia'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_edufisica_consistencia'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                 </tr>
-                              
                                 <tr>
                                     <td>Etica y Valores</td>
                                     <td>
                                         <select  class="form-control" name="comprension_etica_desempeno">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="comprension_etica_desempeno">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="comprension_etica_desempeno">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                     <td>
                                         <select  class="form-control" name="comprension_etica_desempeno">
-                                            <option  value="bajo">Desempeño Bajo</option>
-                                            <option  value="basico">Desempeño Básico</option>
-                                            <option  value="alto">Desempeño Alto</option>
-                                            <option  value="superior">Desempeño Superior</option>
+                                            <option  value="bajo" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'bajo') {
+                                                echo 'selected';  }?>>Desempeño Bajo</option>
+                                            <option  value="basico" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'basico') {
+                                                echo 'selected';  }?>>Desempeño Básico</option>
+                                            <option  value="alto" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'alto') {
+                                                echo 'selected';  }?>>Desempeño Alto</option>
+                                            <option  value="superior" <?php
+                                            if ($res_formulario['comprension_etica_desempeno'] == 'superior') {
+                                                echo 'selected';  }?>>Desempeño Superior</option>
                                         </select>
                                     </td>
                                 </tr>
@@ -336,34 +458,66 @@ function Si1No2($value)
                                         <td>Religion</td>
                                         <td>
                                             <select  class="form-control" name="comprension_religion_desempeno">
-                                                <option  value="bajo">Desempeño Bajo</option>
-                                                <option  value="basico">Desempeño Básico</option>
-                                                <option  value="alto">Desempeño Alto</option>
-                                                <option  value="superior">Desempeño Superior</option>
+                                                <option  value="bajo" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'bajo') {
+                                                    echo 'selected';  }?>>Desempeño Bajo</option>
+                                                <option  value="basico" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'basico') {
+                                                    echo 'selected';  }?>>Desempeño Básico</option>
+                                                <option  value="alto" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'alto') {
+                                                    echo 'selected';  }?>>Desempeño Alto</option>
+                                                <option  value="superior" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'superior') {
+                                                    echo 'selected';  }?>>Desempeño Superior</option>
                                             </select>
                                         </td>
                                         <td>
                                             <select  class="form-control" name="comprension_religion_desempeno">
-                                                <option  value="bajo">Desempeño Bajo</option>
-                                                <option  value="basico">Desempeño Básico</option>
-                                                <option  value="alto">Desempeño Alto</option>
-                                                <option  value="superior">Desempeño Superior</option>
+                                                <option  value="bajo" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'bajo') {
+                                                    echo 'selected';  }?>>Desempeño Bajo</option>
+                                                <option  value="basico" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'basico') {
+                                                    echo 'selected';  }?>>Desempeño Básico</option>
+                                                <option  value="alto" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'alto') {
+                                                    echo 'selected';  }?>>Desempeño Alto</option>
+                                                <option  value="superior" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'superior') {
+                                                    echo 'selected';  }?>>Desempeño Superior</option>
                                             </select>
                                         </td>
                                         <td>
                                             <select  class="form-control" name="comprension_religion_desempeno">
-                                                <option  value="bajo">Desempeño Bajo</option>
-                                                <option  value="basico">Desempeño Básico</option>
-                                                <option  value="alto">Desempeño Alto</option>
-                                                <option  value="superior">Desempeño Superior</option>
+                                                <option  value="bajo" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'bajo') {
+                                                    echo 'selected';  }?>>Desempeño Bajo</option>
+                                                <option  value="basico" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'basico') {
+                                                    echo 'selected';  }?>>Desempeño Básico</option>
+                                                <option  value="alto" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'alto') {
+                                                    echo 'selected';  }?>>Desempeño Alto</option>
+                                                <option  value="superior" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'superior') {
+                                                    echo 'selected';  }?>>Desempeño Superior</option>
                                             </select>
                                         </td>
                                         <td>
                                             <select  class="form-control" name="comprension_religion_desempeno">
-                                                <option  value="bajo">Desempeño Bajo</option>
-                                                <option  value="basico">Desempeño Básico</option>
-                                                <option  value="alto">Desempeño Alto</option>
-                                                <option  value="superior">Desempeño Superior</option>
+                                                <option  value="bajo" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'bajo') {
+                                                    echo 'selected';  }?>>Desempeño Bajo</option>
+                                                <option  value="basico" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'basico') {
+                                                    echo 'selected';  }?>>Desempeño Básico</option>
+                                                <option  value="alto" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'alto') {
+                                                    echo 'selected';  }?>>Desempeño Alto</option>
+                                                <option  value="superior" <?php
+                                                if ($res_formulario['comprension_religion_desempeno'] == 'superior') {
+                                                    echo 'selected';  }?>>Desempeño Superior</option>
                                             </select>
                                         </td>
                                </tr>
@@ -372,10 +526,18 @@ function Si1No2($value)
                                         <td>Artistica</td>
                                         <td>
                                          <select  class="form-control" name="comprension_artistica_desempeno">
-                                              <option  value="bajo">Desempeño Bajo</option>
-                                              <option  value="basico">Desempeño Básico</option>
-                                              <option  value="alto">Desempeño Alto</option>
-                                              <option  value="superior">Desempeño Superior</option>
+                                                <option  value="bajo" <?php
+                                                if ($res_formulario['comprension_artistica_desempeno'] == 'bajo') {
+                                                    echo 'selected';  }?>>Desempeño Bajo</option>
+                                                <option  value="basico" <?php
+                                                if ($res_formulario['comprension_artistica_desempeno'] == 'basico') {
+                                                    echo 'selected';  }?>>Desempeño Básico</option>
+                                                <option  value="alto" <?php
+                                                if ($res_formulario['comprension_artistica_desempeno'] == 'alto') {
+                                                    echo 'selected';  }?>>Desempeño Alto</option>
+                                                <option  value="superior" <?php
+                                                if ($res_formulario['comprension_artistica_desempeno'] == 'superior') {
+                                                    echo 'selected';  }?>>Desempeño Superior</option>
                                          </select>
                                         </td>
                                         <td>
