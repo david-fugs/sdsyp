@@ -92,6 +92,7 @@ function Si1No2($value)
                         <th>Tipo de sangre</th>
                         <th>Fecha de Aplicación</th>
                         <th>Fecha de Modificación</th>
+                        <th>EDITAR</th>
                         <th>Exportar Excel</th>
                         <th>ELIMINAR</th>
                     </tr>
@@ -103,7 +104,7 @@ function Si1No2($value)
                         echo "<tr>
                             <td>{$i}</td>
                             <td>{$row['id_salud_familiaSalud']}</td>
-                            <td>{$row['fecha_dig_familiaSalud']}</td>
+                            <td>{$row['fechacreacion_familiaSalud']}</td>
                             <td>{$row['mun_dig_familiaSalud']}</td>
                             <td>{$row['nombre_encuestador_familiaSalud']}</td>
                             <td>{$row['rol_encuestador_familiaSalud']}</td>
@@ -133,7 +134,8 @@ function Si1No2($value)
                         echo "<td>{$row['sangre_familiaSalud']}</td>";
                         echo "<td>{$row['fechacreacion_familiaSalud']}</td>";
                         echo "<td>{$row['fechaedicion_familiaSalud']}</td>";
-                        echo "<td><a href='exportarHealthFamily/exportarIndivHealthFam.php?id_salud_familiaSalud={$row['id_salud_familiaSalud']}' class='btn btn-success'>Exportar</a></td>";
+                        echo '<td><a href="editHealthFamily.php?num_doc_est=' . $row['num_doc_est'] . '&idSalud=' . $row['id_salud_familiaSalud'] . '"><img src="../../img/editar.png" width=28 height=28></a></td>';
+                        echo "<td><a href='exportar/exportarIndivHealthFam.php?id_salud_familiaSalud={$row['id_salud_familiaSalud']}' class='btn btn-success'>Exportar</a></td>";
                         echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_salud_familiaSalud']})'>Eliminar</button></td>
                          </tr>";
                          $i++;

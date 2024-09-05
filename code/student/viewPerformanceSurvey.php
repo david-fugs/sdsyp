@@ -89,13 +89,10 @@ function Si1No2($value)
                         <th>Desempeño Ciencias Economicas</th>
                         <th>Vinculado doble titulacion</th>
                         <th>Cual programa</th>
-
-                      
-
-
                         <th>Fecha de Aplicación</th>
                         <th>Fecha de Modificación</th>
                         <th>EDITAR</th>
+                        <th>Exportar Excel</th>
                         <th>ELIMINAR</th>
                     </tr>
                     <tr>
@@ -136,6 +133,7 @@ function Si1No2($value)
                         echo '<td>' . $row['fechacreacion_desempeno'] . '</td>';
                         echo '<td>' . $row['fechaedicion_desempeno'] . '</td>';
                         echo '<td><a href="editPerformance.php?num_doc_est=' . $row['num_doc_est'] . '&id_desempeno=' . $row['id_desempeno'] . '"><img src="../../img/editar.png" width=28 height=28></a></td>';
+                        echo "<td><a href='exportar/exportarIndivPerform.php?id_desempeno={$row['id_desempeno']}' class='btn btn-success'>Exportar</a></td>";
                         echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_desempeno']})'>Eliminar</button></td>";
        echo "</tr>";
                     }

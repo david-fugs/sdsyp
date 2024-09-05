@@ -101,7 +101,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         @$grado_est = $_GET['grado_est'] ?? '';
 
 
-        $query = "SELECT estudiantes.*, usuarios.*, ie.*, familiasalud.fecha_dig_familiaSalud, familiasalud.estado_familiaSalud
+        $query = "SELECT estudiantes.*, usuarios.*, ie.*, familiasalud.estado_familiaSalud
         FROM estudiantes 
           INNER JOIN ieSede ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede 
           INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie 
@@ -113,7 +113,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
           AND ie.cod_dane_ie = $cod_dane_ie 
           AND (familiasalud.num_doc_est IS NULL OR familiasalud.estado_familiasalud= 1)
           AND (familiasalud.num_doc_est IS NULL OR familiasalud.estado_familiasalud = 1)
-          ORDER BY ISNULL(familiasalud.fecha_dig_familiasalud) DESC, familiasalud.fecha_dig_familiasalud ASC, estudiantes.num_doc_est ASC";
+          ORDER BY ISNULL(familiasalud.fechacreacion_familiasalud) ASC, estudiantes.num_doc_est ASC";
 
 
         // AND (familiasalud.fecha_alta_prePostnatales IS NULL OR prePostnatales.estado_prePostnatales = 0);
