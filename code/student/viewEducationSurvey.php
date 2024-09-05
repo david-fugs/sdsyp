@@ -132,9 +132,9 @@ function Si1No2($value)
 
 </html>
 <script>
-    function confirmarEliminacion(id_prePostnatales) {
+    function confirmarEliminacion(id) {
         if (confirm('¿Está seguro que desea eliminar esta encuesta? Esta acción no se puede deshacer.')) {
-            window.location.href = 'deleteSurvey.php?id_prePostnatales=' + id_prePostnatales;
+            window.location.href = 'deleteSurvey.php?id=' + id + '&campo=educacion';
         }
     }
 </script>
