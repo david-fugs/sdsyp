@@ -20,6 +20,7 @@ $result = $stmt->get_result();
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -27,9 +28,11 @@ $result = $stmt->get_result();
     <title>Detalles de Encuestas</title>
     <link rel="stylesheet" href="../../css/bootstrap.min.css">
     <style>
-        .table th, .table td {
+        .table th,
+        .table td {
             white-space: nowrap;
         }
+
         .table-responsive {
             overflow-x: auto;
         }
@@ -42,6 +45,7 @@ $result = $stmt->get_result();
         }
     </script>
 </head>
+
 <body>
     <div class="container">
         <h1>Detalles de Encuestas Aplicadas</h1>
@@ -65,6 +69,7 @@ $result = $stmt->get_result();
                         <th>Estado</th>
                         <th>Fecha de Aplicación</th>
                         <th>Fecha de Modificación</th>
+                        <th>Exportar Excel</th>
                         <th>ELIMINAR</th>
                     </tr>
                 </thead>
@@ -88,7 +93,9 @@ $result = $stmt->get_result();
                             <td>{$row['num_doc_est']}</td>
                             <td>{$row['estado_prePostnatales']}</td>
                             <td>{$row['fecha_alta_prePostnatales']}</td>
-                            <td>{$row['fecha_edit_prePostnatales']}</td>
+                            <td>{$row['fecha_edit_prePostnatales']}</td> ";
+                        echo "<td><a href='exportar/exportarIndivPrePos.php?id_prePost={$row['id_prePostnatales']}' class='btn btn-success'>Exportar</a></td>";
+                        echo "
                             <td><a href='#' onclick='confirmarEliminacion({$row['id_prePostnatales']})'><img src='../../img/delete1.png' width=28 height=28></a></td>
                         </tr>";
                         $i++;
@@ -100,6 +107,7 @@ $result = $stmt->get_result();
         <a href="javascript:history.back()" class="btn btn-primary">Volver</a>
     </div>
 </body>
+
 </html>
 
 <?php

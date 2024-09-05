@@ -64,6 +64,7 @@ function Si1No2($value)
                         <th>No.</th>
                         <th>ID</th>
                         <th>Fecha de Digitación</th>
+                        <th>Nombre Estudiante</th>
                         <th>Municipio de Digitación</th>
                         <th>Nombre del Encuestador</th>
                         <th>Rol del Encuestador</th>
@@ -97,6 +98,7 @@ function Si1No2($value)
                             <td>{$i}</td>
                             <td>{$row['id_educacion']}</td>
                             <td>{$row['fecha_dig_educacion']}</td>
+                            <td>{$row['nom_ape_est']}</td>
                             <td>{$row['mun_dig_educacion']}</td>
                             <td>{$row['nombre_encuestador_educacion']}</td>
                             <td>{$row['rol_encuestador_educacion']}</td>";
@@ -117,7 +119,7 @@ function Si1No2($value)
                        echo '<td>' . $row['fechaedicion_educacion']. '</td>';
                         echo '<td><a href="editEducation.php?num_doc_est=' . $row['num_doc_est'] . '&id_educacion=' . $row['id_educacion'] . '"><img src="../../img/editar.png" width=28 height=28></a></td>';
                         echo "<td><a href='exportar/exportarIndivEducation.php?id_educacion={$row['id_educacion']}' class='btn btn-success'>Exportar</a></td>";
-                        echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_educacion']})'>Eliminar</button></td>";
+                        echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_educacion']})'><img src='../../img/delete1.png' width=28 height=28></button></td>";
                         echo "</tr>";
                     }
                     ?>

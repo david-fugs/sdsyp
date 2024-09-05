@@ -68,7 +68,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
 
             <div class="flex">
                 <div class="box">
-                    <form action="checkprePostnatales.php" method="get">
+                    <form action="checkHealthFamily.php" method="get">
                         <input name="num_doc_est" type="text" placeholder="Ingrese el Documento" size=20>
                         <input name="nom_ape_est" type="text" placeholder="Escriba el nombre del estudiante" size=30>
                         <input name="grado_est" type="text" placeholder="Grado">
@@ -76,8 +76,11 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     </form>
                 </div>
             </div>
-            <br /><a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="Regresar" /></a>
-
+            <br />
+            <div class="d-flex justify-content-center " >
+                <a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="Regresar" /></a>
+                <a  class="ml-4" href="exportar/exportarAllHealth.php"><img src='../../img/excel.png' width="75" height="80" title="Regresar" /></a>
+            </div>
             <?php
 
             date_default_timezone_set("America/Bogota");
@@ -120,6 +123,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                             <th>MODIFICADA EL</th>
                             <th>VECES APLICADA</th>
                             <th>VER ENCUESTAS</th>
+                            <th>EXPORTAR</th>
                         </tr>
                     </thead>
                     <tbody>";
@@ -158,8 +162,9 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
         <td data-label="REALIZÓ">' . utf8_encode($row['nombre_encuestador_familiaSalud']) . '</td>
         <td data-label="MODIFICADA EL">' . $row['fechaedicion_familiaSalud'] . '</td>
         <td data-label="VECES APLICADA" class="' . $veces_clase . '">' . $row['veces_aplicada'] . '</td>
-        <td data-label="VER ENCUESTAS"><a href="viewHealthFamilySurvey.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/search.png" width=28 height=28></a></td>
-    </tr>';
+        <td data-label="VER ENCUESTAS"><a href="viewHealthFamilySurvey.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/search.png" width=28 height=28></a></td>    
+        <td data-label="EXPORTAR"><a href="exportar/exportarSurveysHealth.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/excel.png" width=32 height=32></a></td>
+        </tr>';
             }
 
             echo '</tbody></table></div></div></section>';

@@ -64,6 +64,7 @@ function Si1No2($value)
                         <th>No.</th>
                         <th>ID</th>
                         <th>Fecha de Digitación</th>
+                        <th>Nombre Estudiante</th>
                         <th>Municipio de Digitación</th>
                         <th>Nombre del Encuestador</th>
                         <th>Rol del Encuestador</th>
@@ -105,6 +106,7 @@ function Si1No2($value)
                             <td>{$i}</td>
                             <td>{$row['id_salud_familiaSalud']}</td>
                             <td>{$row['fechacreacion_familiaSalud']}</td>
+                            <td>{$row['nom_ape_est']}</td>
                             <td>{$row['mun_dig_familiaSalud']}</td>
                             <td>{$row['nombre_encuestador_familiaSalud']}</td>
                             <td>{$row['rol_encuestador_familiaSalud']}</td>
@@ -135,8 +137,8 @@ function Si1No2($value)
                         echo "<td>{$row['fechacreacion_familiaSalud']}</td>";
                         echo "<td>{$row['fechaedicion_familiaSalud']}</td>";
                         echo '<td><a href="editHealthFamily.php?num_doc_est=' . $row['num_doc_est'] . '&idSalud=' . $row['id_salud_familiaSalud'] . '"><img src="../../img/editar.png" width=28 height=28></a></td>';
-                        echo "<td><a href='exportar/exportarIndivHealthFam.php?id_salud_familiaSalud={$row['id_salud_familiaSalud']}' class='btn btn-success'>Exportar</a></td>";
-                        echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_salud_familiaSalud']})'>Eliminar</button></td>
+                        echo "<td><a href='exportar/exportarIndivHealthFam.php?id_salud_familiaSalud={$row['id_salud_familiaSalud']}' class='btn btn-success'>Exportar</a></td>";                  
+                        echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_salud_familiaSalud']})'><img src='../../img/delete1.png' width=28 height=28></button></td>
                          </tr>";
                          $i++;
 

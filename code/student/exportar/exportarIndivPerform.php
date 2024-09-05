@@ -126,10 +126,10 @@ if ($res === false) {
     echo "Error en la consulta: " . mysqli_error($mysqli);
     exit;
 }
-
+$nombreEst ='';
 while ($row = mysqli_fetch_array($res, MYSQLI_ASSOC)) {
-    // print_r($row);
     $nombreEst = $row['nom_ape_est'];
+
     $sheet->setCellValue('A3', $row['nom_ape_est']);
     $sheet->setCellValue('B3', $row['num_doc_est']);
     $sheet->setCellValue('C3', $row['mun_dig_desempeno']);
@@ -160,7 +160,7 @@ while ($row = mysqli_fetch_array($res, MYSQLI_ASSOC)) {
 
 }
 // // Set the filename and file format
-$filename = 'exported_data.xlsx';
+$filename = 'desempeno '.$nombreEst.'.xlsx';
 $writer = new Xlsx($spreadsheet);
 
 // Set the headers for file download

@@ -66,6 +66,7 @@ function Si1No2($value)
                         <th>No.</th>
                         <th>ID</th>
                         <th>Fecha de Digitación</th>
+                        <th>Nombre Estudiante</th>
                         <th>Municipio de Digitación</th>
                         <th>Nombre del Encuestador</th>
                         <th>Rol del Encuestador</th>
@@ -106,6 +107,7 @@ function Si1No2($value)
                             <td>{$i}</td>
                             <td>{$row['id_desempeno']}</td>
                             <td>{$row['fecha_dig_desempeno']}</td>
+                            <td>{$row['nom_ape_est']}</td>
                             <td>{$row['mun_dig_desempeno']}</td>
                             <td>{$row['nombre_encuestador_desempeno']}</td>
                             <td>{$row['rol_encuestador_desempeno']}</td>
@@ -134,7 +136,7 @@ function Si1No2($value)
                         echo '<td>' . $row['fechaedicion_desempeno'] . '</td>';
                         echo '<td><a href="editPerformance.php?num_doc_est=' . $row['num_doc_est'] . '&id_desempeno=' . $row['id_desempeno'] . '"><img src="../../img/editar.png" width=28 height=28></a></td>';
                         echo "<td><a href='exportar/exportarIndivPerform.php?id_desempeno={$row['id_desempeno']}' class='btn btn-success'>Exportar</a></td>";
-                        echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_desempeno']})'>Eliminar</button></td>";
+                        echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_desempeno']})'><img src='../../img/delete1.png' width=28 height=28></button></td>";
        echo "</tr>";
                     }
                     ?>
