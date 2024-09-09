@@ -28,7 +28,6 @@ function Si1No2($value)
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -45,13 +44,6 @@ function Si1No2($value)
             overflow-x: auto;
         }
     </style>
-    <script>
-        function confirmarEliminacion(id_prePostnatales) {
-            if (confirm('¿Está seguro que desea eliminar esta encuesta? Esta acción no se puede deshacer.')) {
-                window.location.href = 'deleteSurvey.php?id_prePostnatales=' + id_prePostnatales;
-            }
-        }
-    </script>
 </head>
 
 <body>

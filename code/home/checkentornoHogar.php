@@ -166,7 +166,7 @@ while ($row = mysqli_fetch_array($result)) {
                 <td data-label="REALIZÓ">' . utf8_encode($row['nombre_encuestador_hog']) . '</td>
                 <td data-label="MODIFICADA EL">' . $row['fecha_edit_hog'] . '</td>
                 <td data-label="VECES APLICADA" class="' . $veces_clase . '">' . $row['veces_aplicada'] . '</td>
-                <td data-label="VER ENCUESTAS"><a href="viewSurveys.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/search.png" width=28 height=28></a></td>
+                <td data-label="VER ENCUESTAS"><a href="viewEntornoHogar.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/search.png" width=28 height=28></a></td>
                 <td data-label="EDITAR"><a href="editprePostnatales.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/editar.png" width=28 height=28></a></td>
             </tr>';
 }
