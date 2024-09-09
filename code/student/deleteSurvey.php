@@ -10,12 +10,13 @@ include("../../conexion.php");
 
 $id = $_GET['id'];
 $campo = $_GET['campo'];
+
 if($campo == "prepost"){
     $tabla = 'prepostnatales';
     $id_campo = 'id_prePostnatales';
     $ruta = 'viewSurveys.php?num_doc_est=' . $_GET['num_doc_est'];
 }
-else if($campo == "familia"){
+else if($campo == "familiasalud"){
     $tabla = 'familiasalud';
     $id_campo = 'id_salud_familiaSalud';
     $ruta = 'viewHealthFamilySurvey.php?num_doc_est=' . $_GET['num_doc_est'];

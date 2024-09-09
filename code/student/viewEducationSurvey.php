@@ -119,7 +119,7 @@ function Si1No2($value)
                        echo '<td>' . $row['fechaedicion_educacion']. '</td>';
                         echo '<td><a href="editEducation.php?num_doc_est=' . $row['num_doc_est'] . '&id_educacion=' . $row['id_educacion'] . '"><img src="../../img/editar.png" width=28 height=28></a></td>';
                         echo "<td><a href='exportar/exportarIndivEducation.php?id_educacion={$row['id_educacion']}' class='btn btn-success'>Exportar</a></td>";
-                        echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_educacion']})'><img src='../../img/delete1.png' width=28 height=28></button></td>";
+                        echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_educacion']},{$row['num_doc_est']})'><img src='../../img/delete1.png' width=28 height=28></button></td>";
                         echo "</tr>";
                     }
                     ?>
@@ -132,9 +132,18 @@ function Si1No2($value)
 
 </html>
 <script>
-    function confirmarEliminacion(id) {
+    function confirmarEliminacion(id, num_doc) {
         if (confirm('¿Está seguro que desea eliminar esta encuesta? Esta acción no se puede deshacer.')) {
-            window.location.href = 'deleteSurvey.php?id=' + id + '&campo=educacion';
+            // Realizar una solicitud AJAX para eliminar la encuesta
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", 'deleteSurvey.php?id=' + id + '&campo=educacion' + '&num_doc_est=' + num_doc_est, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // Recargar la página una vez que la eliminación sea exitosa
+                    window.location.reload();
+                }
+            };
+            xhr.send();
         }
     }
 </script>

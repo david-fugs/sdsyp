@@ -137,11 +137,10 @@ function Si1No2($value)
                         echo "<td>{$row['fechacreacion_familiaSalud']}</td>";
                         echo "<td>{$row['fechaedicion_familiaSalud']}</td>";
                         echo '<td><a href="editHealthFamily.php?num_doc_est=' . $row['num_doc_est'] . '&idSalud=' . $row['id_salud_familiaSalud'] . '"><img src="../../img/editar.png" width=28 height=28></a></td>';
-                        echo "<td><a href='exportar/exportarIndivHealthFam.php?id_salud_familiaSalud={$row['id_salud_familiaSalud']}' class='btn btn-success'>Exportar</a></td>";                  
-                        echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_salud_familiaSalud']})'><img src='../../img/delete1.png' width=28 height=28></button></td>
+                        echo "<td><a href='exportar/exportarIndivHealthFam.php?id_salud_familiaSalud={$row['id_salud_familiaSalud']}' class='btn btn-success'>Exportar</a></td>";
+                        echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_salud_familiaSalud']}, {$row['num_doc_est']})'><img src='../../img/delete1.png' width=28 height=28></button></td>
                          </tr>";
-                         $i++;
-
+                        $i++;
                     }
                     ?>
                 </tbody>
@@ -153,11 +152,20 @@ function Si1No2($value)
 
 </html>
 <script>
-       function confirmarEliminacion(id) {
-            if (confirm('¿Está seguro que desea eliminar esta encuesta? Esta acción no se puede deshacer.')) {
-                window.location.href = 'deleteSurvey.php?id=' + id + '&campo=familiasalud';
-            }
+    function confirmarEliminacion(id, num_doc) {
+        if (confirm('¿Está seguro que desea eliminar esta encuesta? Esta acción no se puede deshacer.')) {
+            // Realizar una solicitud AJAX para eliminar la encuesta
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", 'deleteSurvey.php?id=' + id + '&campo=familiasalud' + '&num_doc_est=' + num_doc, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // Recargar la página una vez que la eliminación sea exitosa
+                    window.location.reload();
+                }
+            };
+            xhr.send();
         }
+    }
 </script>
 <?php
 $stmt->close();
