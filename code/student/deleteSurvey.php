@@ -32,6 +32,16 @@ else if($campo == "educacion"){
     $id_campo = 'id_educacion';
     $ruta = 'viewEducationSurvey.php?num_doc_est=' . $_GET['num_doc_est'];
 }
+else if($campo == "entornohogar"){
+    $tabla = 'entornohogar';
+    $id_campo = 'id_hog';
+    $ruta = 'viewEntornoHogar.php?num_doc_est=' . $_GET['num_doc_est'];
+}
+else if($campo == "preescolar"){
+    $tabla = 'preescolar';
+    $id_campo = 'id_preescolar';
+    $ruta = 'viewPreescolarSurvey.php?num_doc_est=' . $_GET['num_doc_est'];
+}
 
 
 if ($stmt = $mysqli->prepare("DELETE FROM $tabla WHERE $id_campo = ?")) {

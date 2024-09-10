@@ -76,6 +76,7 @@ function Si1No2($value)
                         <th>Municipio de Digitación</th>
                         <th>Nombre del Encuestador</th>
                         <th>Rol encuestador</th>
+
                         <th>Nombre Madre</th>
                         <th>Aun vive?</th>
                         <th>Ocupacion madre</th>
@@ -89,13 +90,18 @@ function Si1No2($value)
                         <th>Nombre Cuidador</th>
                         <th>Parentesco Cuidador</th>
                         <th>Espeficique otro</th>
+
                         <th>Nivel Educativo Cuidador</th>
                         <th>Ocupacion Cuidador</th>
                         <th>Cual ocupacion</th>
+
                         <th>Contacto cuidador</th>
+
                         <th>Email Cuidador</th>
                         <th>Numero Hermanos</th>
+
                         <th>Lugar que ocupa entre Hermanos</th>
+
                         <th>Hermano que estudian en el colegio</th>
                         <th>Niveles educativos de los hermanos</th>
                         <th>Quienes apoyan proceso crianza</th>
@@ -139,6 +145,7 @@ function Si1No2($value)
                         echo "<td>{$row['mun_dig_hog']}</td>";
                         echo "<td>{$row['nombre_encuestador_hog']}</td>";
                         echo "<td>{$row['rol_encuestador_hog']}</td>";
+                        
                         echo "<td>{$row['nombre_madre_hog']}</td>";
                         echo '<td>' . Si1No2($row['vive_madre_hog']) . '</td>';
                         echo "<td>{$row['ocupacion_madre_hog']}</td>";
@@ -186,7 +193,7 @@ function Si1No2($value)
                         echo "<td>{$row['fecha_alta_hog']}</td>";
                         echo "<td>{$row['fecha_edit_hog']}</td>";
                         echo '<td><a href="editEntornoHogar.php?num_doc_est=' . $row['num_doc_est'] . '&idHogar=' . $row['id_hog'] . '"><img src="../../img/editar.png" width=28 height=28></a></td>';
-                        echo "<td><a href='exportar/exportarIndivHealthFam.php?id_salud_familiaSalud={$row['id_hog']}' class='btn btn-success'>Exportar</a></td>";
+                        echo "<td><a href='exportar/exportarIndivHogar.php?id_hog={$row['id_hog']}' class='btn btn-success'>Exportar</a></td>";
                         echo "<td><button class='btn btn-danger' onclick='confirmarEliminacion({$row['id_hog']}, {$row['num_doc_est']})'><img src='../../img/delete1.png' width=28 height=28></button></td>";
                         echo "</tr>";
                         $i++;
@@ -205,7 +212,7 @@ function Si1No2($value)
         if (confirm('¿Está seguro que desea eliminar esta encuesta? Esta acción no se puede deshacer.')) {
             // Realizar una solicitud AJAX para eliminar la encuesta
             var xhr = new XMLHttpRequest();
-            xhr.open("GET", 'deleteSurvey.php?id=' + id + '&campo=entornohogar' + '&num_doc_est=' + num_doc, true);
+            xhr.open("GET", '../student/deleteSurvey.php?id=' + id + '&campo=entornohogar' + '&num_doc_est=' + num_doc, true);
             xhr.onload = function() {
                 if (xhr.status === 200) {
                     // Recargar la página una vez que la eliminación sea exitosa

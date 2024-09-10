@@ -121,7 +121,6 @@ $sheet->getDefaultRowDimension()->setRowHeight(25);
 $nombreEst = '';
 $rowIndex = 2;
 while ($row = mysqli_fetch_array($res, MYSQLI_ASSOC)) {
-    $nombreEst = $row['nom_ape_est'];
 
     $nombreEst= $row['nom_ape_est'];
     $sheet->setCellValue('A'. $rowIndex, $row['nom_ape_est']);

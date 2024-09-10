@@ -69,7 +69,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             <img src='../../img/logo_educacion.png' width=600 height=121 class='responsive'>
         </center>
 
-        <h1><b><img src="../../img/baby.png" width=35 height=35> ACTUALIZAR INFORMACIÓN PRE POSTNATAL DEL ESTUDIANTE <img src="../../img/baby.png" width=35 height=35></b></h1>
+        <h1><b><img src="../../img/baby.png" width=35 height=35> ACTUALIZAR INFORMACIÓN FAMILIA DEL ESTUDIANTE <img src="../../img/baby.png" width=35 height=35></b></h1>
         <p><i><b>
                     <font size=3 color=#c68615>* Datos obligatorios</i></b></font>
         </p>
@@ -471,7 +471,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                     </div>
                     <button type="submit" class="btn btn-primary" name="btn-update">
                         <span class="spinner-border spinner-border-sm"></span>
-                        ACTUALIZAR INFORMACIÓN PRE POSTNATAL
+                        ACTUALIZAR INFORMACIÓN FAMILIA
                     </button>
                     <button type="reset" class="btn btn-outline-dark" role='link' onclick="history.back();">
                         <img src='../../img/atras.png' width=27 height=27> REGRESAR

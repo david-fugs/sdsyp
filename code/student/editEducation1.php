@@ -32,9 +32,6 @@ header("Content-Type: text/html;charset=utf-8");
     include("../../conexion.php");
     date_default_timezone_set("America/Bogota");
     $mysqli->set_charset('utf8');
-
-    print_r($_POST);
-
     if (isset($_POST)) {
         $fecha_dig_educacion               = $_POST['fecha_dig_educacion'];
         $mun_dig_educacion                 = $_POST['mun_dig_educacion'];

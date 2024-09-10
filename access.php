@@ -168,8 +168,29 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
-              <i class="fa-sharp-duotone fa-solid fa-file-excel"></i>
-                          </span>
+                <i class="fa-solid fa-baby"></i>
+              </span>
+
+              <span class="navlink">Desarrollo preescolar</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/student/showPreescolar.php" class="nav_link sublink">Aplicar Encuesta</a>
+              <a href="code/student/preescolar/checkPreescolar.php" class="nav_link sublink">Encuestas Realizadas</a>
+            </ul>
+          </li>
+
+
+
+
+
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-sharp-duotone fa-solid fa-file-excel"></i>
+              </span>
 
               <span class="navlink">Ingresar Excel SIMAT</span>
               <i class="bx bx-chevron-right arrow-left"></i>
