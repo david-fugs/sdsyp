@@ -4,7 +4,8 @@ ini_set('memory_limit', '2G');  // Incrementar el límite de memoria si es neces
 require '../../vendor/autoload.php';  // Cargar la librería de PhpSpreadsheet
 
 // Utilizar el lector de PhpSpreadsheet en modo de streaming
-use PhpOffice\PhpSpreadsheet\Reader\Xlsx; 
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) {
         $tempFile = $_FILES['archivo']['tmp_name'];
@@ -33,52 +34,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Descomponer los datos en variables según su posición
             list(
-                $mun_dig_est,
-                $cod_dane_ieSede,
-                $nom_ie_est,
-                $cod_dane_ieSede_2,
-                $nom_sede_est,
-                $grado_est,
-                $tip_doc_est,
-                $num_doc_est,
-                $nom_ape_est,
-                $nom_ape2_est,
-                $dir_est,
-                $tel1_est,
-                $mun_res_est,
-                $estrato_est,
-                $zona_est,
-                $fec_nac_est,
-                $gen_est,
-                $etnia_est,
-                $victima_est,
-                $caracter_media_est,
-                $especialidad_caracter_est
+                , // Columna A
+                , // Columna B
+                $mun_dig_est, // Columna C
+                , // Columna D
+                , // Columna E
+                , // Columna F
+                , // Columna G
+                , // Columna H
+                , // Columna I
+                , // Columna J
+                $tip_doc_est, // Columna K
+                $num_doc_est, // Columna L
+                , // Columna M y posteriores
             ) = $data;
+
+            // Añadir la fecha actual
+            $fecha_dig_est = date('Y-m-d');
 
             // Añadir los datos actuales al lote
             $loteDatos[] = [
                 'mun_dig_est' => $mun_dig_est,
-                'cod_dane_ieSede' => $cod_dane_ieSede,
-                'nom_ie_est' => $nom_ie_est,
-                'cod_dane_ieSede_2' => $cod_dane_ieSede_2,
-                'nom_sede_est' => $nom_sede_est,
-                'grado_est' => $grado_est,
                 'tip_doc_est' => $tip_doc_est,
                 'num_doc_est' => $num_doc_est,
-                'nom_ape_est' => $nom_ape_est,
-                'nom_ape2_est' => $nom_ape2_est,
-                'dir_est' => $dir_est,
-                'tel1_est' => $tel1_est,
-                'mun_res_est' => $mun_res_est,
-                'estrato_est' => $estrato_est,
-                'zona_est' => $zona_est,
-                'fec_nac_est' => $fec_nac_est,
-                'gen_est' => $gen_est,
-                'etnia_est' => $etnia_est,
-                'victima_est' => $victima_est,
-                'caracter_media_est' => $caracter_media_est,
-                'especialidad_caracter_est' => $especialidad_caracter_est
+                'fecha_dig_est' => $fecha_dig_est,
+                // Otros campos que desees agregar
             ];
 
             // Verificar si el lote alcanzó el tamaño definido
@@ -116,3 +96,4 @@ function procesarLote($loteDatos) {
         'loteDatos' => $loteDatos
     ]);
 }
+?>
