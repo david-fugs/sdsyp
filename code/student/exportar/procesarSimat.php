@@ -1,43 +1,37 @@
 <?php
-ini_set('memory_limit', '1G');  // Opcional: Incrementar límite de memoria si es necesario
+ini_set('memory_limit', '2G');  // Incrementar el límite de memoria si es necesario
 
+require '../../vendor/autoload.php';  // Cargar la librería de PhpSpreadsheet
+
+// Utilizar el lector de PhpSpreadsheet en modo de streaming
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx; 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) {
         $tempFile = $_FILES['archivo']['tmp_name'];
 
-        require '../../vendor/autoload.php';
+        // Crear el lector y configurar para que lea solo datos (sin estilos)
+        $reader = new Xlsx();
+        $reader->setReadDataOnly(true);
 
-        // Crear el lector en modo de streaming
-        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($tempFile);
-        $reader->setReadDataOnly(true); // Lee solo los datos (sin estilos, para mayor eficiencia)
-
-        // Crear el lector con modo iterativo
+        // Cargar el archivo (modo de lectura eficiente)
         $spreadsheet = $reader->load($tempFile);
         $sheet = $spreadsheet->getActiveSheet();
 
         $loteTamano = 1000; // Número de filas por lote
-        $maxIterations = PHP_INT_MAX; // Sin límite de iteraciones
-        $iterationCount = 0; // Contador de iteraciones
         $loteDatos = []; // Inicializar el array para los datos del lote
-        $filaInicial = 2; // Fila inicial de los datos en la hoja de cálculo
-        
-        foreach ($sheet->getRowIterator($filaInicial) as $row) {
-            // Incrementar el contador de iteraciones
-            $iterationCount++;
-            
-            // Salir si se alcanza el límite de iteraciones
-            // En este caso, PHP_INT_MAX permite procesar todas las filas
-            // Puedes establecer un límite mayor si deseas restringir la cantidad de filas procesadas
-            
+        $filaInicial = 2; // Fila inicial de los datos (si la primera fila es de encabezados)
+
+        foreach ($sheet->getRowIterator($filaInicial) as $rowIndex => $row) {
+            // Obtener celdas de la fila actual
             $cells = $row->getCellIterator();
-            $cells->setIterateOnlyExistingCells(false);
-        
+            $cells->setIterateOnlyExistingCells(false); // Asegurar que se lean todas las celdas, incluso vacías
+
             $data = [];
             foreach ($cells as $cell) {
                 $data[] = $cell->getValue();
             }
-        
-            // Descomponer los datos en las variables correspondientes
+
+            // Descomponer los datos en variables según su posición
             list(
                 $mun_dig_est,
                 $cod_dane_ieSede,
@@ -61,8 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $caracter_media_est,
                 $especialidad_caracter_est
             ) = $data;
-        
-            // Preparar los datos del lote
+
+            // Añadir los datos actuales al lote
             $loteDatos[] = [
                 'mun_dig_est' => $mun_dig_est,
                 'cod_dane_ieSede' => $cod_dane_ieSede,
@@ -86,30 +80,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'caracter_media_est' => $caracter_media_est,
                 'especialidad_caracter_est' => $especialidad_caracter_est
             ];
-        
+
             // Verificar si el lote alcanzó el tamaño definido
             if (count($loteDatos) >= $loteTamano) {
-                // Imprimir el lote de datos actual
-                echo json_encode([
-                    'estado' => 'procesado',
-                    'mensaje' => 'Lote de datos procesado.',
-                    'loteDatos' => $loteDatos
-                ]);
-        
-                // Limpiar los datos del lote para continuar con el siguiente grupo
-                $loteDatos = [];
+                procesarLote($loteDatos); // Procesar el lote
+                $loteDatos = []; // Vaciar el array para el siguiente lote
+                gc_collect_cycles(); // Forzar la recolección de basura
             }
         }
-        
-        // Si hay datos restantes en el lote después de salir del bucle, imprimirlos
+
+        // Procesar el lote restante (si hay)
         if (!empty($loteDatos)) {
-            echo json_encode([
-                'estado' => 'procesado',
-                'mensaje' => 'Lote final procesado.',
-                'loteDatos' => $loteDatos
-            ]);
+            procesarLote($loteDatos);
         }
-        
+
     } else {
         echo json_encode([
             'estado' => 'error',
@@ -120,5 +104,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo json_encode([
         'estado' => 'error',
         'mensaje' => 'Método de solicitud no permitido.'
+    ]);
+}
+
+// Función para procesar un lote de datos
+function procesarLote($loteDatos) {
+    // Aquí puedes procesar el lote o guardarlo en la base de datos
+    echo json_encode([
+        'estado' => 'procesado',
+        'mensaje' => 'Lote de datos procesado.',
+        'loteDatos' => $loteDatos
     ]);
 }

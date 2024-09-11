@@ -193,7 +193,22 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
             <ul class="menu_items submenu">
               <a href="code/student/showPersonal.php" class="nav_link sublink">Aplicar Encuesta</a>
-              <a href="code/student/preescolar/checkPreescolar.php" class="nav_link sublink">Encuestas Realizadas</a>
+              <a href="code/student/personal/checkPersonal.php" class="nav_link sublink">Encuestas Realizadas</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-sharp fa-solid fa-book"></i>
+              </span>
+
+              <span class="navlink">Preguntas Estudiante</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/student/showQuestions.php" class="nav_link sublink">Aplicar Encuesta</a>
+              <a href="code/student/question/checkQuestion.php" class="nav_link sublink">Encuestas Realizadas</a>
             </ul>
           </li>
 

@@ -80,7 +80,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
         <div class="flex">
             <div class="box">
-                <form action="showPersonal.php" method="get">
+                <form action="showPerformance.php" method="get">
                     <input name="num_doc_est" type="text" placeholder="Ingrese el Documento" size=20>
                     <input name="nom_ape_est" type="text" placeholder="Escriba el nombre del estudiante" size=30>
                     <input name="grado_est" type="text" placeholder="Grado">
@@ -123,18 +123,18 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             $paginacion->records($num_registros);
             $paginacion->records_per_page($resul_x_pagina);
 
-            $consulta = "SELECT estudiantes.*, usuarios.*, ie.*, personal.fecha_dig_personal, personal.estado_personal
+            $consulta = "SELECT estudiantes.*, usuarios.*, ie.*, preguntas.fecha_dig_preguntas, preguntas.estado_preguntas
             FROM estudiantes 
             INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
             INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
-            LEFT JOIN personal ON estudiantes.num_doc_est = personal.num_doc_est
+            LEFT JOIN preguntas ON estudiantes.num_doc_est = preguntas.num_doc_est
             INNER JOIN usuarios ON estudiantes.id_usu = usuarios.id
             WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
             AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
             AND (estudiantes.grado_est LIKE '%$grado_est%')
             AND ie.cod_dane_ie = $cod_dane_ie 
             GROUP BY estudiantes.num_doc_est
-            ORDER BY ISNULL(personal.fecha_dig_personal) DESC, personal.fecha_dig_personal ASC, estudiantes.num_doc_est ASC
+            ORDER BY ISNULL(preguntas.fecha_dig_preguntas) DESC, preguntas.fecha_dig_preguntas ASC, estudiantes.num_doc_est ASC
 
                 
                  LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . "," . $resul_x_pagina;
@@ -163,8 +163,8 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
                 $i = 1;
                 while ($row = mysqli_fetch_array($result)) {
-                    $estado_encuesta = $row['estado_personal'] == 1  ? 'REALIZADO' : 'PENDIENTE';
-                    $clase_estado = $row['estado_personal'] == 1 ? 'ok' : 'pendiente';
+                    $estado_encuesta = $row['estado_preguntas'] == 1  ? 'REALIZADO' : 'PENDIENTE';
+                    $clase_estado = $row['estado_preguntas'] == 1 ? 'ok' : 'pendiente';
 
                     echo '
                     <tr>
@@ -174,7 +174,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         <td data-label="GRADO">' . $row['grado_est'] . '</td>
                     ';
                     echo '
-                        <td data-label="APLICAR"><a href="personal/addPersonal.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/aplicar.png" width=28 height=28></a></td>
+                        <td data-label="APLICAR"><a href="question/addQuestion.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/aplicar.png" width=28 height=28></a></td>
                         ';
                     echo '
                         <td data-label="ELIMINAR"><a href="#" onclick="cambiarEstado(' . $row['num_doc_est'] . ')"><img src="../../img/delete1.png" width=28 height=28></a></td>

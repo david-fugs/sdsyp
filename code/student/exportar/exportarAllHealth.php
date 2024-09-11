@@ -3,11 +3,11 @@ require '../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-
+session_start();
 include("../../../conexion.php");
 date_default_timezone_set("America/Bogota");
 $mysqli->set_charset('utf8');
-
+$cod_dane_ie = $_SESSION['cod_dane_ie'];
 function getColumnLetter($index)
 {
     $letter = '';
@@ -29,7 +29,12 @@ function Si1No2($value)
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
-$sql = "SELECT * FROM familiasalud  ORDER BY num_doc_est ASC";
+$sql = "SELECT * FROM familiasalud  INNER JOIN estudiantes ON familiasalud.num_doc_est = estudiantes.num_doc_est 
+        INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
+        INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
+        WHERE ie.cod_dane_ie = $cod_dane_ie 
+         ORDER BY familiasalud.num_doc_est ASC 
+            ";
 // Ejecutar la consulta
 $res = mysqli_query($mysqli, $sql);
 // Verificar si la consulta se ejecutó correctamente

@@ -3,10 +3,11 @@ require '../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-
+session_start();
 include("../../../conexion.php");
 date_default_timezone_set("America/Bogota");
 $mysqli->set_charset('utf8');
+$cod_dane_ie = $_SESSION['cod_dane_ie'];
 
 function getColumnLetter($index)
 {
@@ -130,7 +131,12 @@ $sheet->getDefaultRowDimension()->setRowHeight(25);
 
 
 
-$sql = "SELECT * FROM preescolar ";
+$sql = "SELECT * FROM preescolar
+         INNER JOIN estudiantes ON preescolar.num_doc_est = estudiantes.num_doc_est 
+        INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
+        INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
+        WHERE ie.cod_dane_ie = $cod_dane_ie 
+ ";
 // Ejecutar la consulta
 $res = mysqli_query($mysqli, $sql);
 

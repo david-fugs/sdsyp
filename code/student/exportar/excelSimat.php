@@ -24,7 +24,7 @@ $('#uploadForm').on('submit', function(e) {
     e.preventDefault();
     
     let partes = ['primera', 'segunda', 'tercera'];
-    let parteActual = 0;
+    let parteActual = 2;
     
     function procesarParte(parte) {
         let formData = new FormData($('#uploadForm')[0]);

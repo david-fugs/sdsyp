@@ -1,9 +1,9 @@
 <?php
 require '../../vendor/autoload.php';
-
+session_start();
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-
+$cod_dane_ie = $_SESSION['cod_dane_ie'];
 include("../../../conexion.php");
 
 date_default_timezone_set("America/Bogota");
@@ -36,7 +36,13 @@ $sheet = $spreadsheet->getActiveSheet();
 
 $sql = "SELECT entornohogar.*, estudiantes.nom_ape_est 
 FROM entornohogar 
-JOIN estudiantes ON entornohogar.num_doc_est = estudiantes.num_doc_est ORDER BY num_doc_est ASC";
+JOIN estudiantes ON entornohogar.num_doc_est = estudiantes.num_doc_est
+ INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
+        INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
+        WHERE ie.cod_dane_ie = $cod_dane_ie 
+         ORDER BY entornohogar.num_doc_est ASC 
+            ";
+
 
 // Ejecutar la consulta
 $res = mysqli_query($mysqli, $sql);

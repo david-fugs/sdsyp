@@ -1,13 +1,16 @@
 <?php
 require '../../vendor/autoload.php';
+session_start();
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-session_start();
+
 include("../../../conexion.php");
 date_default_timezone_set("America/Bogota");
 $mysqli->set_charset('utf8');
 $cod_dane_ie = $_SESSION['cod_dane_ie'];
+
+
 function getColumnLetter($index)
 {
     $letter = '';
@@ -17,6 +20,7 @@ function getColumnLetter($index)
     }
     return $letter;
 }
+
 function Si1No2($value)
 {
     if ($value == 1) {
@@ -25,29 +29,13 @@ function Si1No2($value)
         return "NO";
     }
 }
+
+
 // Crear una nueva instancia de Spreadsheet
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
-
-$sql = "SELECT  prepostnatales.*, estudiantes.nom_ape_est 
-        FROM prepostnatales 
-        JOIN estudiantes ON prepostnatales.num_doc_est = estudiantes.num_doc_est
-         INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
-        INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
-        WHERE ie.cod_dane_ie = $cod_dane_ie 
-         ORDER BY prepostnatales.num_doc_est ASC 
-            ";
-   
-// Ejecutar la consulta
-$res = mysqli_query($mysqli, $sql);
-// Verificar si la consulta se ejecutó correctamente
-if ($res === false) {
-    // Mostrar un mensaje de error si la consulta falla
-    echo "Error en la consulta: " . mysqli_error($mysqli);
-    exit;
-}
 // Aplicar color de fondo a las celdas A1 a AL1
-$sheet->getStyle('A1:L1')->applyFromArray([
+$sheet->getStyle('A1:I1')->applyFromArray([
     'fill' => [
         'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
         'startColor' => [
@@ -60,7 +48,8 @@ $sheet->getStyle('A1:L1')->applyFromArray([
 $boldFontStyle = [
     'bold' => true,
 ];
-$sheet->getStyle('A1:L1')->applyFromArray(['font' => $boldFontStyle]);
+$sheet->getStyle('A2:I2')->applyFromArray(['font' => $boldFontStyle]);
+
 // Establecer estilos para los encabezados
 $styleHeader = [
     'font' => [
@@ -78,23 +67,19 @@ $styleHeader = [
 ];
 
 // Aplicar el estilo a las celdas de encabezado
-$sheet->getStyle('A1:L1')->applyFromArray(['font' => $styleHeader, 'fill' => $styleHeader, 'alignment' => $styleHeader]);
-
-// // Definir los encabezados de columna
+$sheet->getStyle('A1:I1')->applyFromArray(['font' => $styleHeader, 'fill' => $styleHeader, 'alignment' => $styleHeader]);
 
 $sheet->setCellValue('A1', 'NOMBRE ESTUDIANTE');
 $sheet->setCellValue('B1', 'DOCUMENTO ESTUDIANTE');
 $sheet->setCellValue('C1', 'MUNICIPIO DILIGENCIA');
 $sheet->setCellValue('D1', 'NOMBRE ENCUESTADOR');
 
-$sheet->setCellValue('E1', 'EDAD MADRE');
-$sheet->setCellValue('F1', 'GESTACION EN MESES');
-$sheet->setCellValue('G1', 'EL EMBARAZO PRESENTO');
-$sheet->setCellValue('H1', 'LACTANCIA EN MESES');
-$sheet->setCellValue('I1', 'EL ESTUDIANTE GATEO');
-$sheet->setCellValue('J1', 'EL ESTUDIANTE CAMINO');
-$sheet->setCellValue('K1', 'FECHA CREACION');
-$sheet->setCellValue('L1', 'FECHA EDICION');
+$sheet->setCellValue('E1', 'PARA QUE ERES BUENO');
+$sheet->setCellValue('F1', 'QUE QUIERES SER CUANDO SEAS GRANDE');
+$sheet->setCellValue('G1', 'QUE TE GUSTA');
+$sheet->setCellValue('H1', 'RECOMENDACIONES DOCENTE');
+$sheet->setCellValue('I1', 'CONSENTIMIENTO PADRES');
+
 
 
 // Ajustar el ancho de las columna
@@ -102,42 +87,55 @@ $sheet->getColumnDimension('A')->setWidth(35);
 $sheet->getColumnDimension('B')->setWidth(25);
 $sheet->getColumnDimension('C')->setWidth(25);
 $sheet->getColumnDimension('D')->setWidth(25);
-$sheet->getColumnDimension('E')->setWidth(20);
+$sheet->getColumnDimension('E')->setWidth(25);
 $sheet->getColumnDimension('F')->setWidth(25);
 $sheet->getColumnDimension('G')->setWidth(25);
-$sheet->getColumnDimension('H')->setWidth(25);
+$sheet->getColumnDimension('H')->setWidth(40);
 $sheet->getColumnDimension('I')->setWidth(25);
-$sheet->getColumnDimension('J')->setWidth(25);
-$sheet->getColumnDimension('K')->setWidth(25);
-$sheet->getColumnDimension('L')->setWidth(25);
-
 $sheet->getDefaultRowDimension()->setRowHeight(25);
 
-$nombreEst = '';
+
+@$num_doc_est = $_GET['num_doc_est'] ?? '';
+@$nom_ape_est = $_GET['nom_ape_est'] ?? '';
+@$grado_est = $_GET['grado_est'] ?? '';
+
+$sql = "SELECT * FROM preguntas 
+        INNER JOIN estudiantes ON preguntas.num_doc_est = estudiantes.num_doc_est 
+        INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
+        INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
+        WHERE ie.cod_dane_ie = $cod_dane_ie 
+         ORDER BY num_doc_est ASC 
+";
+// Ejecutar la consulta
+$res = mysqli_query($mysqli, $sql);
+
+// Verificar si la consulta se ejecutó correctamente
+if ($res === false) {
+    // Mostrar un mensaje de error si la consulta falla
+    echo "Error en la consulta: " . mysqli_error($mysqli);
+    exit;
+}
 $rowIndex = 2;
 while ($row = mysqli_fetch_array($res, MYSQLI_ASSOC)) {
+
 
     $nombreEst = $row['nom_ape_est'];
     $sheet->setCellValue('A' . $rowIndex, $row['nom_ape_est']);
     $sheet->setCellValue('B' . $rowIndex, $row['num_doc_est']);
-    $sheet->setCellValue('C' . $rowIndex, $row['mun_dig_prePostnatales']);
-    $sheet->setCellValue('D' . $rowIndex, $row['nombre_encuestador_prePostnatales']);
-    $sheet->setCellValue('E' . $rowIndex, $row['edad_madre_prePostnatales']);
-    $sheet->setCellValue('F' . $rowIndex, $row['gestacion_meses_prePostnatales']);
-    $sheet->setCellValue('G' . $rowIndex, $row['embarazo_mama_prePostnatales']);
-    $sheet->setCellValue('H' . $rowIndex, $row['lactancia_mama_prePostnatales']);
-    $sheet->setCellValue('I' . $rowIndex, $row['gateo_prePostnatales']);
-    $sheet->setCellValue('J' . $rowIndex, $row['camino_prePostnatales']);
-    $sheet->setCellValue('K' . $rowIndex, $row['fecha_alta_prePostnatales']);
-    $sheet->setCellValue('L' . $rowIndex, $row['fecha_edit_prePostnatales']);
+    $sheet->setCellValue('C' . $rowIndex, $row['mun_dig_preguntas']);
+    $sheet->setCellValue('D' . $rowIndex, $row['nombre_encuestador_preguntas']);
 
-
-    $sheet->getStyle('A' . $rowIndex . ':J' . $rowIndex . '')->applyFromArray(['font' => $boldFontStyle]);
+    $sheet->setCellValue('E' . $rowIndex, $row['bueno_preguntas']);
+    $sheet->setCellValue('F' . $rowIndex, $row['grande_preguntas']);
+    $sheet->setCellValue('G' . $rowIndex, $row['gustar_preguntas']);
+    $sheet->setCellValue('H' . $rowIndex, $row['recomendacion_preguntas']);
+    $sheet->setCellValue('I' . $rowIndex, $row['consentimiento_preguntas']);
+    $sheet->getStyle('A' . $rowIndex . ':I' . $rowIndex . '')->applyFromArray(['font' => $boldFontStyle]);
     $rowIndex++;
 }
 
 
-$filename = 'PrePostNatales.xlsx';
+$filename = 'PreguntasEst' . $nombreEst . '.xlsx';
 $writer = new Xlsx($spreadsheet);
 
 // Set the headers for file download

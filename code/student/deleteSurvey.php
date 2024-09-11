@@ -42,6 +42,16 @@ else if($campo == "preescolar"){
     $id_campo = 'id_preescolar';
     $ruta = 'viewPreescolarSurvey.php?num_doc_est=' . $_GET['num_doc_est'];
 }
+else if($campo == "personal"){
+    $tabla = 'personal';
+    $id_campo = 'id_personal';
+    $ruta = 'viewPersonalSurvey.php?num_doc_est=' . $_GET['num_doc_est'];
+}
+else if($campo == "preguntas"){
+    $tabla = 'preguntas';
+    $id_campo = 'id_preguntas';
+    $ruta = 'viewQuestionSurvey.php?num_doc_est=' . $_GET['num_doc_est'];
+}
 
 
 if ($stmt = $mysqli->prepare("DELETE FROM $tabla WHERE $id_campo = ?")) {
