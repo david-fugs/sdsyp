@@ -47,7 +47,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         }
 
         .btn-verde {
-            background-color: #4CAF50;
+            background-color:#4CAF50;
             color: white;
             padding: 14px 0px;
             border: none;
@@ -64,12 +64,12 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
     <script>
         function cambiarEstado(num_doc_est) {
             if (confirm('¿Está seguro que desea cambiar el estado del estudiante?')) {
-                window.location.href = 'cambiarEstado.php?num_doc_est=' + num_doc_est + '&campo=' + 'prepostnatales' + '&valor=' + 1;
+                window.location.href = 'cambiarEstado.php?num_doc_est=' + num_doc_est + '&campo=' + 'prepostnatales' + '&valor=' + 0;
             }
         }
 
         function cesados() {
-            window.location.href = 'showprePostnatalesCesados.php';
+            window.location.href = 'showprePostnatales.php';
         }
     </script>
 </head>
@@ -96,12 +96,12 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
         <div class="flex mt-3">
             <div class="box">
-                <form action="showprePostnatales.php" method="get">
+                <form action="showprePostnatalesCesados.php" method="get">
                     <input name="num_doc_est" type="text" placeholder="Ingrese el Documento" size=20>
                     <input name="nom_ape_est" type="text" placeholder="Escriba el nombre del estudiante" size=30>
                     <input name="grado_est" type="text" placeholder="Grado">
                     <input value="Buscar" type="submit">
-                    <input class="ml-5 btn-verde" value="Ver cesados" onclick="cesados()">
+                    <input class="ml-5 btn-verde" value="Volver a principal" onclick="cesados()">
 
                 </form>
             </div>
@@ -129,8 +129,8 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
           AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
           AND (estudiantes.grado_est LIKE '%$grado_est%')
           AND ie.cod_dane_ie = $cod_dane_ie 
-            AND estudiantes.estado_prepostnatales = 0        
-  ORDER BY ISNULL(prePostnatales.fecha_alta_prePostnatales) DESC, prePostnatales.fecha_alta_prePostnatales ASC, estudiantes.num_doc_est ASC";
+          AND estudiantes.estado_prepostnatales = 1
+          ORDER BY ISNULL(prePostnatales.fecha_alta_prePostnatales) DESC, prePostnatales.fecha_alta_prePostnatales ASC, estudiantes.num_doc_est ASC";
         $res = $mysqli->query($query);
         $num_registros = mysqli_num_rows($res);
         $resul_x_pagina = 50;
@@ -150,7 +150,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                  AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
                  AND (estudiantes.grado_est LIKE '%$grado_est%')
                  AND ie.cod_dane_ie = $cod_dane_ie 
-                 AND estudiantes.estado_prepostnatales = 0
+                 AND estudiantes.estado_prepostnatales = 1
                  ORDER BY ISNULL(prePostnatales.fecha_alta_prePostnatales) DESC, prePostnatales.fecha_alta_prePostnatales ASC, estudiantes.num_doc_est ASC
                  LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . "," . $resul_x_pagina;
             $result = $mysqli->query($consulta);
@@ -169,9 +169,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                     <th>DTO</th>
                                     <th>ESTUDIANTE</th>
                                     <th>GRADO</th>
-                                    <th>APLICAR</th>
-                                    <th>ELIMINAR</th>
-                                    <th>REALIZADO</th>
+                                    <th>ACTIVAR</th>
                                 </tr>
                             </thead>
                             <tbody>";
@@ -187,9 +185,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         <td data-label="DTO">' . $row['num_doc_est'] . '</td>
                         <td data-label="ESTUDIANTE">' . utf8_encode($row['nom_ape_est']) . '</td>
                         <td data-label="GRADO">' . $row['grado_est'] . '</td>
-                        <td data-label="APLICAR"><a href="addprePostnatales.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/aplicar.png" width=28 height=28></a></td>
                         <td data-label="ELIMINAR"><a href="#" onclick="cambiarEstado(' . $row['num_doc_est'] . ')"><img src="../../img/delete1.png" width=28 height=28></a></td>
-                        <td data-label="REALIZADO" class="' . $clase_estado . '">' . $estado_encuesta . '</td>
                     </tr>';
                     $i++;
                 }

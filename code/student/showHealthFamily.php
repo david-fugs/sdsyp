@@ -45,15 +45,31 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             background-color: orange;
             color: white;
         }
+        
+        .btn-verde {
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 0px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-verde:hover {
+            background-color: #90ee90;
+            /* Cambiar a un tono más claro al pasar el cursor */
+        }
     </style>
     <script>
-        function cambiarEstado(num_doc_est) {
+         function cambiarEstado(num_doc_est) {
             if (confirm('¿Está seguro que desea cambiar el estado del estudiante?')) {
-                // Hacer la solicitud para cambiar el estado usando AJAX o redirigir y luego recargar
-                window.location.href = 'cambiarEstado.php?num_doc_est=' + num_doc_est;
-                // Después de cambiar el estado, recargar la página
-                window.location.reload();
+                window.location.href = 'cambiarEstado.php?num_doc_est=' + num_doc_est + '&campo=' + 'familiasalud' + '&valor=' + 1;
             }
+        }
+
+        function cesados() {
+            window.location.href = 'showHealthFamilyCesados.php';
         }
     </script>
 </head>
@@ -85,6 +101,8 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                     <input name="nom_ape_est" type="text" placeholder="Escriba el nombre del estudiante" size=30>
                     <input name="grado_est" type="text" placeholder="Grado">
                     <input value="Buscar" type="submit">
+                    <input class="ml-5 btn-verde" value="Ver cesados" onclick="cesados()">
+
                 </form>
             </div>
         </div>
@@ -111,8 +129,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
           AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
           AND (estudiantes.grado_est LIKE '%$grado_est%')
           AND ie.cod_dane_ie = $cod_dane_ie 
-          AND (familiasalud.num_doc_est IS NULL OR familiasalud.estado_familiasalud= 1)
-          AND (familiasalud.num_doc_est IS NULL OR familiasalud.estado_familiasalud = 1)
+            AND estudiantes.estado_familiasalud = 0    
           ORDER BY ISNULL(familiasalud.fechacreacion_familiasalud) ASC, estudiantes.num_doc_est ASC";
 
 
@@ -144,6 +161,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
             AND (estudiantes.grado_est LIKE '%$grado_est%')
             AND ie.cod_dane_ie = $cod_dane_ie
+            AND estudiantes.estado_familiasalud = 0  
             GROUP BY estudiantes.num_doc_est
             ORDER BY ISNULL(familiasalud.fechacreacion_familiasalud) DESC, familiasalud.fechacreacion_familiasalud ASC, estudiantes.num_doc_est ASC
                     

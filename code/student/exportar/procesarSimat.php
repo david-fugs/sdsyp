@@ -36,17 +36,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             list(
                 , // Columna A
                 , // Columna B
-                $mun_dig_est, // Columna C
-                , // Columna D
-                , // Columna E
-                , // Columna F
-                , // Columna G
-                , // Columna H
-                , // Columna I
-                , // Columna J
-                $tip_doc_est, // Columna K
-                $num_doc_est, // Columna L
-                , // Columna M y posteriores
+                ,
+                ,
+                ,
+                ,
+                ,
+                
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                $grande
+
+
             ) = $data;
 
             // Añadir la fecha actual
@@ -54,10 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Añadir los datos actuales al lote
             $loteDatos[] = [
-                'mun_dig_est' => $mun_dig_est,
-                'tip_doc_est' => $tip_doc_est,
-                'num_doc_est' => $num_doc_est,
-                'fecha_dig_est' => $fecha_dig_est,
+                'grande' => $grande,
                 // Otros campos que desees agregar
             ];
 

@@ -45,7 +45,6 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             background-color: orange;
             color: white;
         }
-
         .btn-verde {
             background-color: #4CAF50;
             color: white;
@@ -62,14 +61,14 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         }
     </style>
     <script>
-        function cambiarEstado(num_doc_est) {
+          function cambiarEstado(num_doc_est) {
             if (confirm('¿Está seguro que desea cambiar el estado del estudiante?')) {
-                window.location.href = 'cambiarEstado.php?num_doc_est=' + num_doc_est + '&campo=' + 'prepostnatales' + '&valor=' + 1;
+                window.location.href = 'cambiarEstado.php?num_doc_est=' + num_doc_est + '&campo=' + 'educacion' + '&valor=' + 0;
             }
         }
 
         function cesados() {
-            window.location.href = 'showprePostnatalesCesados.php';
+            window.location.href = 'showEducation.php';
         }
     </script>
 </head>
@@ -94,19 +93,17 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
         </div>
 
-        <div class="flex mt-3">
+        <div class="flex">
             <div class="box">
-                <form action="showprePostnatales.php" method="get">
+                <form action="showEducationCesados.php" method="get">
                     <input name="num_doc_est" type="text" placeholder="Ingrese el Documento" size=20>
                     <input name="nom_ape_est" type="text" placeholder="Escriba el nombre del estudiante" size=30>
                     <input name="grado_est" type="text" placeholder="Grado">
                     <input value="Buscar" type="submit">
                     <input class="ml-5 btn-verde" value="Ver cesados" onclick="cesados()">
-
                 </form>
             </div>
         </div>
-
         <br /><a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="Regresar" /></a>
 
         <?php
@@ -119,18 +116,23 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         @$nom_ape_est = $_GET['nom_ape_est'] ?? '';
         @$grado_est = $_GET['grado_est'] ?? '';
 
-        $query = "SELECT estudiantes.*, usuarios.*, ie.*, prePostnatales.fecha_alta_prePostnatales, prePostnatales.estado_prePostnatales 
+
+        $query = "SELECT estudiantes.*, usuarios.*, ie.*
           FROM estudiantes 
           INNER JOIN ieSede ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede 
           INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie 
-          LEFT JOIN prePostnatales ON estudiantes.num_doc_est = prePostnatales.num_doc_est
+         
           INNER JOIN usuarios ON estudiantes.id_usu = usuarios.id
           WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
           AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
           AND (estudiantes.grado_est LIKE '%$grado_est%')
-          AND ie.cod_dane_ie = $cod_dane_ie 
-            AND estudiantes.estado_prepostnatales = 0        
-  ORDER BY ISNULL(prePostnatales.fecha_alta_prePostnatales) DESC, prePostnatales.fecha_alta_prePostnatales ASC, estudiantes.num_doc_est ASC";
+          AND estudiantes.estado_educacion = 1  
+          AND ie.cod_dane_ie = $cod_dane_ie ";
+          
+        // AND (prePostnatales.num_doc_est IS NULL OR prePostnatales.estado_prePostnatales = 1)
+
+        // ORDER BY ISNULL(prePostnatales.fecha_alta_prePostnatales) DESC, prePostnatales.fecha_alta_prePostnatales ASC, estudiantes.num_doc_est ASC";
+
         $res = $mysqli->query($query);
         $num_registros = mysqli_num_rows($res);
         $resul_x_pagina = 50;
@@ -140,18 +142,23 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             $paginacion->records($num_registros);
             $paginacion->records_per_page($resul_x_pagina);
 
-            $consulta = "SELECT estudiantes.*, usuarios.*, ie.*, prePostnatales.fecha_alta_prePostnatales, prePostnatales.estado_prePostnatales 
-                 FROM estudiantes 
-                 INNER JOIN ieSede ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede 
-                 INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie 
-                 LEFT JOIN prePostnatales ON estudiantes.num_doc_est = prePostnatales.num_doc_est
-                 INNER JOIN usuarios ON estudiantes.id_usu = usuarios.id
-                 WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
-                 AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
-                 AND (estudiantes.grado_est LIKE '%$grado_est%')
-                 AND ie.cod_dane_ie = $cod_dane_ie 
-                 AND estudiantes.estado_prepostnatales = 0
-                 ORDER BY ISNULL(prePostnatales.fecha_alta_prePostnatales) DESC, prePostnatales.fecha_alta_prePostnatales ASC, estudiantes.num_doc_est ASC
+            $consulta = "
+            SELECT estudiantes.*, usuarios.*, ie.*, 
+                   MAX(educacion.fechacreacion_educacion) AS fechacreacion_educacion, 
+                   MAX(educacion.estado_educacion) AS estado_educacion
+            FROM estudiantes 
+            INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
+            INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
+            LEFT JOIN educacion ON estudiantes.num_doc_est = educacion.num_doc_est
+            INNER JOIN usuarios ON estudiantes.id_usu = usuarios.id
+            WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
+            AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
+            AND (estudiantes.grado_est LIKE '%$grado_est%')
+            AND ie.cod_dane_ie = $cod_dane_ie
+            AND estudiantes.estado_educacion = 1
+            GROUP BY estudiantes.num_doc_est
+            ORDER BY ISNULL(MAX(educacion.fechacreacion_educacion)) DESC, MAX(educacion.fechacreacion_educacion) ASC, estudiantes.num_doc_est ASC
+                        
                  LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . "," . $resul_x_pagina;
             $result = $mysqli->query($consulta);
 
@@ -169,17 +176,15 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                     <th>DTO</th>
                                     <th>ESTUDIANTE</th>
                                     <th>GRADO</th>
-                                    <th>APLICAR</th>
-                                    <th>ELIMINAR</th>
-                                    <th>REALIZADO</th>
+                                    <th>ACTIVAR</th>
                                 </tr>
                             </thead>
                             <tbody>";
 
                 $i = 1;
                 while ($row = mysqli_fetch_array($result)) {
-                    $estado_encuesta = $row['fecha_alta_prePostnatales'] ? 'OK' : 'PENDIENTE';
-                    $clase_estado = $row['fecha_alta_prePostnatales'] ? 'ok' : 'pendiente';
+                    $estado_encuesta = $row['estado_educacion']== 1 ? 'REALIZADA' : 'PENDIENTE';
+                    $clase_estado = $row['estado_educacion']== 1 ? 'ok' : 'pendiente';
 
                     echo '
                     <tr>
@@ -187,10 +192,13 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         <td data-label="DTO">' . $row['num_doc_est'] . '</td>
                         <td data-label="ESTUDIANTE">' . utf8_encode($row['nom_ape_est']) . '</td>
                         <td data-label="GRADO">' . $row['grado_est'] . '</td>
-                        <td data-label="APLICAR"><a href="addprePostnatales.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/aplicar.png" width=28 height=28></a></td>
-                        <td data-label="ELIMINAR"><a href="#" onclick="cambiarEstado(' . $row['num_doc_est'] . ')"><img src="../../img/delete1.png" width=28 height=28></a></td>
-                        <td data-label="REALIZADO" class="' . $clase_estado . '">' . $estado_encuesta . '</td>
-                    </tr>';
+                    ';
+                    echo '
+                    ';
+                echo '
+                    <td data-label="ELIMINAR"><a href="#" onclick="cambiarEstado(' . $row['num_doc_est'] . ')"><img src="../../img/delete1.png" width=28 height=28></a></td>
+                </tr>';
+                    
                     $i++;
                 }
 

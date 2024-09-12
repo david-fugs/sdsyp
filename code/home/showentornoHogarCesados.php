@@ -62,12 +62,12 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
     <script>
          function cambiarEstado(num_doc_est) {
             if (confirm('¿Está seguro que desea cambiar el estado del estudiante?')) {
-                window.location.href = '../student/cambiarEstado.php?num_doc_est=' + num_doc_est + '&campo=' + 'entornohogar' + '&valor=' + 1;
+                window.location.href = '../student/cambiarEstado.php?num_doc_est=' + num_doc_est + '&campo=' + 'entornohogar' + '&valor=' + 0;
             }
         }
 
         function cesados() {
-            window.location.href = 'showentornoHogarCesados.php';
+            window.location.href = 'showentornoHogar.php';
         }
     </script>
 </head>
@@ -93,12 +93,12 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
     <div class="flex">
         <div class="box">
-            <form action="showentornoHogar.php" method="get">
+            <form action="showentornoHogarCesados.php" method="get">
                 <input name="num_doc_est" type="text"  placeholder="Ingrese el Documento" size=20>
                 <input name="nom_ape_est" type="text"  placeholder="Escriba el nombre del estudiante" size=30>
                 <input name="grado_est" type="text" placeholder="Grado">
                 <input value="Buscar" type="submit">
-                <input class="ml-5 btn-verde" value="Ver cesados" onclick="cesados()">
+                <input class="ml-5 btn-verde" value="Volver a principal" onclick="cesados()">
 
             </form>
         </div>
@@ -125,7 +125,7 @@ $query = "SELECT estudiantes.*, usuarios.*, ie.*, entornoHogar.fecha_alta_hog, e
           AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
           AND (estudiantes.grado_est LIKE '%$grado_est%')
           AND ie.cod_dane_ie = $cod_dane_ie 
-            AND estudiantes.estado_entornohogar = 0   
+            AND estudiantes.estado_entornohogar = 1   
            ORDER BY ISNULL(entornoHogar.fecha_alta_hog) DESC, entornoHogar.fecha_alta_hog ASC, estudiantes.num_doc_est ASC";
 $res = $mysqli->query($query);
 $num_registros = mysqli_num_rows($res);
@@ -146,7 +146,7 @@ if ($res) {
                  AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
                  AND (estudiantes.grado_est LIKE '%$grado_est%')
                  AND ie.cod_dane_ie = $cod_dane_ie 
-                 AND estudiantes.estado_entornohogar = 0   
+                 AND estudiantes.estado_entornohogar = 1   
                  ORDER BY ISNULL(entornoHogar.fecha_alta_hog) DESC, entornoHogar.fecha_alta_hog ASC, estudiantes.num_doc_est ASC
                  LIMIT " .(($paginacion->get_page() - 1) * $resul_x_pagina). "," .$resul_x_pagina;
     $result = $mysqli->query($consulta);
@@ -165,9 +165,7 @@ if ($res) {
                                     <th>DTO</th>
                                     <th>ESTUDIANTE</th>
                                     <th>GRADO</th>
-                                    <th>APLICAR</th>
                                     <th>ELIMINAR</th>
-                                    <th>REALIZADO</th>
                                 </tr>
                             </thead>
                             <tbody>";
@@ -184,9 +182,7 @@ if ($res) {
                         <td data-label="DTO">'.$row['num_doc_est'].'</td>
                         <td data-label="ESTUDIANTE">'.utf8_encode($row['nom_ape_est']).'</td>
                         <td data-label="GRADO">'.$row['grado_est'].'</td>
-                        <td data-label="APLICAR"><a href="addentornoHogar.php?num_doc_est='.$row['num_doc_est'].'"><img src="../../img/aplicar.png" width=28 height=28></a></td>
-                        <td data-label="ELIMINAR"><a href="#" onclick="cambiarEstado('.$row['num_doc_est'].')"><img src="../../img/delete1.png" width=28 height=28></a></td>
-                        <td data-label="REALIZADO" class="'.$clase_estado.'">'.$estado_encuesta.'</td>
+                        <td data-label="ACTIVAR"><a href="#" onclick="cambiarEstado('.$row['num_doc_est'].')"><img src="../../img/delete1.png" width=28 height=28></a></td>
                     </tr>';
             $i++;
         }
