@@ -12,7 +12,7 @@
   --grey-color: #707070;
   --grey-color-light: #aaa;
 }
-body {
+body { 
   background-color: #e7f2fd;
   transition: all 0.5s ease;
 }

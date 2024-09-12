@@ -115,18 +115,18 @@ require_once("../../zebra.php");
 @$nom_ape_est = $_GET['nom_ape_est'] ?? '';
 @$grado_est = $_GET['grado_est'] ?? '';
 
-$query = "SELECT estudiantes.*, usuarios.*, ie.*, entornoHogar.fecha_alta_hog, entornoHogar.estado_hog 
+$query = "SELECT estudiantes.*, usuarios.*, ie.*, entornohogar.fecha_alta_hog, entornohogar.estado_hog 
           FROM estudiantes 
           INNER JOIN ieSede ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede 
           INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie 
-          LEFT JOIN entornoHogar ON estudiantes.num_doc_est = entornoHogar.num_doc_est
+          LEFT JOIN entornohogar ON estudiantes.num_doc_est = entornohogar.num_doc_est
           INNER JOIN usuarios ON estudiantes.id_usu = usuarios.id
           WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
           AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
           AND (estudiantes.grado_est LIKE '%$grado_est%')
           AND ie.cod_dane_ie = $cod_dane_ie 
             AND estudiantes.estado_entornohogar = 0   
-           ORDER BY ISNULL(entornoHogar.fecha_alta_hog) DESC, entornoHogar.fecha_alta_hog ASC, estudiantes.num_doc_est ASC";
+           ORDER BY ISNULL(entornohogar.fecha_alta_hog) DESC, entornohogar.fecha_alta_hog ASC, estudiantes.num_doc_est ASC";
 $res = $mysqli->query($query);
 $num_registros = mysqli_num_rows($res);
 $resul_x_pagina = 50;
@@ -136,18 +136,18 @@ if ($res) {
     $paginacion->records($num_registros);
     $paginacion->records_per_page($resul_x_pagina);
 
-    $consulta = "SELECT estudiantes.*, usuarios.*, ie.*, entornoHogar.fecha_alta_hog, entornoHogar.estado_hog 
+    $consulta = "SELECT estudiantes.*, usuarios.*, ie.*, entornohogar.fecha_alta_hog, entornohogar.estado_hog 
                  FROM estudiantes 
                  INNER JOIN ieSede ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede 
                  INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie 
-                 LEFT JOIN entornoHogar ON estudiantes.num_doc_est = entornoHogar.num_doc_est
+                 LEFT JOIN entornohogar ON estudiantes.num_doc_est = entornohogar.num_doc_est
                  INNER JOIN usuarios ON estudiantes.id_usu = usuarios.id
                  WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
                  AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
                  AND (estudiantes.grado_est LIKE '%$grado_est%')
                  AND ie.cod_dane_ie = $cod_dane_ie 
                  AND estudiantes.estado_entornohogar = 0   
-                 ORDER BY ISNULL(entornoHogar.fecha_alta_hog) DESC, entornoHogar.fecha_alta_hog ASC, estudiantes.num_doc_est ASC
+                 ORDER BY ISNULL(entornohogar.fecha_alta_hog) DESC, entornohogar.fecha_alta_hog ASC, estudiantes.num_doc_est ASC
                  LIMIT " .(($paginacion->get_page() - 1) * $resul_x_pagina). "," .$resul_x_pagina;
     $result = $mysqli->query($consulta);
 
