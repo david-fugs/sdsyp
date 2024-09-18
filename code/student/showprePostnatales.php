@@ -119,18 +119,18 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         @$nom_ape_est = $_GET['nom_ape_est'] ?? '';
         @$grado_est = $_GET['grado_est'] ?? '';
 
-        $query = "SELECT estudiantes.*, usuarios.*, ie.*, prepostnatales.fecha_alta_prePostnatales, prepostnatales.estado_prePostnatales 
+        $query = "SELECT estudiantes.*, usuarios.*, ie.*, prePostnatales.fecha_alta_prePostnatales, prePostnatales.estado_prePostnatales 
           FROM estudiantes 
           INNER JOIN ieSede ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede 
           INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie 
-          LEFT JOIN prepostnatales ON estudiantes.num_doc_est = prepostnatales.num_doc_est
+          LEFT JOIN prePostnatales ON estudiantes.num_doc_est = prePostnatales.num_doc_est
           INNER JOIN usuarios ON estudiantes.id_usu = usuarios.id
           WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
           AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
           AND (estudiantes.grado_est LIKE '%$grado_est%')
           AND ie.cod_dane_ie = $cod_dane_ie 
             AND estudiantes.estado_prepostnatales = 0        
-  ORDER BY ISNULL(prepostnatales.fecha_alta_prePostnatales) DESC, prepostnatales.fecha_alta_prePostnatales ASC, estudiantes.num_doc_est ASC";
+  ORDER BY ISNULL(prePostnatales.fecha_alta_prePostnatales) DESC, prePostnatales.fecha_alta_prePostnatales ASC, estudiantes.num_doc_est ASC";
         $res = $mysqli->query($query);
         $num_registros = mysqli_num_rows($res);
         $resul_x_pagina = 50;
@@ -140,18 +140,18 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             $paginacion->records($num_registros);
             $paginacion->records_per_page($resul_x_pagina);
 
-            $consulta = "SELECT estudiantes.*, usuarios.*, ie.*, prepostnatales.fecha_alta_prePostnatales, prepostnatales.estado_prePostnatales 
+            $consulta = "SELECT estudiantes.*, usuarios.*, ie.*, prePostnatales.fecha_alta_prePostnatales, prePostnatales.estado_prePostnatales 
                  FROM estudiantes 
                  INNER JOIN ieSede ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede 
                  INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie 
-                 LEFT JOIN prepostnatales ON estudiantes.num_doc_est = prePostnatales.num_doc_est
+                 LEFT JOIN prePostnatales ON estudiantes.num_doc_est = prePostnatales.num_doc_est
                  INNER JOIN usuarios ON estudiantes.id_usu = usuarios.id
                  WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
                  AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
                  AND (estudiantes.grado_est LIKE '%$grado_est%')
                  AND ie.cod_dane_ie = $cod_dane_ie 
                  AND estudiantes.estado_prepostnatales = 0
-                 ORDER BY ISNULL(prepostnatales.fecha_alta_prePostnatales) DESC, prepostnatales.fecha_alta_prePostnatales ASC, estudiantes.num_doc_est ASC
+                 ORDER BY ISNULL(prePostnatales.fecha_alta_prePostnatales) DESC, prePostnatales.fecha_alta_prePostnatales ASC, estudiantes.num_doc_est ASC
                  LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . "," . $resul_x_pagina;
             $result = $mysqli->query($consulta);
 

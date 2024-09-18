@@ -212,7 +212,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             </ul>
           </li>
 
-          <!-- <li class="item">
+          <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
                 <i class="fa-sharp-duotone fa-solid fa-file-excel"></i>
@@ -225,7 +225,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             <ul class="menu_items submenu">
               <a href="code/student/exportar/excelSimat.php" class="nav_link sublink">Subir Excel SIMAT</a>
             </ul>
-          </li> -->
+          </li>
 
           <li class="item">
             <div href="#" class="nav_link submenu_item">
