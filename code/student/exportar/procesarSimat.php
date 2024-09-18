@@ -1,6 +1,18 @@
 <?php
 ini_set('memory_limit', '2G');  // Incrementar el límite de memoria si es necesario
+function excelDateToDate($serial) {
+    // Excel serial date starts from 1900-01-01
+    $excelBaseDate = '1900-01-01';
+    
+    // Convert Excel base date to timestamp
+    $baseDateTimestamp = strtotime($excelBaseDate);
+    
+    // Calculate the timestamp for the desired date
+    $dateTimestamp = $baseDateTimestamp + ($serial - 2) * 86400; // Subtract 2 days to account for 1900 leap year bug
 
+    // Format the timestamp into a readable date format
+    return date('Y-m-d', $dateTimestamp);
+}
 require '../../vendor/autoload.php';  // Cargar la librería de PhpSpreadsheet
 
 // Utilizar el lector de PhpSpreadsheet en modo de streaming
@@ -66,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                $mun_res_est, // Columna AB
                 $estrato_est, // Columna AC
                 $sisben_est, // Columna AD
-               $fec_nac_est , // Columna AE
+               $fec_nac_est, // Columna AE
                 , // Columna AF
                 , // Columna AG
                 , // Columna AH
@@ -155,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'mun_res_est' => $mun_res_est,
                 'estrato_est' => $estrato_est,
                 'sisben_est' => $sisben_est,
-                'fec_nac_est' => $fec_nac_est,
+                'fec_nac_est' =>  excelDateToDate($fec_nac_est),
                 'gen_est' => $gen_est,
                 'victima_est' => $victima_est,
                 'discapacidad_est' => $discapacidad_est,
@@ -233,7 +245,7 @@ function procesarLote($loteDatos)
                 '" . $mysqli->real_escape_string($datos['fecha_dig_est']) . "',
                 '" . $mysqli->real_escape_string($datos['mun_dig_est']) . "',
                 '" . $mysqli->real_escape_string($datos['nom_ape_est']) . "',
-                '" . $mysqli->real_escape_string($datos['fec_nac_est']) . "',
+                '" . $datos['fec_nac_est'] . "',
                 '" . $mysqli->real_escape_string($datos['ciu_nac_est']) . "',
                 '" . $mysqli->real_escape_string($datos['dir_est']) . "',
                 '" . $mysqli->real_escape_string($datos['mun_res_est']) . "',
@@ -279,8 +291,8 @@ function procesarLote($loteDatos)
             $mysqli->commit();
             echo json_encode([
                 'estado' => 'procesado',
-                'mensaje' => 'Lote de datos procesado e insertado correctamente.',
-                'loteDatos' => $loteDatos
+                'mensaje' => 'Lote de datos procesado e insertado correctamente.'
+                
             ]);
         } else {
             throw new Exception("Error al insertar datos: " . $mysqli->error);
