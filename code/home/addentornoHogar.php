@@ -302,7 +302,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
         <h1><b><i class="fa-solid fa-house-user"></i> APLICAR ENCUESTA ENTORNO DEL HOGAR</b></h1>
         <p><i><b><font size=3 color=#c68615>* Datos obligatorios</i></b></font></p>
 
-        <form action='' method="POST">
+        <form action='addentornoHogar1.php' method="POST">
             <hr style="border: 2px solid #16087B; border-radius: 2px;">
             <div class="form-group">
                 <div class="row">
@@ -319,13 +319,13 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                             $res = mysqli_query($mysqli, $consulta);
                             $num_reg = mysqli_num_rows($res);
                             while ($row1 = $res->fetch_array(MYSQLI_ASSOC)) {
-                            ?> 
+                            ?>
                                 <option value='<?php echo $row1['nombre_mun']; ?>' <?php if ($row['mun_dig_hog'] == $row1['nombre_mun']) echo 'selected'; ?>>
                                     <?php echo $row1['nombre_mun']; ?>
                                 </option>
                             <?php
                             }
-                            ?>    
+                            ?>
                         </select>
                     </div>
                     <div class="col-12 col-sm-4">
@@ -380,7 +380,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-4">
                         <label for="ocupacion_madre_hog">OCUPACIÓN MAMÁ:</label>
                         <select class="form-control" name="ocupacion_madre_hog" id="ocupacion_madre_hog">
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value="Ama de casa" <?php if ($row['ocupacion_madre_hog'] == 'Ama de casa') echo 'selected'; ?>>Ama de casa</option>
                             <option value="Empleada" <?php if ($row['ocupacion_madre_hog'] == 'Empleada') echo 'selected'; ?>>Empleada</option>
                             <option value="Trabajadora independiente" <?php if ($row['ocupacion_madre_hog'] == 'Trabajadora independiente') echo 'selected'; ?>>Trabajadora independiente</option>
@@ -400,7 +400,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-4">
                         <label for="educacion_madre_hog">NIVEL EDUCATIVO CULMINADO MAMÁ:</label>
                         <select class="form-control" name="educacion_madre_hog" id="educacion_madre_hog">
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value="Ninguno" <?php if ($row['educacion_madre_hog'] == 'Ninguno') echo 'selected'; ?>>Ninguno</option>
                             <option value="Primaria" <?php if ($row['educacion_madre_hog'] == 'Primaria') echo 'selected'; ?>>Primaria</option>
                             <option value="Bachillerato" <?php if ($row['educacion_madre_hog'] == 'Bachillerato') echo 'selected'; ?>>Bachillerato</option>
@@ -432,7 +432,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-3">
                         <label for="ocupacion_padre_hog">OCUPACIÓN PAPÁ:</label>
                         <select class="form-control" name="ocupacion_padre_hog" id="ocupacion_padre_hog">
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value="Amo de casa" <?php if ($row['ocupacion_padre_hog'] == 'Amo de casa') echo 'selected'; ?>>Amo de casa</option>
                             <option value="Empleado" <?php if ($row['ocupacion_padre_hog'] == 'Empleado') echo 'selected'; ?>>Empleado</option>
                             <option value="Trabajador independiente" <?php if ($row['ocupacion_padre_hog'] == 'Trabajador independiente') echo 'selected'; ?>>Trabajador independiente</option>
@@ -447,7 +447,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-3">
                         <label for="educacion_padre_hog">NIVEL EDUCATIVO CULMINADO PAPÁ:</label>
                         <select class="form-control" name="educacion_padre_hog" id="educacion_padre_hog">
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value="Ninguno" <?php if ($row['educacion_padre_hog'] == 'Ninguno') echo 'selected'; ?>>Ninguno</option>
                             <option value="Primaria" <?php if ($row['educacion_padre_hog'] == 'Primaria') echo 'selected'; ?>>Primaria</option>
                             <option value="Bachillerato" <?php if ($row['educacion_padre_hog'] == 'Bachillerato') echo 'selected'; ?>>Bachillerato</option>
@@ -462,7 +462,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                         <label for="vive_estu_hog">* ¿EL ESTUDIANTE VIVE CON?</label>
                         <select class="form-control" name="vive_estu_hog" id="vive_estu_hog" required>
                             <option value=""></option>
-                            <option value="En familia" <?php if ($row['vive_estu_hog'] == 'En familia') echo 'selected'; ?>>En familia</option>   
+                            <option value="En familia" <?php if ($row['vive_estu_hog'] == 'En familia') echo 'selected'; ?>>En familia</option>
                             <option value="Madre" <?php if ($row['vive_estu_hog'] == 'Madre') echo 'selected'; ?>>Madre</option>
                             <option value="Padre" <?php if ($row['vive_estu_hog'] == 'Padre') echo 'selected'; ?>>Padre</option>
                             <option value="Hermanos" <?php if ($row['vive_estu_hog'] == 'Hermanos') echo 'selected'; ?>>Hermanos</option>
@@ -486,7 +486,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-2">
                         <label for="parentesco_cuid_estu_hog">* PARENTESCO CUIDADOR:</label>
                         <select class="form-control" name="parentesco_cuid_estu_hog" id="parentesco_cuid_estu_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value="Madre" <?php if ($row['parentesco_cuid_estu_hog'] == 'Madre') echo 'selected'; ?>>Madre</option>
                             <option value="Padre" <?php if ($row['parentesco_cuid_estu_hog'] == 'Padre') echo 'selected'; ?>>Padre</option>
                             <option value="Hermanos" <?php if ($row['parentesco_cuid_estu_hog'] == 'Hermanos') echo 'selected'; ?>>Hermanos</option>
@@ -501,7 +501,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-3">
                         <label for="educacion_cuid_estu_hog">* NIVEL EDUCATIVO CULMINADO CUIDADOR:</label>
                         <select class="form-control" name="educacion_cuid_estu_hog" id="educacion_cuid_estu_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value="Ninguno" <?php if ($row['educacion_cuid_estu_hog'] == 'Ninguno') echo 'selected'; ?>>Ninguno</option>
                             <option value="Primaria" <?php if ($row['educacion_cuid_estu_hog'] == 'Primaria') echo 'selected'; ?>>Primaria</option>
                             <option value="Bachillerato" <?php if ($row['educacion_cuid_estu_hog'] == 'Bachillerato') echo 'selected'; ?>>Bachillerato</option>
@@ -519,7 +519,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-4">
                         <label for="ocupacion_cuid_estu_hog">* OCUPACIÓN CUIDADOR:</label>
                         <select class="form-control" name="ocupacion_cuid_estu_hog" id="ocupacion_cuid_estu_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value="Ama(o) de casa" <?php if ($row['ocupacion_cuid_estu_hog'] == 'Ama(o) de casa') echo 'selected'; ?>>Ama(o) de casa</option>
                             <option value="Empleada(o)" <?php if ($row['ocupacion_cuid_estu_hog'] == 'Empleada(o)') echo 'selected'; ?>>Empleada(o)</option>
                             <option value="Trabajador(a) independiente" <?php if ($row['ocupacion_cuid_estu_hog'] == 'Trabajador(a) independiente') echo 'selected'; ?>>Trabajador(a) independiente</option>
@@ -550,7 +550,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-2">
                         <label for="num_herm_estu_hog">* No. HERMANOS:</label>
                         <select class="form-control" name="num_herm_estu_hog" id="num_herm_estu_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value=0 <?php if ($row['num_herm_estu_hog'] == 0) echo 'selected'; ?>>0</option>
                             <option value=1 <?php if ($row['num_herm_estu_hog'] == 1) echo 'selected'; ?>>1</option>
                             <option value=2 <?php if ($row['num_herm_estu_hog'] == 2) echo 'selected'; ?>>2</option>
@@ -563,7 +563,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-3">
                         <label for="lugar_ocupa_estu_hog">* LUGAR QUE OCUPA ENTRE SUS HERMANOS:</label>
                         <select class="form-control" name="lugar_ocupa_estu_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value=1 <?php if ($row['lugar_ocupa_estu_hog'] == 1) echo 'selected'; ?>>1</option>
                             <option value=2 <?php if ($row['lugar_ocupa_estu_hog'] == 2) echo 'selected'; ?>>2</option>
                             <option value=3 <?php if ($row['lugar_ocupa_estu_hog'] == 3) echo 'selected'; ?>>3</option>
@@ -577,7 +577,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-3">
                         <label for="tiene_herm_ie_estu_hog">* ¿TIENE HERMANOS QUE ESTUDIAN EN EL COLEGIO?</label>
                         <select class="form-control" name="tiene_herm_ie_estu_hog" id="tiene_herm_ie_estu_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value=1 <?php if ($row['tiene_herm_ie_estu_hog'] == 1) echo 'selected'; ?>>Si</option>
                             <option value=0 <?php if ($row['tiene_herm_ie_estu_hog'] == 0) echo 'selected'; ?>>No</option>
                         </select>
@@ -616,7 +616,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-3">
                         <label for="crianza_estu_hog">* ¿QUIÉN(ES) APOYAN PROCESO CRIANZA?</label>
                         <select class="form-control" name="crianza_estu_hog" id="crianza_estu_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value="Madre" <?php if ($row['crianza_estu_hog'] == 'Madre') echo 'selected'; ?>>Madre</option>
                             <option value="Padre" <?php if ($row['crianza_estu_hog'] == 'Padre') echo 'selected'; ?>>Padre</option>
                             <option value="Hermano" <?php if ($row['crianza_estu_hog'] == 'Hermano') echo 'selected'; ?>>Hermano</option>
@@ -636,7 +636,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-5">
                         <label for="prac_comu_estu_hog">* ¿CUÁL ES LA PRÁCTICA COMUNICATIVA MÁS FRECUENTE ENTRE EL ESTUDIANTE Y LA FAMILIA y/o CUIDADOR? </label>
                         <select class="form-control" name="prac_comu_estu_hog" id="prac_comu_estu_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value="Diálogo continuo" <?php if ($row['prac_comu_estu_hog'] == 'Diálogo continuo') echo 'selected'; ?>>Diálogo continuo</option>
                             <option value="Diálogo en horas especíﬁcas" <?php if ($row['prac_comu_estu_hog'] == 'Diálogo en horas especíﬁcas') echo 'selected'; ?>>Diálogo en horas especíﬁcas</option>
                             <option value="Llamadas o mensajes de texto" <?php if ($row['prac_comu_estu_hog'] == 'Llamadas o mensajes de texto') echo 'selected'; ?>>Llamadas o mensajes de texto</option>
@@ -652,7 +652,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-4">
                         <label for="fam_categ_estu_hog">* LA FAMILIA DEL O LA ESTUDIANTE SE AJUSTA A LA CATEGORÍA DE: </label>
                         <select class="form-control" name="fam_categ_estu_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value="Familia nuclear (biparental)" <?php if ($row['fam_categ_estu_hog'] == 'Familia nuclear (biparental)') echo 'selected'; ?>>Familia nuclear (biparental)</option>
                             <option value="Familia monoparental" <?php if ($row['fam_categ_estu_hog'] == 'Familia monoparental') echo 'selected'; ?>>Familia monoparental</option>
                             <option value="Familia adoptiva" <?php if ($row['fam_categ_estu_hog'] == 'Familia adoptiva') echo 'selected'; ?>>Familia adoptiva</option>
@@ -665,7 +665,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-3">
                         <label for="fam_subsidio_hog">* ¿LA FAMILIA RECIBE ALGÚN SUBSIDIO? </label>
                         <select class="form-control" name="fam_subsidio_hog" id="fam_subsidio_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value=1 <?php if ($row['fam_subsidio_hog'] == 1) echo 'selected'; ?>>Si</option>
                             <option value=0 <?php if ($row['fam_subsidio_hog'] == 0) echo 'selected'; ?>>No</option>
                         </select>
@@ -780,7 +780,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                             </div>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
 
@@ -830,7 +830,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-3">
                         <label for="tipo_vivienda_hog">* TIPO DE VIVIENDA: </label>
                         <select class="form-control" name="tipo_vivienda_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value="Casa unifamiliar" <?php if ($row['tipo_vivienda_hog'] == 'Casa unifamiliar') echo 'selected'; ?>>Casa unifamiliar</option>
                             <option value="Casa multifamiliar" <?php if ($row['tipo_vivienda_hog'] == 'Casa multifamiliar') echo 'selected'; ?>>Casa multifamiliar</option>
                             <option value="Apartamento" <?php if ($row['tipo_vivienda_hog'] == 'Apartamento') echo 'selected'; ?>>Apartamento</option>
@@ -849,7 +849,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-3">
                         <label for="tenencia_vivienda_hog">* TENENCIA DE LA VIVIENDA: </label>
                         <select class="form-control" name="tenencia_vivienda_hog" id="tenencia_vivienda_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value="Propia" <?php if ($row['tenencia_vivienda_hog'] == 'Propia') echo 'selected'; ?>>Propia</option>
                             <option value="Familiar" <?php if ($row['tenencia_vivienda_hog'] == 'Familiar') echo 'selected'; ?>>Familiar</option>
                             <option value="Alquilada" <?php if ($row['tenencia_vivienda_hog'] == 'Alquilada') echo 'selected'; ?>>Alquilada</option>
@@ -863,7 +863,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-3">
                         <label for="material_vivienda_hog">* MATERIAL DE LA VIVIENDA: </label>
                         <select class="form-control" name="material_vivienda_hog" id="material_vivienda_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <optgroup label="Material">
                                 <option value="Ladrillo" <?php if ($row['material_vivienda_hog'] == 'Ladrillo') echo 'selected'; ?>>Ladrillo</option>
                                 <option value="Cemento" <?php if ($row['material_vivienda_hog'] == 'Cemento') echo 'selected'; ?>>Cemento</option>
@@ -904,7 +904,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                     <div class="col-12 col-sm-5">
                         <label for="num_personas_vivienda_hog">* ¿CUÁNTAS PERSONAS VIVEN NORMALMENTE EN ESTA VIVIENDA, CONTANDO NIÑOS Y ADULTOS MAYORES?</label>
                         <select class="form-control" name="num_personas_vivienda_hog" required>
-                            <option value=""></option>   
+                            <option value=""></option>
                             <option value=1 <?php if ($row['num_personas_vivienda_hog'] == 1) echo 'selected'; ?>>1</option>
                             <option value=2 <?php if ($row['num_personas_vivienda_hog'] == 2) echo 'selected'; ?>>2</option>
                             <option value=3 <?php if ($row['num_personas_vivienda_hog'] == 3) echo 'selected'; ?>>3</option>

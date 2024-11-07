@@ -256,7 +256,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                             <option value="0">SI</option>
                             <option value="1">NO</option>
                         </select>
-                        
+
                     </div>
                     <div class="col-8">
                         <label for="Afecciones">SITUACIONES QUE AFECTAN APRENDIZAJE DEL ESTUDIANTE:</label>
@@ -331,6 +331,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                         <label for="nombre_eps_familiaSalud">* NOMBRE DE LA EPS AFILIADA: </label>
                         <select class="form-control" name="nombre_eps_familiaSalud" id="nombre_eps_familiaSalud">
                             <option value=""></option>
+                            <option value="otro">Otra</option>
                             <option value="Nueva eps">Nueva EPS</option>
                             <option value="Salud Total">Salud Total</option>
                             <option value="Coosalud">Coosalud</option>
@@ -348,6 +349,10 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                             <option value="SOS">SOS</option>
                         </select>
                     </div>
+                    <div class="col-6 col-sm-4 ">
+                        <label for="cual_eps_familiaSalud">* SI ES OTRA CUAL?:</label>
+                        <input class="form-control" type="text" name="cual_eps_familiaSalud">
+                    </div>
 
                     <div class="col-6 col-sm-4">
                         <label for="afiliado_eps_familiaSalud">SISTEMA DE SALUD AL CUAL ESTÁ AFILIADO:</label>
@@ -358,6 +363,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                             <option value="Especial">Especial</option>
                         </select>
                     </div>
+
                 </div>
             </div>
 

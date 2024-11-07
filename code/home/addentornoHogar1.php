@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fecha_edit_hog = '0000-00-00 00:00:00';
     $id_usu = $_SESSION['id'];
 
-    $sql_update = "INSERT INTO entornoHogar (
+    $sql_update = "INSERT INTO entornohogar (
                         fecha_dig_hog,
                         mun_dig_hog,
                         nombre_encuestador_hog,

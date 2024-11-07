@@ -93,19 +93,20 @@ $sheet->setCellValue('M1', 'BENEFICIARIO PAE');
 $sheet->setCellValue('N1', 'MOMENTOS DE COMIDA AL DIA');
 $sheet->setCellValue('O1', 'AFILIADO EPS');
 $sheet->setCellValue('P1', 'NOMBRE EPS');
-$sheet->setCellValue('Q1', 'SISTEMA AFILIADO');
-$sheet->setCellValue('R1', 'PRESENTA DIAGNOSTICO');
-$sheet->setCellValue('S1', 'CUAL DIAGNOSTICO');
-$sheet->setCellValue('T1', 'ASISTE A TERAPIAS');
-$sheet->setCellValue('U1', 'FRECUENCIA DE TERAPIAS');
-$sheet->setCellValue('V1', 'ESTA SIENDO ATENDIDO POR ALGUNA CONDICION?');
-$sheet->setCellValue('W1', 'FRECUENCIA QUE ES ATENDIDO');
-$sheet->setCellValue('X1', 'PRESENTA ALERGIA');
-$sheet->setCellValue('Y1', 'PRESENTA ALERGIA A QUE');
-$sheet->setCellValue('Z1', 'ESQUEMA DE VACUNACION COMPLETO');
-$sheet->setCellValue('AA1', 'TIPO DE SANGRE');
-$sheet->setCellValue('AB1', 'FECHA DE APLICACION');
-$sheet->setCellValue('AC1', 'FECHA DE MODIFICACION');
+$sheet->setCellValue('Q1', 'CUAL EPS');
+$sheet->setCellValue('R1', 'SISTEMA AFILIADO');
+$sheet->setCellValue('S1', 'PRESENTA DIAGNOSTICO');
+$sheet->setCellValue('T1', 'CUAL DIAGNOSTICO');
+$sheet->setCellValue('U1', 'ASISTE A TERAPIAS');
+$sheet->setCellValue('V1', 'FRECUENCIA DE TERAPIAS');
+$sheet->setCellValue('W1', 'ESTA SIENDO ATENDIDO POR ALGUNA CONDICION?');
+$sheet->setCellValue('X1', 'FRECUENCIA QUE ES ATENDIDO');
+$sheet->setCellValue('Y1', 'PRESENTA ALERGIA');
+$sheet->setCellValue('Z1', 'PRESENTA ALERGIA A QUE');
+$sheet->setCellValue('AA1', 'ESQUEMA DE VACUNACION COMPLETO');
+$sheet->setCellValue('AB1', 'TIPO DE SANGRE');
+$sheet->setCellValue('AC1', 'FECHA DE APLICACION');
+$sheet->setCellValue('AD1', 'FECHA DE MODIFICACION');
 
 // Ajustar el ancho de las columna
 
@@ -138,6 +139,7 @@ $sheet->getColumnDimension('Z')->setWidth(25);
 $sheet->getColumnDimension('AA')->setWidth(25);
 $sheet->getColumnDimension('AB')->setWidth(25);
 $sheet->getColumnDimension('AC')->setWidth(25);
+$sheet->getColumnDimension('AD')->setWidth(25);
 $sheet->getDefaultRowDimension()->setRowHeight(25);
 $nombreEst = '';
 $rowIndex = 2;
@@ -160,21 +162,22 @@ while ($row = mysqli_fetch_array($res, MYSQLI_ASSOC)) {
     $sheet->setCellValue('N' . $rowIndex , $row['comida_dia_familiaSalud']);
     $sheet->setCellValue('O' . $rowIndex , Si1No2($row['eps_estudiante_familiaSalud']));
     $sheet->setCellValue('P' . $rowIndex , $row['nombre_eps_familiaSalud']);
-    $sheet->setCellValue('Q' . $rowIndex , $row['afiliado_eps_familiaSalud']);
-    $sheet->setCellValue('R' . $rowIndex , Si1No2($row['presenta_diagnostico_familiaSalud']));
-    $sheet->setCellValue('S' . $rowIndex , $row['diagnostico_familiaSalud']);
-    $sheet->setCellValue('T' . $rowIndex , Si1No2($row['terapia_familiaSalud']));
-    $sheet->setCellValue('U' . $rowIndex , $row['frecuencia_terapia_familiaSalud']);
-    $sheet->setCellValue('V' . $rowIndex , Si1No2($row['condicion_particular_familiaSalud']));
-    $sheet->setCellValue('W' . $rowIndex , $row['frecuencia_atencion_familiaSalud']);
-    $sheet->setCellValue('X' . $rowIndex , Si1No2($row['alergia_familiaSalud']));
-    $sheet->setCellValue('Y' . $rowIndex , $row['tipo_alergia_familiaSalud']);
-    $sheet->setCellValue('Z' . $rowIndex , Si1No2($row['vacunacion_familiaSalud']));
-    $sheet->setCellValue('AA' . $rowIndex , $row['sangre_familiaSalud']);
-    $sheet->setCellValue('AB' . $rowIndex , $row['fechacreacion_familiaSalud']);
-    $sheet->setCellValue('AC' . $rowIndex , $row['fechaedicion_familiaSalud']);
+    $sheet->setCellValue('Q' . $rowIndex , $row['cual_eps_familiaSalud']);
+    $sheet->setCellValue('R' . $rowIndex , $row['afiliado_eps_familiaSalud']);
+    $sheet->setCellValue('S' . $rowIndex , Si1No2($row['presenta_diagnostico_familiaSalud']));
+    $sheet->setCellValue('T' . $rowIndex , $row['diagnostico_familiaSalud']);
+    $sheet->setCellValue('U' . $rowIndex , Si1No2($row['terapia_familiaSalud']));
+    $sheet->setCellValue('V' . $rowIndex , $row['frecuencia_terapia_familiaSalud']);
+    $sheet->setCellValue('W' . $rowIndex , Si1No2($row['condicion_particular_familiaSalud']));
+    $sheet->setCellValue('X' . $rowIndex , $row['frecuencia_atencion_familiaSalud']);
+    $sheet->setCellValue('Y' . $rowIndex , Si1No2($row['alergia_familiaSalud']));
+    $sheet->setCellValue('Z' . $rowIndex , $row['tipo_alergia_familiaSalud']);
+    $sheet->setCellValue('AA' . $rowIndex , Si1No2($row['vacunacion_familiaSalud']));
+    $sheet->setCellValue('AB' . $rowIndex , $row['sangre_familiaSalud']);
+    $sheet->setCellValue('AC' . $rowIndex , $row['fechacreacion_familiaSalud']);
+    $sheet->setCellValue('AD' . $rowIndex , $row['fechaedicion_familiaSalud']);
 
-    $sheet->getStyle('A' .$rowIndex. ':AC'.$rowIndex.'')->applyFromArray(['font' => $boldFontStyle]);
+    $sheet->getStyle('A' .$rowIndex. ':AD'.$rowIndex.'')->applyFromArray(['font' => $boldFontStyle]);
     $rowIndex++;
 }
 

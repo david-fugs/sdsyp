@@ -72,6 +72,7 @@ function Si1No2($value)
                         <th>Momentos de comida dia</th>
                         <th>Afiliado EPS </th>
                         <th>Nombre EPS</th>
+                        <th>Otra Eps</th>
                         <th>Sistema Afiliado</th>
                         <th>Presenta Diagnóstico</th>
                         <th>Cual Diagnostico</th>
@@ -105,17 +106,18 @@ function Si1No2($value)
                             <td>{$row['relacion_madre_familiaSalud']}</td>
                             <td>{$row['relacion_padre_familiaSalud']}</td>
                             <td>{$row['relacion_hermanos_familiaSalud']}</td>
-                            <td>{$row['relacion_abuelos_familiaSalud']}</td>  
-                            <td>{$row['relacion_tios_familiaSalud']}</td> 
-                            <td>{$row['relacion_otros_familiaSalud']}</td> 
+                            <td>{$row['relacion_abuelos_familiaSalud']}</td>
+                            <td>{$row['relacion_tios_familiaSalud']}</td>
+                            <td>{$row['relacion_otros_familiaSalud']}</td>
                             <td>{$row['afecta_aprendizaje_familiaSalud']}</td>
                             ";
                         echo '<td>' . Si1No2($row['discapacidad_est_familiaSalud']) . '</td>';
                         echo '<td>' . Si1No2($row['beneficiario_pae_familiaSalud']) . '</td>';
                         echo "<td>{$row['comida_dia_familiaSalud']}</td>";
-                        echo '<td>' . Si1No2($row['afiliado_eps_familiaSalud']) . '</td>';
+                        echo '<td>' . Si1No2($row['eps_estudiante_familiaSalud']) . '</td>';
                         echo "<td>{$row['nombre_eps_familiaSalud']}</td>
-                        <td>{$row['afiliado_eps_familiaSalud']}</td>";
+                        <td>{$row['cual_eps_familiaSalud']}</td>
+                        <td>{$row ['afiliado_eps_familiaSalud']}</td>";
                         echo '<td>' . Si1No2($row['presenta_diagnostico_familiaSalud']) . '</td>';
                         echo "<td>{$row['diagnostico_familiaSalud']}</td>";
                         echo '<td>' . Si1No2($row['terapia_familiaSalud']) . '</td>';
