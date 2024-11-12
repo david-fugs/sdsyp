@@ -174,6 +174,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                     <td>
@@ -182,6 +183,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                     <td>
@@ -190,6 +192,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                     <td>
@@ -198,6 +201,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                 </tr>
@@ -209,6 +213,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                     <td>
@@ -217,6 +222,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                     <td>
@@ -225,6 +231,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                     <td>
@@ -233,6 +240,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                 </tr>
@@ -244,6 +252,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                     <td>
@@ -252,6 +261,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                     <td>
@@ -260,6 +270,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                     <td>
@@ -268,10 +279,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                 </tr>
-                              
+
                                 <tr>
                                     <td>Etica y Valores</td>
                                     <td>
@@ -280,6 +292,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                     <td>
@@ -288,6 +301,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                     <td>
@@ -296,6 +310,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                     <td>
@@ -304,10 +319,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                             <option  value="basico">Desempeño Básico</option>
                                             <option  value="alto">Desempeño Alto</option>
                                             <option  value="superior">Desempeño Superior</option>
+                                            <option value="no aplica">No Aplica</option>
                                         </select>
                                     </td>
                                 </tr>
-                                
+
                                     <tr>
                                         <td>Religion</td>
                                         <td>
@@ -316,6 +332,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                             </select>
                                         </td>
                                         <td>
@@ -324,6 +341,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                             </select>
                                         </td>
                                         <td>
@@ -332,6 +350,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                             </select>
                                         </td>
                                         <td>
@@ -340,10 +359,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                             </select>
                                         </td>
                                </tr>
-                               
+
                                  <tr>
                                         <td>Artistica</td>
                                         <td>
@@ -352,6 +372,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                               <option  value="basico">Desempeño Básico</option>
                                               <option  value="alto">Desempeño Alto</option>
                                               <option  value="superior">Desempeño Superior</option>
+                                              <option value="no aplica">No Aplica</option>
                                          </select>
                                         </td>
                                         <td>
@@ -360,6 +381,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                               <option  value="basico">Desempeño Básico</option>
                                               <option  value="alto">Desempeño Alto</option>
                                               <option  value="superior">Desempeño Superior</option>
+                                              <option value="no aplica">No Aplica</option>
                                          </select>
                                         </td>
                                         <td>
@@ -368,6 +390,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                               <option  value="basico">Desempeño Básico</option>
                                               <option  value="alto">Desempeño Alto</option>
                                               <option  value="superior">Desempeño Superior</option>
+                                              <option value="no aplica">No Aplica</option>
                                          </select>
                                         </td>
                                         <td>
@@ -376,10 +399,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                               <option  value="basico">Desempeño Básico</option>
                                               <option  value="alto">Desempeño Alto</option>
                                               <option  value="superior">Desempeño Superior</option>
+                                              <option value="no aplica">No Aplica</option>
                                          </select>
                                         </td>
                                   </tr>
-                                  
+
                                     <tr>
                                             <td>Humanidades</td>
                                             <td>
@@ -388,6 +412,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -396,6 +421,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -404,6 +430,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -412,10 +439,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                         </tr>
-                                        
+
                                         <tr>
                                             <td>Matematicas</td>
                                             <td>
@@ -424,6 +452,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -432,6 +461,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -440,6 +470,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -448,10 +479,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                         </tr>
-                                       
+
                                         <tr>
                                             <td>Fisica</td>
                                             <td>
@@ -460,6 +492,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -468,6 +501,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -476,6 +510,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -484,10 +519,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                         </tr>
-                                        
+
                                         <tr>
                                             <td>Algebra</td>
                                             <td>
@@ -496,6 +532,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -504,6 +541,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -512,6 +550,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -520,10 +559,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                         </tr>
-                                        
+
                                         <tr>
                                             <td>Calculo</td>
                                             <td>
@@ -532,6 +572,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -540,6 +581,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -548,6 +590,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -556,10 +599,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                         </tr>
-                                        
+
                                         <tr>
                                             <td>Ingles</td>
                                             <td>
@@ -568,6 +612,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -576,6 +621,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -584,6 +630,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -592,10 +639,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                         </tr>
-                                      
+
                                         <tr>
                                             <td>Tecnologia e Informatica</td>
                                             <td>
@@ -604,6 +652,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -612,6 +661,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -620,6 +670,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -628,6 +679,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                         </tr>
@@ -640,6 +692,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -648,6 +701,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -656,6 +710,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -664,10 +719,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                         </tr>
-                                      
+
                                         <tr>
                                             <td>Areas Tecnicas</td>
                                             <td>
@@ -676,6 +732,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -684,6 +741,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -692,6 +750,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -700,10 +759,11 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                         </tr>
-                                        
+
                                         <tr>
                                             <td>Filosofia</td>
                                             <td>
@@ -712,6 +772,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -720,6 +781,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -728,6 +790,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -736,6 +799,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                         </tr>
@@ -748,6 +812,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -756,6 +821,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -764,6 +830,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                             <td>
@@ -772,6 +839,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                                 <option  value="basico">Desempeño Básico</option>
                                                 <option  value="alto">Desempeño Alto</option>
                                                 <option  value="superior">Desempeño Superior</option>
+                                                <option value="no aplica">No Aplica</option>
                                              </select>
                                             </td>
                                         </tr>
@@ -798,7 +866,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
                 </div>
             </div>
-            
+
             <button type="submit" class="btn btn-primary mt-5" name="btn-update">
                 <span class="spinner-border spinner-border-sm"></span>
                 ACTUALIZAR INFORMACIÓN PRE POSTNATAL
