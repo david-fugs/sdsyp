@@ -6,6 +6,9 @@ if (!isset($_SESSION['id'])) {
     header("Location: ../../index.php");
 }
 
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+
 header("Content-Type: text/html;charset=utf-8");
 $usuario      = $_SESSION['usuario'];
 $nombre       = $_SESSION['nombre'];
@@ -58,54 +61,54 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
         $club_descrip_educacion            = $_POST['club_descrip_educacion'];
         $id_usu                             =   $_SESSION['id'];
         //convertir array a string
-        $anios_repet_educacion               = implode(',', $_POST['anios_repet_educacion']);
-       // $id_registro                        = $_POST['id_registro'];
+        $anios_repet_educacion = !empty($_POST['anios_repet_educacion']) ? implode(',', $_POST['anios_repet_educacion']) : '';
+        // $id_registro                        = $_POST['id_registro'];
         $fechacreacion_educacion         =   date('Y-m-d H:i:s');
 
 
 
         //lo que trae $$anios_repet_educacion     es un array ya que vienen varios valores y loq ue necesito es que en la insercion se metan todos digamos si viene [1,2,3] ingrese en la base de datos 1,2,3
         $sql = "INSERT INTO educacion (
-            num_doc_est, 
-            fecha_dig_educacion, 
-            mun_dig_educacion, 
-            nombre_encuestador_educacion, 
-            rol_encuestador_educacion, 
-            nom_ape_est, 
-            vinculacion_inst_educacion, 
-            nom_inst_educacion, 
-            modalidad_inst_educacion, 
-            complementario_educacion, 
-            program_complement_educacion, 
-            repetir_year_educacion, 
-            anios_repet_educacion, 
-            talento_educacion, 
-            talento_descrip_educacion, 
-            vinculacion_club_educacion, 
-            club_descrip_educacion, 
-            id_usu, 
-            estado_educacion, 
+            num_doc_est,
+            fecha_dig_educacion,
+            mun_dig_educacion,
+            nombre_encuestador_educacion,
+            rol_encuestador_educacion,
+            nom_ape_est,
+            vinculacion_inst_educacion,
+            nom_inst_educacion,
+            modalidad_inst_educacion,
+            complementario_educacion,
+            program_complement_educacion,
+            repetir_year_educacion,
+            anios_repet_educacion,
+            talento_educacion,
+            talento_descrip_educacion,
+            vinculacion_club_educacion,
+            club_descrip_educacion,
+            id_usu,
+            estado_educacion,
             fechacreacion_educacion
         ) VALUES (
-            '$num_doc_est', 
-            '$fecha_dig_educacion', 
-            '$mun_dig_educacion', 
-            '$nombre_encuestador_educacion', 
-            '$rol_encuestador_educacion', 
-            '$nom_ape_est', 
-            '$vinculacion_inst_educacion', 
-            '$nom_inst_educacion', 
-            '$modalidad_inst_educacion', 
-            '$complementario_educacion', 
-            '$program_complement_educacion', 
-            '$repetir_year_educacion', 
-            '$anios_repet_educacion', 
-            '$talento_educacion', 
-            '$talento_descrip_educacion', 
-            '$vinculacion_club_educacion', 
-            '$club_descrip_educacion', 
-            '$id_usu', 
-            '1', 
+            '$num_doc_est',
+            '$fecha_dig_educacion',
+            '$mun_dig_educacion',
+            '$nombre_encuestador_educacion',
+            '$rol_encuestador_educacion',
+            '$nom_ape_est',
+            '$vinculacion_inst_educacion',
+            '$nom_inst_educacion',
+            '$modalidad_inst_educacion',
+            '$complementario_educacion',
+            '$program_complement_educacion',
+            '$repetir_year_educacion',
+            '$anios_repet_educacion',
+            '$talento_educacion',
+            '$talento_descrip_educacion',
+            '$vinculacion_club_educacion',
+            '$club_descrip_educacion',
+            '$id_usu',
+            '1',
             '$fechacreacion_educacion'
         )";
 
@@ -115,9 +118,9 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             echo "Error en la consulta SQL: (" . $mysqli->errno . ") " . $mysqli->error;
         }
 
-if (!$resultado) {
-    throw new Exception("Error en la consulta SQL: (" . $mysqli->errno . ") " . $mysqli->error);
-}
+        if (!$resultado) {
+            throw new Exception("Error en la consulta SQL: (" . $mysqli->errno . ") " . $mysqli->error);
+        }
         echo "
     <!DOCTYPE html>
                     <html lang='es'>
@@ -143,8 +146,8 @@ if (!$resultado) {
                             <div class='container'>
                                 <br />
                                 ";
-            echo "  <h3><b><i class='fas fa-users'></i> SE CREO DE FORMA EXITOSA EL REGISTRO</b></h3><br />";
-            echo "
+        echo "  <h3><b><i class='fas fa-users'></i> SE CREO DE FORMA EXITOSA EL REGISTRO</b></h3><br />";
+        echo "
                                 <p align='center'><a href='../../access.php'><img src='../../img/atras.png' width=96 height=96></a></p>
                             </div>
                             </center>

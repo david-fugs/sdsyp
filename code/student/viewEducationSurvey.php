@@ -132,7 +132,7 @@ function Si1No2($value)
 
 </html>
 <script>
-    function confirmarEliminacion(id, num_doc) {
+    function confirmarEliminacion(id, num_doc_est) {
         if (confirm('¿Está seguro que desea eliminar esta encuesta? Esta acción no se puede deshacer.')) {
             // Realizar una solicitud AJAX para eliminar la encuesta
             var xhr = new XMLHttpRequest();
