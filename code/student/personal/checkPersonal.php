@@ -91,17 +91,17 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
             @$nom_ape_est = $_GET['nom_ape_est'] ?? '';
             @$grado_est = $_GET['grado_est'] ?? '';
 
-            $query = "SELECT personal.*, estudiantes.*, ie.*, COUNT(personal.num_doc_est) as veces_aplicada 
-          FROM personal 
-          INNER JOIN estudiantes ON personal.num_doc_est = estudiantes.num_doc_est 
-          INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
-          INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
-          WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
-          AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
+            $query = "SELECT personal.*, estudiantes.*, ie.*, COUNT(personal.num_doc_est) as veces_aplicada
+          FROM personal
+          INNER JOIN estudiantes ON personal.num_doc_est = estudiantes.num_doc_est
+          INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede
+          INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie
+          WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%')
+          AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%')
           AND (estudiantes.grado_est LIKE '%$grado_est%')
-          AND fecha_dig_personal >= '2023-10-01' 
-          AND ie.cod_dane_ie = $cod_dane_ie 
-          GROUP BY personal.num_doc_est 
+          AND fecha_dig_personal >= '2023-10-01'
+          AND ie.cod_dane_ie = $cod_dane_ie
+          GROUP BY personal.num_doc_est
           ORDER BY personal.num_doc_est ASC";
             $res = $mysqli->query($query);
             $num_registros = mysqli_num_rows($res);
@@ -132,17 +132,17 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
             $paginacion->records($num_registros);
             $paginacion->records_per_page($resul_x_pagina);
 
-            $consulta = "SELECT personal.*, estudiantes.*, ie.*, COUNT(personal.num_doc_est) as veces_aplicada 
-             FROM personal 
-             INNER JOIN estudiantes ON personal.num_doc_est = estudiantes.num_doc_est 
-             INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
-             INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
-             WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
-             AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%') 
+            $consulta = "SELECT personal.*, estudiantes.*, ie.*, COUNT(personal.num_doc_est) as veces_aplicada
+             FROM personal
+             INNER JOIN estudiantes ON personal.num_doc_est = estudiantes.num_doc_est
+             INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede
+             INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie
+             WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%')
+             AND (estudiantes.nom_ape_est LIKE '%$nom_ape_est%')
              AND (estudiantes.grado_est LIKE '%$grado_est%')
-             AND ie.cod_dane_ie = $cod_dane_ie 
-             GROUP BY personal.num_doc_est 
-             ORDER BY personal.num_doc_est ASC 
+             AND ie.cod_dane_ie = $cod_dane_ie
+             GROUP BY personal.num_doc_est
+             ORDER BY personal.num_doc_est ASC
              LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . ", " . $resul_x_pagina;
             $result = $mysqli->query($consulta);
 
@@ -161,7 +161,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
         <td data-label="REALIZÓ">' . utf8_encode($row['nombre_encuestador_personal']) . '</td>
         <td data-label="MODIFICADA EL">' . $row['fechaedicion_personal'] . '</td>
         <td data-label="VECES APLICADA" class="' . $veces_clase . '">' . $row['veces_aplicada'] . '</td>
-        <td data-label="VER ENCUESTAS"><a href="viewpersonalSurvey.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../../img/search.png" width=28 height=28></a></td>    
+        <td data-label="VER ENCUESTAS"><a href="viewPersonalSurvey.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../../img/search.png" width=28 height=28></a></td>
         <td data-label="EXPORTAR"><a href="../exportar/exportarSurveysPersonal.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../../img/excel.png" width=32 height=32></a></td>
         </tr>';
             }
