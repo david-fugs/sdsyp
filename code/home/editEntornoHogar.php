@@ -189,7 +189,7 @@ function Si1No2($value)
         $fecha_edit_hog = '0000-00-00 00:00:00';
         $id_usu = $_SESSION['id'];
 
-        $sql_update = "UPDATE entornoHogar SET
+        $sql_update = "UPDATE entornohogar SET
     fecha_dig_hog = '$fecha_dig_hog',
     mun_dig_hog = '$mun_dig_hog',
     nombre_encuestador_hog = '$nombre_encuestador_hog',
@@ -249,15 +249,13 @@ WHERE id_hog = '" . $res_formulario['id_hog'] . "'";
 
         if (mysqli_query($mysqli, $sql_update)) {
             echo "<script>alert('Registro satisfactorio');
-            window.location.href = 'checkentornoHogar.php';
-            
-            </script>";            exit();
+            window.location.href='checkentornoHogar.php';
+            </script>";
         } else {
             echo "<script>alert('Error al actualizar la información: " . mysqli_error($mysqli) . "');</script>";
         }
     }
     ?>
-
     <div class="container">
         <center>
             <img src='../../img/logo_educacion.png' width=600 height=121 class='responsive'>
@@ -921,4 +919,3 @@ WHERE id_hog = '" . $res_formulario['id_hog'] . "'";
 </body>
 
 </html>
-
