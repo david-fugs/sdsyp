@@ -25,6 +25,7 @@ use PhpOffice\PhpSpreadsheet\Reader\Xlsx\Theme;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx\WorkbookView;
 use PhpOffice\PhpSpreadsheet\ReferenceHelper;
 use PhpOffice\PhpSpreadsheet\RichText\RichText;
+use PhpOffice\PhpSpreadsheet\Settings;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Shared\Drawing;
 use PhpOffice\PhpSpreadsheet\Shared\File;
@@ -119,7 +120,7 @@ class Xlsx extends BaseReader
         $rels = @simplexml_load_string(
             $this->getSecurityScannerOrThrow()->scan($contents),
             'SimpleXMLElement',
-            0,
+            Settings::getLibXmlLoaderOptions(),
             $ns
         );
 
@@ -134,7 +135,7 @@ class Xlsx extends BaseReader
         $rels = simplexml_load_string(
             $this->getSecurityScannerOrThrow()->scan($contents),
             'SimpleXMLElement',
-            0,
+            Settings::getLibXmlLoaderOptions(),
             ($ns === '' ? $ns : '')
         );
 
@@ -242,13 +243,11 @@ class Xlsx extends BaseReader
 
                         $xml = new XMLReader();
                         $xml->xml(
-                            $this->getSecurityScannerOrThrow()
-                                ->scan(
-                                    $this->getFromZipArchive(
-                                        $this->zip,
-                                        $fileWorksheetPath
-                                    )
-                                )
+                            $this->getSecurityScannerOrThrow()->scan(
+                                $this->getFromZipArchive($this->zip, $fileWorksheetPath)
+                            ),
+                            null,
+                            Settings::getLibXmlLoaderOptions()
                         );
                         $xml->setParserProperty(2, true);
 
@@ -1295,7 +1294,7 @@ class Xlsx extends BaseReader
                                                         $hfImages[$shapeId]->setName((string) $imageData['title']);
                                                     }
 
-                                                    $hfImages[$shapeId]->setPath('zip://' . File::realpath($filename) . '#' . $drawings[(string) $imageData['relid']], false, $zip);
+                                                    $hfImages[$shapeId]->setPath('zip://' . File::realpath($filename) . '#' . $drawings[(string) $imageData['relid']], false);
                                                     $hfImages[$shapeId]->setResizeProportional(false);
                                                     $hfImages[$shapeId]->setWidth($style['width']);
                                                     $hfImages[$shapeId]->setHeight($style['height']);
@@ -1407,8 +1406,7 @@ class Xlsx extends BaseReader
                                                         $objDrawing->setPath(
                                                             'zip://' . File::realpath($filename) . '#'
                                                             . $images[$embedImageKey],
-                                                            false,
-                                                            $zip
+                                                            false
                                                         );
                                                     } else {
                                                         $linkImageKey = (string) self::getArrayItem(
@@ -1417,10 +1415,7 @@ class Xlsx extends BaseReader
                                                         );
                                                         if (isset($images[$linkImageKey])) {
                                                             $url = str_replace('xl/drawings/', '', $images[$linkImageKey]);
-                                                            $objDrawing->setPath($url, false);
-                                                        }
-                                                        if ($objDrawing->getPath() === '') {
-                                                            continue;
+                                                            $objDrawing->setPath($url);
                                                         }
                                                     }
                                                     $objDrawing->setCoordinates(Coordinate::stringFromColumnIndex(((int) $oneCellAnchor->from->col) + 1) . ($oneCellAnchor->from->row + 1));
@@ -1500,8 +1495,7 @@ class Xlsx extends BaseReader
                                                         $objDrawing->setPath(
                                                             'zip://' . File::realpath($filename) . '#'
                                                             . $images[$embedImageKey],
-                                                            false,
-                                                            $zip
+                                                            false
                                                         );
                                                     } else {
                                                         $linkImageKey = (string) self::getArrayItem(
@@ -1510,10 +1504,7 @@ class Xlsx extends BaseReader
                                                         );
                                                         if (isset($images[$linkImageKey])) {
                                                             $url = str_replace('xl/drawings/', '', $images[$linkImageKey]);
-                                                            $objDrawing->setPath($url, false);
-                                                        }
-                                                        if ($objDrawing->getPath() === '') {
-                                                            continue;
+                                                            $objDrawing->setPath($url);
                                                         }
                                                     }
                                                     $objDrawing->setCoordinates(Coordinate::stringFromColumnIndex(((int) $twoCellAnchor->from->col) + 1) . ($twoCellAnchor->from->row + 1));
@@ -1951,8 +1942,9 @@ class Xlsx extends BaseReader
         if ($dataRels) {
             // exists and not empty if the ribbon have some pictures (other than internal MSO)
             $UIRels = simplexml_load_string(
-                $this->getSecurityScannerOrThrow()
-                    ->scan($dataRels)
+                $this->getSecurityScannerOrThrow()->scan($dataRels),
+                'SimpleXMLElement',
+                Settings::getLibXmlLoaderOptions()
             );
             if (false !== $UIRels) {
                 // we need to save id and target to avoid parsing customUI.xml and "guess" if it's a pseudo callback who load the image

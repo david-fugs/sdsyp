@@ -9,6 +9,8 @@ use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 
 class Amortization
 {
+    private const ROUNDING_ADJUSTMENT = (PHP_VERSION_ID < 80400) ? 0 : 1e-14;
+
     /**
      * AMORDEGRC.
      *
@@ -80,7 +82,7 @@ class Amortization
         $amortiseCoeff = self::getAmortizationCoefficient($rate);
 
         $rate *= $amortiseCoeff;
-        $rate = (float) (string) $rate; // ugly way to avoid rounding problem
+        $rate += self::ROUNDING_ADJUSTMENT;
         $fNRate = round($yearFrac * $rate * $cost, 0);
         $cost -= $fNRate;
         $fRest = $cost - $salvage;
