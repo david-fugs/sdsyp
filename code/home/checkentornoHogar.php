@@ -69,7 +69,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
 
             <div class="flex">
                 <div class="box">
-                    <form action="checkentornoHogar.php" method="get">
+                    <form action="checkentornohogar.php" method="get">
                         <input name="num_doc_est" type="text" placeholder="Ingrese el Documento" size=20>
                         <input name="nom_ape_est" type="text" placeholder="Escriba el nombre del estudiante" size=30>
                         <input name="grado_est" type="text" placeholder="Grado">
@@ -92,9 +92,9 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
             @$nom_ape_est = $_GET['nom_ape_est'] ?? '';
             @$grado_est = $_GET['grado_est'] ?? '';
 
-            $query = "SELECT entornoHogar.*, estudiantes.*, ie.*, COUNT(entornoHogar.num_doc_est) as veces_aplicada 
-          FROM entornoHogar 
-          INNER JOIN estudiantes ON entornoHogar.num_doc_est = estudiantes.num_doc_est 
+            $query = "SELECT entornohogar.*, estudiantes.*, ie.*, COUNT(entornohogar.num_doc_est) as veces_aplicada 
+          FROM entornohogar 
+          INNER JOIN estudiantes ON entornohogar.num_doc_est = estudiantes.num_doc_est 
           INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
           INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
           WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
@@ -102,8 +102,8 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
           AND (estudiantes.grado_est LIKE '%$grado_est%')
           AND fecha_alta_hog >= '2023-10-01' 
           AND ie.cod_dane_ie = $cod_dane_ie 
-          GROUP BY entornoHogar.num_doc_est 
-          ORDER BY entornoHogar.num_doc_est ASC";
+          GROUP BY entornohogar.num_doc_est 
+          ORDER BY entornohogar.num_doc_est ASC";
             $res = $mysqli->query($query);
 
             if (!$res) {
@@ -138,9 +138,9 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
             $paginacion->records($num_registros);
             $paginacion->records_per_page($resul_x_pagina);
 
-            $consulta = "SELECT entornoHogar.*, estudiantes.*, ie.*, COUNT(entornoHogar.num_doc_est) as veces_aplicada 
-             FROM entornoHogar 
-             INNER JOIN estudiantes ON entornoHogar.num_doc_est = estudiantes.num_doc_est 
+            $consulta = "SELECT entornohogar.*, estudiantes.*, ie.*, COUNT(entornohogar.num_doc_est) as veces_aplicada 
+             FROM entornohogar 
+             INNER JOIN estudiantes ON entornohogar.num_doc_est = estudiantes.num_doc_est 
              INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
              INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
              WHERE (estudiantes.num_doc_est LIKE '%$num_doc_est%') 
@@ -148,8 +148,8 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
              AND (estudiantes.grado_est LIKE '%$grado_est%')
              AND fecha_alta_hog >= '2023-10-01' 
              AND ie.cod_dane_ie = $cod_dane_ie 
-             GROUP BY entornoHogar.num_doc_est 
-             ORDER BY entornoHogar.num_doc_est ASC 
+             GROUP BY entornohogar.num_doc_est 
+             ORDER BY entornohogar.num_doc_est ASC 
              LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . ", " . $resul_x_pagina;
             $result = $mysqli->query($consulta);
 
@@ -172,7 +172,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                 <td data-label="REALIZÓ">' . utf8_encode($row['nombre_encuestador_hog']) . '</td>
                 <td data-label="MODIFICADA EL">' . $row['fecha_edit_hog'] . '</td>
                 <td data-label="VECES APLICADA" class="' . $veces_clase . '">' . $row['veces_aplicada'] . '</td>
-                <td data-label="VER ENCUESTAS"><a href="viewEntornoHogar.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/search.png" width=28 height=28></a></td>
+                <td data-label="VER ENCUESTAS"><a href="viewentornohogar.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/search.png" width=28 height=28></a></td>
                  <td data-label="EXPORTAR"><a href="exportarSurveysHogar.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/excel.png" width=32 height=32></a></td>
             </tr>';
             }
