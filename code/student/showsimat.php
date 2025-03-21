@@ -85,7 +85,7 @@ require_once("../../zebra.php");
 @$nom_ape_est = ($_GET['nom_ape_est']);
 @$grado_est = ($_GET['grado_est']);
 
-$query = "SELECT * FROM `estudiantes` INNER JOIN `ieSede` ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie WHERE (num_doc_est LIKE '%".$num_doc_est."%') AND (nom_ape_est LIKE '%".$nom_ape_est."%') AND (grado_est LIKE '%".$grado_est."%') AND estudiantes.fecha_edit_est <= '2023-01-01' AND estudiantes.estado_est = 1 AND ie.cod_dane_ie=$cod_dane_ie ORDER BY num_doc_est ASC";
+$query = "SELECT * FROM `estudiantes` INNER JOIN `ieSede` ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie WHERE (num_doc_est LIKE '%".$num_doc_est."%') AND (nom_ape_est LIKE '%".$nom_ape_est."%') AND (grado_est = '".$grado_est."') AND estudiantes.fecha_edit_est <= '2023-01-01' AND estudiantes.estado_est = 1 AND ie.cod_dane_ie=$cod_dane_ie ORDER BY num_doc_est ASC";
 $res = $mysqli->query($query);
 $num_registros = mysqli_num_rows($res);
 $resul_x_pagina = 200;
@@ -96,7 +96,7 @@ if ($res) {
     $paginacion->records($num_registros);
     $paginacion->records_per_page($resul_x_pagina);
 
-    $consulta = "SELECT * FROM `estudiantes` INNER JOIN `ieSede` ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie WHERE (num_doc_est LIKE '%".$num_doc_est."%') AND (nom_ape_est LIKE '%".$nom_ape_est."%') AND (grado_est LIKE '%".$grado_est."%') AND estudiantes.fecha_edit_est <= '2023-01-01' AND estudiantes.estado_est = 1 AND ie.cod_dane_ie=$cod_dane_ie ORDER BY num_doc_est ASC LIMIT " .(($paginacion->get_page() - 1) * $resul_x_pagina). "," .$resul_x_pagina;
+    $consulta = "SELECT * FROM `estudiantes` INNER JOIN `ieSede` ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie WHERE (num_doc_est LIKE '%".$num_doc_est."%') AND (nom_ape_est LIKE '%".$nom_ape_est."%') AND (grado_est = '".$grado_est."') AND estudiantes.fecha_edit_est <= '2023-01-01' AND estudiantes.estado_est = 1 AND ie.cod_dane_ie=$cod_dane_ie ORDER BY num_doc_est ASC LIMIT " .(($paginacion->get_page() - 1) * $resul_x_pagina). "," .$resul_x_pagina;
     $result = $mysqli->query($consulta);
 
     if ($result) {

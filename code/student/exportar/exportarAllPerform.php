@@ -35,7 +35,7 @@ $sql = "SELECT * FROM desempeno
         INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
         INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
         WHERE ie.cod_dane_ie = $cod_dane_ie 
-    ORDER BY num_doc_est ASC ";
+    ORDER BY desempeno.num_doc_est ASC ";
 // Ejecutar la consulta
 $res = mysqli_query($mysqli, $sql);
 // Verificar si la consulta se ejecutó correctamente

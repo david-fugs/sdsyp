@@ -74,22 +74,41 @@ date_default_timezone_set("America/Bogota");
 include("../../conexion.php");
 require_once("../../zebra.php");
 
-	@$num_doc_est = ($_GET['num_doc_est']);
-	@$nom_ape_est = ($_GET['nom_ape_est']);
+@$num_doc_est = ($_GET['num_doc_est']);
+@$nom_ape_est = ($_GET['nom_ape_est']);
+$grado_est = isset($_GET['grado_est']) ? $_GET['grado_est'] : '';
 
-	$query = "SELECT * FROM estudiantes INNER JOIN `ieSede` ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie WHERE (num_doc_est LIKE '%".$num_doc_est."%') AND (nom_ape_est LIKE '%".$nom_ape_est."%') AND fecha_edit_est>='2023-10-01' AND ie.cod_dane_ie=$cod_dane_ie ORDER BY estudiantes.num_doc_est ASC";
-	$res = $mysqli->query($query);
-	$num_registros = mysqli_num_rows($res);
-	$resul_x_pagina = 200;
-	
-	if ($res) {
+// Construir la parte de la consulta condicionalmente
+$condiciones = [];
+$condiciones[] = "(num_doc_est LIKE '%" . $mysqli->real_escape_string($num_doc_est) . "%')";
+$condiciones[] = "(nom_ape_est LIKE '%" . $mysqli->real_escape_string($nom_ape_est) . "%')";
+$condiciones[] = "fecha_edit_est >= '2023-10-01'";
+$condiciones[] = "ie.cod_dane_ie = $cod_dane_ie";
 
-	    $paginacion = new Zebra_Pagination();
-	    $paginacion->records($num_registros);
-	    $paginacion->records_per_page($resul_x_pagina);
+// Agregar la condición de grado_est solo si está definido y no está vacío
+if (!empty($grado_est)) {
+    $condiciones[] = "grado_est = '" . $mysqli->real_escape_string($grado_est) . "'";
+}
 
-	    $consulta = "SELECT * FROM estudiantes INNER JOIN `ieSede` ON estudiantes.cod_dane_ieSede=ieSede.cod_dane_ieSede INNER JOIN ie ON ieSede.cod_dane_ie=ie.cod_dane_ie WHERE (num_doc_est LIKE '%".$num_doc_est."%') AND (nom_ape_est LIKE '%".$nom_ape_est."%') AND fecha_edit_est>='2023-10-01' AND ie.cod_dane_ie=$cod_dane_ie ORDER BY estudiantes.num_doc_est ASC LIMIT " .(($paginacion->get_page() - 1) * $resul_x_pagina). "," .$resul_x_pagina;
-		$result = $mysqli->query($consulta);
+// Unir las condiciones en la consulta
+$query = "SELECT * FROM estudiantes 
+          INNER JOIN `ieSede` ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
+          INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
+          WHERE " . implode(" AND ", $condiciones) . " 
+          ORDER BY estudiantes.num_doc_est ASC";
+
+$res = $mysqli->query($query);
+$num_registros = mysqli_num_rows($res);
+$resul_x_pagina = 200;
+
+if ($res) {
+    $paginacion = new Zebra_Pagination();
+    $paginacion->records($num_registros);
+    $paginacion->records_per_page($resul_x_pagina);
+
+    // Construir la consulta paginada con las mismas condiciones
+    $consulta = $query . " LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . ", " . $resul_x_pagina;
+    $result = $mysqli->query($consulta);
 
 		 if ($result) {
 	        echo '<br>';

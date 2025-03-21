@@ -21,7 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $loteDatos = [];
     $contadorRegistros = 0;
     $loteTamano = 1000;
-
     foreach ($sheet->getRowIterator() as $row) {
         $cellIterator = $row->getCellIterator();
         $cellIterator->setIterateOnlyExistingCells(false);

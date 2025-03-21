@@ -78,9 +78,9 @@ $sheet->getStyle('A1:L1')->applyFromArray([
 ]);
 
 
-$sql = "SELECT prepostnatales.*, estudiantes.nom_ape_est 
-        FROM prepostnatales
-        JOIN estudiantes ON prepostnatales.num_doc_est = estudiantes.num_doc_est
+$sql = "SELECT prePostnatales.*, estudiantes.nom_ape_est 
+        FROM prePostnatales
+        JOIN estudiantes ON prePostnatales.num_doc_est = estudiantes.num_doc_est
         WHERE id_prePostnatales = $id_prePost";
 // Ejecutar la consulta
 $res = mysqli_query($mysqli, $sql);

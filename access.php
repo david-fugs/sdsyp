@@ -215,6 +215,20 @@ print_r($_SESSION);
               <a href="code/student/question/checkQuestion.php" class="nav_link sublink">Encuestas Realizadas</a>
             </ul>
           </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-chart-pie"></i>
+              </span>
+              <span class="navlink">Cargar Estudiantes</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/uploadData/loadData.php" class="nav_link sublink">Subir Excel</a>
+            </ul>
+          </li>
+
 
           <li class="item">
             <div href="#" class="nav_link submenu_item">
@@ -310,9 +324,9 @@ print_r($_SESSION);
     </nav>
   <?php } ?>
 
-   <!--********************************INICIA MENÚ DOCENTE********************************-->
+  <!--********************************INICIA MENÚ DOCENTE********************************-->
 
-   <?php if ($tipo_usuario == 3) { ?>
+  <?php if ($tipo_usuario == 3) { ?>
     <!-- sidebar -->
     <nav class="sidebar">
       <div class="menu_content">
@@ -425,187 +439,9 @@ print_r($_SESSION);
     </nav>
   <?php } ?>
 
-    <!--********************************INICIA MENÚ DIRECTIVO DOCENTE********************************-->
+  <!--********************************INICIA MENÚ DIRECTIVO DOCENTE********************************-->
 
-    <?php if ($tipo_usuario == 4) { ?>
-    <!-- sidebar -->
-    <nav class="sidebar">
-      <div class="menu_content">
-        <ul class="menu_items">
-          <div class="menu_title menu_dahsboard"></div>
-
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-address-card"></i>
-              </span>
-
-              <span class="navlink">SIMAT Info. General</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-
-            <ul class="menu_items submenu">
-              <a href="code/student/showsimat.php" class="nav_link sublink">Actualizar Datos</a></a>
-              <a href="code/student/checksimat.php" class="nav_link sublink">Estudiantes Actualizados</a>
-            </ul>
-          </li>
-
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-baby-carriage"></i>
-              </span>
-
-              <span class="navlink">Pre Post-Natales</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-
-            <ul class="menu_items submenu">
-              <a href="code/student/showprePostnatales.php" class="nav_link sublink">Aplicar Encuesta</a>
-              <a href="code/student/checkprePostnatales.php" class="nav_link sublink">Encuestas Realizadas</a>
-            </ul>
-          </li>
-
-
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-house-user"></i>
-              </span>
-
-              <span class="navlink">Entorno Hogar - Vivienda</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-
-            <ul class="menu_items submenu">
-              <a href="code/home/showentornoHogar.php" class="nav_link sublink">Aplicar Encuesta</a>
-              <a href="code/home/checkentornoHogar.php" class="nav_link sublink">Encuestas Realizadas</a>
-            </ul>
-          </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-people-roof"></i>
-              </span>
-
-              <span class="navlink">Salud y Familia</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-
-            <ul class="menu_items submenu">
-              <a href="code/student/showHealthFamily.php" class="nav_link sublink">Aplicar Encuesta</a>
-              <a href="code/student/checkHealthFamily.php" class="nav_link sublink">Encuestas Realizadas</a>
-            </ul>
-          </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-school"></i>
-              </span>
-
-              <span class="navlink">Educación y Formación</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-
-            <ul class="menu_items submenu">
-              <a href="code/student/showEducation.php" class="nav_link sublink">Aplicar Encuesta</a>
-              <a href="code/student/checkEducation.php" class="nav_link sublink">Encuestas Realizadas</a>
-            </ul>
-          </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-book-bookmark"></i>
-              </span>
-
-              <span class="navlink">Desempeño Académico</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-
-            <ul class="menu_items submenu">
-              <a href="code/student/showPerformance.php" class="nav_link sublink">Aplicar Encuesta</a>
-              <a href="code/student/checkPerformance.php" class="nav_link sublink">Encuestas Realizadas</a>
-            </ul>
-          </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-baby"></i>
-              </span>
-
-              <span class="navlink">Desarrollo Preescolar</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-
-            <ul class="menu_items submenu">
-              <a href="code/student/showPreescolar.php" class="nav_link sublink">Aplicar Encuesta</a>
-              <a href="code/student/preescolar/checkPreescolar.php" class="nav_link sublink">Encuestas Realizadas</a>
-            </ul>
-          </li>
-
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-person"></i>
-              </span>
-
-              <span class="navlink">Desarrollo Personal</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-
-            <ul class="menu_items submenu">
-              <a href="code/student/showPersonal.php" class="nav_link sublink">Aplicar Encuesta</a>
-              <a href="code/student/personal/checkPersonal.php" class="nav_link sublink">Encuestas Realizadas</a>
-            </ul>
-          </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-sharp fa-solid fa-book"></i>
-              </span>
-
-              <span class="navlink">Preguntas al Estudiante</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-
-            <ul class="menu_items submenu">
-              <a href="code/student/showQuestions.php" class="nav_link sublink">Aplicar Encuesta</a>
-              <a href="code/student/question/checkQuestion.php" class="nav_link sublink">Encuestas Realizadas</a>
-            </ul>
-          </li>
-
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-screwdriver-wrench"></i>
-              </span>
-              <span class="navlink">Mi Cuenta</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-
-            <ul class="menu_items submenu">
-              <a href="reset-password.php" class="nav_link sublink">Cambiar Contraseña</a>
-            </ul>
-          </li>
-
-          <!-- Sidebar Open / Close -->
-          <div class="bottom_content">
-            <div class="bottom expand_sidebar">
-              <span> Expand</span>
-              <i class='bx bx-log-in'></i>
-            </div>
-            <div class="bottom collapse_sidebar">
-              <span> Collapse</span>
-              <i class='bx bx-log-out'></i>
-            </div>
-          </div>
-      </div>
-    </nav>
-  <?php } ?>
-
-    <!--********************************INICIA DOCENTE ORIENTADOR********************************-->
-
-    <?php if ($tipo_usuario == 5) { ?>
+  <?php if ($tipo_usuario == 4) { ?>
     <!-- sidebar -->
     <nav class="sidebar">
       <div class="menu_content">
@@ -781,9 +617,202 @@ print_r($_SESSION);
     </nav>
   <?php } ?>
 
-    <!--********************************INICIA MENÚ ADMINISTRATIVO********************************-->
+  <!--********************************INICIA DOCENTE ORIENTADOR********************************-->
 
-    <?php if ($tipo_usuario == 6) { ?>
+  <?php if ($tipo_usuario == 5) { ?>
+    <!-- sidebar -->
+    <nav class="sidebar">
+      <div class="menu_content">
+        <ul class="menu_items">
+          <div class="menu_title menu_dahsboard"></div>
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-address-card"></i>
+              </span>
+
+              <span class="navlink">SIMAT Info. General</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/student/showsimat.php" class="nav_link sublink">Actualizar Datos</a></a>
+              <a href="code/student/checksimat.php" class="nav_link sublink">Estudiantes Actualizados</a>
+            </ul>
+          </li>
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-baby-carriage"></i>
+              </span>
+
+              <span class="navlink">Pre Post-Natales</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/student/showprePostnatales.php" class="nav_link sublink">Aplicar Encuesta</a>
+              <a href="code/student/checkprePostnatales.php" class="nav_link sublink">Encuestas Realizadas</a>
+            </ul>
+          </li>
+
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-house-user"></i>
+              </span>
+
+              <span class="navlink">Entorno Hogar - Vivienda</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/home/showentornoHogar.php" class="nav_link sublink">Aplicar Encuesta</a>
+              <a href="code/home/checkentornoHogar.php" class="nav_link sublink">Encuestas Realizadas</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-people-roof"></i>
+              </span>
+
+              <span class="navlink">Salud y Familia</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/student/showHealthFamily.php" class="nav_link sublink">Aplicar Encuesta</a>
+              <a href="code/student/checkHealthFamily.php" class="nav_link sublink">Encuestas Realizadas</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-school"></i>
+              </span>
+
+              <span class="navlink">Educación y Formación</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/student/showEducation.php" class="nav_link sublink">Aplicar Encuesta</a>
+              <a href="code/student/checkEducation.php" class="nav_link sublink">Encuestas Realizadas</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-book-bookmark"></i>
+              </span>
+
+              <span class="navlink">Desempeño Académico</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/student/showPerformance.php" class="nav_link sublink">Aplicar Encuesta</a>
+              <a href="code/student/checkPerformance.php" class="nav_link sublink">Encuestas Realizadas</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-baby"></i>
+              </span>
+
+              <span class="navlink">Desarrollo Preescolar</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/student/showPreescolar.php" class="nav_link sublink">Aplicar Encuesta</a>
+              <a href="code/student/preescolar/checkPreescolar.php" class="nav_link sublink">Encuestas Realizadas</a>
+            </ul>
+          </li>
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-person"></i>
+              </span>
+
+              <span class="navlink">Desarrollo Personal</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/student/showPersonal.php" class="nav_link sublink">Aplicar Encuesta</a>
+              <a href="code/student/personal/checkPersonal.php" class="nav_link sublink">Encuestas Realizadas</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-sharp fa-solid fa-book"></i>
+              </span>
+
+              <span class="navlink">Preguntas al Estudiante</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/student/showQuestions.php" class="nav_link sublink">Aplicar Encuesta</a>
+              <a href="code/student/question/checkQuestion.php" class="nav_link sublink">Encuestas Realizadas</a>
+            </ul>
+          </li>
+
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-chart-pie"></i>
+              </span>
+              <span class="navlink">Cargar Estudiantes</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/uploadData/loadData.php" class="nav_link sublink">Subir Excel</a>
+            </ul>
+          </li>
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+              </span>
+              <span class="navlink">Mi Cuenta</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="reset-password.php" class="nav_link sublink">Cambiar Contraseña</a>
+            </ul>
+          </li>
+
+          <!-- Sidebar Open / Close -->
+          <div class="bottom_content">
+            <div class="bottom expand_sidebar">
+              <span> Expand</span>
+              <i class='bx bx-log-in'></i>
+            </div>
+            <div class="bottom collapse_sidebar">
+              <span> Collapse</span>
+              <i class='bx bx-log-out'></i>
+            </div>
+          </div>
+      </div>
+    </nav>
+  <?php } ?>
+
+  <!--********************************INICIA MENÚ ADMINISTRATIVO********************************-->
+
+  <?php if ($tipo_usuario == 6) { ?>
     <!-- sidebar -->
     <nav class="sidebar">
       <div class="menu_content">

@@ -163,7 +163,7 @@ $cod_dane_ie = $_SESSION['cod_dane_ie'];
                 <td data-label="MODIFICADA EL">' . $row['fecha_edit_prePostnatales'] . '</td>
                 <td data-label="VECES APLICADA" class="' . $veces_clase . '">' . $row['veces_aplicada'] . '</td>
                 <td data-label="VER ENCUESTAS"><a href="viewSurveys.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/search.png" width=28 height=28></a></td>
-        <td data-label="EXPORTAR"><a href="exportar/exportarSurveysPreP.php?num_doc_est=' . $row['num_doc_est'] . '"><img src="../../img/excel.png" width=32 height=32></a></td>
+        <td data-label="EXPORTAR"><a href="exportar/exportarIndivPrePos.php?id_prePost=' . $row['id_prePostnatales'] . '"><img src="../../img/excel.png" width=32 height=32></a></td>
             </tr>';
             }
 

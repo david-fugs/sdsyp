@@ -3,6 +3,7 @@ require '../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 session_start();
 include("../../../conexion.php");
 date_default_timezone_set("America/Bogota");
@@ -29,15 +30,14 @@ function Si1No2($value)
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
-$sql = "SELECT  prepostnatales.*, estudiantes.nom_ape_est 
-        FROM prepostnatales 
-        JOIN estudiantes ON prepostnatales.num_doc_est = estudiantes.num_doc_est
+$sql = "SELECT  prePostnatales.*, estudiantes.nom_ape_est 
+        FROM prePostnatales 
+        JOIN estudiantes ON prePostnatales.num_doc_est = estudiantes.num_doc_est
          INNER JOIN ieSede ON estudiantes.cod_dane_ieSede = ieSede.cod_dane_ieSede 
         INNER JOIN ie ON ieSede.cod_dane_ie = ie.cod_dane_ie 
         WHERE ie.cod_dane_ie = $cod_dane_ie 
-         ORDER BY prepostnatales.num_doc_est ASC 
             ";
-   
+
 // Ejecutar la consulta
 $res = mysqli_query($mysqli, $sql);
 // Verificar si la consulta se ejecutó correctamente
