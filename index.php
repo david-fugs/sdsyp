@@ -28,6 +28,7 @@
           $_SESSION['nombre'] = $row['nombre'];
           $_SESSION['tipo_usuario'] = $row['tipo_usuario'];
           $_SESSION['cod_dane_ie'] = $row['cod_dane_ie'];
+          $_SESSION['usuario'] = $row['usuario'];
 
           if($row['tipo_usuario']==1)
           {

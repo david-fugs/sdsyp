@@ -9,7 +9,6 @@ $usuario      = $_SESSION['usuario'];
 $nombre       = $_SESSION['nombre'];
 $tipo_usuario = $_SESSION['tipo_usuario'];
 $cod_dane_ie  = $_SESSION['cod_dane_ie'];
-print_r($_SESSION);
 ?>
 
 <!DOCTYPE html>
