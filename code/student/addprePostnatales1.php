@@ -58,7 +58,6 @@
             }
 
             $sql = "INSERT INTO prePostnatales (num_doc_est, fecha_dig_prePostnatales, mun_dig_prePostnatales, nombre_encuestador_prePostnatales, rol_encuestador_prePostnatales, edad_madre_prePostnatales, gestacion_meses_prePostnatales, embarazo_mama_prePostnatales, lactancia_mama_prePostnatales, gateo_prePostnatales, camino_prePostnatales, fecha_alta_prePostnatales, fecha_edit_prePostnatales, id_usu) values ('$num_doc_est','$fecha_dig_prePostnatales', '$mun_dig_prePostnatales', '$nombre_encuestador_prePostnatales', '$rol_encuestador_prePostnatales', '$edad_madre_prePostnatales','$gestacion_meses_prePostnatales','$embarazo_mama_prePostnatales','$lactancia_mama_prePostnatales', '$gateo_prePostnatales', '$camino_prePostnatales', '$fecha_alta_prePostnatales', '$fecha_edit_prePostnatales','$id_usu')";
-            $resultado = $mysqli->query($sql);
             // Ejecutar la consulta
             if ($mysqli->query($sql) === TRUE) {
                 echo "Registro insertado correctamente.";
