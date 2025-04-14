@@ -1,0 +1,74 @@
+th {
+  font-size: 15px;
+}
+
+td {
+  font-size: 15px;
+}
+
+.responsive {
+  max-width: 100%;
+  height: auto;
+}
+
+.selector-for-some-widget {
+  box-sizing: content-box;
+}
+
+.pending {
+  background-color: orange;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+}
+
+.ok {
+  background-color: lightblue;
+  color: black;
+  font-weight: bold;
+  text-align: center;
+}
+
+.disabled-link {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.form-select select {
+    font-size: 14px;       /* Tamaño de la letra */
+    height: 30px;          /* Altura del select */
+    padding: 2px 8px;      /* Espaciado interno */
+    width: 100px;           /* Ancho automático o personalizado */
+    max-width: 100px;      /* Limita el tamaño máximo si es necesario */
+    display: inline-block; /* Para que quede en la misma línea */
+}
+
+.form-inline-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.custom-inline {
+  min-width: 150px;
+  max-width: 250px;
+  flex: 1;
+}
+
+#refInput {
+  max-width: 150px;
+}
+
+#validateButton {
+  white-space: nowrap;
+  padding: 8px 16px;
+}
+/*
+*/
+
+.form_firstline {
+  display: flex;
+      gap: 30px;
+  }

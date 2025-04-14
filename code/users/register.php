@@ -21,7 +21,7 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>FICHA</title>
+        <title>SDSYP</title>
         <link rel="stylesheet" href="../../css/bootstrap.min.css">
         <script type="text/javascript" src="../../js/jquery.min.js"></script>
         <script type="text/javascript" src="../../js/popper.min.js"></script>
@@ -84,9 +84,8 @@
         $password = mysqli_real_escape_string($mysqli, $password);
         $nombre = stripslashes($_REQUEST['nombre']);
         $tipo_usuario = 7;
-        $cod_dane_ie = stripslashes($_REQUEST['cod_dane_ie']);
         
-        $query = "INSERT INTO `usuarios` (usuario, password, tipo_usuario, nombre, cod_dane_ie) VALUES ('$usuario', '".sha1($password)."', '$tipo_usuario', '$nombre', '$cod_dane_ie')";
+        $query = "INSERT INTO `usuarios` (usuario, password, tipo_usuario, nombre) VALUES ('$usuario', '".sha1($password)."', '$tipo_usuario', '$nombre')";
         $result = mysqli_query($mysqli, $query);
         if ($result) {
             echo "<center><p style='border-radius: 20px;box-shadow: 10px 10px 5px #c68615; font-size: 23px; font-weight: bold;' >REGISTRO CREADO SATISFACTORIAMENTE<br><br></p></center>
@@ -105,25 +104,6 @@
                         <div class="col-12 col-sm-6">
                             <label for="nombre">* NOMBRES COMPLETOS (persona que se registra):</label>
                             <input type='text' name='nombre' class='form-control' id="nombre" required autofocus style="text-transform:uppercase;" />
-                        </div>
-                        <div class="col-12 col-sm-6">
-                            <label for="cod_dane_ie">* ESTABLECIMIENTO EDUCATIVO:</label>
-                            <select name='cod_dane_ie' class='form-control' required id='selectIE' />
-                                <option value=''></option>
-                                    <?php
-                                        header('Content-Type: text/html;charset=utf-8');
-                                        $consulta = 'SELECT * FROM ie';
-                                        $res = mysqli_query($mysqli, $consulta);
-                                        $num_reg = mysqli_num_rows($res);
-                                        while ($row = $res->fetch_array()) {
-                                    ?>
-                                <option value='<?php echo $row['cod_dane_ie']; ?>'>
-                                        <?php echo $row['nombre_ie']; ?>
-                                </option>
-                                    <?php
-                                        }
-                                    ?>    
-                            </select>
                         </div>
                     </div>
                 </div>

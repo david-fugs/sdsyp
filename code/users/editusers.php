@@ -19,7 +19,7 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>FICHA</title>
+    <title>SDSYP</title>
     <link href="../../css/bootstrap.min.css" rel="stylesheet">
     <link href="../../fontawesome/css/all.css" rel="stylesheet">
     <script type="text/javascript" src="../../js/jquery.min.js"></script>
@@ -105,43 +105,14 @@
                         <label for="tipo_usuario">* TIPO DE ACCESO:</label>
                         <select class="form-control" name="tipo_usuario" required id="selctUsuario" />
                             <option value="">SELECCIONE:</option>
-                            <option value=1 <?php if($row['tipo_usuario']==1){echo 'selected';} ?>>RECTOR</option>
-                            <option value=2 <?php if($row['tipo_usuario']==2){echo 'selected';} ?>>SIMAT</option>
-                            <option value=3 <?php if($row['tipo_usuario']==3){echo 'selected';} ?>>DOCENTE</option>
-                            <option value=4 <?php if($row['tipo_usuario']==4){echo 'selected';} ?>>DOCENTE DIRECTIVO</option>
-                            <option value=5 <?php if($row['tipo_usuario']==5){echo 'selected';} ?>>DOCENTE ORIENTADOR</option>
-                            <option value=6 <?php if($row['tipo_usuario']==6){echo 'selected';} ?>>ADMINISTRATIVO</option>
+                            <option value=1 <?php if($row['tipo_usuario']==1){echo 'selected';} ?>>ADMIN</option>
+                            <option value=2 <?php if($row['tipo_usuario']==2){echo 'selected';} ?>>EMPLEADO</option>
                             <option value=7 <?php if($row['tipo_usuario']==7){echo 'selected';} ?>>SIN ACCESO</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <div class="row">
-                    <div class="col-12 col-sm-6">
-                        <label for="cod_dane_ie">* INSTITUCIÓN EDUCATIVA:</label>
-                        <select name='cod_dane_ie' class='form-control' id="selectIE" required />
-                            <option value=''></option>
-                                <?php
-                                    header('Content-Type: text/html;charset=utf-8');
-                                    $consulta='SELECT * FROM ie';
-                                    $res = mysqli_query($mysqli,$consulta);
-                                    $num_reg = mysqli_num_rows($res);
-                                    while($row1 = $res->fetch_array())
-                                    {
-                                ?>
-                            <option value='<?php echo $row1['cod_dane_ie']; ?>'<?php if($row['cod_dane_ie']==$row1['cod_dane_ie']){echo 'selected';} ?>>
-                                <?php echo utf8_encode($row1['nombre_ie']); ?>
-                            </option>
-   
-                                    <?php
-                                    }
-                                    ?>    
-                        </select>
-                    </div>
-                </div>
-            </div>
             <hr style="border: 2px solid #16087B; border-radius: 2px;">
 
             <button type="submit" class="btn btn-primary" name="btn-update">
