@@ -10,7 +10,6 @@
     <link rel="stylesheet" type="text/css" href="../../css/estilos2024.css">
     <link rel="stylesheet" href="styleSell.css">
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
@@ -19,9 +18,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
 </head>
 <?php
 include("../../conexion.php");
@@ -66,11 +64,25 @@ function deleteMember($cedula_persona)
 
     <div class="flex">
         <div class="box">
-            <form action="showitems.php" method="get" class="form">
-                <input name="upc_item" type="text" placeholder="Upc ">
-                <input name="item" type="text" placeholder="Item">
-                <input name="ref" type="text" placeholder="Reference">
-                <input value="Search" type="submit">
+            <form action="seePerson.php" method="get" class="form">
+                <input name="cedula_persona" type="number" placeholder="Cédula"
+                    value="<?= isset($_GET['cedula_persona']) ? htmlspecialchars($_GET['cedula_persona']) : '' ?>">
+
+                <input name="nombre" type="text" placeholder="Nombre"
+                    value="<?= isset($_GET['nombre']) ? htmlspecialchars($_GET['nombre']) : '' ?>">
+
+                <select name="programa">
+                    <option value="">Selecciona programa</option>
+                    <?php foreach ($result_programas as $programa) {
+                        $selected = (isset($_GET['programa']) && $_GET['programa'] == $programa['id_programa']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $programa['id_programa']; ?>" <?= $selected ?>>
+                            <?= $programa['nombre_programa']; ?>
+                        </option>
+                    <?php } ?>
+                </select>
+
+                <input value="Buscar" type="submit">
             </form>
         </div>
     </div>
@@ -187,7 +199,7 @@ function deleteMember($cedula_persona)
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-                <form action="editSucursal.php" method="POST">
+                <form action="editPersona.php" method="POST">
                     <div class="modal-body px-4 py-3">
 
                         <div class="mb-3">
@@ -210,7 +222,24 @@ function deleteMember($cedula_persona)
                             <label for="edit-referencia" class="form-label">Referencia</label>
                             <input type="text" class="form-control" id="edit-referencia" name="referencia_persona">
                         </div>
+                        <div class="mb-3">
+                            <label for="edit-programas" class="form-label">Programas</label>
 
+                            <?php foreach ($result_programas as $programa) { ?>
+                                <div class="form-check">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        name="programa[]"
+                                        id="programa_<?= $programa['id_programa']; ?>"
+                                        value="<?= $programa['id_programa']; ?>">
+                                    <label class="form-check-label" for="programa_<?= $programa['id_programa']; ?>">
+                                        <?= $programa['nombre_programa']; ?>
+                                    </label>
+                                </div>
+                            <?php } ?>
+                        </div>
+                        <input type="hidden" name="cedula_original" id="cedula_original" value="">
 
                     </div>
 
@@ -227,41 +256,29 @@ function deleteMember($cedula_persona)
 </body>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        let modalEdicion = document.getElementById("modalEdicion");
+        const modalEdicion = document.getElementById("modalEdicion");
 
-        modalEdicion.addEventListener("show.bs.modal", function(event) {
-            let button = event.relatedTarget; // Botón que abrió el modal
+        modalEdicion.addEventListener("shown.bs.modal", function(event) {
+            const button = event.relatedTarget;
 
+            // Datos generales
             document.getElementById("edit-cedula").value = button.getAttribute("data-cedula");
             document.getElementById("edit-nombre").value = button.getAttribute("data-nombre");
             document.getElementById("edit-apellido").value = button.getAttribute("data-apellidos");
             document.getElementById("edit-telefono").value = button.getAttribute("data-telefono");
             document.getElementById("edit-referencia").value = button.getAttribute("data-referencia");
+            document.getElementById("cedula_original").value = button.getAttribute("data-cedula");
 
-
-
-        });
-
-        // Enviar datos al servidor con AJAX al hacer clic en "Guardar cambios"
-        document.getElementById("guardarCambios").addEventListener("click", function() {
-            let formData = new FormData(document.getElementById("formEditar"));
-
-            fetch("editItems.php", {
-                    method: "POST",
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("Registro actualizado correctamente");
-                        window.location.reload(); // Recargar la página para ver los cambios
-                    } else {
-                        alert("Error al actualizar");
-                    }
-                })
-                .catch(error => console.error("Error:", error));
+            // Programas
+            const idsProgramas = button.getAttribute("data-ids-programas");
+            const idsArray = idsProgramas.split(",").map(id => id.trim());
+            const checkboxes = modalEdicion.querySelectorAll('input[name="programa[]"]');
+            checkboxes.forEach(cb => {
+                cb.checked = idsArray.includes(cb.value);
+            });
         });
     });
 </script>
+
 
 </html>

@@ -1,14 +1,35 @@
 <?php
 session_start();
 include("../../conexion.php");
+$where = "WHERE p.estado_persona = 1";
+
+// Filtro por cédula
+if (!empty($_GET['cedula_persona'])) {
+    $cedula = $mysqli->real_escape_string($_GET['cedula_persona']);
+    $where .= " AND p.cedula_persona = '$cedula'";
+}
+
+// Filtro por nombre
+if (!empty($_GET['nombre'])) {
+    $nombre = $mysqli->real_escape_string($_GET['nombre']);
+    $where .= " AND (p.nombres_persona LIKE '%$nombre%' OR p.apellidos_persona LIKE '%$nombre%')";
+}
+
+// Filtro por programa
+if (!empty($_GET['programa'])) {
+    $programa = $mysqli->real_escape_string($_GET['programa']);
+    $where .= " AND pp.id_programa = '$programa'";
+}
 
 // Consulta SQL para obtener los datos
 $query = "
-SELECT p.*, GROUP_CONCAT(pr.nombre_programa ORDER BY pr.nombre_programa ASC) AS programas
+SELECT p.*, 
+       GROUP_CONCAT(pr.nombre_programa ORDER BY pr.nombre_programa ASC) AS programas,
+       GROUP_CONCAT(pr.id_programa ORDER BY pr.nombre_programa ASC) AS ids_programas
 FROM personas p
-JOIN persona_programa pp ON p.cedula_persona = pp.cedula_persona
-JOIN programas pr ON pp.id_programa = pr.id_programa
-WHERE p.estado_persona = 1
+LEFT JOIN persona_programa pp ON p.cedula_persona = pp.cedula_persona
+LEFT JOIN programas pr ON pp.id_programa = pr.id_programa
+$where
 GROUP BY p.cedula_persona
 ORDER BY p.apellidos_persona ASC
 ";
@@ -36,6 +57,7 @@ if ($result->num_rows > 0) {
                     data-telefono="' . $row['telefono_persona'] . '"
                     data-referencia="' . $row['referencia_persona'] . '"
                     data-programas="' .  $row['programas']  . '"
+                     data-ids-programas="' .  $row['ids_programas']  . '"
                     style="background-color:transparent; border:none;">
                     <img src="../../img/editar.png" width="28" height="28">
                 </button>     
