@@ -43,6 +43,7 @@ if ($result->num_rows > 0) {
         echo "<td>" . $row['cedula_persona'] . "</td>";
         echo "<td>" . $row['nombres_persona'] . "</td>";
         echo "<td>" . $row['apellidos_persona'] . "</td>";
+        echo "<td>" . $row['genero_persona'] . "</td>";
         echo "<td>" . $row['telefono_persona'] . "</td>";
         echo "<td>" . $row['referencia_persona'] . "</td>";
         echo "<td>" . $row['programas'] . "</td>";
@@ -57,6 +58,7 @@ if ($result->num_rows > 0) {
                     data-telefono="' . $row['telefono_persona'] . '"
                     data-referencia="' . $row['referencia_persona'] . '"
                     data-programas="' .  $row['programas']  . '"
+                    data-genero="' . $row['genero_persona'] . '"
                      data-ids-programas="' .  $row['ids_programas']  . '"
                     style="background-color:transparent; border:none;">
                     <img src="../../img/editar.png" width="28" height="28">

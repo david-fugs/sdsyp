@@ -105,6 +105,21 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
+              <i class="fa-solid fa-people-arrows"></i>
+                <!--<i class="bx bx-home-alt"></i>-->
+              </span>
+              <span class="navlink">Formulario</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+
+            <ul class="menu_items submenu">
+              <a href="code/form/addForm.php" class="nav_link sublink">Ingresar Formulario</a>
+            </ul>
+          </li>
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
                 <i class="fa-solid fa-screwdriver-wrench"></i>
               </span>
               <span class="navlink">Mi Cuenta</span>

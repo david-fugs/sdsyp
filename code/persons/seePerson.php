@@ -102,6 +102,7 @@ function deleteMember($cedula_persona)
                     <th>Cedula</th>
                     <th>Nombres</th>
                     <th>Apellidos</th>
+                    <th>Genero</th>
                     <th>Telefono</th>
                     <th>Referencia</th>
                     <th>Programas</th>
@@ -133,10 +134,17 @@ function deleteMember($cedula_persona)
                                 <input type="text" class="form-control" id="cedula_persona" name="cedula_persona" placeholder="Cédula" required autocomplete="off" autofocus>
                                 <label class="" for="cedula_persona">Cédula</label>
                             </div>
-                            <div class="col-md-6 mb-3 form-floating">
-                                <input type="text" class="form-control" id="telefono_persona" name="telefono_persona" placeholder="Teléfono" required>
-                                <label for="telefono_persona">Teléfono</label>
+
+                            <div class="col-md-6 mb-3 form-floating mt-1">
+                                <select class="form-select" id="genero_persona" name="genero_persona" required>
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                                <label class="" for="cedula_persona">Genero</label>
                             </div>
+
                         </div>
 
                         <!-- Fila 2 -->
@@ -154,9 +162,16 @@ function deleteMember($cedula_persona)
                         <!-- Fila 3 -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <input type="text" class="form-control" id="referencia_persona" name="referencia_persona" placeholder="Referencia" required>
+                                <input type="text" class="form-control" id="referencia_persona" name="referencia_persona" placeholder="Referencia">
                                 <label for="referencia_persona">Referencia</label>
                             </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="text" class="form-control" id="telefono_persona" name="telefono_persona" placeholder="Teléfono">
+                                <label for="telefono_persona">Teléfono</label>
+                            </div>
+
+                        </div>
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label d-block">Programas</label>
                                 <?php foreach ($result_programas as $programa) { ?>
@@ -215,6 +230,15 @@ function deleteMember($cedula_persona)
                             <input type="text" class="form-control" id="edit-apellido" name="apellidos_persona">
                         </div>
                         <div class="mb-3">
+                            <label for="edit-genero" class="form-label">Genero</label>
+                            <select class="form-select" id="edit-genero" name="genero_persona">
+                                <option value="" selected disabled>Seleccione...</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label for="edit-telefono" class="form-label">Telefono</label>
                             <input type="text" class="form-control" id="edit-telefono" name="telefono_persona">
                         </div>
@@ -268,7 +292,7 @@ function deleteMember($cedula_persona)
             document.getElementById("edit-telefono").value = button.getAttribute("data-telefono");
             document.getElementById("edit-referencia").value = button.getAttribute("data-referencia");
             document.getElementById("cedula_original").value = button.getAttribute("data-cedula");
-
+            document.getElementById("edit-genero").value = button.getAttribute("data-genero");
             // Programas
             const idsProgramas = button.getAttribute("data-ids-programas");
             const idsArray = idsProgramas.split(",").map(id => id.trim());

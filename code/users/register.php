@@ -83,9 +83,10 @@
         $password = stripslashes($_REQUEST['password']);
         $password = mysqli_real_escape_string($mysqli, $password);
         $nombre = stripslashes($_REQUEST['nombre']);
+        $cedula = stripslashes($_REQUEST['cedula']);
         $tipo_usuario = 7;
         
-        $query = "INSERT INTO `usuarios` (usuario, password, tipo_usuario, nombre) VALUES ('$usuario', '".sha1($password)."', '$tipo_usuario', '$nombre')";
+        $query = "INSERT INTO `usuarios` (usuario, password, tipo_usuario, nombre,cedula_usuario) VALUES ('$usuario', '".sha1($password)."', '$tipo_usuario', '$nombre','$cedula')";
         $result = mysqli_query($mysqli, $query);
         if ($result) {
             echo "<center><p style='border-radius: 20px;box-shadow: 10px 10px 5px #c68615; font-size: 23px; font-weight: bold;' >REGISTRO CREADO SATISFACTORIAMENTE<br><br></p></center>
@@ -104,6 +105,10 @@
                         <div class="col-12 col-sm-6">
                             <label for="nombre">* NOMBRES COMPLETOS (persona que se registra):</label>
                             <input type='text' name='nombre' class='form-control' id="nombre" required autofocus style="text-transform:uppercase;" />
+                        </div>
+                        <div class="col-12 col-sm-3">
+                            <label for="cedula">* CEDULA :</label>
+                            <input type='number' name='cedula' class='form-control' id="cedula" required autofocus style="text-transform:uppercase;" />
                         </div>
                     </div>
                 </div>
