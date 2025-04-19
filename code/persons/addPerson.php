@@ -13,9 +13,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $referencia_persona = $_POST['referencia_persona'];
     $programa = $_POST['programa'];
     $genero_persona = $_POST['genero_persona'];
+    $id_grupo = $_POST['id_grupo'] ?? '';
+    $id_centro = $_POST['id_centro'] ?? '';
 
-    $sql_insert_persona = "INSERT INTO personas (cedula_persona, nombres_persona, apellidos_persona, telefono_persona, referencia_persona, genero_persona)
-    VALUES ('$cedula_persona', '$nombres_persona', '$apellidos_persona', '$telefono_persona', '$referencia_persona', '$genero_persona')";
+    //consulta
+    $sql_insert_persona = "INSERT INTO personas (cedula_persona, nombres_persona, apellidos_persona, telefono_persona, referencia_persona, genero_persona, id_grupo, id_centro,id_usuario)
+    VALUES ('$cedula_persona', '$nombres_persona', '$apellidos_persona', '$telefono_persona', '$referencia_persona', '$genero_persona', '$id_grupo', '$id_centro', '$id_usuario' )";
+
 
     // Ejecutar consulta
     if ($mysqli->query($sql_insert_persona)) {

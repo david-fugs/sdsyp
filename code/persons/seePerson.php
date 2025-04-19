@@ -29,6 +29,17 @@ if (!$result_programas) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
+$grupos = "SELECT * FROM grupos ";
+$result_grupos = mysqli_query($mysqli, $grupos);
+if (!$result_grupos) {
+    die("Error en la consulta: " . mysqli_error($mysqli));
+}
+$centros_vidas = "SELECT * FROM centro_vida ";
+$result_centros_vidas = mysqli_query($mysqli, $centros_vidas);
+if (!$result_centros_vidas) {
+    die("Error en la consulta: " . mysqli_error($mysqli));
+}
+
 if (isset($_GET['delete'])) {
     $cedula_persona = $_GET['delete'];
     deleteMember($cedula_persona);
@@ -171,6 +182,7 @@ function deleteMember($cedula_persona)
                             </div>
 
                         </div>
+                        <!-- Fila 4 -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label d-block">Programas</label>
@@ -187,6 +199,28 @@ function deleteMember($cedula_persona)
                                         </label>
                                     </div>
                                 <?php } ?>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating mt-1">
+                                <select class="form-select" id="id_grupo" name="id_grupo">
+                                    <option value="" selected>Seleccione...</option>
+                                    <?php foreach ($result_grupos as $grupo) { ?>
+                                        <option value="<?= $grupo['id_grupo']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
+                                    <?php } ?>
+                                </select>
+                                <label class="" for="cedula_persona">Grupo</label>
+                            </div>
+
+                        </div>
+                        <!-- fila 5 -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="id_centro" name="id_centro">
+                                    <option value="" selected>Seleccione...</option>
+                                    <?php foreach ($result_centros_vidas as $centro_vida) { ?>
+                                        <option value="<?= $centro_vida['id_centro_vida']; ?>"><?= $centro_vida['descripcion_centro_vida']; ?></option>
+                                    <?php } ?>
+                                </select>
+                                <label for="id_centro">Centro Vida / CPSAM</label>
                             </div>
                         </div>
                     </div>
@@ -213,10 +247,8 @@ function deleteMember($cedula_persona)
                     <h5 class="modal-title" id="modalEdicionLabel">Edit Store Info</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-
                 <form action="editPersona.php" method="POST">
                     <div class="modal-body px-4 py-3">
-
                         <div class="mb-3">
                             <label for="edit-cedula" class="form-label">Cedula </label>
                             <input type="text" class="form-control" id="edit-cedula" name="cedula_persona">
@@ -300,6 +332,27 @@ function deleteMember($cedula_persona)
             checkboxes.forEach(cb => {
                 cb.checked = idsArray.includes(cb.value);
             });
+        });
+    });
+    $(document).ready(function() {
+        $('#id_grupo').on('change', function() {
+            let idGrupo = $(this).val();
+
+            if (idGrupo) {
+                $.ajax({
+                    url: '../obtener_centros_vida.php',
+                    type: 'POST',
+                    data: {
+                        id_grupo: idGrupo
+                    },
+                    success: function(response) {
+                        $('#observacion_persona').html('<option value="" selected>Seleccione...</option>');
+                        $('#observacion_persona').append(response);
+                    }
+                });
+            } else {
+                $('#observacion_persona').html('<option value="" selected>Seleccione...</option>');
+            }
         });
     });
 </script>
