@@ -53,13 +53,10 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
       <div class="menu_content">
         <ul class="menu_items">
           <div class="menu_title menu_dahsboard"></div>
-          <!-- duplicate or remove this li tag if you want to add or remove navlink with submenu -->
-          <!-- start -->
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
                 <i class="fa-solid fa-user-pen"></i>
-                <!--<i class="bx bx-home-alt"></i>-->
               </span>
               <span class="navlink">Usuarios Plataforma</span>
               <i class="bx bx-chevron-right arrow-left"></i>
@@ -74,7 +71,6 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
               <i class="fa-solid fa-people-arrows"></i>
-                <!--<i class="bx bx-home-alt"></i>-->
               </span>
               <span class="navlink">Personas</span>
               <i class="bx bx-chevron-right arrow-left"></i>
@@ -88,7 +84,6 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
               <i class="fa-solid fa-people-arrows"></i>
-                <!--<i class="bx bx-home-alt"></i>-->
               </span>
               <span class="navlink">Metas</span>
               <i class="bx bx-chevron-right arrow-left"></i>
@@ -99,24 +94,86 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
               <a href="code/activities/seeActivity.php" class="nav_link sublink">Ver Actividades</a>
               <a href="code/action/seeActions.php" class="nav_link sublink">Ver Acciones</a>
 
-
             </ul>
           </li>
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
               <i class="fa-solid fa-people-arrows"></i>
-                <!--<i class="bx bx-home-alt"></i>-->
+              </span>
+              <span class="navlink">Condicion</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/condition/seeCondition.php" class="nav_link sublink">Ver Condiciones</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+              <i class="fa-solid fa-people-arrows"></i>
+              </span>
+              <span class="navlink">Grupo o CPSAM</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/group/seeGroup.php" class="nav_link sublink">Ver Grupo o CPSAM</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+              <i class="fa-solid fa-people-arrows"></i>
+              </span>
+              <span class="navlink">Centro Vida</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/center/seeCenter.php" class="nav_link sublink">Centro Vida</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+              <i class="fa-solid fa-people-arrows"></i>
+              </span>
+              <span class="navlink">Movimientos</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+              <i class="fa-solid fa-people-arrows"></i>
+              </span>
+              <span class="navlink">Movimientos Personas</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
+            </ul>
+          </li>
+
+
+
+
+
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+              <i class="fa-solid fa-people-arrows"></i>
               </span>
               <span class="navlink">Formulario</span>
               <i class="bx bx-chevron-right arrow-left"></i>
             </div>
-
             <ul class="menu_items submenu">
               <a href="code/form/addForm.php" class="nav_link sublink">Ingresar Formulario</a>
             </ul>
           </li>
-
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
@@ -125,13 +182,10 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
               <span class="navlink">Mi Cuenta</span>
               <i class="bx bx-chevron-right arrow-left"></i>
             </div>
-
             <ul class="menu_items submenu">
               <a href="reset-password.php" class="nav_link sublink">Cambiar Contraseña</a>
             </ul>
           </li>
-
-          <!-- Sidebar Open / Close -->
           <div class="bottom_content">
             <div class="bottom expand_sidebar">
               <span> Expand</span>
