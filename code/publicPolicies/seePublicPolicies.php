@@ -24,6 +24,12 @@
 <?php
 include("../../conexion.php");
 
+$acciones = "SELECT * FROM acciones ";
+$result_acciones = mysqli_query($mysqli, $acciones);
+if (!$result_acciones) {
+    die("Error en la consulta: " . mysqli_error($mysqli));
+}
+
 if (isset($_GET['delete'])) {
     $id_politica = $_GET['delete'];
     deleteMember($id_politica);
@@ -72,6 +78,7 @@ function deleteMember($id_politica)
                 <tr>
                     <th>ID</th>
                     <th>Descripción</th>
+                    <th>Acción</th>
                     <th>Editar</th>
                     <th>Eliminar</th>
                 </tr>
@@ -99,6 +106,17 @@ function deleteMember($id_politica)
                             <div class="col-md-12 mb-3 form-floating">
                                 <input type="text" class="form-control" id="descripcion_politica" name="descripcion_politica" placeholder="Descripción" required autofocus>
                                 <label for="descripcion_politica">Descripción Política Pública</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3 form-floating">
+                                <select class="form-select" id="id_accion" name="id_accion">
+                                    <option value="" selected>Seleccione...</option>
+                                    <?php foreach ($result_acciones as $accion) { ?>
+                                        <option value="<?= $accion['id_accion']; ?>"><?= $accion['descripcion_accion']; ?></option>
+                                    <?php } ?>
+                                </select>
+                                <label for="id_accion">Acción</label>
                             </div>
                         </div>
                     </div>
@@ -131,6 +149,15 @@ function deleteMember($id_politica)
                             <label for="edit-descripcion" class="form-label">Descripción</label>
                             <input type="text" class="form-control" id="edit-descripcion" name="descripcion_politica" required>
                         </div>
+                        <div class="mb-3">
+                            <label for="edit-accion" class="form-label">Acción</label>
+                            <select class="form-select" id="edit-accion" name="id_accion">
+                                <option value="">Seleccione...</option>
+                                <?php foreach ($result_acciones as $accion) { ?>
+                                    <option value="<?= $accion['id_accion']; ?>"><?= $accion['descripcion_accion']; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
                         <input type="hidden" name="id_politica" id="edit-id_politica">
                     </div>
                     <div class="modal-footer bg-light">
@@ -153,6 +180,7 @@ function deleteMember($id_politica)
             const button = event.relatedTarget;
             document.getElementById("edit-descripcion").value = button.getAttribute("data-descripcion_politica");
             document.getElementById("edit-id_politica").value = button.getAttribute("data-id_politica");
+            document.getElementById("edit-accion").value = button.getAttribute("data-id_accion");
         });
 
         // Inicializar DataTable

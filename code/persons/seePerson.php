@@ -34,9 +34,9 @@ $result_grupos = mysqli_query($mysqli, $grupos);
 if (!$result_grupos) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
-$centros_vidas = "SELECT * FROM centro_vida ";
-$result_centros_vidas = mysqli_query($mysqli, $centros_vidas);
-if (!$result_centros_vidas) {
+$politicas_publicas = "SELECT * FROM politicas_publicas ";
+$result_politicas_publicas = mysqli_query($mysqli, $politicas_publicas);
+if (!$result_politicas_publicas) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
@@ -55,10 +55,10 @@ function deleteMember($cedula_persona)
 
     if ($stmt->execute()) {
         echo "<script>alert('Persona borrada corecctamente');
-        window.location = 'seePerson.php';</script>";
+        window.location = 'seePersonMovement.php';</script>";
     } else {
         echo "<script>alert('Error borrando la persona');
-        window.location = 'seePerson.php';</script>";
+        window.location = 'seePersonMovement.php';</script>";
     }
 
     $stmt->close();
@@ -117,6 +117,8 @@ function deleteMember($cedula_persona)
                     <th>Telefono</th>
                     <th>Referencia</th>
                     <th>Programas</th>
+                    <th>Centro Vida / CPSAM</th>
+                    <th>Política Pública</th>
                     <th>Edit</th>
                     <th>Delete</th>
                 </tr>
@@ -207,20 +209,20 @@ function deleteMember($cedula_persona)
                                         <option value="<?= $grupo['id_grupo']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
                                     <?php } ?>
                                 </select>
-                                <label class="" for="cedula_persona">Grupo</label>
+                                <label class="" for="id_grupo">Centro Vida / CPSAM</label>
                             </div>
 
                         </div>
                         <!-- fila 5 -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="id_centro" name="id_centro">
+                                <select class="form-select" id="id_politica_publica" name="id_politica_publica">
                                     <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_centros_vidas as $centro_vida) { ?>
-                                        <option value="<?= $centro_vida['id_centro_vida']; ?>"><?= $centro_vida['descripcion_centro_vida']; ?></option>
+                                    <?php foreach ($result_politicas_publicas as $politica) { ?>
+                                        <option value="<?= $politica['id_politica']; ?>"><?= $politica['descripcion_politica']; ?></option>
                                     <?php } ?>
                                 </select>
-                                <label for="id_centro">Centro Vida / CPSAM</label>
+                                <label for="id_politica_publica">Política Pública</label>
                             </div>
                         </div>
                     </div>
@@ -295,6 +297,24 @@ function deleteMember($cedula_persona)
                                 </div>
                             <?php } ?>
                         </div>
+                        <div class="mb-3">
+                            <label for="edit-grupo" class="form-label">Centro Vida / CPSAM</label>
+                            <select class="form-select" id="edit-grupo" name="id_grupo">
+                                <option value="">Seleccione...</option>
+                                <?php foreach ($result_grupos as $grupo) { ?>
+                                    <option value="<?= $grupo['id_grupo']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-politica-publica" class="form-label">Política Pública</label>
+                            <select class="form-select" id="edit-politica-publica" name="id_politica_publica">
+                                <option value="">Seleccione...</option>
+                                <?php foreach ($result_politicas_publicas as $politica) { ?>
+                                    <option value="<?= $politica['id_politica']; ?>"><?= $politica['descripcion_politica']; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
                         <input type="hidden" name="cedula_original" id="cedula_original" value="">
 
                     </div>
@@ -325,6 +345,14 @@ function deleteMember($cedula_persona)
             document.getElementById("edit-referencia").value = button.getAttribute("data-referencia");
             document.getElementById("cedula_original").value = button.getAttribute("data-cedula");
             document.getElementById("edit-genero").value = button.getAttribute("data-genero");
+            
+            // Guardar valor original del grupo y establecer el valor actual
+            const grupoValue = button.getAttribute("data-id-grupo");
+            document.getElementById("edit-grupo").value = grupoValue;
+            $('#edit-grupo').data('original-value', grupoValue);
+            
+            document.getElementById("edit-politica-publica").value = button.getAttribute("data-id-politica-publica");
+            
             // Programas
             const idsProgramas = button.getAttribute("data-ids-programas");
             const idsArray = idsProgramas.split(",").map(id => id.trim());
@@ -339,6 +367,36 @@ function deleteMember($cedula_persona)
             let idGrupo = $(this).val();
 
             if (idGrupo) {
+                // Mostrar información del grupo y su límite
+                $.ajax({
+                    url: 'checkGroupLimit.php',
+                    type: 'POST',
+                    data: {
+                        id_grupo: idGrupo
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        // Crear elemento de información si no existe
+                        if ($('#grupo-info').length === 0) {
+                            $('#id_grupo').parent().append('<small id="grupo-info" class="text-muted mt-1"></small>');
+                        }
+                        
+                        const color = response.limitReached ? 'text-danger' : 'text-success';
+                        $('#grupo-info').removeClass('text-muted text-success text-danger').addClass(color);
+                        $('#grupo-info').text(`Personas en el grupo: ${response.personasActuales}/${response.limite}`);
+                        
+                        if (response.limitReached) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Grupo lleno',
+                                text: `El grupo "${response.grupoNombre}" ha alcanzado su límite máximo de ${response.limite} personas.`,
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                        }
+                    }
+                });
+
                 $.ajax({
                     url: '../obtener_centros_vida.php',
                     type: 'POST',
@@ -352,6 +410,128 @@ function deleteMember($cedula_persona)
                 });
             } else {
                 $('#observacion_persona').html('<option value="" selected>Seleccione...</option>');
+                $('#grupo-info').remove();
+            }
+        });
+
+        // Validar límite del grupo antes de enviar el formulario
+        $('form[action="addPerson.php"]').on('submit', function(e) {
+            const grupoId = $('#id_grupo').val();
+            
+            if (grupoId) {
+                e.preventDefault(); // Detener el envío del formulario
+                
+                // Verificar el límite del grupo
+                $.ajax({
+                    url: 'checkGroupLimit.php',
+                    type: 'POST',
+                    data: {
+                        id_grupo: grupoId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.limitReached) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Límite alcanzado',
+                                text: `El grupo "${response.grupoNombre}" ha alcanzado su límite máximo de ${response.limite} personas. Actualmente tiene ${response.personasActuales} personas.`,
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            // Si no se alcanzó el límite, enviar el formulario
+                            e.target.submit();
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al verificar el límite del grupo',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            }
+        });
+
+        // Validar límite del grupo en modal de edición
+        $('#edit-grupo').on('change', function() {
+            let idGrupo = $(this).val();
+
+            if (idGrupo) {
+                // Mostrar información del grupo y su límite
+                $.ajax({
+                    url: 'checkGroupLimit.php',
+                    type: 'POST',
+                    data: {
+                        id_grupo: idGrupo
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        // Crear elemento de información si no existe
+                        if ($('#edit-grupo-info').length === 0) {
+                            $('#edit-grupo').parent().append('<small id="edit-grupo-info" class="text-muted mt-1"></small>');
+                        }
+                        
+                        const color = response.limitReached ? 'text-danger' : 'text-success';
+                        $('#edit-grupo-info').removeClass('text-muted text-success text-danger').addClass(color);
+                        $('#edit-grupo-info').text(`Personas en el grupo: ${response.personasActuales}/${response.limite}`);
+                        
+                        if (response.limitReached) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Grupo lleno',
+                                text: `El grupo "${response.grupoNombre}" ha alcanzado su límite máximo de ${response.limite} personas.`,
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                        }
+                    }
+                });
+            } else {
+                $('#edit-grupo-info').remove();
+            }
+        });
+
+        // Validar límite del grupo antes de enviar el formulario de edición
+        $('form[action="editPersona.php"]').on('submit', function(e) {
+            const grupoId = $('#edit-grupo').val();
+            const grupoOriginal = $('#edit-grupo').data('original-value') || '';
+            
+            // Solo validar si se cambió el grupo
+            if (grupoId && grupoId !== grupoOriginal) {
+                e.preventDefault(); // Detener el envío del formulario
+                
+                // Verificar el límite del grupo
+                $.ajax({
+                    url: 'checkGroupLimit.php',
+                    type: 'POST',
+                    data: {
+                        id_grupo: grupoId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.limitReached) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Límite alcanzado',
+                                text: `El grupo "${response.grupoNombre}" ha alcanzado su límite máximo de ${response.limite} personas. Actualmente tiene ${response.personasActuales} personas.`,
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            // Si no se alcanzó el límite, enviar el formulario
+                            e.target.submit();
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al verificar el límite del grupo',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
             }
         });
     });

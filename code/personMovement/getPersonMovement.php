@@ -1,5 +1,4 @@
 <?php
-session_start();
 include("../../conexion.php");
 $where = "WHERE p.estado_persona = 1";
 
@@ -15,16 +14,16 @@ if (!empty($_GET['nombre'])) {
     $where .= " AND (p.nombres_persona LIKE '%$nombre%' OR p.apellidos_persona LIKE '%$nombre%')";
 }
 
-// Filtro por programa
-if (!empty($_GET['movimiento'])) {
-    $movimiento = $mysqli->real_escape_string($_GET['movimiento']);
-    $where .= " AND m.id_movimiento = '$movimiento'";
+// Filtro por condición
+if (!empty($_GET['condicion'])) {
+    $condicion = $mysqli->real_escape_string($_GET['condicion']);
+    $where .= " AND c.id_condicion = '$condicion'";
 }
 
 // Consulta SQL para obtener los datos
-$query = " SELECT mp.id_movimiento_persona,m.id_movimiento,p.cedula_persona,p.nombres_persona,p.apellidos_persona,m.descripcion_movimiento, mp.fecha_movimiento,mp.observacion_movimiento FROM personas as p
+$query = " SELECT mp.id_movimiento_persona,c.id_condicion,p.cedula_persona,p.nombres_persona,p.apellidos_persona,c.descripcion_condicion, mp.fecha_movimiento,mp.observacion_movimiento FROM personas as p
         JOIN movimiento_persona as mp ON p.cedula_persona = mp.cedula_persona
-        JOIN movimientos as m ON mp.id_movimiento = m.id_movimiento
+        JOIN condiciones_componente as c ON mp.id_condicion = c.id_condicion
         $where
         ORDER BY mp.fecha_movimiento DESC
 ";
@@ -38,7 +37,7 @@ if ($result->num_rows > 0) {
         echo "<td>" . $row['cedula_persona'] . "</td>";
         echo "<td>" . $row['nombres_persona'] . "</td>";
         echo "<td>" . $row['apellidos_persona'] . "</td>";
-        echo "<td>" . $row['descripcion_movimiento'] . "</td>";
+        echo "<td>" . $row['descripcion_condicion'] . "</td>";
         echo "<td>" . $row['fecha_movimiento'] . "</td>";
         echo "<td>" . $row['observacion_movimiento'] . "</td>";
         //edit
@@ -49,10 +48,10 @@ if ($result->num_rows > 0) {
                     data-cedula="' . $row['cedula_persona'] . '"
                     data-nombre="' . $row['nombres_persona'] . '"
                     data-apellidos="' . $row['apellidos_persona'] . '"
-                    data-descripcion_movimiento="' . $row['descripcion_movimiento'] . '"
+                    data-descripcion_condicion="' . $row['descripcion_condicion'] . '"
                     data-fecha_movimiento="' . $row['fecha_movimiento'] . '"
                     data-observacion_movimiento="' . $row['observacion_movimiento'] . '"
-                    data-movimiento="' . $row['id_movimiento'] . '"
+                    data-condicion="' . $row['id_condicion'] . '"
                     data-id_movimiento_persona="' . $row['id_movimiento_persona'] . '"
                     style="background-color:transparent; border:none;">
                     <img src="../../img/editar.png" width="28" height="28">

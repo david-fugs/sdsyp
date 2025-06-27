@@ -29,9 +29,15 @@ if (!$result_programas) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
-$movimientos = "SELECT * FROM movimientos";
-$result_movimientos = mysqli_query($mysqli, $movimientos);
-if (!$result_movimientos) {
+$condiciones = "SELECT * FROM condiciones_componente";
+$result_condiciones = mysqli_query($mysqli, $condiciones);
+if (!$result_condiciones) {
+    die("Error en la consulta: " . mysqli_error($mysqli));
+}
+
+$grupos = "SELECT * FROM grupos";
+$result_grupos = mysqli_query($mysqli, $grupos);
+if (!$result_grupos) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
@@ -77,13 +83,13 @@ function deleteMember($cedula_persona)
                 <input name="nombre" type="text" placeholder="Nombre"
                     value="<?= isset($_GET['nombre']) ? htmlspecialchars($_GET['nombre']) : '' ?>">
 
-                <select name="movimiento">
-                    <option value="">Selecciona movimiento</option>
-                    <?php foreach ($result_movimientos as $movimiento) {
-                        $selected = (isset($_GET['movimiento']) && $_GET['movimiento'] == $movimiento['id_movimiento']) ? 'selected' : '';
+                <select name="condicion">
+                    <option value="">Selecciona condición</option>
+                    <?php foreach ($result_condiciones as $condicion) {
+                        $selected = (isset($_GET['condicion']) && $_GET['condicion'] == $condicion['id_condicion']) ? 'selected' : '';
                     ?>
-                        <option value="<?= $movimiento['id_movimiento']; ?>" <?= $selected ?>>
-                            <?= $movimiento['descripcion_movimiento']; ?>
+                        <option value="<?= $condicion['id_condicion']; ?>" <?= $selected ?>>
+                            <?= $condicion['descripcion_condicion']; ?>
                         </option>
                     <?php } ?>
                 </select>
@@ -108,7 +114,7 @@ function deleteMember($cedula_persona)
                     <th>Cedula</th>
                     <th>Nombres</th>
                     <th>Apellidos</th>
-                    <th>Movimiento</th>
+                    <th>Condición</th>
                     <th>Fecha Movimiento</th>
                     <th>Observacion</th>
                     <th>Edit</th>
@@ -141,26 +147,35 @@ function deleteMember($cedula_persona)
                             </div>
 
                             <div class="col-md-6 mb-3 form-floating mt-1">
-                                <select class="form-select" id="movimiento" name="movimiento" required>
+                                <select class="form-select" id="condicion" name="id_condicion" required>
                                     <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_movimientos as $movimiento) { ?>
-                                        <option value="<?= $movimiento['id_movimiento']; ?>"><?= $movimiento['descripcion_movimiento']; ?></option>
+                                    <?php foreach ($result_condiciones as $condicion) { ?>
+                                        <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
                                     <?php } ?>
                                 </select>
-                                <label class="" for="cedula_persona">Movimiento</label>
+                                <label class="" for="condicion">Condición</label>
                             </div>
                         </div>
                         <div class="row">
+                            <div class="col-md-6 mb-3 form-floating mt-1">
+                                <select class="form-select" id="grupo" name="id_grupo" required>
+                                    <option value="" selected>Seleccione...</option>
+                                    <?php foreach ($result_grupos as $grupo) { ?>
+                                        <option value="<?= $grupo['id_grupo']; ?>" data-limite="<?= $grupo['limite_personas']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
+                                    <?php } ?>
+                                </select>
+                                <label class="" for="grupo">Grupo</label>
+                            </div>
                             <div class="col-md-6 mb-3 form-floating mt-2">
                                 <input type="date" class="form-control" id="fecha_movimiento" name="fecha_movimiento" placeholder="Fecha Movimiento">
                                 <label for="fecha_movimiento">Fecha Movimiento</label>
                             </div>
-                            <div class="col-md-6 mb-3 form-floating">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3 form-floating">
                                 <input type="text" class="form-control" id="observacion_movimiento" name="observacion_movimiento" placeholder="Observacion Movimiento">
                                 <label for="observacion_movimiento">Observacion</label>
                             </div>
-
-
                         </div>
                     </div>
 
@@ -203,11 +218,11 @@ function deleteMember($cedula_persona)
                             <input type="text" class="form-control" id="edit-apellido" name="apellidos_persona" readonly>
                         </div>
                         <div class="mb-3">
-                            <label for="edit-movimiento" class="form-label">Movimiento</label>
-                            <select class="form-select" id="edit-movimiento" name="id_movimiento">
+                            <label for="edit-condicion" class="form-label">Condición</label>
+                            <select class="form-select" id="edit-condicion" name="id_condicion">
                                 <option value="" selected>Seleccione...</option>
-                                <?php foreach ($result_movimientos as $movimiento) { ?>
-                                    <option value="<?= $movimiento['id_movimiento']; ?>"><?= $movimiento['descripcion_movimiento']; ?></option>
+                                <?php foreach ($result_condiciones as $condicion) { ?>
+                                    <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
                                 <?php } ?>
                             </select>
                         </div>
@@ -246,7 +261,7 @@ function deleteMember($cedula_persona)
             document.getElementById("edit-apellido").value = button.getAttribute("data-apellidos");
             document.getElementById("edit-fecha_movimiento").value = button.getAttribute("data-fecha_movimiento");
             document.getElementById("cedula_original").value = button.getAttribute("data-cedula");
-            document.getElementById("edit-movimiento").value = button.getAttribute("data-movimiento");
+            document.getElementById("edit-condicion").value = button.getAttribute("data-condicion");
             document.getElementById("edit-observacion").value = button.getAttribute("data-observacion_movimiento");
             document.getElementById("id_movimiento_persona").value = button.getAttribute("data-id_movimiento_persona");
         });
@@ -265,13 +280,28 @@ function deleteMember($cedula_persona)
                 dataType: 'json',
                 success: function(response) {
                     if (response.encontrado) {
-                        alert('Nombre de la persona: ' + response.nombres + ' ' + response.apellidos);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Persona encontrada',
+                            text: 'Nombre: ' + response.nombres + ' ' + response.apellidos,
+                            confirmButtonText: 'OK'
+                        });
                     } else {
-                        alert('Persona no encontrada.');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Persona no encontrada',
+                            text: 'No se encontró ninguna persona con esa cédula.',
+                            confirmButtonText: 'OK'
+                        });
                     }
                 },
                 error: function() {
-                    alert('Error al buscar persona.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al buscar persona.',
+                        confirmButtonText: 'OK'
+                    });
                 }
             });
         }
@@ -286,6 +316,21 @@ function deleteMember($cedula_persona)
         // Buscar cuando hace clic fuera
         $('#cedula_form').on('blur', function() {
             buscarPersona();
+        });
+
+        // Mostrar límite del grupo seleccionado
+        $('#grupo').on('change', function() {
+            const selectedOption = $(this).find('option:selected');
+            const limite = selectedOption.data('limite');
+            if (limite) {
+                // Crear un elemento para mostrar el límite si no existe
+                if ($('#limite-info').length === 0) {
+                    $(this).parent().append('<small id="limite-info" class="text-muted"></small>');
+                }
+                $('#limite-info').text('Límite máximo: ' + limite + ' personas');
+            } else {
+                $('#limite-info').remove();
+            }
         });
     });
 </script>

@@ -25,10 +25,14 @@ if (!empty($_GET['programa'])) {
 $query = "
 SELECT p.*, 
        GROUP_CONCAT(pr.nombre_programa ORDER BY pr.nombre_programa ASC) AS programas,
-       GROUP_CONCAT(pr.id_programa ORDER BY pr.nombre_programa ASC) AS ids_programas
+       GROUP_CONCAT(pr.id_programa ORDER BY pr.nombre_programa ASC) AS ids_programas,
+       g.descripcion_grupo,
+       pol.descripcion_politica
 FROM personas p
 LEFT JOIN persona_programa pp ON p.cedula_persona = pp.cedula_persona
 LEFT JOIN programas pr ON pp.id_programa = pr.id_programa
+LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
+LEFT JOIN politicas_publicas pol ON p.id_politica_publica = pol.id_politica
 $where
 GROUP BY p.cedula_persona
 ORDER BY p.apellidos_persona ASC
@@ -47,6 +51,8 @@ if ($result->num_rows > 0) {
         echo "<td>" . $row['telefono_persona'] . "</td>";
         echo "<td>" . $row['referencia_persona'] . "</td>";
         echo "<td>" . $row['programas'] . "</td>";
+        echo "<td>" . ($row['descripcion_grupo'] ? $row['descripcion_grupo'] : 'No asignado') . "</td>";
+        echo "<td>" . ($row['descripcion_politica'] ? $row['descripcion_politica'] : 'No asignada') . "</td>";
         //edit
         echo '
             <td data-label="Editar">
@@ -59,7 +65,9 @@ if ($result->num_rows > 0) {
                     data-referencia="' . $row['referencia_persona'] . '"
                     data-programas="' .  $row['programas']  . '"
                     data-genero="' . $row['genero_persona'] . '"
-                     data-ids-programas="' .  $row['ids_programas']  . '"
+                    data-ids-programas="' .  $row['ids_programas']  . '"
+                    data-id-grupo="' . $row['id_grupo'] . '"
+                    data-id-politica-publica="' . $row['id_politica_publica'] . '"
                     style="background-color:transparent; border:none;">
                     <img src="../../img/editar.png" width="28" height="28">
                 </button>     
@@ -74,7 +82,7 @@ if ($result->num_rows > 0) {
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='9'>No se encontraron registros.</td></tr>";
+    echo "<tr><td colspan='11'>No se encontraron registros.</td></tr>";
 }
 
 

@@ -5,6 +5,7 @@ session_start();
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $descripcion_politica = $_POST['descripcion_politica'];
     $id_politica = $_POST['id_politica'];
+    $id_accion = $_POST['id_accion'] ?? '';
     
     // Validar que los campos no estén vacíos
     if (empty($descripcion_politica) || empty($id_politica)) {
@@ -16,9 +17,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
     
     // Actualizar política pública usando prepared statements
-    $sql_update_politica = "UPDATE politicas_publicas SET descripcion_politica=? WHERE id_politica=?";
+    $sql_update_politica = "UPDATE politicas_publicas SET descripcion_politica=?, id_accion=? WHERE id_politica=?";
     $stmt = $mysqli->prepare($sql_update_politica);
-    $stmt->bind_param("si", $descripcion_politica, $id_politica);
+    $stmt->bind_param("sii", $descripcion_politica, $id_accion, $id_politica);
     
     if ($stmt->execute()) {
         echo "<script>

@@ -3,7 +3,12 @@ session_start();
 include("../../conexion.php");
 
 // Consulta SQL para obtener los datos
-$query = "SELECT * FROM politicas_publicas ORDER BY id_politica ASC";
+$query = "
+SELECT pp.*, acc.descripcion_accion 
+FROM politicas_publicas pp
+LEFT JOIN acciones acc ON pp.id_accion = acc.id_accion
+ORDER BY pp.id_politica ASC
+";
 $result = $mysqli->query($query);
 
 if ($result->num_rows > 0) {
@@ -11,12 +16,14 @@ if ($result->num_rows > 0) {
         echo "<tr>";
         echo "<td>" . $row['id_politica'] . "</td>";
         echo "<td>" . $row['descripcion_politica'] . "</td>";
+        echo "<td>" . ($row['descripcion_accion'] ? $row['descripcion_accion'] : 'No asignada') . "</td>";
         echo '
             <td data-label="Editar">
                 <button type="button" class="btn-edit" 
                     data-bs-toggle="modal" data-bs-target="#modalEdicion"
                     data-id_politica="' . $row['id_politica'] . '"
                     data-descripcion_politica="' . $row['descripcion_politica'] . '"
+                    data-id_accion="' . $row['id_accion'] . '"
                     style="background-color:transparent; border:none;">
                     <img src="../../img/editar.png" width="40px" height="40px">
                 </button>     
@@ -31,7 +38,7 @@ if ($result->num_rows > 0) {
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='4'>No se encontraron registros.</td></tr>";
+    echo "<tr><td colspan='5'>No se encontraron registros.</td></tr>";
 }
 
 $mysqli->close();

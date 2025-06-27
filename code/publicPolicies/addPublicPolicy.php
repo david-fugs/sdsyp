@@ -4,6 +4,7 @@ session_start();
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $descripcion_politica = $_POST['descripcion_politica'];
+    $id_accion = $_POST['id_accion'] ?? '';
     
     // Validar que la descripción no esté vacía
     if (empty($descripcion_politica)) {
@@ -15,9 +16,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
     
     // Insertar en politicas_publicas usando prepared statements para seguridad
-    $sql_insert_politica = "INSERT INTO politicas_publicas (descripcion_politica) VALUES (?)";
+    $sql_insert_politica = "INSERT INTO politicas_publicas (descripcion_politica, id_accion) VALUES (?, ?)";
     $stmt = $mysqli->prepare($sql_insert_politica);
-    $stmt->bind_param("s", $descripcion_politica);
+    $stmt->bind_param("si", $descripcion_politica, $id_accion);
     
     if ($stmt->execute()) {
         echo "<script>

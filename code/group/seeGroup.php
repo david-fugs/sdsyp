@@ -70,6 +70,9 @@ function deleteMember($grupo)
                 <tr>
                     <th>No.Grupo</th>
                     <th>Descripcion Grupo</th>
+                    <th>Límite Personas</th>
+                    <th>Editar</th>
+                    <th>Eliminar</th>
                 </tr>
             </thead>
             <tbody>
@@ -84,7 +87,7 @@ function deleteMember($grupo)
                 <form action="addGroup.php" method="POST">
                     <div class="modal-header bg-success text-white">
                         <h5 class="modal-title" id="modalNewPersonLabel">
-                            <i class="bi bi-person-plus-fill me-2"></i>Agregar Condicion
+                            <i class="bi bi-person-plus-fill me-2"></i>Agregar Grupo
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -93,8 +96,14 @@ function deleteMember($grupo)
                         <!-- Fila para la descripción de la condicion -->
                         <div class="row">
                             <div class="col-md-12 form-floating mt-3">
-                                <input type="text" class="form-control" id="descripcion_grupo" name="descripcion_grupo" placeholder="Descripcion">
+                                <input type="text" class="form-control" id="descripcion_grupo" name="descripcion_grupo" placeholder="Descripcion" required>
                                 <label for="descripcion_grupo">Descripción grupo</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 form-floating mt-3">
+                                <input type="number" class="form-control" id="limite_personas" name="limite_personas" placeholder="Límite de personas" min="1" required>
+                                <label for="limite_personas">Límite de personas</label>
                             </div>
                         </div>
                     </div>
@@ -119,7 +128,7 @@ function deleteMember($grupo)
         <div class="modal-dialog modal-lg">
             <div class="modal-content rounded-4 shadow-sm">
                 <div class="modal-header bg-dark text-white"> <!-- Negro con texto blanco -->
-                    <h5 class="modal-title" id="modalEdicionLabel">Editar Meta</h5>
+                    <h5 class="modal-title" id="modalEdicionLabel">Editar Grupo</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
@@ -128,7 +137,11 @@ function deleteMember($grupo)
 
                         <div class="mb-3">
                             <label for="edit-descripcion" class="form-label">Descripcion </label>
-                            <input type="text" class="form-control" id="edit-descripcion" name="descripcion_grupo">
+                            <input type="text" class="form-control" id="edit-descripcion" name="descripcion_grupo" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-limite" class="form-label">Límite de personas</label>
+                            <input type="number" class="form-control" id="edit-limite" name="limite_personas" min="1" required>
                         </div>
                         <input type="hidden" name="id_grupo" id="edit-id_grupo">
                     </div>
@@ -152,6 +165,7 @@ function deleteMember($grupo)
 
             // Datos generales
             document.getElementById("edit-descripcion").value = button.getAttribute("data-descripcion_grupo");
+            document.getElementById("edit-limite").value = button.getAttribute("data-limite_personas");
             document.getElementById("edit-id_grupo").value = button.getAttribute("data-id_grupo");
 
         });
