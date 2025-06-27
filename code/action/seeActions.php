@@ -23,9 +23,16 @@
 </head>
 <?php
 include("../../conexion.php");
-$metas = "SELECT * FROM metas ";
-$result_metas = mysqli_query($mysqli, $metas);
-if (!$result_metas) {
+$actividades = "SELECT * FROM actividades JOIN metas ON actividades.id_meta = metas.id_meta ORDER BY actividades.descripcion_actividad";
+$result_actividades = mysqli_query($mysqli, $actividades);
+if (!$result_actividades) {
+    die("Error en la consulta: " . mysqli_error($mysqli));
+}
+
+// Crear una segunda consulta para el modal de edición
+$actividades_edit = "SELECT * FROM actividades JOIN metas ON actividades.id_meta = metas.id_meta ORDER BY actividades.descripcion_actividad";
+$result_actividades_edit = mysqli_query($mysqli, $actividades_edit);
+if (!$result_actividades_edit) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
@@ -38,12 +45,12 @@ function deleteMember($id_acciones)
 {
     global $mysqli; // Asegurar acceso a la conexión global
 
-    $query = "DELETE FROM acciones WHERE id_accion  = ?";
+    $query = "DELETE FROM acciones WHERE id_accion = ?";
     $stmt = $mysqli->prepare($query);
     $stmt->bind_param("s", $id_acciones);
 
     if ($stmt->execute()) {
-        echo "<script>alert('Accion borrada corecctamente');
+        echo "<script>alert('Accion borrada correctamente');
         window.location = 'seeActions.php';</script>";
     } else {
         echo "<script>alert('Error borrando la accion');
@@ -70,12 +77,12 @@ function deleteMember($id_acciones)
             </button>
 
         </div>
-        <table class="table table-striped" id="salesTable">
-            <thead>
+        <table class="table table-striped" id="salesTable">            <thead>
                 <tr>
                     <th>No.Accion</th>
-                    <th>Descripcion Meta</th>
+                    <th>Descripcion Actividad</th>
                     <th>Descripcion Accion</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -95,19 +102,17 @@ function deleteMember($id_acciones)
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
-                    <div class="modal-body">
-                        <!-- Fila para el select (Meta Asociada) -->
+                    <div class="modal-body">                        <!-- Fila para el select (Actividad Asociada) -->
                         <div class="row mb-3 mt-3">
                             <div class="col-md-12 form-floating">
-                                <select name="id_meta" id="id_meta" class="form-select">
-                                    <option value="">Seleccione Meta Asociada</option>
-                                    <?php while ($row = mysqli_fetch_assoc($result_metas)) { ?>
-                                        <option value="<?php echo $row['id_meta']; ?>"><?php echo $row['descripcion_meta']; ?></option>
+                                <select name="id_actividad" id="id_actividad" class="form-select" required>
+                                    <option value="">Seleccione Actividad Asociada</option>
+                                    <?php while ($row = mysqli_fetch_assoc($result_actividades)) { ?>
+                                        <option value="<?php echo $row['id_actividad']; ?>"><?php echo $row['descripcion_actividad']; ?></option>
                                     <?php } ?>
                                 </select>
-                                <label for="id_meta">Meta Asociada</label>
-                            </div>
-                        </div>
+                                <label for="id_actividad">Actividad Asociada</label>
+                            </div>                        </div>
                         <div class="row">
                             <div class="col-md-12 form-floating mt-3">
                                 <input type="text" class="form-control" id="descripcion_accion" name="descripcion_accion" placeholder="Descripcion">
@@ -146,13 +151,13 @@ function deleteMember($id_acciones)
                         <div class="mb-3">
                             <label for="edit-descripcion" class="form-label">Descripcion </label>
                             <input type="text" class="form-control" id="edit-descripcion" name="descripcion_accion">
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit-meta" class="form-label">Meta </label>
-                            <select name="id_meta" id="edit-id_meta" class="form-select text-truncate" style="width: 100%;">                                <option value="">Seleccione meta asociada</option>
+                        </div>                        <div class="mb-3">
+                            <label for="edit-actividad" class="form-label">Actividad </label>
+                            <select name="id_actividad" id="edit-id_actividad" class="form-select text-truncate" style="width: 100%;" required>
+                                <option value="">Seleccione actividad asociada</option>
                                 <?php
-                                foreach ($result_metas as $metas) {
-                                    echo "<option value='" . $metas['id_meta'] . "'>" . $metas['descripcion_meta'] . "</option>";
+                                while ($actividad = mysqli_fetch_assoc($result_actividades_edit)) {
+                                    echo "<option value='" . $actividad['id_actividad'] . "'>" . $actividad['descripcion_actividad'] . "</option>";
                                 }
                                 ?>
                             </select>
@@ -174,10 +179,9 @@ function deleteMember($id_acciones)
     document.addEventListener("DOMContentLoaded", function() {
         const modalEdicion = document.getElementById("modalEdicion");
         modalEdicion.addEventListener("shown.bs.modal", function(event) {
-            const button = event.relatedTarget;
-            // Datos generales
+            const button = event.relatedTarget;            // Datos generales
             document.getElementById("edit-descripcion").value = button.getAttribute("data-descripcion_accion");
-            document.getElementById("edit-id_meta").value = button.getAttribute("data-id_meta");
+            document.getElementById("edit-id_actividad").value = button.getAttribute("data-id_actividad");
             document.getElementById("edit-id_accion").value = button.getAttribute("data-id_accion");
         });
     });

@@ -66,11 +66,10 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
               <a href="code/users/showusers.php" class="nav_link sublink">Permisos</a>
               <a href="code/users/register.php" class="nav_link sublink">Crear Nuevo</a>
             </ul>
-          </li>
-          <li class="item">
+          </li>          <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
-              <i class="fa-solid fa-people-arrows"></i>
+                <i class="fa-solid fa-users"></i>
               </span>
               <span class="navlink">Personas</span>
               <i class="bx bx-chevron-right arrow-left"></i>
@@ -78,94 +77,54 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
             <ul class="menu_items submenu">
               <a href="code/persons/seePerson.php" class="nav_link sublink">Ver Personas</a>
+              <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a>
+              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
             </ul>
           </li>
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
-              <i class="fa-solid fa-people-arrows"></i>
+                <i class="fa-solid fa-bullseye"></i>
               </span>
               <span class="navlink">Metas</span>
               <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-
-            <ul class="menu_items submenu">
+            </div>            <ul class="menu_items submenu">
               <a href="code/goals/seeGoals.php" class="nav_link sublink">Ver Metas</a>
               <a href="code/activities/seeActivity.php" class="nav_link sublink">Ver Actividades</a>
               <a href="code/action/seeActions.php" class="nav_link sublink">Ver Acciones</a>
-
             </ul>
           </li>
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
-              <i class="fa-solid fa-people-arrows"></i>
+                <i class="fa-solid fa-scale-balanced"></i>
               </span>
-              <span class="navlink">Condicion</span>
+              <span class="navlink">Políticas Públicas</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/publicPolicies/seePublicPolicies.php" class="nav_link sublink">Ver Políticas Públicas</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-list-check"></i>
+              </span>
+              <span class="navlink">Condiciones</span>
               <i class="bx bx-chevron-right arrow-left"></i>
             </div>
             <ul class="menu_items submenu">
               <a href="code/condition/seeCondition.php" class="nav_link sublink">Ver Condiciones</a>
-            </ul>
-          </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-              <i class="fa-solid fa-people-arrows"></i>
-              </span>
-              <span class="navlink">Grupo o CPSAM</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/group/seeGroup.php" class="nav_link sublink">Ver Grupo o CPSAM</a>
-            </ul>
-          </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-              <i class="fa-solid fa-people-arrows"></i>
-              </span>
-              <span class="navlink">Centro Vida</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
+              <a href="code/group/seeGroup.php" class="nav_link sublink">Grupo o CPSAM</a>
               <a href="code/center/seeCenter.php" class="nav_link sublink">Centro Vida</a>
             </ul>
           </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-              <i class="fa-solid fa-people-arrows"></i>
-              </span>
-              <span class="navlink">Movimientos</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a>
-            </ul>
-          </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-              <i class="fa-solid fa-people-arrows"></i>
-              </span>
-              <span class="navlink">Movimientos Personas</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
-            </ul>
-          </li>
-
-
-
-
-
 
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
-              <i class="fa-solid fa-people-arrows"></i>
+                <i class="fa-solid fa-file-lines"></i>
               </span>
               <span class="navlink">Formulario</span>
               <i class="bx bx-chevron-right arrow-left"></i>
