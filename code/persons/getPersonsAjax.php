@@ -1,11 +1,13 @@
 <?php
 include("../../conexion.php");
+
+// Construir la cláusula WHERE base
 $where = "WHERE p.estado_persona = 1";
 
 // Filtro por cédula
 if (!empty($_GET['cedula_persona'])) {
     $cedula = $mysqli->real_escape_string($_GET['cedula_persona']);
-    $where .= " AND p.cedula_persona = '$cedula'";
+    $where .= " AND p.cedula_persona LIKE '%$cedula%'";
 }
 
 // Filtro por nombre
@@ -49,11 +51,10 @@ $where
 GROUP BY p.cedula_persona
 ORDER BY p.apellidos_persona ASC
 ";
+
 $result = $mysqli->query($query);
 
-$data = [];
-
-if ($result->num_rows > 0) {
+if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         // Determinar el estado de la persona
         $estado_persona = $row['estado_movimiento'] ? $row['estado_movimiento'] : 'CPSAM ACTIVO';
@@ -73,57 +74,44 @@ if ($result->num_rows > 0) {
             }
         }
         
-        // Determinar color del estado
+        // Determinar clase del badge y icono del estado
         $badge_class = '';
+        $estado_icon = '';
+        
         switch ($estado_persona) {
             case 'CPSAM ACTIVO':
                 $badge_class = 'status-badge status-active';
-                break;
-            case 'CPSAM EVADIDO':
-                $badge_class = 'status-badge status-warning';
-                break;
-            case 'CPSAM FALLECIDO':
-                $badge_class = 'status-badge status-secondary';
-                break;
-            case 'CPSAM RETIRADO VOLUNTARIO':
-                $badge_class = 'status-badge status-info';
-                break;
-            case 'CPSAM TRASLADADO':
-                $badge_class = 'status-badge status-info';
-                break;
-        }
-        
-        // Determinar icono del estado
-        $estado_icon = '';
-        switch ($estado_persona) {
-            case 'CPSAM ACTIVO':
                 $estado_icon = '<i class="bi bi-check-circle-fill"></i>';
                 break;
             case 'CPSAM EVADIDO':
+                $badge_class = 'status-badge status-warning';
                 $estado_icon = '<i class="bi bi-exclamation-triangle-fill"></i>';
                 break;
             case 'CPSAM FALLECIDO':
+                $badge_class = 'status-badge status-secondary';
                 $estado_icon = '<i class="bi bi-x-circle-fill"></i>';
                 break;
             case 'CPSAM RETIRADO VOLUNTARIO':
+                $badge_class = 'status-badge status-info';
                 $estado_icon = '<i class="bi bi-arrow-left-circle-fill"></i>';
                 break;
             case 'CPSAM TRASLADADO':
+                $badge_class = 'status-badge status-info';
                 $estado_icon = '<i class="bi bi-arrow-right-circle-fill"></i>';
                 break;
         }
         
         echo "<tr class='fade-in'>";
-        echo "<td class='col-id'>" . $row['cedula_persona'] . "</td>";
-        echo "<td>" . $row['nombres_persona'] . "</td>";
-        echo "<td>" . $row['apellidos_persona'] . "</td>";
-        echo "<td>" . $row['genero_persona'] . "</td>";
-        echo "<td>" . $row['telefono_persona'] . "</td>";
-        echo "<td>" . $row['referencia_persona'] . "</td>";
-        echo "<td>" . $row['programas'] . "</td>";
-        echo "<td>" . ($row['descripcion_grupo'] ? $row['descripcion_grupo'] : 'No asignado') . "</td>";
+        echo "<td class='col-id'>" . htmlspecialchars($row['cedula_persona']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['nombres_persona']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['apellidos_persona']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['genero_persona']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['telefono_persona']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['referencia_persona']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['programas'] ?: 'Sin programa') . "</td>";
+        echo "<td>" . htmlspecialchars($row['descripcion_grupo'] ?: 'No asignado') . "</td>";
         echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('CPSAM ', '', $estado_persona) . "</span></td>";
-        echo "<td>" . ($row['descripcion_politica'] ? $row['descripcion_politica'] : 'No asignada') . "</td>";
+        echo "<td>" . htmlspecialchars($row['descripcion_politica'] ?: 'No asignada') . "</td>";
         
         // Botones de acción modernos
         echo '<td class="col-actions">
@@ -131,19 +119,19 @@ if ($result->num_rows > 0) {
                     <button type="button" class="btn-action btn-edit" 
                         title="Editar persona"
                         data-bs-toggle="modal" data-bs-target="#modalEdicion"
-                        data-cedula="' . $row['cedula_persona'] . '"
-                        data-nombre="' . $row['nombres_persona'] . '"
-                        data-apellidos="' . $row['apellidos_persona'] . '"
-                        data-telefono="' . $row['telefono_persona'] . '"
-                        data-referencia="' . $row['referencia_persona'] . '"
-                        data-programas="' .  $row['programas']  . '"
-                        data-genero="' . $row['genero_persona'] . '"
-                        data-ids-programas="' .  $row['ids_programas']  . '"
-                        data-id-grupo="' . $row['id_grupo'] . '"
-                        data-id-politica-publica="' . $row['id_politica_publica'] . '">
+                        data-cedula="' . htmlspecialchars($row['cedula_persona']) . '"
+                        data-nombre="' . htmlspecialchars($row['nombres_persona']) . '"
+                        data-apellidos="' . htmlspecialchars($row['apellidos_persona']) . '"
+                        data-telefono="' . htmlspecialchars($row['telefono_persona']) . '"
+                        data-referencia="' . htmlspecialchars($row['referencia_persona']) . '"
+                        data-programas="' . htmlspecialchars($row['programas'] ?: '') . '"
+                        data-genero="' . htmlspecialchars($row['genero_persona']) . '"
+                        data-ids-programas="' . htmlspecialchars($row['ids_programas'] ?: '') . '"
+                        data-id-grupo="' . htmlspecialchars($row['id_grupo'] ?: '') . '"
+                        data-id-politica-publica="' . htmlspecialchars($row['id_politica_publica'] ?: '') . '">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
-                    <a href="?delete=' . $row['cedula_persona'] . '" 
+                    <a href="?delete=' . htmlspecialchars($row['cedula_persona']) . '" 
                        class="btn-action btn-delete" 
                        title="Eliminar persona"
                        onclick="return confirm(\'¿Estás seguro de que deseas eliminar esta persona?\')">
@@ -154,8 +142,11 @@ if ($result->num_rows > 0) {
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='12'>No se encontraron registros.</td></tr>";
+    echo "<tr><td colspan='11' class='text-center text-muted'>
+            <i class='bi bi-search'></i><br>
+            No se encontraron registros que coincidan con los filtros aplicados.
+          </td></tr>";
 }
 
-
 $mysqli->close();
+?>

@@ -21,9 +21,12 @@ if (!empty($_GET['condicion'])) {
 }
 
 // Consulta SQL para obtener los datos
-$query = " SELECT mp.id_movimiento_persona,c.id_condicion,p.cedula_persona,p.nombres_persona,p.apellidos_persona,c.descripcion_condicion, mp.fecha_movimiento,mp.observacion_movimiento FROM personas as p
+$query = " SELECT mp.id_movimiento_persona,c.id_condicion,p.cedula_persona,p.nombres_persona,p.apellidos_persona,c.descripcion_condicion, 
+           mp.fecha_movimiento,mp.observacion_movimiento,mp.id_centro_vida_traslado,g.descripcion_grupo as centro_vida_traslado
+           FROM personas as p
         JOIN movimiento_persona as mp ON p.cedula_persona = mp.cedula_persona
         JOIN condiciones_componente as c ON mp.id_condicion = c.id_condicion
+        LEFT JOIN grupos g ON mp.id_centro_vida_traslado = g.id_grupo
         $where
         ORDER BY mp.fecha_movimiento DESC
 ";
@@ -33,41 +36,47 @@ $data = [];
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        echo "<tr>";
-        echo "<td>" . $row['cedula_persona'] . "</td>";
+        echo "<tr class='fade-in'>";
+        echo "<td class='col-id'>" . $row['cedula_persona'] . "</td>";
         echo "<td>" . $row['nombres_persona'] . "</td>";
         echo "<td>" . $row['apellidos_persona'] . "</td>";
         echo "<td>" . $row['descripcion_condicion'] . "</td>";
+        echo "<td>" . ($row['centro_vida_traslado'] ? $row['centro_vida_traslado'] : 'N/A') . "</td>";
         echo "<td>" . $row['fecha_movimiento'] . "</td>";
         echo "<td>" . $row['observacion_movimiento'] . "</td>";
-        //edit
-        echo '
-            <td data-label="Editar">
-                <button type="button" class="btn-edit" 
-                    data-bs-toggle="modal" data-bs-target="#modalEdicion"
-                    data-cedula="' . $row['cedula_persona'] . '"
-                    data-nombre="' . $row['nombres_persona'] . '"
-                    data-apellidos="' . $row['apellidos_persona'] . '"
-                    data-descripcion_condicion="' . $row['descripcion_condicion'] . '"
-                    data-fecha_movimiento="' . $row['fecha_movimiento'] . '"
-                    data-observacion_movimiento="' . $row['observacion_movimiento'] . '"
-                    data-condicion="' . $row['id_condicion'] . '"
-                    data-id_movimiento_persona="' . $row['id_movimiento_persona'] . '"
-                    style="background-color:transparent; border:none;">
-                    <img src="../../img/editar.png" width="28" height="28">
-                </button>     
-            </td> ';
-        //delete
-        echo '
-        <td>
-                <a href="?delete=' . $row['cedula_persona'] . '" class="btn btn-sm btn-danger" onclick="return confirm(\'¿Estás seguro de que deseas eliminar esta persona?\')">
-                    <img src="../../img/delete1.png" width="20" height="20" alt="Eliminar">
-                </a>
+        
+        // Botones de acción modernos
+        echo '<td class="col-actions">
+                <div class="action-buttons">
+                    <button type="button" class="btn-action btn-edit" 
+                        title="Editar movimiento"
+                        data-bs-toggle="modal" data-bs-target="#modalEdicion"
+                        data-cedula="' . $row['cedula_persona'] . '"
+                        data-nombre="' . $row['nombres_persona'] . '"
+                        data-apellidos="' . $row['apellidos_persona'] . '"
+                        data-descripcion_condicion="' . $row['descripcion_condicion'] . '"
+                        data-fecha_movimiento="' . $row['fecha_movimiento'] . '"
+                        data-observacion_movimiento="' . $row['observacion_movimiento'] . '"
+                        data-condicion="' . $row['id_condicion'] . '"
+                        data-centro_vida_traslado="' . $row['id_centro_vida_traslado'] . '"
+                        data-id_movimiento_persona="' . $row['id_movimiento_persona'] . '">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <a href="?delete=' . $row['cedula_persona'] . '" 
+                       class="btn-action btn-delete" 
+                       title="Eliminar movimiento"
+                       onclick="return confirm(\'¿Estás seguro de que deseas eliminar este movimiento?\')">
+                        <i class="bi bi-trash-fill"></i>
+                    </a>
+                </div>
             </td>';
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='9'>No se encontraron registros.</td></tr>";
+    echo "<tr><td colspan='8' class='text-center text-muted'>
+            <i class='bi bi-search'></i><br>
+            No se encontraron registros que coincidan con los filtros aplicados.
+          </td></tr>";
 }
 
 

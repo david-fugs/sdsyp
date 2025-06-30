@@ -1,26 +1,134 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>SDSYP</title>
-    <link rel="stylesheet" type="text/css" href="../../css/styles.css">
-    <link rel="stylesheet" type="text/css" href="../../css/estilos2024.css">
-    <link rel="stylesheet" href="styleSell.css">
+    <title>Políticas Públicas - SDSYP</title>
+    
     <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Librerías de DataTables -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+    
+    <!-- Custom CSS -->
+    <link href="../../css/modern-table-styles.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .header-title h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .header-icon {
+            font-size: 3rem;
+        }
+        
+        .btn-add-main {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+        
+        .btn-add-main:hover {
+            background: white;
+            color: #007bff;
+            transform: translateY(-2px);
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .table-container {
+            padding: 2rem;
+        }
+        
+        .table th {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: none;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .btn-close {
+            filter: invert(1);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+    </style>
 </head>
+<body>
 <?php
 include("../../conexion.php");
 
@@ -37,96 +145,116 @@ if (isset($_GET['delete'])) {
 
 function deleteMember($id_politica)
 {
-    global $mysqli; // Asegurar acceso a la conexión global
+    global $mysqli;
 
     $query = "DELETE FROM politicas_publicas WHERE id_politica = ?";
     $stmt = $mysqli->prepare($query);
     $stmt->bind_param("i", $id_politica);
 
     if ($stmt->execute()) {
-        echo "<script>alert('Política pública borrada correctamente');
-        window.location = 'seePublicPolicies.php';</script>";
+        echo "<script>
+        Swal.fire({
+            title: '¡Éxito!',
+            text: 'Política pública eliminada correctamente',
+            icon: 'success',
+            confirmButtonColor: '#007bff'
+        }).then((result) => {
+            window.location = 'seePublicPolicies.php';
+        });
+        </script>";
     } else {
-        echo "<script>alert('Error borrando la política pública');
-        window.location = 'seePublicPolicies.php';</script>";
+        echo "<script>
+        Swal.fire({
+            title: 'Error',
+            text: 'Error eliminando la política pública',
+            icon: 'error',
+            confirmButtonColor: '#007bff'
+        }).then((result) => {
+            window.location = 'seePublicPolicies.php';
+        });
+        </script>";
     }
 
     $stmt->close();
 }
-
 ?>
 
-<body>
-    <center style="margin-top: 20px;">
-        <img src='../../img/logo.png' width="150" height="120" class="responsive">
-    </center>
-    <h1 style="color: #412fd1; text-shadow: #FFFFFF 0.1em 0.1em 0.2em; font-size: 40px; text-align: center;"><b><i
-                class="fa-solid fa-scale-balanced"></i> POLÍTICAS PÚBLICAS</b></h1>
-    
-    <!-- Tabla de Políticas Públicas -->
-    <div class="container mt-5">
-        <div class="position-relative mb-3">
-            <h2 class="text-center">Gestión de Políticas Públicas</h2>
-            <div class="position-absolute top-0 end-0">
-                <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#modalNewPolicy">
-                    <i class="bi bi-plus-circle"></i> Agregar Política Pública
+    <!-- Logo Section -->
+    <div class="text-center mt-4 mb-4">
+        <img src="../../img/logo.png" width="150" height="120" alt="Logo SDSYP" class="img-fluid">
+    </div>
+
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="container">
+            <div class="header-content">
+                <div class="header-title">
+                    <i class="bi bi-clipboard-check header-icon"></i>
+                    <h1>Políticas Públicas</h1>
+                </div>
+                <button type="button" class="btn btn-add-main" data-bs-toggle="modal" data-bs-target="#modalAgregar">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Agregar Política Pública
                 </button>
             </div>
         </div>
-        <table class="table table-striped" id="policiesTable">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Descripción</th>
-                    <th>Acción</th>
-                    <th>Editar</th>
-                    <th>Eliminar</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php include "getPublicPolicies.php"; ?>
-            </tbody>
-        </table>
     </div>
 
-    <!-- Modal Add Policy -->
-    <div class="modal fade" id="modalNewPolicy" tabindex="-1" aria-labelledby="modalNewPolicyLabel" aria-hidden="true">
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <div class="table-container">
+                <table class="table table-hover" id="politicasTable">
+                    <thead>
+                        <tr>
+                            <th class="col-id">ID</th>
+                            <th>Descripción</th>
+                            <th>Acción</th>
+                            <th class="col-actions">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php include "getPublicPolicies.php"; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Agregar Política -->
+    <div class="modal fade" id="modalAgregar" tabindex="-1" aria-labelledby="modalAgregarLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form action="addPublicPolicy.php" method="POST">
-                    <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title" id="modalNewPolicyLabel">
-                            <i class="bi bi-plus-circle-fill me-2"></i>Agregar Política Pública
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalAgregarLabel">
+                            <i class="bi bi-plus-circle me-2"></i>Agregar Política Pública
                         </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
                     <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-12 mb-3 form-floating">
-                                <input type="text" class="form-control" id="descripcion_politica" name="descripcion_politica" placeholder="Descripción" required autofocus>
-                                <label for="descripcion_politica">Descripción Política Pública</label>
-                            </div>
+                        <div class="mb-3">
+                            <label for="descripcion_politica" class="form-label">Descripción de la Política Pública</label>
+                            <input type="text" class="form-control" id="descripcion_politica" name="descripcion_politica" required autofocus>
                         </div>
-                        <div class="row">
-                            <div class="col-md-12 mb-3 form-floating">
-                                <select class="form-select" id="id_accion" name="id_accion">
-                                    <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_acciones as $accion) { ?>
-                                        <option value="<?= $accion['id_accion']; ?>"><?= $accion['descripcion_accion']; ?></option>
-                                    <?php } ?>
-                                </select>
-                                <label for="id_accion">Acción</label>
-                            </div>
+                        <div class="mb-3">
+                            <label for="id_accion" class="form-label">Acción</label>
+                            <select class="form-select" id="id_accion" name="id_accion">
+                                <option value="">Seleccione una acción...</option>
+                                <?php foreach ($result_acciones as $accion) { ?>
+                                    <option value="<?= $accion['id_accion']; ?>"><?= $accion['descripcion_accion']; ?></option>
+                                <?php } ?>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="modal-footer justify-content-between">
+                    <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="bi bi-x-circle"></i> Cancelar
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
                         </button>
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-save"></i> Guardar
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Guardar
                         </button>
                     </div>
                 </form>
@@ -134,25 +262,27 @@ function deleteMember($id_politica)
         </div>    
     </div>
 
-    <!-- Modal Edición Política -->
+    <!-- Modal Editar Política -->
     <div class="modal fade" id="modalEdicion" tabindex="-1" aria-labelledby="modalEdicionLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content rounded-4 shadow-sm">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="modalEdicionLabel">Editar Política Pública</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
                 <form action="editPublicPolicy.php" method="POST">
-                    <div class="modal-body px-4 py-3">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalEdicionLabel">
+                            <i class="bi bi-pencil-square me-2"></i>Editar Política Pública
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
                         <div class="mb-3">
-                            <label for="edit-descripcion" class="form-label">Descripción</label>
+                            <label for="edit-descripcion" class="form-label">Descripción de la Política Pública</label>
                             <input type="text" class="form-control" id="edit-descripcion" name="descripcion_politica" required>
                         </div>
                         <div class="mb-3">
                             <label for="edit-accion" class="form-label">Acción</label>
                             <select class="form-select" id="edit-accion" name="id_accion">
-                                <option value="">Seleccione...</option>
+                                <option value="">Seleccione una acción...</option>
                                 <?php foreach ($result_acciones as $accion) { ?>
                                     <option value="<?= $accion['id_accion']; ?>"><?= $accion['descripcion_accion']; ?></option>
                                 <?php } ?>
@@ -160,37 +290,96 @@ function deleteMember($id_politica)
                         </div>
                         <input type="hidden" name="id_politica" id="edit-id_politica">
                     </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary" id="guardarCambios">Guardar</button>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Guardar Cambios
+                        </button>
                     </div>
                 </form>
             </div>
         </div>    
     </div>
 
-    <br /><a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="back" /></a><br>
+    <!-- Back Button -->
+    <div class="container mt-4 mb-5">
+        <a href="../../access.php" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-2"></i>Volver al Menú Principal
+        </a>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Inicializar DataTable
+            $('#politicasTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                },
+                order: [[0, 'asc']],
+                pageLength: 10,
+                responsive: true,
+                columnDefs: [
+                    {
+                        targets: [0],
+                        width: '80px',
+                        className: 'col-id'
+                    },
+                    {
+                        targets: [3],
+                        width: '120px',
+                        className: 'col-actions',
+                        orderable: false
+                    }
+                ]
+            });
+
+            // Inicializar tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Modal edición política
+            $('#modalEdicion').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var modal = $(this);
+                
+                modal.find('#edit-descripcion').val(button.data('descripcion_politica'));
+                modal.find('#edit-id_politica').val(button.data('id_politica'));
+                modal.find('#edit-accion').val(button.data('id_accion'));
+            });
+        });
+
+        // Función para eliminar política
+        function eliminarPolitica(id) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "No podrás revertir esta acción",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '?delete=' + id;
+                }
+            });
+        }
+    </script>
 </body>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Modal edición política
-        const modalEdicion = document.getElementById("modalEdicion");
-        modalEdicion.addEventListener("shown.bs.modal", function(event) {
-            const button = event.relatedTarget;
-            document.getElementById("edit-descripcion").value = button.getAttribute("data-descripcion_politica");
-            document.getElementById("edit-id_politica").value = button.getAttribute("data-id_politica");
-            document.getElementById("edit-accion").value = button.getAttribute("data-id_accion");
-        });
-
-        // Inicializar DataTable
-        $('#policiesTable').DataTable({
-            "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
-            },
-            "order": [[ 0, "asc" ]]
-        });
-    });
-</script>
-
 </html>

@@ -1,0 +1,647 @@
+/* =============================================================================
+   MODERN TABLE STYLES - SDSYP
+   Estilos modernos y globales para tablas y botones de acción
+   ============================================================================= */
+
+/* Variables CSS para colores y espaciado */
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --success-color: #10b981;
+    --success-hover: #059669;
+    --danger-color: #ef4444;
+    --danger-hover: #dc2626;
+    --warning-color: #f59e0b;
+    --warning-hover: #d97706;
+    --info-color: #06b6d4;
+    --info-hover: #0891b2;
+    --secondary-color: #6b7280;
+    --secondary-hover: #4b5563;
+    
+    --background-light: #f8fafc;
+    --background-white: #ffffff;
+    --border-color: #e5e7eb;
+    --text-dark: #1f2937;
+    --text-gray: #6b7280;
+    --text-light: #9ca3af;
+    
+    --border-radius: 8px;
+    --border-radius-sm: 6px;
+    --border-radius-lg: 12px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* =============================================================================
+   CONTAINER Y LAYOUT GENERAL
+   ============================================================================= */
+
+.modern-container {
+    background: var(--background-white);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    margin: 2rem 0;
+}
+
+.modern-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.modern-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modern-header h2 i {
+    font-size: 1.25rem;
+}
+
+/* =============================================================================
+   FILTROS MODERNOS
+   ============================================================================= */
+
+.modern-filters {
+    background: var(--background-light);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem 2rem;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.modern-input,
+.modern-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    transition: var(--transition);
+    background: white;
+    color: var(--text-dark);
+}
+
+.modern-input:focus,
+.modern-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+}
+
+.modern-input::placeholder {
+    color: var(--text-light);
+}
+
+/* =============================================================================
+   BOTONES MODERNOS
+   ============================================================================= */
+
+.btn-modern {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    text-align: center;
+    min-width: fit-content;
+    white-space: nowrap;
+}
+
+.btn-modern:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-modern:active {
+    transform: translateY(0);
+}
+
+.btn-modern:focus {
+    outline: none;
+    box-shadow: var(--shadow-md);
+}
+
+/* Variantes de botones */
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    color: white;
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background: var(--success-hover);
+    color: white;
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: var(--danger-hover);
+    color: white;
+}
+
+.btn-warning {
+    background: var(--warning-color);
+    color: white;
+}
+
+.btn-warning:hover {
+    background: var(--warning-hover);
+    color: white;
+}
+
+.btn-info {
+    background: var(--info-color);
+    color: white;
+}
+
+.btn-info:hover {
+    background: var(--info-hover);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: var(--secondary-hover);
+    color: white;
+}
+
+/* Botones outline */
+.btn-outline {
+    background: transparent;
+    border: 1px solid;
+}
+
+.btn-outline.btn-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline.btn-primary:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Tamaños de botones */
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+}
+
+/* =============================================================================
+   BOTONES DE ACCIÓN EN TABLA
+   ============================================================================= */
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 1rem;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-action:active {
+    transform: translateY(0);
+}
+
+.btn-action.btn-edit {
+    background: linear-gradient(135deg, var(--info-color), var(--info-hover));
+    color: white;
+}
+
+.btn-action.btn-delete {
+    background: linear-gradient(135deg, var(--danger-color), var(--danger-hover));
+    color: white;
+}
+
+.btn-action.btn-view {
+    background: linear-gradient(135deg, var(--secondary-color), var(--secondary-hover));
+    color: white;
+}
+
+/* Tooltip para botones de acción */
+.btn-action[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-dark);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 0.25rem;
+}
+
+/* =============================================================================
+   TABLA MODERNA
+   ============================================================================= */
+
+.modern-table-wrapper {
+    overflow-x: auto;
+    background: white;
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.modern-table thead {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.modern-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+    position: relative;
+}
+
+.modern-table th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-color), transparent);
+}
+
+.modern-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-dark);
+    vertical-align: middle;
+}
+
+.modern-table tbody tr {
+    transition: var(--transition);
+}
+
+.modern-table tbody tr:hover {
+    background: var(--background-light);
+}
+
+.modern-table tbody tr:nth-child(even) {
+    background: rgba(248, 250, 252, 0.5);
+}
+
+.modern-table tbody tr:nth-child(even):hover {
+    background: var(--background-light);
+}
+
+/* Columnas específicas */
+.col-actions {
+    text-align: center;
+    width: 120px;
+}
+
+.col-status {
+    text-align: center;
+    width: 150px;
+}
+
+.col-id {
+    width: 100px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 500;
+}
+
+/* =============================================================================
+   BADGES Y ESTADOS
+   ============================================================================= */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.status-badge.status-active {
+    background: rgb(16 185 129 / 0.1);
+    color: var(--success-color);
+}
+
+.status-badge.status-inactive {
+    background: rgb(239 68 68 / 0.1);
+    color: var(--danger-color);
+}
+
+.status-badge.status-warning {
+    background: rgb(245 158 11 / 0.1);
+    color: var(--warning-color);
+}
+
+.status-badge.status-info {
+    background: rgb(6 182 212 / 0.1);
+    color: var(--info-color);
+}
+
+.status-badge.status-secondary {
+    background: rgb(107 114 128 / 0.1);
+    color: var(--secondary-color);
+}
+
+/* Iconos en badges */
+.status-badge i {
+    font-size: 0.75rem;
+}
+
+/* =============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================= */
+
+@media (max-width: 768px) {
+    .modern-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .modern-filters {
+        padding: 1rem;
+    }
+    
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .modern-table {
+        font-size: 0.8125rem;
+    }
+    
+    .modern-table th,
+    .modern-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .btn-action {
+        width: 2rem;
+        height: 2rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* =============================================================================
+   ANIMACIONES
+   ============================================================================= */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* =============================================================================
+   UTILIDADES
+   ============================================================================= */
+
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.gap-1 {
+    gap: 0.25rem;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-3 {
+    gap: 0.75rem;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.mb-0 {
+    margin-bottom: 0;
+}
+
+.mb-1 {
+    margin-bottom: 0.25rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-3 {
+    margin-bottom: 0.75rem;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+/* =============================================================================
+   MEJORAS PARA DATATABLES
+   ============================================================================= */
+
+.dataTables_wrapper {
+    padding: 0;
+}
+
+/* Ocultar controles duplicados de DataTables */
+.dataTables_filter,
+.dataTables_length {
+    display: none !important;
+}
+
+.dataTables_info {
+    color: var(--text-gray);
+    padding: 1rem 2rem;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.dataTables_paginate {
+    padding: 1rem 2rem;
+    text-align: center;
+}
+
+.dataTables_paginate .paginate_button {
+    padding: 0.5rem 1rem;
+    margin: 0 0.125rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: white;
+    color: var(--text-dark) !important;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.dataTables_paginate .paginate_button:hover {
+    background: var(--primary-color) !important;
+    color: white !important;
+    border-color: var(--primary-color);
+}
+
+.dataTables_paginate .paginate_button.current {
+    background: var(--primary-color) !important;
+    color: white !important;
+    border-color: var(--primary-color);
+}
+
+.dataTables_paginate .paginate_button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.dataTables_paginate .paginate_button.disabled:hover {
+    background: white !important;
+    color: var(--text-dark) !important;
+    border-color: var(--border-color);
+}
+
+/* Footer con fondo */
+.dataTables_wrapper .row {
+    margin: 0;
+    background: var(--background-light);
+    border-top: 1px solid var(--border-color);
+}
