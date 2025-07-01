@@ -17,9 +17,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id_grupo = $_POST['id_grupo'] ?? '';
     $id_politica_publica = $_POST['id_politica_publica'] ?? '';
 
+    // Obtener fecha actual para fecha_alta_persona
+    $fecha_alta_persona = date('Y-m-d H:i:s');
+
     //consulta
-    $sql_insert_persona = "INSERT INTO personas (cedula_persona, nombres_persona, apellidos_persona, telefono_persona, referencia_persona, fecha_nacimiento, genero_persona, id_grupo, id_politica_publica, id_usuario)
-    VALUES ('$cedula_persona', '$nombres_persona', '$apellidos_persona', '$telefono_persona', '$referencia_persona', '$fecha_nacimiento', '$genero_persona', '$id_grupo', '$id_politica_publica', '$id_usuario' )";
+    $sql_insert_persona = "INSERT INTO personas (cedula_persona, nombres_persona, apellidos_persona, telefono_persona, referencia_persona, fecha_nacimiento, genero_persona, id_grupo, id_politica_publica, id_usuario, fecha_alta_persona)
+    VALUES ('$cedula_persona', '$nombres_persona', '$apellidos_persona', '$telefono_persona', '$referencia_persona', '$fecha_nacimiento', '$genero_persona', '$id_grupo', '$id_politica_publica', '$id_usuario', '$fecha_alta_persona' )";
 
 
     // Ejecutar consulta

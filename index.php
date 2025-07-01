@@ -1,6 +1,17 @@
 <?php
   
+  // Configurar codificación UTF-8 más específica
+  ini_set('default_charset', 'UTF-8');
+  header('Content-Type: text/html; charset=UTF-8');
+  mb_internal_encoding('UTF-8');
+  
   require "conexion.php";
+  
+  // Configurar charset para MySQL con verificación
+  if ($mysqli->connect_error) {
+      die("Error de conexión: " . $mysqli->connect_error);
+  }
+  $mysqli->set_charset("utf8mb4");
  
   session_start();
 
@@ -49,7 +60,7 @@
           }
         }else
         {
-          $error_message = "La contraseña no coincide";
+          $error_message = "La contrase&ntilde;a no coincide";
         }
       }else
       {
@@ -62,9 +73,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Content-Language" content="es">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Sistema de Gestión - Iniciar Sesión</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="css/bootstrap.min.css">
@@ -476,8 +490,8 @@
         <div class="logo-container">
           <img src="img/logo.png" alt="Logo" class="logo">
         </div>
-        <h1 class="brand-title">Sistema de Gestión</h1>
-        <p class="brand-subtitle">Plataforma integral para la administración y seguimiento de actividades</p>
+        <h1 class="brand-title">Sistema de Gesti&oacute;n</h1>
+        <p class="brand-subtitle">Plataforma integral para la administraci&oacute;n y seguimiento de actividades</p>
         <div class="features">
           <div class="feature-item">
             <i class="fas fa-shield-alt"></i>
@@ -485,7 +499,7 @@
           </div>
           <div class="feature-item">
             <i class="fas fa-users"></i>
-            <span>Gestión de usuarios</span>
+            <span>Gesti&oacute;n de usuarios</span>
           </div>
           <div class="feature-item">
             <i class="fas fa-chart-line"></i>
@@ -499,7 +513,7 @@
     <div class="login-right">
       <div class="login-form-container">
         <div class="login-header">
-          <h2>Iniciar Sesión</h2>
+          <h2>Iniciar Sesi&oacute;n</h2>
           <p>Ingresa tus credenciales para acceder</p>
         </div>
 
@@ -520,10 +534,10 @@
           </div>
 
           <div class="form-group">
-            <label for="password">Contraseña</label>
+            <label for="password">Contrase&ntilde;a</label>
             <div class="input-wrapper">
               <i class="fas fa-lock"></i>
-              <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required>
+              <input type="password" id="password" name="password" placeholder="Ingresa tu contrase&ntilde;a" required>
               <button type="button" class="toggle-password" onclick="togglePassword()">
                 <i class="fas fa-eye" id="toggleIcon"></i>
               </button>
@@ -536,16 +550,16 @@
               <span class="checkmark"></span>
               Recordarme
             </label>
-            <a href="reset-password.php" class="forgot-password">¿Olvidaste tu contraseña?</a>
+            <a href="reset-password.php" class="forgot-password">&iquest;Olvidaste tu contrase&ntilde;a?</a>
           </div>
 
           <button type="submit" class="login-btn">
-            <span>Iniciar Sesión</span>
+            <span>Iniciar Sesi&oacute;n</span>
             <i class="fas fa-arrow-right"></i>
           </button>
 
           <div class="signup-link">
-            ¿No tienes cuenta? <a href="register.php">Crear cuenta</a>
+            &iquest;No tienes cuenta? <a href="register.php">Crear cuenta</a>
           </div>
         </form>
       </div>
