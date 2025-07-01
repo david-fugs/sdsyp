@@ -11,14 +11,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $apellidos_persona = $_POST['apellidos_persona'];
     $telefono_persona = $_POST['telefono_persona'];
     $referencia_persona = $_POST['referencia_persona'];
+    $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? null;
     $programa = $_POST['programa'];
     $genero_persona = $_POST['genero_persona'];
     $id_grupo = $_POST['id_grupo'] ?? '';
     $id_politica_publica = $_POST['id_politica_publica'] ?? '';
 
     //consulta
-    $sql_insert_persona = "INSERT INTO personas (cedula_persona, nombres_persona, apellidos_persona, telefono_persona, referencia_persona, genero_persona, id_grupo, id_politica_publica, id_usuario)
-    VALUES ('$cedula_persona', '$nombres_persona', '$apellidos_persona', '$telefono_persona', '$referencia_persona', '$genero_persona', '$id_grupo', '$id_politica_publica', '$id_usuario' )";
+    $sql_insert_persona = "INSERT INTO personas (cedula_persona, nombres_persona, apellidos_persona, telefono_persona, referencia_persona, fecha_nacimiento, genero_persona, id_grupo, id_politica_publica, id_usuario)
+    VALUES ('$cedula_persona', '$nombres_persona', '$apellidos_persona', '$telefono_persona', '$referencia_persona', '$fecha_nacimiento', '$genero_persona', '$id_grupo', '$id_politica_publica', '$id_usuario' )";
 
 
     // Ejecutar consulta

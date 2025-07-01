@@ -106,6 +106,24 @@ if ($result && $result->num_rows > 0) {
         echo "<td>" . htmlspecialchars($row['nombres_persona']) . "</td>";
         echo "<td>" . htmlspecialchars($row['apellidos_persona']) . "</td>";
         echo "<td>" . htmlspecialchars($row['genero_persona']) . "</td>";
+        
+        // Fecha de nacimiento y edad calculada
+        $fecha_nacimiento = $row['fecha_nacimiento'];
+        if ($fecha_nacimiento && $fecha_nacimiento != '0000-00-00') {
+            $fecha_formateada = date('d/m/Y', strtotime($fecha_nacimiento));
+            
+            // Calcular edad
+            $hoy = new DateTime();
+            $nacimiento = new DateTime($fecha_nacimiento);
+            $edad = $hoy->diff($nacimiento)->y;
+            
+            echo "<td>" . $fecha_formateada . "</td>";
+            echo "<td><span class='badge bg-primary'>" . $edad . " años</span></td>";
+        } else {
+            echo "<td class='text-muted'>No registrada</td>";
+            echo "<td class='text-muted'>N/A</td>";
+        }
+        
         echo "<td>" . htmlspecialchars($row['telefono_persona']) . "</td>";
         echo "<td>" . htmlspecialchars($row['referencia_persona']) . "</td>";
         echo "<td>" . htmlspecialchars($row['programas'] ?: 'Sin programa') . "</td>";
@@ -124,6 +142,7 @@ if ($result && $result->num_rows > 0) {
                         data-apellidos="' . htmlspecialchars($row['apellidos_persona']) . '"
                         data-telefono="' . htmlspecialchars($row['telefono_persona']) . '"
                         data-referencia="' . htmlspecialchars($row['referencia_persona']) . '"
+                        data-fecha-nacimiento="' . $row['fecha_nacimiento'] . '"
                         data-programas="' . htmlspecialchars($row['programas'] ?: '') . '"
                         data-genero="' . htmlspecialchars($row['genero_persona']) . '"
                         data-ids-programas="' . htmlspecialchars($row['ids_programas'] ?: '') . '"
@@ -142,7 +161,7 @@ if ($result && $result->num_rows > 0) {
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='11' class='text-center text-muted'>
+    echo "<tr><td colspan='13' class='text-center text-muted'>
             <i class='bi bi-search'></i><br>
             No se encontraron registros que coincidan con los filtros aplicados.
           </td></tr>";

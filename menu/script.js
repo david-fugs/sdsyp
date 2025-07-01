@@ -6,11 +6,22 @@ const sidebarOpen = document.querySelector("#sidebarOpen");
 const sidebarClose = document.querySelector(".collapse_sidebar");
 const sidebarExpand = document.querySelector(".expand_sidebar");
 
-sidebarOpen.addEventListener("click", () => sidebar.classList.toggle("close"));
+// Configurar el sidebar para que funcione con hover desde el inicio
+sidebar.classList.add("close", "hoverable");
+
+sidebarOpen.addEventListener("click", () => {
+  sidebar.classList.toggle("close");
+  if (sidebar.classList.contains("close")) {
+    sidebar.classList.add("hoverable");
+  } else {
+    sidebar.classList.remove("hoverable");
+  }
+});
 
 sidebarClose.addEventListener("click", () => {
   sidebar.classList.add("close", "hoverable");
 });
+
 sidebarExpand.addEventListener("click", () => {
   sidebar.classList.remove("close", "hoverable");
 });
@@ -20,6 +31,7 @@ sidebar.addEventListener("mouseenter", () => {
     sidebar.classList.remove("close");
   }
 });
+
 sidebar.addEventListener("mouseleave", () => {
   if (sidebar.classList.contains("hoverable")) {
     sidebar.classList.add("close");
@@ -47,7 +59,7 @@ submenuItems.forEach((item, index) => {
 });
 
 if (window.innerWidth < 768) {
-  sidebar.classList.add("close");
+  sidebar.classList.add("close", "hoverable");
 } else {
-  sidebar.classList.remove("close");
+  sidebar.classList.add("close", "hoverable");
 }

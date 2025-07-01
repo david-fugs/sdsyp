@@ -307,7 +307,7 @@ function deleteMember($id_acciones)
 
             // Inicializar DataTables
             const table = $('#salesTable').DataTable({
-                pageLength: 25,
+                pageLength: 15,
                 responsive: true,
                 order: [[2, 'asc']], // Ordenar por descripción de acción
                 columnDefs: [

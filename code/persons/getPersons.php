@@ -114,16 +114,34 @@ if ($result->num_rows > 0) {
         }
         
         echo "<tr class='fade-in'>";
-        echo "<td class='col-id'>" . $row['cedula_persona'] . "</td>";
-        echo "<td>" . $row['nombres_persona'] . "</td>";
-        echo "<td>" . $row['apellidos_persona'] . "</td>";
-        echo "<td>" . $row['genero_persona'] . "</td>";
-        echo "<td>" . $row['telefono_persona'] . "</td>";
-        echo "<td>" . $row['referencia_persona'] . "</td>";
-        echo "<td>" . $row['programas'] . "</td>";
-        echo "<td>" . ($row['descripcion_grupo'] ? $row['descripcion_grupo'] : 'No asignado') . "</td>";
+        echo "<td class='col-id'>" . htmlspecialchars($row['cedula_persona']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['nombres_persona']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['apellidos_persona']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['genero_persona']) . "</td>";
+        
+        // Fecha de nacimiento y edad calculada
+        $fecha_nacimiento = $row['fecha_nacimiento'];
+        if ($fecha_nacimiento && $fecha_nacimiento != '0000-00-00') {
+            $fecha_formateada = date('d/m/Y', strtotime($fecha_nacimiento));
+            
+            // Calcular edad
+            $hoy = new DateTime();
+            $nacimiento = new DateTime($fecha_nacimiento);
+            $edad = $hoy->diff($nacimiento)->y;
+            
+            echo "<td>" . $fecha_formateada . "</td>";
+            echo "<td><span class='badge bg-primary'>" . $edad . " años</span></td>";
+        } else {
+            echo "<td class='text-muted'>No registrada</td>";
+            echo "<td class='text-muted'>N/A</td>";
+        }
+        
+        echo "<td>" . htmlspecialchars($row['telefono_persona']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['referencia_persona']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['programas']) . "</td>";
+        echo "<td>" . ($row['descripcion_grupo'] ? htmlspecialchars($row['descripcion_grupo']) : 'No asignado') . "</td>";
         echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('CPSAM ', '', $estado_persona) . "</span></td>";
-        echo "<td>" . ($row['descripcion_politica'] ? $row['descripcion_politica'] : 'No asignada') . "</td>";
+        echo "<td>" . ($row['descripcion_politica'] ? htmlspecialchars($row['descripcion_politica']) : 'No asignada') . "</td>";
         
         // Botones de acción modernos
         echo '<td class="col-actions">
@@ -135,8 +153,9 @@ if ($result->num_rows > 0) {
                         data-nombre="' . $row['nombres_persona'] . '"
                         data-apellidos="' . $row['apellidos_persona'] . '"
                         data-telefono="' . $row['telefono_persona'] . '"
-                        data-referencia="' . $row['referencia_persona'] . '"
-                        data-programas="' .  $row['programas']  . '"
+                        data-referencia="' . htmlspecialchars($row['referencia_persona']) . '"
+                        data-fecha-nacimiento="' . $row['fecha_nacimiento'] . '"
+                        data-programas="' . htmlspecialchars($row['programas']) . '"
                         data-genero="' . $row['genero_persona'] . '"
                         data-ids-programas="' .  $row['ids_programas']  . '"
                         data-id-grupo="' . $row['id_grupo'] . '"
@@ -154,7 +173,7 @@ if ($result->num_rows > 0) {
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='12'>No se encontraron registros.</td></tr>";
+    echo "<tr><td colspan='13'>No se encontraron registros.</td></tr>";
 }
 
 

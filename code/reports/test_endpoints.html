@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Endpoints</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Test de Endpoints de Informes</h1>
+    
+    <div>
+        <button onclick="testConnection()">Test Conexión</button>
+        <button onclick="checkDatabase()">Check Database</button>
+        <button onclick="testStatsOriginal()">Test Stats Original</button>
+        <button onclick="testStatsSimple()">Test Stats Simple</button>
+        <button onclick="testStatsDebug()">Test Stats Debug</button>
+        <button onclick="testDataOriginal()">Test Data Original</button>
+        <button onclick="testDataSimple()">Test Data Simple</button>
+        <button onclick="testDataDebug()">Test Data Debug</button>
+    </div>
+    
+    <div id="results" style="margin-top: 20px; white-space: pre-wrap; font-family: monospace; background: #f0f0f0; padding: 20px;"></div>
+
+    <script>
+        function logResult(title, data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML += `\n=== ${title} ===\n`;
+            resultsDiv.innerHTML += JSON.stringify(data, null, 2) + '\n';
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function testConnection() {
+            $.get('test_connection.php')
+                .done(function(response) {
+                    logResult('Test Conexión - SUCCESS', response);
+                })
+                .fail(function(xhr, status, error) {
+                    logResult('Test Conexión - FAIL', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                });
+        }
+
+        function checkDatabase() {
+            $.get('check_database.php')
+                .done(function(response) {
+                    logResult('Check Database - SUCCESS', response);
+                })
+                .fail(function(xhr, status, error) {
+                    logResult('Check Database - FAIL', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                });
+        }
+
+        function testStatsOriginal() {
+            $.get('getReportStats.php', { year: 2024 })
+                .done(function(response) {
+                    logResult('Stats Original - SUCCESS', response);
+                })
+                .fail(function(xhr, status, error) {
+                    logResult('Stats Original - FAIL', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                });
+        }
+
+        function testStatsSimple() {
+            $.get('getReportStats_simple.php', { year: 2024 })
+                .done(function(response) {
+                    logResult('Stats Simple - SUCCESS', response);
+                })
+                .fail(function(xhr, status, error) {
+                    logResult('Stats Simple - FAIL', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                });
+        }
+
+        function testDataOriginal() {
+            $.get('getReportData.php', { year: 2024 })
+                .done(function(response) {
+                    logResult('Data Original - SUCCESS', response);
+                })
+                .fail(function(xhr, status, error) {
+                    logResult('Data Original - FAIL', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                });
+        }
+
+        function testDataSimple() {
+            $.get('getReportData_simple.php', { year: 2024 })
+                .done(function(response) {
+                    logResult('Data Simple - SUCCESS', response);
+                })
+                .fail(function(xhr, status, error) {
+                    logResult('Data Simple - FAIL', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                });
+        }
+        function testStatsDebug() {
+            $.get('getReportStats_debug.php', { year: 2024 })
+                .done(function(response) {
+                    logResult('Stats Debug - SUCCESS', response);
+                })
+                .fail(function(xhr, status, error) {
+                    logResult('Stats Debug - FAIL', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                });
+        }
+
+        function testDataDebug() {
+            $.get('getReportData_debug.php', { year: 2024 })
+                .done(function(response) {
+                    logResult('Data Debug - SUCCESS', response);
+                })
+                .fail(function(xhr, status, error) {
+                    logResult('Data Debug - FAIL', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                });
+        }
+    </script>
+</body>
+</html>

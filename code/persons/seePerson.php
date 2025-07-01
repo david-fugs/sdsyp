@@ -237,6 +237,8 @@ function deleteMember($cedula_persona)
                             <th>Nombres</th>
                             <th>Apellidos</th>
                             <th>Género</th>
+                            <th>Fecha Nacimiento</th>
+                            <th>Edad</th>
                             <th>Teléfono</th>
                             <th>Referencia</th>
                             <th>Programas</th>
@@ -307,7 +309,18 @@ function deleteMember($cedula_persona)
                                 <input type="text" class="form-control" id="telefono_persona" name="telefono_persona" placeholder="Teléfono">
                                 <label for="telefono_persona">Teléfono</label>
                             </div>
+                        </div>
 
+                        <!-- Fila 3.5 - Fecha de Nacimiento -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" placeholder="Fecha de Nacimiento">
+                                <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Edad</label>
+                                <input type="text" class="form-control" id="edad_calculada" readonly placeholder="Se calculará automáticamente" style="background-color: #f8f9fa;">
+                            </div>
                         </div>
                         <!-- Fila 4 -->
                         <div class="row">
@@ -406,6 +419,10 @@ function deleteMember($cedula_persona)
                             <input type="text" class="form-control" id="edit-referencia" name="referencia_persona">
                         </div>
                         <div class="mb-3">
+                            <label for="edit-fecha-nacimiento" class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" id="edit-fecha-nacimiento" name="fecha_nacimiento">
+                        </div>
+                        <div class="mb-3">
                             <label for="edit-programas" class="form-label">Programas</label>
 
                             <?php foreach ($result_programas as $programa) { ?>
@@ -469,7 +486,7 @@ function deleteMember($cedula_persona)
         // Cargar datos iniciales
         function loadTableData(params = {}) {
             const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '<tr><td colspan="11" class="text-center loading">Cargando datos...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="13" class="text-center loading">Cargando datos...</td></tr>';
             
             // Construir parámetros de consulta
             const queryParams = new URLSearchParams();
@@ -497,7 +514,7 @@ function deleteMember($cedula_persona)
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">Error al cargar los datos</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="13" class="text-center text-danger">Error al cargar los datos</td></tr>';
                 });
         }
         
@@ -510,7 +527,7 @@ function deleteMember($cedula_persona)
                     "ordering": true,
                     "info": true,
                     "paging": true,
-                    "pageLength": 25,
+                    "pageLength": 15,
                     "language": {
                         "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
                         "infoEmpty": "Mostrando 0 a 0 de 0 registros",
@@ -524,7 +541,7 @@ function deleteMember($cedula_persona)
                         "emptyTable": "No hay datos disponibles en la tabla"
                     },
                     "columnDefs": [
-                        { "orderable": false, "targets": [10] }
+                        { "orderable": false, "targets": [12] }
                     ],
                     "order": [[2, 'asc']]
                 });
@@ -580,6 +597,35 @@ function deleteMember($cedula_persona)
                 timeout = setTimeout(later, wait);
             };
         }
+
+        // Función para calcular la edad
+        function calcularEdad(fechaNacimiento) {
+            if (!fechaNacimiento) return '';
+            
+            const hoy = new Date();
+            const nacimiento = new Date(fechaNacimiento);
+            let edad = hoy.getFullYear() - nacimiento.getFullYear();
+            const diferenciaMeses = hoy.getMonth() - nacimiento.getMonth();
+            
+            if (diferenciaMeses < 0 || (diferenciaMeses === 0 && hoy.getDate() < nacimiento.getDate())) {
+                edad--;
+            }
+            
+            return edad + ' años';
+        }
+
+        // Configurar cálculo de edad en tiempo real
+        document.addEventListener('DOMContentLoaded', function() {
+            const fechaNacimientoInput = document.getElementById('fecha_nacimiento');
+            const edadCalculadaInput = document.getElementById('edad_calculada');
+            
+            if (fechaNacimientoInput && edadCalculadaInput) {
+                fechaNacimientoInput.addEventListener('change', function() {
+                    const edad = calcularEdad(this.value);
+                    edadCalculadaInput.value = edad;
+                });
+            }
+        });
     </script>
 
     <!-- Configuración de DataTables -->
@@ -604,6 +650,7 @@ function deleteMember($cedula_persona)
                 document.getElementById("edit-apellido").value = button.getAttribute("data-apellidos");
                 document.getElementById("edit-telefono").value = button.getAttribute("data-telefono");
                 document.getElementById("edit-referencia").value = button.getAttribute("data-referencia");
+                document.getElementById("edit-fecha-nacimiento").value = button.getAttribute("data-fecha-nacimiento");
                 document.getElementById("cedula_original").value = button.getAttribute("data-cedula");
                 document.getElementById("edit-genero").value = button.getAttribute("data-genero");
                 

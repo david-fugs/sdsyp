@@ -272,7 +272,7 @@ function deleteMember($id_meta)
 
             // Inicializar DataTables
             const table = $('#salesTable').DataTable({
-                pageLength: 25,
+                pageLength: 15,
                 responsive: true,
                 order: [[1, 'asc']],
                 columnDefs: [

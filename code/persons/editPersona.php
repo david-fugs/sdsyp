@@ -10,6 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $apellidos_persona = $_POST['apellidos_persona'];
     $telefono_persona = $_POST['telefono_persona'];
     $referencia_persona = $_POST['referencia_persona'];
+    $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? null;
     $programa = $_POST['programa'];
     $cedula_original = $_POST['cedula_original'];
     $genero_persona = $_POST['genero_persona'];
@@ -17,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id_politica_publica = $_POST['id_politica_publica'] ?? '';
 
     // Actualizar persona
-    $sql_update_persona = "UPDATE personas SET cedula_persona='$cedula_persona', nombres_persona='$nombres_persona', apellidos_persona='$apellidos_persona', telefono_persona='$telefono_persona', referencia_persona='$referencia_persona', genero_persona='$genero_persona', id_grupo='$id_grupo', id_politica_publica='$id_politica_publica' WHERE cedula_persona='$cedula_original'";
+    $sql_update_persona = "UPDATE personas SET cedula_persona='$cedula_persona', nombres_persona='$nombres_persona', apellidos_persona='$apellidos_persona', telefono_persona='$telefono_persona', referencia_persona='$referencia_persona', fecha_nacimiento='$fecha_nacimiento', genero_persona='$genero_persona', id_grupo='$id_grupo', id_politica_publica='$id_politica_publica' WHERE cedula_persona='$cedula_original'";
     // Ejecutar consulta
     if ($mysqli->query($sql_update_persona)) {
 

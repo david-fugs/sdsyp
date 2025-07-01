@@ -329,7 +329,7 @@ function deleteMember($id_politica)
                     url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
                 },
                 order: [[0, 'asc']],
-                pageLength: 10,
+                pageLength: 15,
                 responsive: true,
                 columnDefs: [
                     {

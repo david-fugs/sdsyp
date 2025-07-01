@@ -683,7 +683,7 @@ function deleteMember($cedula_persona)
         }
         
         movementTable = $('#salesTable').DataTable({
-            pageLength: 10,
+            pageLength: 15,
             lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
