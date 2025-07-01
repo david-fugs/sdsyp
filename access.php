@@ -629,18 +629,6 @@ $mysqli->close();
         <li class="item">
           <div href="#" class="nav_link submenu_item">
             <span class="navlink_icon">
-              <i class="fa-solid fa-file-lines"></i>
-            </span>
-            <span class="navlink">Formulario</span>
-            <i class="bx bx-chevron-right arrow-left"></i>
-          </div>
-          <ul class="menu_items submenu">
-            <a href="code/form/addForm.php" class="nav_link sublink">Ingresar Formulario</a>
-          </ul>
-        </li>
-        <li class="item">
-          <div href="#" class="nav_link submenu_item">
-            <span class="navlink_icon">
               <i class="fa-solid fa-chart-bar"></i>
             </span>
             <span class="navlink">Informes</span>
