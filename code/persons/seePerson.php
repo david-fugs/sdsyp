@@ -11,16 +11,22 @@
     <link rel="stylesheet" type="text/css" href="../../css/modern-table-styles.css">
     <link rel="stylesheet" href="styleSell.css">
     <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- Librerías de DataTables -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <!-- jQuery (necesario para DataTables) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    
+    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+    
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Estilos personalizados para aumentar tamaño de fuente -->
     <style>
@@ -119,6 +125,19 @@
         /* Mensajes de estado */
         .text-muted, .text-success, .text-danger {
             font-size: 13px !important;
+        }
+
+        /* Botón Cancelar del modal edición: negrita y color oscuro siempre */
+        .btn-modal-cancelar {
+            font-weight: bold !important;
+            color: #212529 !important;
+            border: 1px solid #ced4da !important;
+            background: #fff !important;
+        }
+        .btn-modal-cancelar:hover, .btn-modal-cancelar:focus {
+            background: #f8f9fa !important;
+            color: #212529 !important;
+            border-color: #adb5bd !important;
         }
     </style>
 </head>
@@ -229,18 +248,14 @@ function deleteMember($cedula_persona)
             </div>
 
             <!-- Tabla moderna -->
-            <div class="modern-table-wrapper">
-                <table class="modern-table" id="salesTable">
-                    <thead>
-                        <tr>
+            <div class="modern-table-wrapper" style="background: #fff; border-radius: 18px; box-shadow: 0 4px 24px rgba(65,47,209,0.08); padding: 24px;">
+                <table class="modern-table table table-hover align-middle" id="salesTable" style="border-radius: 12px; overflow: hidden;">
+                    <thead class="table-dark">
+                        <tr style="font-size: 1.1rem;">
                             <th class="col-id">Cédula</th>
-                            <th>Nombres</th>
-                            <th>Apellidos</th>
+                            <th>Nombre Completo</th>
                             <th>Género</th>
-                            <th>Fecha Nacimiento</th>
                             <th>Edad</th>
-                            <th>Teléfono</th>
-                            <th>Referencia</th>
                             <th>Programas</th>
                             <th>Centro Vida / CPSAM</th>
                             <th class="col-status">Estado</th>
@@ -268,60 +283,213 @@ function deleteMember($cedula_persona)
                     </div>
 
                     <div class="modal-body">
-                        <!-- Fila 1 -->
+                        <!-- Fila 1: Tipo de identificación y número -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <input type="text" class="form-control" id="cedula_persona" name="cedula_persona" placeholder="Cédula" required autocomplete="off" autofocus>
-                                <label class="" for="cedula_persona">Cédula</label>
+                                <select class="form-select" id="tipo_identificacion" name="tipo_identificacion" required>
+                                    <option value="" selected disabled>Seleccione tipo...</option>
+                                    <option value="Cédula de Ciudadanía">Cédula de Ciudadanía</option>
+                                    <option value="Tarjeta de Identidad">Tarjeta de Identidad</option>
+                                    <option value="Cédula de Extranjería">Cédula de Extranjería</option>
+                                    <option value="Pasaporte">Pasaporte</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                                <label for="tipo_identificacion">Tipo de Identificación</label>
                             </div>
-
-                            <div class="col-md-6 mb-3 form-floating mt-1">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="text" class="form-control" id="cedula_persona" name="cedula_persona" placeholder="Número de Identificación" required autocomplete="off" autofocus>
+                                <label for="cedula_persona">Número de Identificación</label>
+                            </div>
+                        </div>
+                        <!-- Fila 1.5: Género y Nombres -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="genero_persona" name="genero_persona" required>
                                     <option value="" selected disabled>Seleccione...</option>
                                     <option value="Masculino">Masculino</option>
                                     <option value="Femenino">Femenino</option>
                                     <option value="Otro">Otro</option>
                                 </select>
-                                <label class="" for="cedula_persona">Genero</label>
+                                <label for="genero_persona">Género</label>
                             </div>
-
-                        </div>
-
-                        <!-- Fila 2 -->
-                        <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
                                 <input type="text" class="form-control" id="nombres_persona" name="nombres_persona" placeholder="Nombres" required>
                                 <label for="nombres_persona">Nombres</label>
                             </div>
+                        </div>
+                        <!-- Fila 2: Apellidos y Referencia -->
+                        <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
                                 <input type="text" class="form-control" id="apellidos_persona" name="apellidos_persona" placeholder="Apellidos" required>
                                 <label for="apellidos_persona">Apellidos</label>
                             </div>
-                        </div>
-
-                        <!-- Fila 3 -->
-                        <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
                                 <input type="text" class="form-control" id="referencia_persona" name="referencia_persona" placeholder="Referencia">
                                 <label for="referencia_persona">Referencia</label>
                             </div>
+                        </div>
+                        <!-- Fila 3: Teléfono y Fecha de Nacimiento -->
+                        <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
                                 <input type="text" class="form-control" id="telefono_persona" name="telefono_persona" placeholder="Teléfono">
                                 <label for="telefono_persona">Teléfono</label>
                             </div>
-                        </div>
-
-                        <!-- Fila 3.5 - Fecha de Nacimiento -->
-                        <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
                                 <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" placeholder="Fecha de Nacimiento">
                                 <label for="fecha_nacimiento">Fecha de Nacimiento</label>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Edad</label>
-                                <input type="text" class="form-control" id="edad_calculada" readonly placeholder="Se calculará automáticamente" style="background-color: #f8f9fa;">
+                        </div>
+                        <!-- Fila nueva: Barrio, Comuna y Zona -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating position-relative">
+                                <input type="text" class="form-control" id="barrio_persona" name="barrio_persona" placeholder="Barrio" list="lista-barrios" autocomplete="off">
+                                <label for="barrio_persona">Barrio</label>
+                                <datalist id="lista-barrios"></datalist>
+                                <input type="hidden" id="id_barrio_persona" name="id_barrio_persona">
+                                <input type="hidden" id="id_comuna_persona" name="id_comuna_persona">
+                            </div>
+                            <div class="col-md-3 mb-3 form-floating">
+                                <input type="text" class="form-control" id="comuna_persona" name="comuna_persona" placeholder="Comuna" readonly>
+                                <label for="comuna_persona">Comuna</label>
+                            </div>
+                            <div class="col-md-3 mb-3 form-floating">
+                                <input type="text" class="form-control" id="zona_persona" name="zona_persona" placeholder="Zona" readonly>
+                                <label for="zona_persona">Zona</label>
                             </div>
                         </div>
+                        <!-- Fila 4: Edad y Grupo Sisbén -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="text" class="form-control" id="edad_calculada" readonly placeholder="Se calculará automáticamente" style="background-color: #f8f9fa;">
+                                <label for="edad_calculada">Edad</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="grupo_sisben" name="grupo_sisben">
+                                    <option value="" selected>Seleccione grupo...</option>
+                                    <?php for($l='A';$l<='D';$l++) { for($n=1;$n<=9;$n++) { ?>
+                                        <option value="<?= $l.$n ?>"><?= $l.$n ?></option>
+                                    <?php } } ?>
+                                </select>
+                                <label for="grupo_sisben">Grupo Sisbén</label>
+                            </div>
+                        </div>
+                        <!-- Fila 1.7: Discapacidad y cabeza de hogar -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="persona_discapacidad" name="persona_discapacidad" required>
+                                    <option value="" selected disabled>¿Persona con discapacidad?</option>
+                                    <option value="Si">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                                <label for="persona_discapacidad">¿Persona con discapacidad?</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating" id="div_cual_discapacidad" style="display:none;">
+                                <select class="form-select" id="cual_discapacidad" name="cual_discapacidad">
+                                    <option value="" selected disabled>Categoría discapacidad...</option>
+                                    <option value="Auditiva">Auditiva</option>
+                                    <option value="Física">Física</option>
+                                    <option value="Intelectual">Intelectual</option>
+                                    <option value="Múltiple">Múltiple</option>
+                                    <option value="Psicosocial">Psicosocial</option>
+                                    <option value="Sordoceguera">Sordoceguera</option>
+                                    <option value="Visual">Visual</option>
+                                </select>
+                                <label for="cual_discapacidad">Categoría discapacidad</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="cabeza_hogar" name="cabeza_hogar" required>
+                                    <option value="" selected disabled>¿Cabeza de hogar?</option>
+                                    <option value="Si">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                                <label for="cabeza_hogar">¿Cabeza de hogar?</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="lider_comunidad" name="lider_comunidad" required>
+                                    <option value="" selected disabled>¿Líder/representante comunidad?</option>
+                                    <option value="Si">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                                <label for="lider_comunidad">¿Líder/representante comunidad?</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="se_reconoce_como" name="se_reconoce_como">
+                                    <option value="" selected disabled>Se reconoce como...</option>
+                                    <option value="Hombre">Hombre</option>
+                                    <option value="Hombre trans">Hombre trans</option>
+                                    <option value="Mujer">Mujer</option>
+                                    <option value="Mujer trans">Mujer trans</option>
+                                    <option value="No binaria">No binaria</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                                <label for="se_reconoce_como">Se reconoce como</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="orientacion_sexual" name="orientacion_sexual">
+                                    <option value="" selected disabled>Orientación sexual...</option>
+                                    <option value="Heterosexual">Heterosexual</option>
+                                    <option value="Homosexual">Homosexual</option>
+                                    <option value="Asexual">Asexual</option>
+                                    <option value="Bisexual">Bisexual</option>
+                                    <option value="Pansexual">Pansexual</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                                <label for="orientacion_sexual">Orientación sexual</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="experiencia_migratoria" name="experiencia_migratoria">
+                                    <option value="" selected disabled>¿Experiencia migratoria?</option>
+                                    <option value="Si">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                                <label for="experiencia_migratoria">¿Experiencia migratoria?</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="grupo_etnico" name="grupo_etnico">
+                                    <option value="" selected disabled>Grupo étnico...</option>
+                                    <option value="Indígena">Indígena</option>
+                                    <option value="Rom">Rom</option>
+                                    <option value="Raizal">Raizal</option>
+                                    <option value="Palenquero de San Basilio">Palenquero de San Basilio</option>
+                                    <option value="Negro/Mulato">Negro/Mulato</option>
+                                    <option value="Mestizo">Mestizo</option>
+                                </select>
+                                <label for="grupo_etnico">Grupo étnico</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="tipo_salud" name="tipo_salud">
+                                    <option value="" selected disabled>Tipo de salud...</option>
+                                    <option value="Régimen subsidiado">Régimen subsidiado</option>
+                                    <option value="Régimen contributivo">Régimen contributivo</option>
+                                    <option value="Régimen vinculado">Régimen vinculado</option>
+                                </select>
+                                <label for="tipo_salud">Tipo de salud</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="nivel_educativo" name="nivel_educativo">
+                                    <option value="" selected disabled>Nivel educativo...</option>
+                                    <option value="Preescolar">Preescolar</option>
+                                    <option value="Básica primaria">Básica primaria</option>
+                                    <option value="Básica secundaria">Básica secundaria</option>
+                                    <option value="Media académica o clásica">Media académica o clásica</option>
+                                    <option value="Media técnica">Media técnica</option>
+                                    <option value="Normalista">Normalista</option>
+                                    <option value="Técnica profesional">Técnica profesional</option>
+                                    <option value="Tecnológica">Tecnológica</option>
+                                    <option value="Profesional">Profesional</option>
+                                </select>
+                                <label for="nivel_educativo">Nivel educativo</label>
+                            </div>
+                        </div>
+
                         <!-- Fila 4 -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -381,88 +549,256 @@ function deleteMember($cedula_persona)
 
     <!-- modal edicion -->
     <div class="modal fade" id="modalEdicion" tabindex="-1" aria-labelledby="modalEdicionLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content rounded-4 shadow-sm">
                 <div class="modal-header bg-dark text-white"> <!-- Negro con texto blanco -->
-                    <h5 class="modal-title" id="modalEdicionLabel">Edit Store Info</h5>
+                    <h5 class="modal-title" id="modalEdicionLabel">Editar Persona</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="editPersona.php" method="POST">
                     <div class="modal-body px-4 py-3">
-                        <div class="mb-3">
-                            <label for="edit-cedula" class="form-label">Cedula </label>
-                            <input type="text" class="form-control" id="edit-cedula" name="cedula_persona">
+                        <!-- Fila 1: Tipo de identificación y número -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-tipo-identificacion" class="form-label">Tipo de Identificación</label>
+                                <select class="form-select" id="edit-tipo-identificacion" name="tipo_identificacion" required>
+                                    <option value="" selected disabled>Seleccione tipo...</option>
+                                    <option value="Cédula de Ciudadanía">Cédula de Ciudadanía</option>
+                                    <option value="Tarjeta de Identidad">Tarjeta de Identidad</option>
+                                    <option value="Cédula de Extranjería">Cédula de Extranjería</option>
+                                    <option value="Pasaporte">Pasaporte</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-cedula" class="form-label">Número de Identificación</label>
+                                <input type="text" class="form-control" id="edit-cedula" name="cedula_persona">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="edit-nombre" class="form-label">Nombres</label>
-                            <input type="text" class="form-control" id="edit-nombre" name="nombres_persona">
+                        <!-- Fila 1.2: Nombres y Apellidos -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-nombre" class="form-label">Nombres</label>
+                                <input type="text" class="form-control" id="edit-nombre" name="nombres_persona">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-apellido" class="form-label">Apellidos</label>
+                                <input type="text" class="form-control" id="edit-apellido" name="apellidos_persona">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="edit-apellido" class="form-label">Apellidos</label>
-                            <input type="text" class="form-control" id="edit-apellido" name="apellidos_persona">
+                        <!-- Fila 1.5: Género y Grupo Sisbén -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-genero" class="form-label">Género</label>
+                                <select class="form-select" id="edit-genero" name="genero_persona" required>
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-grupo-sisben" class="form-label">Grupo Sisbén</label>
+                                <select class="form-select" id="edit-grupo-sisben" name="grupo_sisben">
+                                    <option value="" selected>Seleccione grupo...</option>
+                                    <?php for($l='A';$l<='D';$l++) { for($n=1;$n<=9;$n++) { ?>
+                                        <option value="<?= $l.$n ?>"><?= $l.$n ?></option>
+                                    <?php } } ?>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="edit-genero" class="form-label">Genero</label>
-                            <select class="form-select" id="edit-genero" name="genero_persona">
-                                <option value="" selected disabled>Seleccione...</option>
-                                <option value="Masculino">Masculino</option>
-                                <option value="Femenino">Femenino</option>
-                                <option value="Otro">Otro</option>
-                            </select>
+                        <!-- Fila 1.7: Discapacidad y cabeza de hogar -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-persona-discapacidad" class="form-label">¿Persona con discapacidad?</label>
+                                <select class="form-select" id="edit-persona-discapacidad" name="persona_discapacidad" required>
+                                    <option value="" selected disabled>¿Persona con discapacidad?</option>
+                                    <option value="Si">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3" id="edit-div-cual-discapacidad" style="display:none;">
+                                <label for="edit-cual-discapacidad" class="form-label">Categoría discapacidad</label>
+                                <select class="form-select" id="edit-cual-discapacidad" name="cual_discapacidad">
+                                    <option value="" selected disabled>Categoría discapacidad...</option>
+                                    <option value="Auditiva">Auditiva</option>
+                                    <option value="Física">Física</option>
+                                    <option value="Intelectual">Intelectual</option>
+                                    <option value="Múltiple">Múltiple</option>
+                                    <option value="Psicosocial">Psicosocial</option>
+                                    <option value="Sordoceguera">Sordoceguera</option>
+                                    <option value="Visual">Visual</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="edit-telefono" class="form-label">Telefono</label>
-                            <input type="text" class="form-control" id="edit-telefono" name="telefono_persona">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-cabeza-hogar" class="form-label">¿Cabeza de hogar?</label>
+                                <select class="form-select" id="edit-cabeza-hogar" name="cabeza_hogar" required>
+                                    <option value="" selected disabled>¿Cabeza de hogar?</option>
+                                    <option value="Si">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-lider-comunidad" class="form-label">¿Líder/representante comunidad?</label>
+                                <select class="form-select" id="edit-lider-comunidad" name="lider_comunidad" required>
+                                    <option value="" selected disabled>¿Líder/representante comunidad?</option>
+                                    <option value="Si">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="edit-referencia" class="form-label">Referencia</label>
-                            <input type="text" class="form-control" id="edit-referencia" name="referencia_persona">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-se-reconoce-como" class="form-label">Se reconoce como</label>
+                                <select class="form-select" id="edit-se-reconoce-como" name="se_reconoce_como">
+                                    <option value="" selected disabled>Se reconoce como...</option>
+                                    <option value="Hombre">Hombre</option>
+                                    <option value="Hombre trans">Hombre trans</option>
+                                    <option value="Mujer">Mujer</option>
+                                    <option value="Mujer trans">Mujer trans</option>
+                                    <option value="No binaria">No binaria</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-orientacion-sexual" class="form-label">Orientación sexual</label>
+                                <select class="form-select" id="edit-orientacion-sexual" name="orientacion_sexual">
+                                    <option value="" selected disabled>Orientación sexual...</option>
+                                    <option value="Heterosexual">Heterosexual</option>
+                                    <option value="Homosexual">Homosexual</option>
+                                    <option value="Asexual">Asexual</option>
+                                    <option value="Bisexual">Bisexual</option>
+                                    <option value="Pansexual">Pansexual</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="edit-fecha-nacimiento" class="form-label">Fecha de Nacimiento</label>
-                            <input type="date" class="form-control" id="edit-fecha-nacimiento" name="fecha_nacimiento">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-experiencia-migratoria" class="form-label">¿Experiencia migratoria?</label>
+                                <select class="form-select" id="edit-experiencia-migratoria" name="experiencia_migratoria">
+                                    <option value="" selected disabled>¿Experiencia migratoria?</option>
+                                    <option value="Si">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-grupo-etnico" class="form-label">Grupo étnico</label>
+                                <select class="form-select" id="edit-grupo-etnico" name="grupo_etnico">
+                                    <option value="" selected disabled>Grupo étnico...</option>
+                                    <option value="Indígena">Indígena</option>
+                                    <option value="Rom">Rom</option>
+                                    <option value="Raizal">Raizal</option>
+                                    <option value="Palenquero de San Basilio">Palenquero de San Basilio</option>
+                                    <option value="Negro/Mulato">Negro/Mulato</option>
+                                    <option value="Mestizo">Mestizo</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="edit-programas" class="form-label">Programas</label>
-
-                            <?php foreach ($result_programas as $programa) { ?>
-                                <div class="form-check">
-                                    <input
-                                        class="form-check-input"
-                                        type="checkbox"
-                                        name="programa[]"
-                                        id="programa_<?= $programa['id_programa']; ?>"
-                                        value="<?= $programa['id_programa']; ?>">
-                                    <label class="form-check-label" for="programa_<?= $programa['id_programa']; ?>">
-                                        <?= $programa['nombre_programa']; ?>
-                                    </label>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-tipo-salud" class="form-label">Tipo de salud</label>
+                                <select class="form-select" id="edit-tipo-salud" name="tipo_salud">
+                                    <option value="" selected disabled>Tipo de salud...</option>
+                                    <option value="Régimen subsidiado">Régimen subsidiado</option>
+                                    <option value="Régimen contributivo">Régimen contributivo</option>
+                                    <option value="Régimen vinculado">Régimen vinculado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-nivel-educativo" class="form-label">Nivel educativo</label>
+                                <select class="form-select" id="edit-nivel-educativo" name="nivel_educativo">
+                                    <option value="" selected disabled>Nivel educativo...</option>
+                                    <option value="Preescolar">Preescolar</option>
+                                    <option value="Básica primaria">Básica primaria</option>
+                                    <option value="Básica secundaria">Básica secundaria</option>
+                                    <option value="Media académica o clásica">Media académica o clásica</option>
+                                    <option value="Media técnica">Media técnica</option>
+                                    <option value="Normalista">Normalista</option>
+                                    <option value="Técnica profesional">Técnica profesional</option>
+                                    <option value="Tecnológica">Tecnológica</option>
+                                    <option value="Profesional">Profesional</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-telefono" class="form-label">Teléfono</label>
+                                <input type="text" class="form-control" id="edit-telefono" name="telefono_persona">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-referencia" class="form-label">Referencia</label>
+                                <input type="text" class="form-control" id="edit-referencia" name="referencia_persona">
+                            </div>
+                        </div>
+                        <!-- Fila nueva: Barrio, Comuna y Zona (Edición) -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 position-relative">
+                                <label for="edit-barrio-persona" class="form-label">Barrio</label>
+                                <input type="text" class="form-control" id="edit-barrio-persona" name="barrio_persona" placeholder="Barrio" list="edit-lista-barrios" autocomplete="off">
+                                <datalist id="edit-lista-barrios"></datalist>
+                                <input type="hidden" id="edit-id-barrio-persona" name="id_barrio_persona">
+                                <input type="hidden" id="edit-id-comuna-persona" name="id_comuna_persona">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="edit-comuna-persona" class="form-label">Comuna</label>
+                                <input type="text" class="form-control" id="edit-comuna-persona" name="comuna_persona" placeholder="Comuna" readonly>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="edit-zona-persona" class="form-label">Zona</label>
+                                <input type="text" class="form-control" id="edit-zona-persona" name="zona_persona" placeholder="Zona" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-fecha-nacimiento" class="form-label">Fecha de Nacimiento</label>
+                                <input type="date" class="form-control" id="edit-fecha-nacimiento" name="fecha_nacimiento">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-grupo" class="form-label">Centro Vida / CPSAM</label>
+                                <select class="form-select" id="edit-grupo" name="id_grupo">
+                                    <option value="">Seleccione...</option>
+                                    <?php foreach ($result_grupos as $grupo) { ?>
+                                        <option value="<?= $grupo['id_grupo']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-politica-publica" class="form-label">Política Pública</label>
+                                <select class="form-select" id="edit-politica-publica" name="id_politica_publica">
+                                    <option value="">Seleccione...</option>
+                                    <?php foreach ($result_politicas_publicas as $politica) { ?>
+                                        <option value="<?= $politica['id_politica']; ?>"><?= $politica['descripcion_politica']; ?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-programas" class="form-label">Programas</label>
+                                <div class="d-flex flex-wrap" style="gap: 8px;">
+                                    <?php foreach ($result_programas as $programa) { ?>
+                                        <div class="form-check" style="min-width: 140px;">
+                                            <input
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                name="programa[]"
+                                                id="programa_<?= $programa['id_programa']; ?>"
+                                                value="<?= $programa['id_programa']; ?>">
+                                            <label class="form-check-label" for="programa_<?= $programa['id_programa']; ?>">
+                                                <?= $programa['nombre_programa']; ?>
+                                            </label>
+                                        </div>
+                                    <?php } ?>
                                 </div>
-                            <?php } ?>
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit-grupo" class="form-label">Centro Vida / CPSAM</label>
-                            <select class="form-select" id="edit-grupo" name="id_grupo">
-                                <option value="">Seleccione...</option>
-                                <?php foreach ($result_grupos as $grupo) { ?>
-                                    <option value="<?= $grupo['id_grupo']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
-                                <?php } ?>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit-politica-publica" class="form-label">Política Pública</label>
-                            <select class="form-select" id="edit-politica-publica" name="id_politica_publica">
-                                <option value="">Seleccione...</option>
-                                <?php foreach ($result_politicas_publicas as $politica) { ?>
-                                    <option value="<?= $politica['id_politica']; ?>"><?= $politica['descripcion_politica']; ?></option>
-                                <?php } ?>
-                            </select>
+                            </div>
                         </div>
                         <input type="hidden" name="cedula_original" id="cedula_original" value="">
-
                     </div>
-
                     <div class="modal-footer bg-light">
-                        <button type="button" class="btn-modern btn-outline btn-secondary" data-bs-dismiss="modal">
+                        <button type="button" class="btn-modern btn-modal-cancelar" data-bs-dismiss="modal">
                             <i class="bi bi-x-lg"></i>
                             Cancelar
                         </button>
@@ -478,87 +814,197 @@ function deleteMember($cedula_persona)
 
     <br /><a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="back" /></a><br>
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Script para filtros dinámicos -->
     <script>
+    // --- Autocompletado de Barrio, Comuna y Zona (Edición Persona) ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputBarrio = document.getElementById('edit-barrio-persona');
+        const datalistBarrios = document.getElementById('edit-lista-barrios');
+        const inputComuna = document.getElementById('edit-comuna-persona');
+        const inputZona = document.getElementById('edit-zona-persona');
+        const inputIdBarrio = document.getElementById('edit-id-barrio-persona');
+        const inputIdComuna = document.getElementById('edit-id-comuna-persona');
+        let barriosData = [];
+
+        if(inputBarrio && datalistBarrios) {
+            inputBarrio.addEventListener('input', function() {
+                const term = this.value.trim();
+                if(term.length < 2) {
+                    datalistBarrios.innerHTML = '';
+                    return;
+                }
+                fetch('buscar_barrio.php?term=' + encodeURIComponent(term))
+                    .then(res => res.json())
+                    .then(data => {
+                        barriosData = data;
+                        datalistBarrios.innerHTML = '';
+                        data.forEach(barrio => {
+                            const option = document.createElement('option');
+                            option.value = barrio.nombre_bar;
+                            option.setAttribute('data-id', barrio.id_bar);
+                            datalistBarrios.appendChild(option);
+                        });
+                    });
+            });
+
+            inputBarrio.addEventListener('change', function() {
+                const selected = barriosData.find(b => b.nombre_bar.toLowerCase() === inputBarrio.value.trim().toLowerCase());
+                if(selected) {
+                    inputComuna.value = selected.nombre_com || '';
+                    inputZona.value = selected.zona_bar || '';
+                    if(inputIdBarrio) inputIdBarrio.value = selected.id_bar || '';
+                    if(inputIdComuna) inputIdComuna.value = selected.id_com || '';
+                } else {
+                    inputComuna.value = '';
+                    inputZona.value = '';
+                    if(inputIdBarrio) inputIdBarrio.value = '';
+                    if(inputIdComuna) inputIdComuna.value = '';
+                }
+            });
+        }
+    });
+    // --- Autocompletado de Barrio, Comuna y Zona (Alta Persona) ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputBarrio = document.getElementById('barrio_persona');
+        const datalistBarrios = document.getElementById('lista-barrios');
+        const inputComuna = document.getElementById('comuna_persona');
+        const inputZona = document.getElementById('zona_persona');
+        const inputIdBarrio = document.getElementById('id_barrio_persona');
+        const inputIdComuna = document.getElementById('id_comuna_persona');
+        let barriosData = [];
+
+        if(inputBarrio && datalistBarrios) {
+            inputBarrio.addEventListener('input', function() {
+                const term = this.value.trim();
+                if(term.length < 2) {
+                    datalistBarrios.innerHTML = '';
+                    return;
+                }
+                fetch('buscar_barrio.php?term=' + encodeURIComponent(term))
+                    .then(res => res.json())
+                    .then(data => {
+                        barriosData = data;
+                        datalistBarrios.innerHTML = '';
+                        data.forEach(barrio => {
+                            const option = document.createElement('option');
+                            option.value = barrio.nombre_bar;
+                            option.setAttribute('data-id', barrio.id_bar);
+                            datalistBarrios.appendChild(option);
+                        });
+                    });
+            });
+
+            inputBarrio.addEventListener('change', function() {
+                const selected = barriosData.find(b => b.nombre_bar.toLowerCase() === inputBarrio.value.trim().toLowerCase());
+                if(selected) {
+                    inputComuna.value = selected.nombre_com || '';
+                    inputZona.value = selected.zona_bar || '';
+                    if(inputIdBarrio) inputIdBarrio.value = selected.id_bar || '';
+                    if(inputIdComuna) inputIdComuna.value = selected.id_com || '';
+                } else {
+                    inputComuna.value = '';
+                    inputZona.value = '';
+                    if(inputIdBarrio) inputIdBarrio.value = '';
+                    if(inputIdComuna) inputIdComuna.value = '';
+                }
+            });
+        }
+    });
         // Variable global para DataTable
         let dataTable = null;
-        
-        // Cargar datos iniciales
+
+        // Inicializar DataTable solo una vez y evitar re-inicialización
+        function initializeDataTable() {
+            if ($.fn.DataTable.isDataTable('#salesTable')) {
+                return;
+            }
+            dataTable = $('#salesTable').DataTable({
+                "searching": false,
+                "lengthChange": false,
+                "ordering": true,
+                "info": true,
+                "paging": true,
+                "pageLength": 15,
+                "language": {
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                    "infoEmpty": "Mostrando 0 a 0 de 0 registros",
+                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                    "paginate": {
+                        "first": "Primero",
+                        "last": "Último",
+                        "next": "Siguiente",
+                        "previous": "Anterior"
+                    },
+                    "emptyTable": "No hay datos disponibles en la tabla"
+                },
+                // Ajustar targets para que coincidan con la cantidad de columnas visibles
+                "columnDefs": [
+                    { "orderable": false, "targets": [8] } // Acciones es la columna 9 (índice 8)
+                ],
+                "order": [[2, 'asc']]
+            });
+        }
+
+        // Función para actualizar solo las filas de la tabla y reinicializar correctamente el DataTable
+        function updateTableRows(data) {
+            if ($.fn.DataTable.isDataTable('#salesTable')) {
+                // Limpiar el tbody antes de destruir para evitar errores de parentNode nulo
+                $('#salesTable tbody').empty();
+                $('#salesTable').DataTable().destroy();
+            }
+            $('#salesTable tbody').html(data);
+            dataTable = null;
+            initializeDataTable();
+        }
+
+        // Cargar datos filtrados sin recargar la tabla completa
         function loadTableData(params = {}) {
             const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '<tr><td colspan="13" class="text-center loading">Cargando datos...</td></tr>';
-            
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center loading">Cargando datos...</td></tr>';
+
             // Construir parámetros de consulta
             const queryParams = new URLSearchParams();
             if (params.cedula) queryParams.append('cedula_persona', params.cedula);
             if (params.nombre) queryParams.append('nombre', params.nombre);
             if (params.programa) queryParams.append('programa', params.programa);
             if (params.estado) queryParams.append('estado', params.estado);
-            
+
             // Realizar petición AJAX
             fetch(`getPersonsAjax.php?${queryParams.toString()}`)
                 .then(response => response.text())
                 .then(data => {
-                    tbody.innerHTML = data;
-                    
-                    // Solo reinicializar DataTable si ya existe
-                    if (dataTable) {
-                        dataTable.destroy();
-                        dataTable = null;
-                    }
-                    
-                    // Esperar un momento antes de reinicializar
-                    setTimeout(() => {
-                        initializeDataTable();
-                    }, 100);
+                    updateTableRows(data);
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    tbody.innerHTML = '<tr><td colspan="13" class="text-center text-danger">Error al cargar los datos</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error al cargar los datos</td></tr>';
                 });
         }
-        
-        // Función para inicializar DataTable
-        function initializeDataTable() {
-            if (!dataTable) {
-                dataTable = $('#salesTable').DataTable({
-                    "searching": false,
-                    "lengthChange": false,
-                    "ordering": true,
-                    "info": true,
-                    "paging": true,
-                    "pageLength": 15,
-                    "language": {
-                        "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
-                        "infoEmpty": "Mostrando 0 a 0 de 0 registros",
-                        "infoFiltered": "(filtrado de _MAX_ registros totales)",
-                        "paginate": {
-                            "first": "Primero",
-                            "last": "Último", 
-                            "next": "Siguiente",
-                            "previous": "Anterior"
-                        },
-                        "emptyTable": "No hay datos disponibles en la tabla"
-                    },
-                    "columnDefs": [
-                        { "orderable": false, "targets": [12] }
-                    ],
-                    "order": [[2, 'asc']]
-                });
-            }
+
+        // Función debounce para evitar demasiadas peticiones
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
-        
+
         // Configurar eventos de filtros
         document.addEventListener('DOMContentLoaded', function() {
-            // No cargar datos iniciales, ya están cargados desde PHP
-            
-            // Configurar filtro automático en tiempo real
+            initializeDataTable();
+            // Configurar filtro automático en tiempo real (500ms debounce)
             const filterInputs = ['filter-cedula', 'filter-nombre', 'filter-programa', 'filter-estado'];
-            
             filterInputs.forEach(filterId => {
                 const element = document.getElementById(filterId);
                 if (element) {
-                    element.addEventListener('input', debounce(function() {
+                    element.addEventListener('input', debounce(function(e) {
                         const params = {
                             cedula: document.getElementById('filter-cedula').value,
                             nombre: document.getElementById('filter-nombre').value,
@@ -566,10 +1012,21 @@ function deleteMember($cedula_persona)
                             estado: document.getElementById('filter-estado').value
                         };
                         loadTableData(params);
-                    }, 300));
+                    }, 500));
+                    // También filtrar al presionar Enter
+                    element.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            const params = {
+                                cedula: document.getElementById('filter-cedula').value,
+                                nombre: document.getElementById('filter-nombre').value,
+                                programa: document.getElementById('filter-programa').value,
+                                estado: document.getElementById('filter-estado').value
+                            };
+                            loadTableData(params);
+                        }
+                    });
                 }
             });
-            
             // Botón de filtrar manual
             const btnFilter = document.getElementById('btn-filter');
             if (btnFilter) {
@@ -584,33 +1041,17 @@ function deleteMember($cedula_persona)
                 });
             }
         });
-        
-        // Función debounce para evitar demasiadas peticiones
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
 
         // Función para calcular la edad
         function calcularEdad(fechaNacimiento) {
             if (!fechaNacimiento) return '';
-            
             const hoy = new Date();
             const nacimiento = new Date(fechaNacimiento);
             let edad = hoy.getFullYear() - nacimiento.getFullYear();
             const diferenciaMeses = hoy.getMonth() - nacimiento.getMonth();
-            
             if (diferenciaMeses < 0 || (diferenciaMeses === 0 && hoy.getDate() < nacimiento.getDate())) {
                 edad--;
             }
-            
             return edad + ' años';
         }
 
@@ -618,11 +1059,40 @@ function deleteMember($cedula_persona)
         document.addEventListener('DOMContentLoaded', function() {
             const fechaNacimientoInput = document.getElementById('fecha_nacimiento');
             const edadCalculadaInput = document.getElementById('edad_calculada');
-            
             if (fechaNacimientoInput && edadCalculadaInput) {
                 fechaNacimientoInput.addEventListener('change', function() {
                     const edad = calcularEdad(this.value);
                     edadCalculadaInput.value = edad;
+                });
+            }
+        });
+        // Mostrar/ocultar categoría discapacidad en alta
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectDiscapacidad = document.getElementById('persona_discapacidad');
+            const divCual = document.getElementById('div_cual_discapacidad');
+            if (selectDiscapacidad && divCual) {
+                selectDiscapacidad.addEventListener('change', function() {
+                    if (this.value === 'Si') {
+                        divCual.style.display = '';
+                    } else {
+                        divCual.style.display = 'none';
+                        document.getElementById('cual_discapacidad').value = '';
+                    }
+                });
+            }
+        });
+        // Mostrar/ocultar categoría discapacidad en edición
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectDiscapacidadEdit = document.getElementById('edit-persona-discapacidad');
+            const divCualEdit = document.getElementById('edit-div-cual-discapacidad');
+            if (selectDiscapacidadEdit && divCualEdit) {
+                selectDiscapacidadEdit.addEventListener('change', function() {
+                    if (this.value === 'Si') {
+                        divCualEdit.style.display = '';
+                    } else {
+                        divCualEdit.style.display = 'none';
+                        document.getElementById('edit-cual-discapacidad').value = '';
+                    }
                 });
             }
         });
@@ -633,42 +1103,216 @@ function deleteMember($cedula_persona)
         $(document).ready(function() {
             // Inicializar DataTable solo una vez al cargar la página
             initializeDataTable();
+            // Agregar event listeners para los modales
+            setupModalEventListeners();
         });
+        
+        function setupModalEventListeners() {
+            // Event listener para resetear el modal de nueva persona
+            $('#modalNewPerson').on('hidden.bs.modal', function () {
+                // Limpiar el formulario
+                $('#modalNewPerson form')[0].reset();
+                // Remover información de grupo si existe
+                $('#grupo-info').remove();
+            });
+            
+            // Event listener para resetear el modal de edición
+            $('#modalEdicion').on('hidden.bs.modal', function () {
+                // Remover información de grupo si existe
+                $('#edit-grupo-info').remove();
+            });
+        }
     </script>
 
-    <!-- Script original del modal de edición -->
+    <!-- Script para SweetAlert en formularios -->
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const modalEdicion = document.getElementById("modalEdicion");
-
-            modalEdicion.addEventListener("shown.bs.modal", function(event) {
-                const button = event.relatedTarget;
-
-                // Datos generales
-                document.getElementById("edit-cedula").value = button.getAttribute("data-cedula");
-                document.getElementById("edit-nombre").value = button.getAttribute("data-nombre");
-                document.getElementById("edit-apellido").value = button.getAttribute("data-apellidos");
-                document.getElementById("edit-telefono").value = button.getAttribute("data-telefono");
-                document.getElementById("edit-referencia").value = button.getAttribute("data-referencia");
-                document.getElementById("edit-fecha-nacimiento").value = button.getAttribute("data-fecha-nacimiento");
-                document.getElementById("cedula_original").value = button.getAttribute("data-cedula");
-                document.getElementById("edit-genero").value = button.getAttribute("data-genero");
-                
-                // Guardar valor original del grupo y establecer el valor actual
-                const grupoValue = button.getAttribute("data-id-grupo");
-                document.getElementById("edit-grupo").value = grupoValue;
-                $('#edit-grupo').data('original-value', grupoValue);
-                
-                document.getElementById("edit-politica-publica").value = button.getAttribute("data-id-politica-publica");
-                
-                // Programas
-                const idsProgramas = button.getAttribute("data-ids-programas");
-                const idsArray = idsProgramas.split(",").map(id => id.trim());
-                const checkboxes = modalEdicion.querySelectorAll('input[name="programa[]"]');
-                checkboxes.forEach(cb => {
-                    cb.checked = idsArray.includes(cb.value);
+    document.addEventListener('DOMContentLoaded', function() {
+        // Alta persona
+        const formAdd = document.querySelector('form[action="addPerson.php"]');
+        if(formAdd){
+            formAdd.addEventListener('submit', function(e){
+                e.preventDefault();
+                const form = this;
+                Swal.fire({
+                    title: '¿Guardar persona?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, guardar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if(result.isConfirmed){
+                        form.submit();
+                    }
                 });
             });
+        }
+        // Edición persona
+        const formEdit = document.querySelector('form[action="editPersona.php"]');
+        if(formEdit){
+            formEdit.addEventListener('submit', function(e){
+                e.preventDefault();
+                const form = this;
+                Swal.fire({
+                    title: '¿Guardar cambios?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, guardar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if(result.isConfirmed){
+                        form.submit();
+                    }
+                });
+            });
+        }
+    });
+    </script>
+    <!-- Script original del modal de edición -->
+    <script>
+        // Variables globales para los modales
+        let modalNewPerson = null;
+        let modalEdicion = null;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Inicializar modales de forma segura
+            try {
+                const modalNewPersonElement = document.getElementById("modalNewPerson");
+                const modalEdicionElement = document.getElementById("modalEdicion");
+                
+                if (modalNewPersonElement) {
+                    modalNewPerson = new bootstrap.Modal(modalNewPersonElement, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                }
+                
+                if (modalEdicionElement) {
+                    modalEdicion = new bootstrap.Modal(modalEdicionElement, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+
+                    modalEdicionElement.addEventListener("shown.bs.modal", function(event) {
+                        const button = event.relatedTarget;
+
+                        // Datos generales
+                        document.getElementById("edit-cedula").value = button.getAttribute("data-cedula");
+                        if(document.getElementById("edit-nombre")){
+                            document.getElementById("edit-nombre").value = button.getAttribute("data-nombre");
+                        }
+                        if(document.getElementById("edit-apellido")){
+                            document.getElementById("edit-apellido").value = button.getAttribute("data-apellidos");
+                        }
+                        document.getElementById("edit-telefono").value = button.getAttribute("data-telefono");
+                        document.getElementById("edit-referencia").value = button.getAttribute("data-referencia");
+                        document.getElementById("edit-fecha-nacimiento").value = button.getAttribute("data-fecha-nacimiento");
+                        document.getElementById("cedula_original").value = button.getAttribute("data-cedula");
+                        document.getElementById("edit-genero").value = button.getAttribute("data-genero");
+                        // Prellenar tipo de identificación
+                        if(document.getElementById("edit-tipo-identificacion")){
+                            // ...ya existente...
+                        }
+
+                        // Prellenar barrio, comuna y zona
+                        // Precarga barrio y comuna por ID (si existen)
+                        const editIdBarrio = button.getAttribute("data-id-barrio-persona") || '';
+                        const editIdComuna = button.getAttribute("data-id-comuna-persona") || '';
+                        const editZona = button.getAttribute("data-zona-persona") || '';
+                        const editBarrioInput = document.getElementById("edit-barrio-persona");
+                        const editComunaInput = document.getElementById("edit-comuna-persona");
+                        const editZonaInput = document.getElementById("edit-zona-persona");
+                        const editIdBarrioInput = document.getElementById("edit-id-barrio-persona");
+                        const editIdComunaInput = document.getElementById("edit-id-comuna-persona");
+
+                        if(editIdBarrioInput) editIdBarrioInput.value = editIdBarrio;
+                        if(editIdComunaInput) editIdComunaInput.value = editIdComuna;
+                        if(editZonaInput) editZonaInput.value = editZona;
+
+                        // Si hay ID de barrio, buscar el nombre y comuna por AJAX
+                        if(editIdBarrio && editBarrioInput) {
+                            fetch('buscar_barrio.php?id=' + encodeURIComponent(editIdBarrio))
+                                .then(res => res.json())
+                                .then(data => {
+                                    if(data && data.length > 0) {
+                                        editBarrioInput.value = data[0].nombre_bar || '';
+                                        if(editComunaInput) editComunaInput.value = data[0].nombre_com || '';
+                                    } else {
+                                        editBarrioInput.value = '';
+                                        if(editComunaInput) editComunaInput.value = '';
+                                    }
+                                })
+                                .catch(() => {
+                                    editBarrioInput.value = '';
+                                    if(editComunaInput) editComunaInput.value = '';
+                                });
+                        } else {
+                            if(editBarrioInput) editBarrioInput.value = '';
+                            if(editComunaInput) editComunaInput.value = '';
+                        }
+                        if(document.getElementById("edit-tipo-identificacion")){
+                            document.getElementById("edit-tipo-identificacion").value = button.getAttribute("data-tipo-identificacion");
+                        }
+                        // Prellenar campos select adicionales
+                        if(document.getElementById("edit-cabeza-hogar")){
+                            document.getElementById("edit-cabeza-hogar").value = button.getAttribute("data-cabeza-hogar");
+                        }
+                        if(document.getElementById("edit-lider-comunidad")){
+                            document.getElementById("edit-lider-comunidad").value = button.getAttribute("data-lider-comunidad");
+                        }
+                        if(document.getElementById("edit-se-reconoce-como")){
+                            document.getElementById("edit-se-reconoce-como").value = button.getAttribute("data-se-reconoce-como");
+                        }
+                        if(document.getElementById("edit-orientacion-sexual")){
+                            document.getElementById("edit-orientacion-sexual").value = button.getAttribute("data-orientacion-sexual");
+                        }
+                        if(document.getElementById("edit-experiencia-migratoria")){
+                            document.getElementById("edit-experiencia-migratoria").value = button.getAttribute("data-experiencia-migratoria");
+                        }
+                        if(document.getElementById("edit-grupo-etnico")){
+                            document.getElementById("edit-grupo-etnico").value = button.getAttribute("data-grupo-etnico");
+                        }
+                        if(document.getElementById("edit-tipo-salud")){
+                            document.getElementById("edit-tipo-salud").value = button.getAttribute("data-tipo-salud");
+                        }
+                        if(document.getElementById("edit-nivel-educativo")){
+                            document.getElementById("edit-nivel-educativo").value = button.getAttribute("data-nivel-educativo");
+                        }
+                        // Precargar grupo sisben
+                        if(document.getElementById("edit-grupo-sisben")){
+                            document.getElementById("edit-grupo-sisben").value = button.getAttribute("data-grupo-sisben");
+                        }
+                        // Precargar persona discapacidad
+                        if(document.getElementById("edit-persona-discapacidad")){
+                            document.getElementById("edit-persona-discapacidad").value = button.getAttribute("data-persona-discapacidad");
+                            // Mostrar/ocultar y precargar categoría discapacidad
+                            if(button.getAttribute("data-persona-discapacidad") === "Si"){
+                                document.getElementById("edit-div-cual-discapacidad").style.display = '';
+                                document.getElementById("edit-cual-discapacidad").value = button.getAttribute("data-cual-discapacidad");
+                            } else {
+                                document.getElementById("edit-div-cual-discapacidad").style.display = 'none';
+                                document.getElementById("edit-cual-discapacidad").value = '';
+                            }
+                        }
+                        
+                        // Guardar valor original del grupo y establecer el valor actual
+                        const grupoValue = button.getAttribute("data-id-grupo");
+                        document.getElementById("edit-grupo").value = grupoValue;
+                        $('#edit-grupo').data('original-value', grupoValue);
+                        
+                        document.getElementById("edit-politica-publica").value = button.getAttribute("data-id-politica-publica");
+                        
+                        // Programas
+                        const idsProgramas = button.getAttribute("data-ids-programas");
+                        const idsArray = idsProgramas.split(",").map(id => id.trim());
+                        const checkboxes = modalEdicionElement.querySelectorAll('input[name="programa[]"]');
+                        checkboxes.forEach(cb => {
+                            cb.checked = idsArray.includes(cb.value);
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error inicializando modales:', error);
+            }
         });
 
         $(document).ready(function() {
@@ -699,6 +1343,9 @@ function deleteMember($cedula_persona)
                                     timer: 3000
                                 });
                             }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error checking group limit:', error);
                         }
                     });
 
@@ -709,6 +1356,9 @@ function deleteMember($cedula_persona)
                         success: function(response) {
                             $('#observacion_persona').html('<option value="" selected>Seleccione...</option>');
                             $('#observacion_persona').append(response);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error loading centers:', error);
                         }
                     });
                 } else {
@@ -781,6 +1431,9 @@ function deleteMember($cedula_persona)
                                     timer: 3000
                                 });
                             }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error checking group limit for edit modal:', error);
                         }
                     });
                 } else {

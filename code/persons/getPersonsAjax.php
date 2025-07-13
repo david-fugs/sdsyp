@@ -102,36 +102,31 @@ if ($result && $result->num_rows > 0) {
         }
         
         echo "<tr class='fade-in'>";
+        // 1. Cédula
         echo "<td class='col-id'>" . htmlspecialchars($row['cedula_persona']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['nombres_persona']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['apellidos_persona']) . "</td>";
+        // 2. Nombre Completo
+        echo "<td>" . htmlspecialchars($row['nombres_persona'] . ' ' . $row['apellidos_persona']) . "</td>";
+        // 3. Género
         echo "<td>" . htmlspecialchars($row['genero_persona']) . "</td>";
-        
-        // Fecha de nacimiento y edad calculada
+        // 4. Edad
         $fecha_nacimiento = $row['fecha_nacimiento'];
         if ($fecha_nacimiento && $fecha_nacimiento != '0000-00-00') {
-            $fecha_formateada = date('d/m/Y', strtotime($fecha_nacimiento));
-            
-            // Calcular edad
             $hoy = new DateTime();
             $nacimiento = new DateTime($fecha_nacimiento);
             $edad = $hoy->diff($nacimiento)->y;
-            
-            echo "<td>" . $fecha_formateada . "</td>";
             echo "<td><span class='badge bg-primary'>" . $edad . " años</span></td>";
         } else {
-            echo "<td class='text-muted'>No registrada</td>";
             echo "<td class='text-muted'>N/A</td>";
         }
-        
-        echo "<td>" . htmlspecialchars($row['telefono_persona']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['referencia_persona']) . "</td>";
+        // 5. Programas
         echo "<td>" . htmlspecialchars($row['programas'] ?: 'Sin programa') . "</td>";
+        // 6. Centro Vida / CPSAM
         echo "<td>" . htmlspecialchars($row['descripcion_grupo'] ?: 'No asignado') . "</td>";
+        // 7. Estado
         echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('CPSAM ', '', $estado_persona) . "</span></td>";
+        // 8. Política Pública
         echo "<td>" . htmlspecialchars($row['descripcion_politica'] ?: 'No asignada') . "</td>";
-        
-        // Botones de acción modernos
+        // 9. Acciones
         echo '<td class="col-actions">
                 <div class="action-buttons">
                     <button type="button" class="btn-action btn-edit" 
@@ -161,7 +156,7 @@ if ($result && $result->num_rows > 0) {
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='13' class='text-center text-muted'>
+    echo "<tr><td colspan='9' class='text-center text-muted'>
             <i class='bi bi-search'></i><br>
             No se encontraron registros que coincidan con los filtros aplicados.
           </td></tr>";

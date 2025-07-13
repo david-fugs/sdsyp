@@ -112,32 +112,20 @@ if ($result->num_rows > 0) {
                 $estado_icon = '<i class="bi bi-arrow-right-circle-fill"></i>';
                 break;
         }
-        
+        // Agregar datos al array
         echo "<tr class='fade-in'>";
         echo "<td class='col-id'>" . htmlspecialchars($row['cedula_persona']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['nombres_persona']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['apellidos_persona']) . "</td>";
+        echo "<td><b>" . htmlspecialchars($row['nombres_persona'] . ' ' . $row['apellidos_persona']) . "</b></td>";
         echo "<td>" . htmlspecialchars($row['genero_persona']) . "</td>";
-        
-        // Fecha de nacimiento y edad calculada
         $fecha_nacimiento = $row['fecha_nacimiento'];
         if ($fecha_nacimiento && $fecha_nacimiento != '0000-00-00') {
-            $fecha_formateada = date('d/m/Y', strtotime($fecha_nacimiento));
-            
-            // Calcular edad
             $hoy = new DateTime();
             $nacimiento = new DateTime($fecha_nacimiento);
             $edad = $hoy->diff($nacimiento)->y;
-            
-            echo "<td>" . $fecha_formateada . "</td>";
             echo "<td><span class='badge bg-primary'>" . $edad . " años</span></td>";
         } else {
-            echo "<td class='text-muted'>No registrada</td>";
             echo "<td class='text-muted'>N/A</td>";
         }
-        
-        echo "<td>" . htmlspecialchars($row['telefono_persona']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['referencia_persona']) . "</td>";
         echo "<td>" . htmlspecialchars($row['programas']) . "</td>";
         echo "<td>" . ($row['descripcion_grupo'] ? htmlspecialchars($row['descripcion_grupo']) : 'No asignado') . "</td>";
         echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('CPSAM ', '', $estado_persona) . "</span></td>";
@@ -159,7 +147,23 @@ if ($result->num_rows > 0) {
                         data-genero="' . $row['genero_persona'] . '"
                         data-ids-programas="' .  $row['ids_programas']  . '"
                         data-id-grupo="' . $row['id_grupo'] . '"
-                        data-id-politica-publica="' . $row['id_politica_publica'] . '">
+                        data-id-politica-publica="' . $row['id_politica_publica'] . '"
+                        data-grupo-sisben="' . $row['grupo_sisben'] . '"
+                        data-persona-discapacidad="' . $row['persona_discapacidad'] . '"
+                        data-cual-discapacidad="' . $row['cual_discapacidad'] . '"
+                        data-tipo-identificacion="' . $row['tipo_identificacion'] . '"
+                        data-cabeza-hogar="' . $row['cabeza_hogar'] . '"
+                        data-lider-comunidad="' . $row['lider_comunidad'] . '"
+                        data-se-reconoce-como="' . $row['se_reconoce_como'] . '"
+                        data-orientacion-sexual="' . $row['orientacion_sexual'] . '"
+                        data-experiencia-migratoria="' . $row['experiencia_migratoria'] . '"
+                        data-grupo-etnico="' . $row['grupo_etnico'] . '"
+                        data-tipo-salud="' . $row['tipo_salud'] . '"
+                        data-nivel-educativo="' . $row['nivel_educativo'] . '"
+                        data-id-barrio-persona="' . (isset($row['id_barrio_persona']) ? htmlspecialchars($row['id_barrio_persona']) : '') . '"
+                        data-id-comuna-persona="' . (isset($row['id_comuna_persona']) ? htmlspecialchars($row['id_comuna_persona']) : '') . '"
+                        data-zona-persona="' . (isset($row['zona_persona']) ? htmlspecialchars($row['zona_persona']) : '') . '"
+                    >
                         <i class="bi bi-pencil-fill"></i>
                     </button>
                     <a href="?delete=' . $row['cedula_persona'] . '" 
@@ -170,10 +174,21 @@ if ($result->num_rows > 0) {
                     </a>
                 </div>
             </td>';
+        // Agregar data attributes para barrio, comuna y zona
+        // NOTA: Estos campos deben existir en la tabla personas, si no, se deben agregar en la consulta y en la base de datos
+        // Si no existen, dejar string vacío
+        // Ejemplo: $row['barrio_persona']
+        // Si no existen, puedes ajustar aquí para pruebas
+        // data-barrio-persona, data-comuna-persona, data-zona-persona
+        //
+        // Si existen en $row:
+        // data-barrio-persona="' . (isset($row['barrio_persona']) ? htmlspecialchars($row['barrio_persona']) : '') . '"
+        // data-comuna-persona="' . (isset($row['comuna_persona']) ? htmlspecialchars($row['comuna_persona']) : '') . '"
+        // data-zona-persona="' . (isset($row['zona_persona']) ? htmlspecialchars($row['zona_persona']) : '') . '"
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='13'>No se encontraron registros.</td></tr>";
+    echo "<tr><td colspan='9'>No se encontraron registros.</td></tr>";
 }
 
 

@@ -6,19 +6,60 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Capturar datos del formulario
     $id_usuario = $_SESSION['id'];
     $cedula_persona = $_POST['cedula_persona'];
+    $tipo_identificacion = $_POST['tipo_identificacion'] ?? '';
     $nombres_persona = $_POST['nombres_persona'];
     $apellidos_persona = $_POST['apellidos_persona'];
     $telefono_persona = $_POST['telefono_persona'];
     $referencia_persona = $_POST['referencia_persona'];
     $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? null;
+    $genero_persona = $_POST['genero_persona'];
+    $grupo_sisben = $_POST['grupo_sisben'] ?? '';
+    $persona_discapacidad = $_POST['persona_discapacidad'] ?? '';
+    $cual_discapacidad = $_POST['cual_discapacidad'] ?? '';
+    $cabeza_hogar = $_POST['cabeza_hogar'] ?? '';
+    $lider_comunidad = $_POST['lider_comunidad'] ?? '';
+    $se_reconoce_como = $_POST['se_reconoce_como'] ?? '';
+    $orientacion_sexual = $_POST['orientacion_sexual'] ?? '';
+    $experiencia_migratoria = $_POST['experiencia_migratoria'] ?? '';
+    $grupo_etnico = $_POST['grupo_etnico'] ?? '';
+    $tipo_salud = $_POST['tipo_salud'] ?? '';
+    $nivel_educativo = $_POST['nivel_educativo'] ?? '';
     $programa = $_POST['programa'];
     $cedula_original = $_POST['cedula_original'];
-    $genero_persona = $_POST['genero_persona'];
     $id_grupo = $_POST['id_grupo'] ?? '';
     $id_politica_publica = $_POST['id_politica_publica'] ?? '';
+    // Nuevos campos de barrio, comuna y zona (usar solo IDs y zona como texto)
+    $id_barrio_persona = $_POST['id_barrio_persona'] ?? null;
+    $id_comuna_persona = $_POST['id_comuna_persona'] ?? null;
+    $zona_persona = $_POST['zona_persona'] ?? '';
 
     // Actualizar persona
-    $sql_update_persona = "UPDATE personas SET cedula_persona='$cedula_persona', nombres_persona='$nombres_persona', apellidos_persona='$apellidos_persona', telefono_persona='$telefono_persona', referencia_persona='$referencia_persona', fecha_nacimiento='$fecha_nacimiento', genero_persona='$genero_persona', id_grupo='$id_grupo', id_politica_publica='$id_politica_publica' WHERE cedula_persona='$cedula_original'";
+    $sql_update_persona = "UPDATE personas SET
+        cedula_persona='$cedula_persona',
+        tipo_identificacion='$tipo_identificacion',
+        nombres_persona='$nombres_persona',
+        apellidos_persona='$apellidos_persona',
+        telefono_persona='$telefono_persona',
+        referencia_persona='$referencia_persona',
+        fecha_nacimiento='$fecha_nacimiento',
+        genero_persona='$genero_persona',
+        grupo_sisben='$grupo_sisben',
+        persona_discapacidad='$persona_discapacidad',
+        cual_discapacidad='$cual_discapacidad',
+        cabeza_hogar='$cabeza_hogar',
+        lider_comunidad='$lider_comunidad',
+        se_reconoce_como='$se_reconoce_como',
+        orientacion_sexual='$orientacion_sexual',
+        experiencia_migratoria='$experiencia_migratoria',
+        grupo_etnico='$grupo_etnico',
+        tipo_salud='$tipo_salud',
+        nivel_educativo='$nivel_educativo',
+        id_barrio_persona=" . ($id_barrio_persona !== null ? "'$id_barrio_persona'" : 'NULL') . ",
+        id_comuna_persona=" . ($id_comuna_persona !== null ? "'$id_comuna_persona'" : 'NULL') . ",
+        zona_persona='$zona_persona',
+        id_grupo='$id_grupo',
+        id_politica_publica='$id_politica_publica'
+        WHERE cedula_persona='$cedula_original'";
     // Ejecutar consulta
     if ($mysqli->query($sql_update_persona)) {
 

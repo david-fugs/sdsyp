@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modal Bootstrap</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Test Modal Bootstrap</h1>
+        <p>Este es un archivo de prueba para verificar que los modales de Bootstrap funcionen correctamente.</p>
+        
+        <!-- Botón para abrir modal -->
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#testModal">
+            Abrir Modal de Prueba
+        </button>
+        
+        <!-- Modal de prueba -->
+        <div class="modal fade" id="testModal" tabindex="-1" aria-labelledby="testModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="testModalLabel">Modal de Prueba</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Si ves este modal, Bootstrap está funcionando correctamente.</p>
+                        <p>Versión: Bootstrap 5.3.5</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
+            console.log('Bootstrap version:', typeof bootstrap !== 'undefined' ? 'Available' : 'Not available');
+            console.log('jQuery version:', typeof $ !== 'undefined' ? $.fn.jquery : 'Not available');
+            
+            // Test manual de inicialización de modal
+            try {
+                const testModalElement = document.getElementById('testModal');
+                if (testModalElement) {
+                    const testModal = new bootstrap.Modal(testModalElement);
+                    console.log('Modal inicializado correctamente:', testModal);
+                }
+            } catch (error) {
+                console.error('Error inicializando modal:', error);
+            }
+        });
+    </script>
+</body>
+</html>
