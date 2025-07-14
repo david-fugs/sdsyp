@@ -373,6 +373,142 @@ function deleteMember($cedula_persona)
                                 <label for="grupo_sisben">Grupo Sisbén</label>
                             </div>
                         </div>
+                        <!-- Fila: EPS, Peso, Talla -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3 form-floating">
+                                <input type="text" class="form-control" id="eps" name="eps" placeholder="EPS">
+                                <label for="eps">EPS</label>
+                            </div>
+                            <div class="col-md-4 mb-3 form-floating">
+                                <input type="number" step="0.01" class="form-control" id="peso" name="peso" placeholder="Peso (kg)">
+                                <label for="peso">Peso (kg)</label>
+                            </div>
+                            <div class="col-md-4 mb-3 form-floating">
+                                <input type="number" step="0.01" class="form-control" id="talla" name="talla" placeholder="Talla (cm)">
+                                <label for="talla">Talla (cm)</label>
+                            </div>
+                        </div>
+                        <!-- Fila: Patologías, Factores de Riesgo -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="patologias" name="patologias">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Osteomuscular</option>
+                                    <option>Respiratoria</option>
+                                    <option>Diabetes</option>
+                                    <option>EPOC</option>
+                                    <option>Trastorno afectivo bipolar</option>
+                                    <option>Física</option>
+                                    <option>Cataratas senil nuclear</option>
+                                    <option>Hipertensión arterial</option>
+                                    <option>HTA</option>
+                                    <option>Hipertensión senecial</option>
+                                    <option>Hipotiroidismo</option>
+                                    <option>ICC</option>
+                                    <option>Mental</option>
+                                    <option>Ninguna</option>
+                                    <option>No aplica</option>
+                                    <option>Osteoastromuscular</option>
+                                    <option>Otras</option>
+                                </select>
+                                <label for="patologias">Patologías</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="factores_riesgo" name="factores_riesgo">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Alcohol</option>
+                                    <option>Tabaco</option>
+                                    <option>Tabaco y alcohol</option>
+                                    <option>Otros</option>
+                                    <option>No aplica</option>
+                                </select>
+                                <label for="factores_riesgo">Factores de Riesgo</label>
+                            </div>
+                        </div>
+                        <!-- Fila: Factores Preventivos, Ingresos Económicos -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="factores_preventivos" name="factores_preventivos">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Ejercicio</option>
+                                    <option>Dieta</option>
+                                    <option>Ejercicio y dieta</option>
+                                    <option>Otra</option>
+                                    <option>No aplica</option>
+                                </select>
+                                <label for="factores_preventivos">Factores Preventivos</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="ingresos_economicos" name="ingresos_economicos">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Pensión</option>
+                                    <option>Estado</option>
+                                    <option>Conyuge</option>
+                                    <option>Mendicidad</option>
+                                    <option>Otro</option>
+                                    <option>No aplica</option>
+                                </select>
+                                <label for="ingresos_economicos">Ingresos Económicos</label>
+                            </div>
+                        </div>
+                        <!-- Fila: Convivencia Actual, Resultado Actividad, Remisión -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3 form-floating">
+                                <select class="form-select" id="convivencia_actual" name="convivencia_actual">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Pareja</option>
+                                    <option>Familia</option>
+                                    <option>Otro</option>
+                                    <option>No aplica</option>
+                                </select>
+                                <label for="convivencia_actual">Convivencia Actual</label>
+                            </div>
+                            <div class="col-md-4 mb-3 form-floating">
+                                <select class="form-select" id="resultado_actividad" name="resultado_actividad">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Con deterioro leve</option>
+                                    <option>Con deterioro moderado</option>
+                                    <option>Con deterioro severo</option>
+                                    <option>Sin deterioro</option>
+                                    <option>Delgadez</option>
+                                    <option>Normal</option>
+                                    <option>Obesidad grado 1</option>
+                                    <option>Obesidad grado II</option>
+                                    <option>Obesidad grado III</option>
+                                    <option>Sobrepeso</option>
+                                    <option>Depresión</option>
+                                    <option>En riesgo</option>
+                                    <option>Saludable</option>
+                                    <option>Demencia</option>
+                                    <option>Demencia leve</option>
+                                    <option>Deterioro cognitivo leve</option>
+                                    <option>Extrema</option>
+                                    <option>Leve</option>
+                                    <option>Moderada</option>
+                                    <option>Ninguna disfuncionalidad</option>
+                                    <option>Severa</option>
+                                    <option>Disfuncionalidad extrema</option>
+                                    <option>Disfuncionalidad leve</option>
+                                    <option>Disfuncionalidad moderada</option>
+                                    <option>Disfuncionalidad severa</option>
+                                    <option>Ninguna</option>
+                                    <option>No aplica</option>
+                                </select>
+                                <label for="resultado_actividad">Resultado según actividad</label>
+                            </div>
+                            <div class="col-md-4 mb-3 form-floating">
+                                <select class="form-select" id="remision" name="remision">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Actividad física</option>
+                                    <option>Enfermería</option>
+                                    <option>Gerontología</option>
+                                    <option>Neuropsicología</option>
+                                    <option>Psicología EPS</option>
+                                    <option>No aplica</option>
+                                </select>
+                                <label for="remision">Remisión</label>
+                            </div>
+                        </div>
                         <!-- Fila 1.7: Discapacidad y cabeza de hogar -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
@@ -604,6 +740,142 @@ function deleteMember($cedula_persona)
                                     <?php for($l='A';$l<='D';$l++) { for($n=1;$n<=9;$n++) { ?>
                                         <option value="<?= $l.$n ?>"><?= $l.$n ?></option>
                                     <?php } } ?>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Fila: EPS, Peso, Talla (Edición) -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="edit-eps" class="form-label">EPS</label>
+                                <input type="text" class="form-control" id="edit-eps" name="eps">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="edit-peso" class="form-label">Peso (kg)</label>
+                                <input type="number" step="0.01" class="form-control" id="edit-peso" name="peso">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="edit-talla" class="form-label">Talla (cm)</label>
+                                <input type="number" step="0.01" class="form-control" id="edit-talla" name="talla">
+                            </div>
+                        </div>
+                        <!-- Fila: Patologías, Factores de Riesgo (Edición) -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-patologias" class="form-label">Patologías</label>
+                                <select class="form-select" id="edit-patologias" name="patologias">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Osteomuscular</option>
+                                    <option>Respiratoria</option>
+                                    <option>Diabetes</option>
+                                    <option>EPOC</option>
+                                    <option>Trastorno afectivo bipolar</option>
+                                    <option>Física</option>
+                                    <option>Cataratas senil nuclear</option>
+                                    <option>Hipertensión arterial</option>
+                                    <option>HTA</option>
+                                    <option>Hipertensión senecial</option>
+                                    <option>Hipotiroidismo</option>
+                                    <option>ICC</option>
+                                    <option>Mental</option>
+                                    <option>Ninguna</option>
+                                    <option>No aplica</option>
+                                    <option>Osteoastromuscular</option>
+                                    <option>Otras</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-factores-riesgo" class="form-label">Factores de Riesgo</label>
+                                <select class="form-select" id="edit-factores-riesgo" name="factores_riesgo">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Alcohol</option>
+                                    <option>Tabaco</option>
+                                    <option>Tabaco y alcohol</option>
+                                    <option>Otros</option>
+                                    <option>No aplica</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Fila: Factores Preventivos, Ingresos Económicos (Edición) -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-factores-preventivos" class="form-label">Factores Preventivos</label>
+                                <select class="form-select" id="edit-factores-preventivos" name="factores_preventivos">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Ejercicio</option>
+                                    <option>Dieta</option>
+                                    <option>Ejercicio y dieta</option>
+                                    <option>Otra</option>
+                                    <option>No aplica</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-ingresos-economicos" class="form-label">Ingresos Económicos</label>
+                                <select class="form-select" id="edit-ingresos-economicos" name="ingresos_economicos">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Pensión</option>
+                                    <option>Estado</option>
+                                    <option>Conyuge</option>
+                                    <option>Mendicidad</option>
+                                    <option>Otro</option>
+                                    <option>No aplica</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Fila: Convivencia Actual, Resultado Actividad, Remisión (Edición) -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="edit-convivencia-actual" class="form-label">Convivencia Actual</label>
+                                <select class="form-select" id="edit-convivencia-actual" name="convivencia_actual">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Pareja</option>
+                                    <option>Familia</option>
+                                    <option>Otro</option>
+                                    <option>No aplica</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="edit-resultado-actividad" class="form-label">Resultado según actividad</label>
+                                <select class="form-select" id="edit-resultado-actividad" name="resultado_actividad">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Con deterioro leve</option>
+                                    <option>Con deterioro moderado</option>
+                                    <option>Con deterioro severo</option>
+                                    <option>Sin deterioro</option>
+                                    <option>Delgadez</option>
+                                    <option>Normal</option>
+                                    <option>Obesidad grado 1</option>
+                                    <option>Obesidad grado II</option>
+                                    <option>Obesidad grado III</option>
+                                    <option>Sobrepeso</option>
+                                    <option>Depresión</option>
+                                    <option>En riesgo</option>
+                                    <option>Saludable</option>
+                                    <option>Demencia</option>
+                                    <option>Demencia leve</option>
+                                    <option>Deterioro cognitivo leve</option>
+                                    <option>Extrema</option>
+                                    <option>Leve</option>
+                                    <option>Moderada</option>
+                                    <option>Ninguna disfuncionalidad</option>
+                                    <option>Severa</option>
+                                    <option>Disfuncionalidad extrema</option>
+                                    <option>Disfuncionalidad leve</option>
+                                    <option>Disfuncionalidad moderada</option>
+                                    <option>Disfuncionalidad severa</option>
+                                    <option>Ninguna</option>
+                                    <option>No aplica</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="edit-remision" class="form-label">Remisión</label>
+                                <select class="form-select" id="edit-remision" name="remision">
+                                    <option value="" selected disabled>Seleccione...</option>
+                                    <option>Actividad física</option>
+                                    <option>Enfermería</option>
+                                    <option>Gerontología</option>
+                                    <option>Neuropsicología</option>
+                                    <option>Psicología EPS</option>
+                                    <option>No aplica</option>
                                 </select>
                             </div>
                         </div>

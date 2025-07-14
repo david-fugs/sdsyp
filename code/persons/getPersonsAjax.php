@@ -142,7 +142,17 @@ if ($result && $result->num_rows > 0) {
                         data-genero="' . htmlspecialchars($row['genero_persona']) . '"
                         data-ids-programas="' . htmlspecialchars($row['ids_programas'] ?: '') . '"
                         data-id-grupo="' . htmlspecialchars($row['id_grupo'] ?: '') . '"
-                        data-id-politica-publica="' . htmlspecialchars($row['id_politica_publica'] ?: '') . '">
+                        data-id-politica-publica="' . htmlspecialchars($row['id_politica_publica'] ?: '') . '"
+                        data-eps="' . htmlspecialchars($row['eps'] ?? '') . '"
+                        data-peso="' . htmlspecialchars($row['peso'] ?? '') . '"
+                        data-talla="' . htmlspecialchars($row['talla'] ?? '') . '"
+                        data-patologias="' . htmlspecialchars($row['patologias'] ?? '') . '"
+                        data-factores-riesgo="' . htmlspecialchars($row['factores_riesgo'] ?? '') . '"
+                        data-factores-preventivos="' . htmlspecialchars($row['factores_preventivos'] ?? '') . '"
+                        data-ingresos-economicos="' . htmlspecialchars($row['ingresos_economicos'] ?? '') . '"
+                        data-convivencia-actual="' . htmlspecialchars($row['convivencia_actual'] ?? '') . '"
+                        data-resultado-actividad="' . htmlspecialchars($row['resultado_actividad'] ?? '') . '"
+                        data-remision="' . htmlspecialchars($row['remision'] ?? '') . '">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
                     <a href="?delete=' . htmlspecialchars($row['cedula_persona']) . '" 

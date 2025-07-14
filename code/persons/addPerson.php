@@ -3,6 +3,17 @@ include("../../conexion.php");
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Nuevos campos funcionales
+    $eps = $_POST['eps'] ?? '';
+    $peso = $_POST['peso'] ?? '';
+    $talla = $_POST['talla'] ?? '';
+    $patologias = $_POST['patologias'] ?? '';
+    $factores_riesgo = $_POST['factores_riesgo'] ?? '';
+    $factores_preventivos = $_POST['factores_preventivos'] ?? '';
+    $ingresos_economicos = $_POST['ingresos_economicos'] ?? '';
+    $convivencia_actual = $_POST['convivencia_actual'] ?? '';
+    $resultado_actividad = $_POST['resultado_actividad'] ?? '';
+    $remision = $_POST['remision'] ?? '';
 
     // Capturar datos del formulario
     $id_usuario = $_SESSION['id'];
@@ -63,6 +74,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         zona_persona,
         id_grupo,
         id_politica_publica,
+        direccion,
+        correo,
+        eps,
+        peso,
+        talla,
+        patologias,
+        factores_riesgo,
+        factores_preventivos,
+        ingresos_economicos,
+        convivencia_actual,
+        resultado_actividad,
+        remision,
         id_usuario,
         fecha_alta_persona
     ) VALUES (
@@ -90,6 +113,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         '$zona_persona',
         '$id_grupo',
         '$id_politica_publica',
+        '',
+        '',
+        '$eps',
+        '$peso',
+        '$talla',
+        '$patologias',
+        '$factores_riesgo',
+        '$factores_preventivos',
+        '$ingresos_economicos',
+        '$convivencia_actual',
+        '$resultado_actividad',
+        '$remision',
         '$id_usuario',
         '$fecha_alta_persona'
     )";
