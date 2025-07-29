@@ -17,113 +17,119 @@
 
     <!-- jQuery (necesario para DataTables) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
-    
+
     <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    
+
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <!-- Estilos personalizados para aumentar tamaño de fuente -->
     <style>
         /* Aumentar tamaño de fuente general */
         body {
             font-size: 16px !important;
         }
-        
+
         /* Tabla - aumentar tamaño de fuente */
         .modern-table {
             font-size: 15px !important;
         }
-        
+
         .modern-table th {
             font-size: 16px !important;
             font-weight: 600 !important;
         }
-        
+
         .modern-table td {
             font-size: 15px !important;
             padding: 12px 8px !important;
         }
-        
+
         /* Filtros y inputs - aumentar tamaño */
-        .modern-input, .modern-select {
+        .modern-input,
+        .modern-select {
             font-size: 15px !important;
             padding: 10px 12px !important;
         }
-        
+
         .filter-group label {
             font-size: 14px !important;
             font-weight: 600 !important;
         }
-        
+
         /* Botones - aumentar tamaño */
         .btn-modern {
             font-size: 15px !important;
             padding: 10px 20px !important;
         }
-        
+
         .btn-action {
             padding: 8px 10px !important;
             font-size: 14px !important;
         }
-        
+
         /* Header moderno */
         .modern-header h2 {
             font-size: 26px !important;
         }
-        
+
         /* DataTables controles */
-        .dataTables_info, .dataTables_paginate {
+        .dataTables_info,
+        .dataTables_paginate {
             font-size: 14px !important;
         }
-        
-        .dataTables_length select, .dataTables_length label {
+
+        .dataTables_length select,
+        .dataTables_length label {
             font-size: 14px !important;
         }
-        
+
         .paginate_button {
             font-size: 14px !important;
         }
-        
+
         /* Modales - aumentar tamaño de fuente */
         .modal-title {
             font-size: 20px !important;
         }
-        
+
         .modal-body {
             font-size: 15px !important;
         }
-        
+
         .form-label {
             font-size: 14px !important;
             font-weight: 600 !important;
         }
-        
-        .form-control, .form-select {
+
+        .form-control,
+        .form-select {
             font-size: 15px !important;
         }
-        
+
         /* SweetAlert - aumentar tamaño */
         .swal2-title {
             font-size: 20px !important;
         }
-        
+
         .swal2-content {
             font-size: 16px !important;
         }
-        
+
         /* Enlaces y navegación */
         a {
             font-size: 15px !important;
         }
-        
+
         /* Mensajes de estado */
-        .text-muted, .text-success, .text-danger {
+        .text-muted,
+        .text-success,
+        .text-danger {
             font-size: 13px !important;
         }
 
@@ -134,7 +140,9 @@
             border: 1px solid #ced4da !important;
             background: #fff !important;
         }
-        .btn-modal-cancelar:hover, .btn-modal-cancelar:focus {
+
+        .btn-modal-cancelar:hover,
+        .btn-modal-cancelar:focus {
             background: #f8f9fa !important;
             color: #212529 !important;
             border-color: #adb5bd !important;
@@ -220,7 +228,7 @@ function deleteMember($cedula_persona)
                         <label for="filter-programa">Programa</label>
                         <select id="filter-programa" class="modern-select">
                             <option value="">Todos los programas</option>
-                            <?php 
+                            <?php
                             mysqli_data_seek($result_programas, 0);
                             while ($programa = mysqli_fetch_assoc($result_programas)) { ?>
                                 <option value="<?= $programa['id_programa']; ?>"><?= $programa['nombre_programa']; ?></option>
@@ -259,7 +267,6 @@ function deleteMember($cedula_persona)
                             <th>Programas</th>
                             <th>Centro Vida / CPSAM</th>
                             <th class="col-status">Estado</th>
-                            <th>Política Pública</th>
                             <th class="col-actions">Acciones</th>
                         </tr>
                     </thead>
@@ -324,15 +331,28 @@ function deleteMember($cedula_persona)
                                 <label for="apellidos_persona">Apellidos</label>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
+                                <input type="text" class="form-control" id="telefono_persona" name="telefono_persona" placeholder="Teléfono">
+                                <label for="telefono_persona">Teléfono</label>
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="text" class="form-control" id="telefono_referencia_persona" name="telefono_referencia_persona" placeholder="Teléfono" required>
+                                <label for="telefono_referencia_persona">Teléfono Referencia</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
                                 <input type="text" class="form-control" id="referencia_persona" name="referencia_persona" placeholder="Referencia">
                                 <label for="referencia_persona">Referencia</label>
                             </div>
                         </div>
+                        <div class="row">
+                        </div>
                         <!-- Fila 3: Teléfono y Fecha de Nacimiento -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <input type="text" class="form-control" id="telefono_persona" name="telefono_persona" placeholder="Teléfono">
-                                <label for="telefono_persona">Teléfono</label>
+                                <input type="text" class="form-control" id="correo_persona" name="correo_persona" placeholder="Correo">
+                                <label for="correo_persona">Correo</label>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
                                 <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" placeholder="Fecha de Nacimiento">
@@ -357,6 +377,15 @@ function deleteMember($cedula_persona)
                                 <label for="zona_persona">Zona</label>
                             </div>
                         </div>
+
+                         <div class="row">
+                            <div class="col-md-12 mb-3 form-floating">
+                                <input type="text" class="form-control" id="direccion_persona" name="direccion_persona" placeholder="Direccion">
+                                <label for="direccion_persona">Direccion</label>
+                            </div>
+                        </div>
+
+
                         <!-- Fila 4: Edad y Grupo Sisbén -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
@@ -366,9 +395,11 @@ function deleteMember($cedula_persona)
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="grupo_sisben" name="grupo_sisben">
                                     <option value="" selected>Seleccione grupo...</option>
-                                    <?php for($l='A';$l<='D';$l++) { for($n=1;$n<=9;$n++) { ?>
-                                        <option value="<?= $l.$n ?>"><?= $l.$n ?></option>
-                                    <?php } } ?>
+                                    <?php for ($l = 'A'; $l <= 'D'; $l++) {
+                                        for ($n = 1; $n <= 9; $n++) { ?>
+                                            <option value="<?= $l . $n ?>"><?= $l . $n ?></option>
+                                    <?php }
+                                    } ?>
                                 </select>
                                 <label for="grupo_sisben">Grupo Sisbén</label>
                             </div>
@@ -626,6 +657,49 @@ function deleteMember($cedula_persona)
                             </div>
                         </div>
 
+
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="condicion_ocupacion" name="condicion_ocupacion" required>
+                                    <option value="" selected disabled>¿Condicion Ocupacion?</option>
+                                    <option value="Ama de Casa">Ama de Casa</option>
+                                    <option value="Estudiante">Estudiante</option>
+                                    <option value="Empleado">Empleado</option>
+                                    <option value="Desempleado">Desempleado</option>
+                                    <option value="Independiente">Independiente</option>
+                                    <option value="Pensionado">Pensionado</option>
+                                    <option value="Buscando Empleo">Buscando Empleo</option>
+                                    <option value="Ninguno">Ninguno</option>
+                                </select>
+                                <label for="condicion_ocupacion">¿Condicion Ocupacion?</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating" id="condicion_componente">
+                                <select class="form-select" id="condicion_componente" name="condicion_componente">
+                                    <option value="" selected disabled>Condicion Componente...</option>
+                                    <option value="C.V Beneficiario Activo">C.V Beneficiario Activo</option>
+                                    <option value="C.V Beneficiario Inactivo">C.V Beneficiario Inactivo</option>
+                                    <option value="CPSAM Activo">CPSAM Activo</option>
+                                    <option value="CPSAM Evadido">CPSAM Evadido</option>
+                                    <option value="CPSAM Fallecido">CPSAM Fallecido</option>
+                                    <option value="CPSAM Retiro Voluntario">CPSAM Retiro Voluntario</option>
+                                    <option value="CPSAM Trasladado">CPSAM Trasladado</option>
+                                    <option value="C.M Retiro Definitivo">C.M Retiro Definitivo</option>
+                                    <option value="C.M Activo">C.M Activo</option>
+                                    <option value="C.M BDUA">C.M BDUA</option>
+                                    <option value="C.M Bloqueo Registraduria">C.M Bloqueo Registraduria</option>
+                                    <option value="C.M Duplicidad Documento">C.M Duplicidad Documento</option>
+                                    <option value="C.M Ejercicio Mendicidad Comprobada">C.M Ejercicio Mendicidad Comprobada</option>
+                                    <option value="C.M En lista de Espera">C.M En lista de Espera</option>
+                                    <option value="C.M Fallecido">C.M Fallecido</option>
+                                    <option value="C.M Fallecido sin Certificado">C.M Fallecido sin Certificado</option>
+                                    <option value="C.M Familias en Accion">C.M Familias en Accion</option>
+                                    <option value="C.M Fuera de la Ciudad">C.M Fuera de la Ciudad</option>
+                                </select>
+                                <label for="condicion_componente">Condicion Componente</label>
+                            </div>
+                        </div>
+
                         <!-- Fila 4 -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -658,15 +732,11 @@ function deleteMember($cedula_persona)
                         <!-- fila 5 -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="id_politica_publica" name="id_politica_publica">
-                                    <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_politicas_publicas as $politica) { ?>
-                                        <option value="<?= $politica['id_politica']; ?>"><?= $politica['descripcion_politica']; ?></option>
-                                    <?php } ?>
-                                </select>
-                                <label for="id_politica_publica">Política Pública</label>
+                                <input type="date" class="form-control" id="activo_desde" name="activo_desde" placeholder="Activo Desde">   
+                                <label for="activo_desde">Activo Desde</label>
                             </div>
                         </div>
+
                     </div>
 
                     <div class="modal-footer justify-content-between">
@@ -737,9 +807,11 @@ function deleteMember($cedula_persona)
                                 <label for="edit-grupo-sisben" class="form-label">Grupo Sisbén</label>
                                 <select class="form-select" id="edit-grupo-sisben" name="grupo_sisben">
                                     <option value="" selected>Seleccione grupo...</option>
-                                    <?php for($l='A';$l<='D';$l++) { for($n=1;$n<=9;$n++) { ?>
-                                        <option value="<?= $l.$n ?>"><?= $l.$n ?></option>
-                                    <?php } } ?>
+                                    <?php for ($l = 'A'; $l <= 'D'; $l++) {
+                                        for ($n = 1; $n <= 9; $n++) { ?>
+                                            <option value="<?= $l . $n ?>"><?= $l . $n ?></option>
+                                    <?php }
+                                    } ?>
                                 </select>
                             </div>
                         </div>
@@ -1090,100 +1162,100 @@ function deleteMember($cedula_persona)
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Script para filtros dinámicos -->
     <script>
-    // --- Autocompletado de Barrio, Comuna y Zona (Edición Persona) ---
-    document.addEventListener('DOMContentLoaded', function() {
-        const inputBarrio = document.getElementById('edit-barrio-persona');
-        const datalistBarrios = document.getElementById('edit-lista-barrios');
-        const inputComuna = document.getElementById('edit-comuna-persona');
-        const inputZona = document.getElementById('edit-zona-persona');
-        const inputIdBarrio = document.getElementById('edit-id-barrio-persona');
-        const inputIdComuna = document.getElementById('edit-id-comuna-persona');
-        let barriosData = [];
+        // --- Autocompletado de Barrio, Comuna y Zona (Edición Persona) ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputBarrio = document.getElementById('edit-barrio-persona');
+            const datalistBarrios = document.getElementById('edit-lista-barrios');
+            const inputComuna = document.getElementById('edit-comuna-persona');
+            const inputZona = document.getElementById('edit-zona-persona');
+            const inputIdBarrio = document.getElementById('edit-id-barrio-persona');
+            const inputIdComuna = document.getElementById('edit-id-comuna-persona');
+            let barriosData = [];
 
-        if(inputBarrio && datalistBarrios) {
-            inputBarrio.addEventListener('input', function() {
-                const term = this.value.trim();
-                if(term.length < 2) {
-                    datalistBarrios.innerHTML = '';
-                    return;
-                }
-                fetch('buscar_barrio.php?term=' + encodeURIComponent(term))
-                    .then(res => res.json())
-                    .then(data => {
-                        barriosData = data;
+            if (inputBarrio && datalistBarrios) {
+                inputBarrio.addEventListener('input', function() {
+                    const term = this.value.trim();
+                    if (term.length < 2) {
                         datalistBarrios.innerHTML = '';
-                        data.forEach(barrio => {
-                            const option = document.createElement('option');
-                            option.value = barrio.nombre_bar;
-                            option.setAttribute('data-id', barrio.id_bar);
-                            datalistBarrios.appendChild(option);
+                        return;
+                    }
+                    fetch('buscar_barrio.php?term=' + encodeURIComponent(term))
+                        .then(res => res.json())
+                        .then(data => {
+                            barriosData = data;
+                            datalistBarrios.innerHTML = '';
+                            data.forEach(barrio => {
+                                const option = document.createElement('option');
+                                option.value = barrio.nombre_bar;
+                                option.setAttribute('data-id', barrio.id_bar);
+                                datalistBarrios.appendChild(option);
+                            });
                         });
-                    });
-            });
+                });
 
-            inputBarrio.addEventListener('change', function() {
-                const selected = barriosData.find(b => b.nombre_bar.toLowerCase() === inputBarrio.value.trim().toLowerCase());
-                if(selected) {
-                    inputComuna.value = selected.nombre_com || '';
-                    inputZona.value = selected.zona_bar || '';
-                    if(inputIdBarrio) inputIdBarrio.value = selected.id_bar || '';
-                    if(inputIdComuna) inputIdComuna.value = selected.id_com || '';
-                } else {
-                    inputComuna.value = '';
-                    inputZona.value = '';
-                    if(inputIdBarrio) inputIdBarrio.value = '';
-                    if(inputIdComuna) inputIdComuna.value = '';
-                }
-            });
-        }
-    });
-    // --- Autocompletado de Barrio, Comuna y Zona (Alta Persona) ---
-    document.addEventListener('DOMContentLoaded', function() {
-        const inputBarrio = document.getElementById('barrio_persona');
-        const datalistBarrios = document.getElementById('lista-barrios');
-        const inputComuna = document.getElementById('comuna_persona');
-        const inputZona = document.getElementById('zona_persona');
-        const inputIdBarrio = document.getElementById('id_barrio_persona');
-        const inputIdComuna = document.getElementById('id_comuna_persona');
-        let barriosData = [];
+                inputBarrio.addEventListener('change', function() {
+                    const selected = barriosData.find(b => b.nombre_bar.toLowerCase() === inputBarrio.value.trim().toLowerCase());
+                    if (selected) {
+                        inputComuna.value = selected.nombre_com || '';
+                        inputZona.value = selected.zona_bar || '';
+                        if (inputIdBarrio) inputIdBarrio.value = selected.id_bar || '';
+                        if (inputIdComuna) inputIdComuna.value = selected.id_com || '';
+                    } else {
+                        inputComuna.value = '';
+                        inputZona.value = '';
+                        if (inputIdBarrio) inputIdBarrio.value = '';
+                        if (inputIdComuna) inputIdComuna.value = '';
+                    }
+                });
+            }
+        });
+        // --- Autocompletado de Barrio, Comuna y Zona (Alta Persona) ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputBarrio = document.getElementById('barrio_persona');
+            const datalistBarrios = document.getElementById('lista-barrios');
+            const inputComuna = document.getElementById('comuna_persona');
+            const inputZona = document.getElementById('zona_persona');
+            const inputIdBarrio = document.getElementById('id_barrio_persona');
+            const inputIdComuna = document.getElementById('id_comuna_persona');
+            let barriosData = [];
 
-        if(inputBarrio && datalistBarrios) {
-            inputBarrio.addEventListener('input', function() {
-                const term = this.value.trim();
-                if(term.length < 2) {
-                    datalistBarrios.innerHTML = '';
-                    return;
-                }
-                fetch('buscar_barrio.php?term=' + encodeURIComponent(term))
-                    .then(res => res.json())
-                    .then(data => {
-                        barriosData = data;
+            if (inputBarrio && datalistBarrios) {
+                inputBarrio.addEventListener('input', function() {
+                    const term = this.value.trim();
+                    if (term.length < 2) {
                         datalistBarrios.innerHTML = '';
-                        data.forEach(barrio => {
-                            const option = document.createElement('option');
-                            option.value = barrio.nombre_bar;
-                            option.setAttribute('data-id', barrio.id_bar);
-                            datalistBarrios.appendChild(option);
+                        return;
+                    }
+                    fetch('buscar_barrio.php?term=' + encodeURIComponent(term))
+                        .then(res => res.json())
+                        .then(data => {
+                            barriosData = data;
+                            datalistBarrios.innerHTML = '';
+                            data.forEach(barrio => {
+                                const option = document.createElement('option');
+                                option.value = barrio.nombre_bar;
+                                option.setAttribute('data-id', barrio.id_bar);
+                                datalistBarrios.appendChild(option);
+                            });
                         });
-                    });
-            });
+                });
 
-            inputBarrio.addEventListener('change', function() {
-                const selected = barriosData.find(b => b.nombre_bar.toLowerCase() === inputBarrio.value.trim().toLowerCase());
-                if(selected) {
-                    inputComuna.value = selected.nombre_com || '';
-                    inputZona.value = selected.zona_bar || '';
-                    if(inputIdBarrio) inputIdBarrio.value = selected.id_bar || '';
-                    if(inputIdComuna) inputIdComuna.value = selected.id_com || '';
-                } else {
-                    inputComuna.value = '';
-                    inputZona.value = '';
-                    if(inputIdBarrio) inputIdBarrio.value = '';
-                    if(inputIdComuna) inputIdComuna.value = '';
-                }
-            });
-        }
-    });
+                inputBarrio.addEventListener('change', function() {
+                    const selected = barriosData.find(b => b.nombre_bar.toLowerCase() === inputBarrio.value.trim().toLowerCase());
+                    if (selected) {
+                        inputComuna.value = selected.nombre_com || '';
+                        inputZona.value = selected.zona_bar || '';
+                        if (inputIdBarrio) inputIdBarrio.value = selected.id_bar || '';
+                        if (inputIdComuna) inputIdComuna.value = selected.id_com || '';
+                    } else {
+                        inputComuna.value = '';
+                        inputZona.value = '';
+                        if (inputIdBarrio) inputIdBarrio.value = '';
+                        if (inputIdComuna) inputIdComuna.value = '';
+                    }
+                });
+            }
+        });
         // Variable global para DataTable
         let dataTable = null;
 
@@ -1212,10 +1284,14 @@ function deleteMember($cedula_persona)
                     "emptyTable": "No hay datos disponibles en la tabla"
                 },
                 // Ajustar targets para que coincidan con la cantidad de columnas visibles
-                "columnDefs": [
-                    { "orderable": false, "targets": [8] } // Acciones es la columna 9 (índice 8)
+                "columnDefs": [{
+                        "orderable": false,
+                        "targets": [7]
+                    } // Acciones es la columna 8 (índice 7)
                 ],
-                "order": [[2, 'asc']]
+                "order": [
+                    [2, 'asc']
+                ]
             });
         }
 
@@ -1234,7 +1310,7 @@ function deleteMember($cedula_persona)
         // Cargar datos filtrados sin recargar la tabla completa
         function loadTableData(params = {}) {
             const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center loading">Cargando datos...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center loading">Cargando datos...</td></tr>';
 
             // Construir parámetros de consulta
             const queryParams = new URLSearchParams();
@@ -1251,7 +1327,7 @@ function deleteMember($cedula_persona)
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error al cargar los datos</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error al cargar los datos</td></tr>';
                 });
         }
 
@@ -1378,18 +1454,18 @@ function deleteMember($cedula_persona)
             // Agregar event listeners para los modales
             setupModalEventListeners();
         });
-        
+
         function setupModalEventListeners() {
             // Event listener para resetear el modal de nueva persona
-            $('#modalNewPerson').on('hidden.bs.modal', function () {
+            $('#modalNewPerson').on('hidden.bs.modal', function() {
                 // Limpiar el formulario
                 $('#modalNewPerson form')[0].reset();
                 // Remover información de grupo si existe
                 $('#grupo-info').remove();
             });
-            
+
             // Event listener para resetear el modal de edición
-            $('#modalEdicion').on('hidden.bs.modal', function () {
+            $('#modalEdicion').on('hidden.bs.modal', function() {
                 // Remover información de grupo si existe
                 $('#edit-grupo-info').remove();
             });
@@ -1398,46 +1474,46 @@ function deleteMember($cedula_persona)
 
     <!-- Script para SweetAlert en formularios -->
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Alta persona
-        const formAdd = document.querySelector('form[action="addPerson.php"]');
-        if(formAdd){
-            formAdd.addEventListener('submit', function(e){
-                e.preventDefault();
-                const form = this;
-                Swal.fire({
-                    title: '¿Guardar persona?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Sí, guardar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if(result.isConfirmed){
-                        form.submit();
-                    }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Alta persona
+            const formAdd = document.querySelector('form[action="addPerson.php"]');
+            if (formAdd) {
+                formAdd.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const form = this;
+                    Swal.fire({
+                        title: '¿Guardar persona?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, guardar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
                 });
-            });
-        }
-        // Edición persona
-        const formEdit = document.querySelector('form[action="editPersona.php"]');
-        if(formEdit){
-            formEdit.addEventListener('submit', function(e){
-                e.preventDefault();
-                const form = this;
-                Swal.fire({
-                    title: '¿Guardar cambios?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Sí, guardar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if(result.isConfirmed){
-                        form.submit();
-                    }
+            }
+            // Edición persona
+            const formEdit = document.querySelector('form[action="editPersona.php"]');
+            if (formEdit) {
+                formEdit.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const form = this;
+                    Swal.fire({
+                        title: '¿Guardar cambios?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, guardar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
                 });
-            });
-        }
-    });
+            }
+        });
     </script>
     <!-- Script original del modal de edición -->
     <script>
@@ -1450,14 +1526,14 @@ function deleteMember($cedula_persona)
             try {
                 const modalNewPersonElement = document.getElementById("modalNewPerson");
                 const modalEdicionElement = document.getElementById("modalEdicion");
-                
+
                 if (modalNewPersonElement) {
                     modalNewPerson = new bootstrap.Modal(modalNewPersonElement, {
                         backdrop: 'static',
                         keyboard: false
                     });
                 }
-                
+
                 if (modalEdicionElement) {
                     modalEdicion = new bootstrap.Modal(modalEdicionElement, {
                         backdrop: 'static',
@@ -1469,10 +1545,10 @@ function deleteMember($cedula_persona)
 
                         // Datos generales
                         document.getElementById("edit-cedula").value = button.getAttribute("data-cedula");
-                        if(document.getElementById("edit-nombre")){
+                        if (document.getElementById("edit-nombre")) {
                             document.getElementById("edit-nombre").value = button.getAttribute("data-nombre");
                         }
-                        if(document.getElementById("edit-apellido")){
+                        if (document.getElementById("edit-apellido")) {
                             document.getElementById("edit-apellido").value = button.getAttribute("data-apellidos");
                         }
                         document.getElementById("edit-telefono").value = button.getAttribute("data-telefono");
@@ -1481,7 +1557,7 @@ function deleteMember($cedula_persona)
                         document.getElementById("cedula_original").value = button.getAttribute("data-cedula");
                         document.getElementById("edit-genero").value = button.getAttribute("data-genero");
                         // Prellenar tipo de identificación
-                        if(document.getElementById("edit-tipo-identificacion")){
+                        if (document.getElementById("edit-tipo-identificacion")) {
                             // ...ya existente...
                         }
 
@@ -1496,68 +1572,68 @@ function deleteMember($cedula_persona)
                         const editIdBarrioInput = document.getElementById("edit-id-barrio-persona");
                         const editIdComunaInput = document.getElementById("edit-id-comuna-persona");
 
-                        if(editIdBarrioInput) editIdBarrioInput.value = editIdBarrio;
-                        if(editIdComunaInput) editIdComunaInput.value = editIdComuna;
-                        if(editZonaInput) editZonaInput.value = editZona;
+                        if (editIdBarrioInput) editIdBarrioInput.value = editIdBarrio;
+                        if (editIdComunaInput) editIdComunaInput.value = editIdComuna;
+                        if (editZonaInput) editZonaInput.value = editZona;
 
                         // Si hay ID de barrio, buscar el nombre y comuna por AJAX
-                        if(editIdBarrio && editBarrioInput) {
+                        if (editIdBarrio && editBarrioInput) {
                             fetch('buscar_barrio.php?id=' + encodeURIComponent(editIdBarrio))
                                 .then(res => res.json())
                                 .then(data => {
-                                    if(data && data.length > 0) {
+                                    if (data && data.length > 0) {
                                         editBarrioInput.value = data[0].nombre_bar || '';
-                                        if(editComunaInput) editComunaInput.value = data[0].nombre_com || '';
+                                        if (editComunaInput) editComunaInput.value = data[0].nombre_com || '';
                                     } else {
                                         editBarrioInput.value = '';
-                                        if(editComunaInput) editComunaInput.value = '';
+                                        if (editComunaInput) editComunaInput.value = '';
                                     }
                                 })
                                 .catch(() => {
                                     editBarrioInput.value = '';
-                                    if(editComunaInput) editComunaInput.value = '';
+                                    if (editComunaInput) editComunaInput.value = '';
                                 });
                         } else {
-                            if(editBarrioInput) editBarrioInput.value = '';
-                            if(editComunaInput) editComunaInput.value = '';
+                            if (editBarrioInput) editBarrioInput.value = '';
+                            if (editComunaInput) editComunaInput.value = '';
                         }
-                        if(document.getElementById("edit-tipo-identificacion")){
+                        if (document.getElementById("edit-tipo-identificacion")) {
                             document.getElementById("edit-tipo-identificacion").value = button.getAttribute("data-tipo-identificacion");
                         }
                         // Prellenar campos select adicionales
-                        if(document.getElementById("edit-cabeza-hogar")){
+                        if (document.getElementById("edit-cabeza-hogar")) {
                             document.getElementById("edit-cabeza-hogar").value = button.getAttribute("data-cabeza-hogar");
                         }
-                        if(document.getElementById("edit-lider-comunidad")){
+                        if (document.getElementById("edit-lider-comunidad")) {
                             document.getElementById("edit-lider-comunidad").value = button.getAttribute("data-lider-comunidad");
                         }
-                        if(document.getElementById("edit-se-reconoce-como")){
+                        if (document.getElementById("edit-se-reconoce-como")) {
                             document.getElementById("edit-se-reconoce-como").value = button.getAttribute("data-se-reconoce-como");
                         }
-                        if(document.getElementById("edit-orientacion-sexual")){
+                        if (document.getElementById("edit-orientacion-sexual")) {
                             document.getElementById("edit-orientacion-sexual").value = button.getAttribute("data-orientacion-sexual");
                         }
-                        if(document.getElementById("edit-experiencia-migratoria")){
+                        if (document.getElementById("edit-experiencia-migratoria")) {
                             document.getElementById("edit-experiencia-migratoria").value = button.getAttribute("data-experiencia-migratoria");
                         }
-                        if(document.getElementById("edit-grupo-etnico")){
+                        if (document.getElementById("edit-grupo-etnico")) {
                             document.getElementById("edit-grupo-etnico").value = button.getAttribute("data-grupo-etnico");
                         }
-                        if(document.getElementById("edit-tipo-salud")){
+                        if (document.getElementById("edit-tipo-salud")) {
                             document.getElementById("edit-tipo-salud").value = button.getAttribute("data-tipo-salud");
                         }
-                        if(document.getElementById("edit-nivel-educativo")){
+                        if (document.getElementById("edit-nivel-educativo")) {
                             document.getElementById("edit-nivel-educativo").value = button.getAttribute("data-nivel-educativo");
                         }
                         // Precargar grupo sisben
-                        if(document.getElementById("edit-grupo-sisben")){
+                        if (document.getElementById("edit-grupo-sisben")) {
                             document.getElementById("edit-grupo-sisben").value = button.getAttribute("data-grupo-sisben");
                         }
                         // Precargar persona discapacidad
-                        if(document.getElementById("edit-persona-discapacidad")){
+                        if (document.getElementById("edit-persona-discapacidad")) {
                             document.getElementById("edit-persona-discapacidad").value = button.getAttribute("data-persona-discapacidad");
                             // Mostrar/ocultar y precargar categoría discapacidad
-                            if(button.getAttribute("data-persona-discapacidad") === "Si"){
+                            if (button.getAttribute("data-persona-discapacidad") === "Si") {
                                 document.getElementById("edit-div-cual-discapacidad").style.display = '';
                                 document.getElementById("edit-cual-discapacidad").value = button.getAttribute("data-cual-discapacidad");
                             } else {
@@ -1565,14 +1641,14 @@ function deleteMember($cedula_persona)
                                 document.getElementById("edit-cual-discapacidad").value = '';
                             }
                         }
-                        
+
                         // Guardar valor original del grupo y establecer el valor actual
                         const grupoValue = button.getAttribute("data-id-grupo");
                         document.getElementById("edit-grupo").value = grupoValue;
                         $('#edit-grupo').data('original-value', grupoValue);
-                        
+
                         document.getElementById("edit-politica-publica").value = button.getAttribute("data-id-politica-publica");
-                        
+
                         // Programas
                         const idsProgramas = button.getAttribute("data-ids-programas");
                         const idsArray = idsProgramas.split(",").map(id => id.trim());
@@ -1595,17 +1671,19 @@ function deleteMember($cedula_persona)
                     $.ajax({
                         url: 'checkGroupLimit.php',
                         type: 'POST',
-                        data: { id_grupo: idGrupo },
+                        data: {
+                            id_grupo: idGrupo
+                        },
                         dataType: 'json',
                         success: function(response) {
                             if ($('#grupo-info').length === 0) {
                                 $('#id_grupo').parent().append('<small id="grupo-info" class="text-muted mt-1"></small>');
                             }
-                            
+
                             const color = response.limitReached ? 'text-danger' : 'text-success';
                             $('#grupo-info').removeClass('text-muted text-success text-danger').addClass(color);
                             $('#grupo-info').text(`Personas en el grupo: ${response.personasActuales}/${response.limite}`);
-                            
+
                             if (response.limitReached) {
                                 Swal.fire({
                                     icon: 'warning',
@@ -1624,7 +1702,9 @@ function deleteMember($cedula_persona)
                     $.ajax({
                         url: '../obtener_centros_vida.php',
                         type: 'POST',
-                        data: { id_grupo: idGrupo },
+                        data: {
+                            id_grupo: idGrupo
+                        },
                         success: function(response) {
                             $('#observacion_persona').html('<option value="" selected>Seleccione...</option>');
                             $('#observacion_persona').append(response);
@@ -1642,14 +1722,16 @@ function deleteMember($cedula_persona)
             // Validar límite del grupo antes de enviar el formulario
             $('form[action="addPerson.php"]').on('submit', function(e) {
                 const grupoId = $('#id_grupo').val();
-                
+
                 if (grupoId) {
                     e.preventDefault();
-                    
+
                     $.ajax({
                         url: 'checkGroupLimit.php',
                         type: 'POST',
-                        data: { id_grupo: grupoId },
+                        data: {
+                            id_grupo: grupoId
+                        },
                         dataType: 'json',
                         success: function(response) {
                             if (response.limitReached) {
@@ -1683,17 +1765,19 @@ function deleteMember($cedula_persona)
                     $.ajax({
                         url: 'checkGroupLimit.php',
                         type: 'POST',
-                        data: { id_grupo: idGrupo },
+                        data: {
+                            id_grupo: idGrupo
+                        },
                         dataType: 'json',
                         success: function(response) {
                             if ($('#edit-grupo-info').length === 0) {
                                 $('#edit-grupo').parent().append('<small id="edit-grupo-info" class="text-muted mt-1"></small>');
                             }
-                            
+
                             const color = response.limitReached ? 'text-danger' : 'text-success';
                             $('#edit-grupo-info').removeClass('text-muted text-success text-danger').addClass(color);
                             $('#edit-grupo-info').text(`Personas en el grupo: ${response.personasActuales}/${response.limite}`);
-                            
+
                             if (response.limitReached) {
                                 Swal.fire({
                                     icon: 'warning',
@@ -1715,4 +1799,5 @@ function deleteMember($cedula_persona)
         });
     </script>
 </body>
+
 </html>

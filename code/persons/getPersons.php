@@ -129,7 +129,6 @@ if ($result->num_rows > 0) {
         echo "<td>" . htmlspecialchars($row['programas']) . "</td>";
         echo "<td>" . ($row['descripcion_grupo'] ? htmlspecialchars($row['descripcion_grupo']) : 'No asignado') . "</td>";
         echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('CPSAM ', '', $estado_persona) . "</span></td>";
-        echo "<td>" . ($row['descripcion_politica'] ? htmlspecialchars($row['descripcion_politica']) : 'No asignada') . "</td>";
         
         // Botones de acción modernos
         echo '<td class="col-actions">

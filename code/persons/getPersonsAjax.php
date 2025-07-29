@@ -125,7 +125,6 @@ if ($result && $result->num_rows > 0) {
         // 7. Estado
         echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('CPSAM ', '', $estado_persona) . "</span></td>";
         // 8. Política Pública
-        echo "<td>" . htmlspecialchars($row['descripcion_politica'] ?: 'No asignada') . "</td>";
         // 9. Acciones
         echo '<td class="col-actions">
                 <div class="action-buttons">
