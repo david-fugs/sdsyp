@@ -1172,15 +1172,6 @@ function deleteMember($cedula_persona)
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="edit-politica-publica" class="form-label">Política Pública</label>
-                                <select class="form-select" id="edit-politica-publica" name="id_politica_publica">
-                                    <option value="">Seleccione...</option>
-                                    <?php foreach ($result_politicas_publicas as $politica) { ?>
-                                        <option value="<?= $politica['id_politica']; ?>"><?= $politica['descripcion_politica']; ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
                                 <label for="edit-programas" class="form-label">Programas</label>
                                 <div class="d-flex flex-wrap" style="gap: 8px;">
                                     <?php foreach ($result_programas as $programa) { ?>
@@ -1646,10 +1637,11 @@ function deleteMember($cedula_persona)
                         if (editZonaInput) editZonaInput.value = editZona;
 
                         // Si hay ID de barrio, buscar el nombre y comuna por AJAX
-                        if (editIdBarrio && editBarrioInput) {
-                            fetch('buscar_barrio.php?id=' + encodeURIComponent(editIdBarrio))
+                        if (editIdBarrio) {
+                            fetch('buscar_barrio2.php?term=' + encodeURIComponent(editIdBarrio))
                                 .then(res => res.json())
                                 .then(data => {
+                                    console.log(data);
                                     if (data && data.length > 0) {
                                         editBarrioInput.value = data[0].nombre_bar || '';
                                         if (editComunaInput) editComunaInput.value = data[0].nombre_com || '';
@@ -1757,15 +1749,16 @@ function deleteMember($cedula_persona)
                         document.getElementById("edit-grupo").value = grupoValue;
                         $('#edit-grupo').data('original-value', grupoValue);
 
-                        document.getElementById("edit-politica-publica").value = button.getAttribute("data-id-politica-publica");
-
-                        // Programas
-                        const idsProgramas = button.getAttribute("data-ids-programas");
-                        const idsArray = idsProgramas.split(",").map(id => id.trim());
-                        const checkboxes = modalEdicionElement.querySelectorAll('input[name="programa[]"]');
-                        checkboxes.forEach(cb => {
+                        // Seleccionar los checks de programas
+                        const idsProgramas = button.getAttribute('data-ids-programas') || '';
+                        // Elimina comillas simples si existen y separa por coma
+                        const idsArray = idsProgramas.replace(/'/g, '').split(',').map(id => id.trim()).filter(id => id);
+                        // Busca los checkboxes dentro del modal de edición
+                        const programasChecks = modalEdicionElement.querySelectorAll('input[name="programa[]"]');
+                        programasChecks.forEach(cb => {
                             cb.checked = idsArray.includes(cb.value);
                         });
+
                     });
                 }
             } catch (error) {

@@ -23,7 +23,7 @@ if (!empty($_GET['condicion'])) {
 // Consulta SQL para obtener los datos
 $query = " SELECT mp.id_movimiento_persona,c.id_condicion,p.cedula_persona,p.nombres_persona,p.apellidos_persona,c.descripcion_condicion, 
            mp.fecha_movimiento,mp.observacion_movimiento,mp.id_centro_vida_traslado,g.descripcion_grupo as centro_vida_traslado,
-           mp.id_meta, mp.id_actividad, mp.id_accion, mp.departamento_procedencia,
+           mp.id_meta, mp.id_actividad, mp.id_accion, mp.departamento_procedencia, mp.id_politica_publica,
            m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion
            FROM personas as p
         JOIN movimiento_persona as mp ON p.cedula_persona = mp.cedula_persona
@@ -70,6 +70,7 @@ if ($result->num_rows > 0) {
                         data-meta="' . ($row['id_meta'] ?? '') . '"
                         data-actividad="' . ($row['id_actividad'] ?? '') . '"
                         data-accion="' . ($row['id_accion'] ?? '') . '"
+                        data-id_politica_publica="' . ($row['id_politica_publica'] ?? '') . '"
                         data-departamento_procedencia="' . ($row['departamento_procedencia'] ?? '') . '">
                         <i class="bi bi-pencil-fill"></i>
                     </button>

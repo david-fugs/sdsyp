@@ -21,103 +21,109 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
-    
+
     <!-- Estilos personalizados para aumentar tamaño de fuente -->
     <style>
         /* Aumentar tamaño de fuente general */
         body {
             font-size: 16px !important;
         }
-        
+
         /* Tabla - aumentar tamaño de fuente */
         .modern-table {
             font-size: 45px !important;
         }
-        
+
         .modern-table th {
             font-size: 16px !important;
             font-weight: 600 !important;
         }
-        
+
         .modern-table td {
             font-size: 15px !important;
             padding: 12px 8px !important;
         }
-        
+
         /* Filtros y inputs - aumentar tamaño */
-        .modern-input, .modern-select {
+        .modern-input,
+        .modern-select {
             font-size: 15px !important;
             padding: 10px 12px !important;
         }
-        
+
         .filter-group label {
             font-size: 14px !important;
             font-weight: 600 !important;
         }
-        
+
         /* Botones - aumentar tamaño */
         .btn-modern {
             font-size: 15px !important;
             padding: 10px 20px !important;
         }
-        
+
         .btn-action {
             padding: 8px 10px !important;
             font-size: 14px !important;
         }
-        
+
         /* Header moderno */
         .modern-header h2 {
             font-size: 26px !important;
         }
-        
+
         /* DataTables controles */
-        .dataTables_info, .dataTables_paginate {
+        .dataTables_info,
+        .dataTables_paginate {
             font-size: 14px !important;
         }
-        
-        .dataTables_length select, .dataTables_length label {
+
+        .dataTables_length select,
+        .dataTables_length label {
             font-size: 14px !important;
         }
-        
+
         .paginate_button {
             font-size: 14px !important;
         }
-        
+
         /* Modales - aumentar tamaño de fuente */
         .modal-title {
             font-size: 20px !important;
         }
-        
+
         .modal-body {
             font-size: 15px !important;
         }
-        
+
         .form-label {
             font-size: 14px !important;
             font-weight: 600 !important;
         }
-        
-        .form-control, .form-select {
+
+        .form-control,
+        .form-select {
             font-size: 15px !important;
         }
-        
+
         /* SweetAlert - aumentar tamaño */
         .swal2-title {
             font-size: 20px !important;
         }
-        
+
         .swal2-content {
             font-size: 16px !important;
         }
-        
+
         /* Enlaces y navegación */
         a {
             font-size: 15px !important;
         }
-        
+
         /* Mensajes de estado */
-        .text-muted, .text-success, .text-danger {
+        .text-muted,
+        .text-success,
+        .text-danger {
             font-size: 13px !important;
         }
     </style>
@@ -153,20 +159,20 @@ if (isset($_GET['delete'])) {
     deleteMember($cedula_persona);
 }
 
-function deleteMember($cedula_persona)
+function deleteMember($id_movimiento)
 {
     global $mysqli; // Asegurar acceso a la conexión global
 
-    $query = "DELETE FROM personas WHERE cedula_persona  = ?";
+    $query = "DELETE FROM movimiento_persona WHERE id_movimiento  = ?";
     $stmt = $mysqli->prepare($query);
-    $stmt->bind_param("s", $cedula_persona);
+    $stmt->bind_param("i", $id_movimiento);
 
     if ($stmt->execute()) {
-        echo "<script>alert('Persona borrada corecctamente');
-        window.location = 'seePerson.php';</script>";
+        echo "<script>alert('Movimiento borrado correctamente');
+        window.location = 'seePersonMovement.php';</script>";
     } else {
-        echo "<script>alert('Error borrando la persona');
-        window.location = 'seePerson.php';</script>";
+        echo "<script>alert('Error borrando el movimiento');
+        window.location = 'seePersonMovement.php';</script>";
     }
 
     $stmt->close();
@@ -198,21 +204,21 @@ function deleteMember($cedula_persona)
                 <form action="seePersonMovement.php" method="get" class="filter-row">
                     <div class="filter-group">
                         <label for="cedula_persona">Cédula</label>
-                        <input type="number" 
-                               id="cedula_persona" 
-                               name="cedula_persona" 
-                               class="modern-input" 
-                               placeholder="Buscar por cédula..."
-                               value="<?= isset($_GET['cedula_persona']) ? htmlspecialchars($_GET['cedula_persona']) : '' ?>">
+                        <input type="number"
+                            id="cedula_persona"
+                            name="cedula_persona"
+                            class="modern-input"
+                            placeholder="Buscar por cédula..."
+                            value="<?= isset($_GET['cedula_persona']) ? htmlspecialchars($_GET['cedula_persona']) : '' ?>">
                     </div>
                     <div class="filter-group">
                         <label for="nombre">Nombre</label>
-                        <input type="text" 
-                               id="nombre" 
-                               name="nombre" 
-                               class="modern-input" 
-                               placeholder="Buscar por nombre..."
-                               value="<?= isset($_GET['nombre']) ? htmlspecialchars($_GET['nombre']) : '' ?>">
+                        <input type="text"
+                            id="nombre"
+                            name="nombre"
+                            class="modern-input"
+                            placeholder="Buscar por nombre..."
+                            value="<?= isset($_GET['nombre']) ? htmlspecialchars($_GET['nombre']) : '' ?>">
                     </div>
                     <div class="filter-group">
                         <label for="condicion">Condición</label>
@@ -307,11 +313,19 @@ function deleteMember($cedula_persona)
                                 </select>
                                 <label for="actividad">Actividad</label>
                             </div>
-                            <div class="col-md-4 mb-3 form-floating">
+                            <div class="col-md-3 mb-3 form-floating">
                                 <select class="form-select" id="accion" name="id_accion" required disabled>
                                     <option value="" selected>Seleccione Acción...</option>
                                 </select>
                                 <label for="accion">Acción</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="politica-publica" name="politica_publica" required>
+                                    <option value="" selected>Seleccione Política Pública...</option>
+                                </select>
+                                <label for="politica-publica">Política Pública</label>
                             </div>
                         </div>
                         <!-- Fila 3: Departamento de Procedencia y Fecha -->
@@ -442,11 +456,15 @@ function deleteMember($cedula_persona)
                             <select class="form-select" id="edit-actividad" name="id_actividad" disabled>
                                 <option value="" selected>Seleccione Actividad...</option>
                             </select>
-                        </div>
-                        <div class="mb-3">
                             <label for="edit-accion" class="form-label">Acción</label>
                             <select class="form-select" id="edit-accion" name="id_accion" disabled>
                                 <option value="" selected>Seleccione Acción...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-politica-publica" class="form-label">Política Pública</label>
+                            <select class="form-select" id="edit-politica-publica" name="id_politica_publica" required>
+                                <option value="" selected>Seleccione Política Pública...</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -532,7 +550,7 @@ function deleteMember($cedula_persona)
 
         modalEdicion.addEventListener("shown.bs.modal", function(event) {
             const button = event.relatedTarget;
-            // Datos generales
+        window.lastEditButton = button; // Guardar referencia global para el JS de política pública
             document.getElementById("edit-cedula").value = button.getAttribute("data-cedula");
             document.getElementById("edit-nombre").value = button.getAttribute("data-nombre");
             document.getElementById("edit-apellido").value = button.getAttribute("data-apellidos");
@@ -542,18 +560,18 @@ function deleteMember($cedula_persona)
             document.getElementById("edit-observacion").value = button.getAttribute("data-observacion_movimiento");
             document.getElementById("edit-centro-vida").value = button.getAttribute("data-centro_vida_traslado") || "";
             document.getElementById("id_movimiento_persona").value = button.getAttribute("data-id_movimiento_persona");
-            
+
             // Prellenar nuevos campos
             document.getElementById("edit-meta").value = button.getAttribute("data-meta") || "";
             document.getElementById("edit-departamento-procedencia").value = button.getAttribute("data-departamento_procedencia") || "";
-            
-            // Cargar actividad y acción si existen
+
+            // Cargar actividad, acción y política pública si existen
             const idMeta = button.getAttribute("data-meta");
             const idActividad = button.getAttribute("data-actividad");
             const idAccion = button.getAttribute("data-accion");
-            
+            const idPolitica = button.getAttribute("data-id_politica_publica");
+
             if (idMeta) {
-                // Cargar actividades para esta meta
                 $.ajax({
                     url: 'getActividades.php',
                     type: 'POST',
@@ -561,12 +579,8 @@ function deleteMember($cedula_persona)
                     success: function(response) {
                         $('#edit-actividad').empty().append('<option value="">Seleccione Actividad...</option>');
                         $('#edit-actividad').append(response).prop('disabled', false);
-                        
-                        // Seleccionar la actividad guardada
                         if (idActividad) {
                             $('#edit-actividad').val(idActividad);
-                            
-                            // Cargar acciones para esta actividad
                             $.ajax({
                                 url: 'getAcciones.php',
                                 type: 'POST',
@@ -574,10 +588,30 @@ function deleteMember($cedula_persona)
                                 success: function(response) {
                                     $('#edit-accion').empty().append('<option value="">Seleccione Acción...</option>');
                                     $('#edit-accion').append(response).prop('disabled', false);
-                                    
-                                    // Seleccionar la acción guardada
                                     if (idAccion) {
                                         $('#edit-accion').val(idAccion);
+                                        // Cargar políticas públicas para esta acción
+                                        $('#edit-politica-publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
+                                        $.ajax({
+                                            url: 'getPoliticaPublica.php',
+                                            type: 'POST',
+                                            data: { id_accion: idAccion },
+                                            dataType: 'json',
+                                            success: function(response) {
+                                                if (response && response.politicas && response.politicas.length > 0) {
+                                                    response.politicas.forEach(function(p) {
+                                                        $('#edit-politica-publica').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
+                                                    });
+                                                    // Seleccionar la opción después de agregar todas
+                                                    $('#edit-politica-publica').val(idPolitica);
+                                                } else {
+                                                    $('#edit-politica-publica').append('<option value="">No asignada</option>');
+                                                }
+                                            },
+                                            error: function() {
+                                                $('#edit-politica-publica').append('<option value="">Error al consultar</option>');
+                                            }
+                                        });
                                     }
                                 }
                             });
@@ -585,7 +619,7 @@ function deleteMember($cedula_persona)
                     }
                 });
             }
-            
+
             // Trigger change en condición para mostrar/ocultar centro de vida
             $('#edit-condicion').trigger('change');
         });
@@ -646,7 +680,7 @@ function deleteMember($cedula_persona)
         $('#condicion').on('change', function() {
             const selectedOption = $(this).find('option:selected');
             const condicionTexto = selectedOption.text().toUpperCase();
-            
+
             if (condicionTexto.includes('CPSAM TRASLADADO')) {
                 $('#grupo').prop('disabled', false).prop('required', true);
                 $('#grupo').parent().removeClass('d-none');
@@ -665,16 +699,18 @@ function deleteMember($cedula_persona)
         // Manejar selección de Meta para cargar Actividades
         $('#meta').on('change', function() {
             const idMeta = $(this).val();
-            
+
             // Limpiar y deshabilitar campos dependientes
             $('#actividad').empty().append('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
             $('#accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
-            
+
             if (idMeta) {
                 $.ajax({
                     url: 'getActividades.php',
                     type: 'POST',
-                    data: { id_meta: idMeta },
+                    data: {
+                        id_meta: idMeta
+                    },
                     success: function(response) {
                         $('#actividad').append(response).prop('disabled', false);
                     },
@@ -693,15 +729,16 @@ function deleteMember($cedula_persona)
         // Manejar selección de Actividad para cargar Acciones
         $('#actividad').on('change', function() {
             const idActividad = $(this).val();
-            
             // Limpiar y deshabilitar campo de acciones
             $('#accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
-            
+            $('#politica-publica').val(''); // Limpiar política pública
             if (idActividad) {
                 $.ajax({
                     url: 'getAcciones.php',
                     type: 'POST',
-                    data: { id_actividad: idActividad },
+                    data: {
+                        id_actividad: idActividad
+                    },
                     success: function(response) {
                         $('#accion').append(response).prop('disabled', false);
                     },
@@ -717,19 +754,50 @@ function deleteMember($cedula_persona)
             }
         });
 
+        // Manejar selección de Acción para consultar políticas públicas (formulario agregar movimiento)
+        $('#accion').on('change', function() {
+            const idAccion = $(this).val();
+            // Vaciar y resetear el select de política pública cada vez que se cambia la acción
+            $('#politica-publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
+            $('#politica-publica').prop('selectedIndex', 0);
+            if (idAccion) {
+                $.ajax({
+                    url: 'getPoliticaPublica.php',
+                    type: 'POST',
+                    data: { id_accion: idAccion },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response && response.politicas && response.politicas.length > 0) {
+                            response.politicas.forEach(function(p) {
+                                $('#politica-publica').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
+                            });
+                        } else {
+                            $('#politica-publica').append('<option value="">No asignada</option>');
+                        }
+                    },
+                    error: function() {
+                        $('#politica-publica').append('<option value="">Error al consultar</option>');
+                    }
+                });
+            }
+        });
+
         // Manejar selección de Meta para cargar Actividades (Modal de Edición)
         $('#edit-meta').on('change', function() {
             const idMeta = $(this).val();
-            
+
             // Limpiar y deshabilitar campos dependientes
             $('#edit-actividad').empty().append('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
             $('#edit-accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
-            
+            $('#edit-politica-publica').empty().append('<option value="">Seleccione Política Pública...</option>');
+
             if (idMeta) {
                 $.ajax({
                     url: 'getActividades.php',
                     type: 'POST',
-                    data: { id_meta: idMeta },
+                    data: {
+                        id_meta: idMeta
+                    },
                     success: function(response) {
                         $('#edit-actividad').append(response).prop('disabled', false);
                     },
@@ -748,15 +816,18 @@ function deleteMember($cedula_persona)
         // Manejar selección de Actividad para cargar Acciones (Modal de Edición)
         $('#edit-actividad').on('change', function() {
             const idActividad = $(this).val();
-            
+
             // Limpiar y deshabilitar campo de acciones
             $('#edit-accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
-            
+            $('#edit-politica-publica').empty().append('<option value="">Seleccione Política Pública...</option>');
+
             if (idActividad) {
                 $.ajax({
                     url: 'getAcciones.php',
                     type: 'POST',
-                    data: { id_actividad: idActividad },
+                    data: {
+                        id_actividad: idActividad
+                    },
                     success: function(response) {
                         $('#edit-accion').append(response).prop('disabled', false);
                     },
@@ -772,11 +843,50 @@ function deleteMember($cedula_persona)
             }
         });
 
+        // Manejar selección de Acción para consultar política pública (Modal de Edición)
+        $('#edit-accion').on('change', function() {
+            const idAccion = $(this).val();
+            // Vaciar y resetear el select de política pública cada vez que se cambia la acción
+            $('#edit-politica-publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
+            $('#edit-politica-publica').prop('selectedIndex', 0);
+            
+            // Obtener el valor actual de id_politica_publica del botón que abrió el modal
+            let idPolitica = null;
+            if (window.lastEditButton) {
+                idPolitica = window.lastEditButton.getAttribute('data-id_politica_publica');
+            }
+            
+            if (idAccion) {
+                $.ajax({
+                    url: 'getPoliticaPublica.php',
+                    type: 'POST',
+                    data: { id_accion: idAccion },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response && response.politicas && response.politicas.length > 0) {
+                            response.politicas.forEach(function(p) {
+                                $('#edit-politica-publica').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
+                            });
+                            // Seleccionar la opción después de agregar todas
+                            if (idPolitica) {
+                                $('#edit-politica-publica').val(idPolitica);
+                            }
+                        } else {
+                            $('#edit-politica-publica').append('<option value="">No asignada</option>');
+                        }
+                    },
+                    error: function() {
+                        $('#edit-politica-publica').append('<option value="">Error al consultar</option>');
+                    }
+                });
+            }
+        });
+
         // Controlar habilitación del campo grupo según la condición en modal de edición
         $('#edit-condicion').on('change', function() {
             const selectedOption = $(this).find('option:selected');
             const condicionTexto = selectedOption.text().toUpperCase();
-            
+
             if (condicionTexto.includes('CPSAM TRASLADADO')) {
                 $('#edit-centro-vida').prop('disabled', false);
                 $('#edit-centro-vida-container').removeClass('d-none');
@@ -791,7 +901,7 @@ function deleteMember($cedula_persona)
         // Validar límite del centro de vida en modal de edición
         $('#edit-centro-vida').on('change', function() {
             const idGrupo = $(this).val();
-            
+
             if (idGrupo) {
                 // Verificar el límite actual del grupo
                 $.ajax({
@@ -806,11 +916,11 @@ function deleteMember($cedula_persona)
                         if ($('#edit-limite-info').length === 0) {
                             $('#edit-centro-vida').parent().append('<small id="edit-limite-info" class="text-muted mt-1"></small>');
                         }
-                        
+
                         const color = response.limitReached ? 'text-danger' : 'text-success';
                         $('#edit-limite-info').removeClass('text-muted text-success text-danger').addClass(color);
                         $('#edit-limite-info').text(`Personas en el centro: ${response.personasActuales}/${response.limite}`);
-                        
+
                         if (response.limitReached) {
                             Swal.fire({
                                 icon: 'warning',
@@ -831,11 +941,11 @@ function deleteMember($cedula_persona)
         $('form[action="editPersonMovement.php"]').on('submit', function(e) {
             const grupoId = $('#edit-centro-vida').val();
             const grupoOriginal = $('#edit-centro-vida').data('original-value') || '';
-            
+
             // Solo validar si se cambió el centro o se agregó uno nuevo
             if (grupoId && grupoId !== grupoOriginal) {
                 e.preventDefault(); // Detener el envío del formulario
-                
+
                 // Verificar el límite del grupo
                 $.ajax({
                     url: '../persons/checkGroupLimit.php',
@@ -877,7 +987,7 @@ function deleteMember($cedula_persona)
             const selectedOption = $(this).find('option:selected');
             const limite = selectedOption.data('limite');
             const idGrupo = $(this).val();
-            
+
             if (limite && idGrupo) {
                 // Verificar el límite actual del grupo
                 $.ajax({
@@ -892,11 +1002,11 @@ function deleteMember($cedula_persona)
                         if ($('#limite-info').length === 0) {
                             $('#grupo').parent().append('<small id="limite-info" class="text-muted mt-1"></small>');
                         }
-                        
+
                         const color = response.limitReached ? 'text-danger' : 'text-success';
                         $('#limite-info').removeClass('text-muted text-success text-danger').addClass(color);
                         $('#limite-info').text(`Personas en el centro: ${response.personasActuales}/${response.limite}`);
-                        
+
                         if (response.limitReached) {
                             Swal.fire({
                                 icon: 'warning',
@@ -922,10 +1032,10 @@ function deleteMember($cedula_persona)
         // Validar límite antes de enviar el formulario
         $('form[action="addPersonMovement.php"]').on('submit', function(e) {
             const grupoId = $('#grupo').val();
-            
+
             if (grupoId) {
                 e.preventDefault(); // Detener el envío del formulario
-                
+
                 // Verificar el límite del grupo
                 $.ajax({
                     url: '../persons/checkGroupLimit.php',
@@ -965,23 +1075,33 @@ function deleteMember($cedula_persona)
 
     // Inicializar DataTables para la tabla de movimientos
     let movementTable;
-    
+
     function initDataTable() {
         if ($.fn.DataTable.isDataTable('#salesTable')) {
             $('#salesTable').DataTable().destroy();
         }
-        
+
         movementTable = $('#salesTable').DataTable({
             pageLength: 15,
-            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
+            lengthMenu: [
+                [5, 10, 25, 50, -1],
+                [5, 10, 25, 50, "Todos"]
+            ],
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
             },
-            columnDefs: [
-                { orderable: false, targets: [9] }, // Deshabilitar orden en la columna de acciones (ahora es la columna 9)
-                { className: "text-center", targets: [0, 9] } // Centrar columna de ID y acciones
+            columnDefs: [{
+                    orderable: false,
+                    targets: [9]
+                }, // Deshabilitar orden en la columna de acciones (ahora es la columna 9)
+                {
+                    className: "text-center",
+                    targets: [0, 9]
+                } // Centrar columna de ID y acciones
             ],
-            order: [[7, 'desc']], // Ordenar por fecha de movimiento (ahora es la columna 7) descendente
+            order: [
+                [7, 'desc']
+            ], // Ordenar por fecha de movimiento (ahora es la columna 7) descendente
             dom: 'frtip', // Solo mostrar filtro, tabla, información y paginación
             searching: false, // Deshabilitar búsqueda de DataTables (usamos filtros propios)
             info: true,

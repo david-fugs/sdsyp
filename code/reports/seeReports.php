@@ -777,12 +777,6 @@ $endYear = $currentYear + 1;
                 </div>
                 <div class="col-md-3">
                     <div class="stats-item">
-                        <div class="stats-number" id="statsPersonasActivas">0</div>
-                        <div class="stats-label">Personas Activas</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-item">
                         <div class="stats-number" id="statsTotalMovimientos">0</div>
                         <div class="stats-label">Total Movimientos</div>
                     </div>
@@ -1092,30 +1086,18 @@ $endYear = $currentYear + 1;
                         title: '¡Excel Generado Exitosamente!',
                         html: `
                             <div style="text-align: left; padding: 15px;">
-                                <p><strong>✅ Archivo generado con PhpSpreadsheet</strong></p>
                                 <p>📁 <strong>Archivo:</strong> ${response.fileName}</p>
                                 <p>📊 <strong>Registros incluidos:</strong> ${response.totalRegistros}</p>
                                 <p>📋 <strong>Columnas:</strong> ${response.totalColumnas} campos completos</p>
                                 <p>📅 <strong>Año del informe:</strong> ${response.year}</p>
-                                <p>🎨 <strong>Características:</strong></p>
-                                <ul style="text-align: left; margin: 10px 0;">
-                                    <li>Cabeceras con fondo amarillo suave y bordes</li>
-                                    <li>Datos completos de personas y movimientos</li>
-                                    <li>Últimas columnas: Activo Desde, Activo Hasta, Días Activos</li>
-                                    <li>Consulta directa a la base de datos</li>
-                                    <li>Formato profesional con ajuste automático</li>
-                                </ul>
                                 <br>
-                                <button onclick="window.open('${response.downloadUrl}', '_blank')" 
-                                        class="btn btn-primary">
-                                    <i class="bi bi-download"></i> Descargar Archivo
-                                </button>
+                                
                             </div>
                         `,
-                        confirmButtonText: 'Entendido',
+                        confirmButtonText: 'Descargar',
                         width: 600,
                         showCancelButton: true,
-                        cancelButtonText: 'Descargar',
+                        cancelButtonText: 'Cerrar',
                         preConfirm: () => {
                             window.open(response.downloadUrl, '_blank');
                         }

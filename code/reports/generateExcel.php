@@ -35,7 +35,6 @@ try {
 
     // Definir las cabeceras reales según la estructura de la tabla personas y los datos solicitados
     $headers = [
-        'ID PERSONA',
         'CÉDULA',
         'TIPO IDENTIFICACIÓN',
         'NOMBRES',
@@ -56,17 +55,14 @@ try {
         'GRUPO ÉTNICO',
         'TIPO SALUD',
         'NIVEL EDUCATIVO',
-        'FECHA ALTA',
-        'ID GRUPO',
-        'ID CENTRO',
-        'ID POLÍTICA PÚBLICA',
-        'ESTADO PERSONA',
-        'ID USUARIO',
+        'GRUPO',
+        'POLÍTICA PÚBLICA',
+        'RESPONSABLE',
         'ZONA PERSONA',
         'DIRECCIÓN',
         'CORREO',
-        'ID BARRIO',
-        'ID COMUNA',
+        'BARRIO',
+        'COMUNA',
         'EPS',
         'PESO',
         'TALLA',
@@ -77,9 +73,7 @@ try {
         'CONVIVENCIA ACTUAL',
         'RESULTADO ACTIVIDAD',
         'REMISIÓN',
-        'CORREO PERSONA',
         'TELÉFONO REFERENCIA PERSONA',
-        'DIRECCIÓN PERSONA',
         'CONDICIÓN OCUPACIÓN',
         'CONDICIÓN COMPONENTE',
         // Datos de movimiento y cálculos
@@ -131,10 +125,17 @@ try {
         SELECT 
             p.*,
             g.descripcion_grupo as centro_vida,
-            pol.descripcion_politica,
             b.nombre_bar as barrio_nombre,
             c.nombre_com as comuna_nombre,
-            
+            u.nombre as nombre_usuario,
+
+            -- Descripción de la política pública del último movimiento
+            (SELECT pol.descripcion_politica
+             FROM movimiento_persona mp
+             LEFT JOIN politicas_publicas pol ON mp.id_politica_publica = pol.id_politica
+             WHERE mp.cedula_persona = p.cedula_persona
+             ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+             LIMIT 1) AS descripcion_politica,
             -- Último estado/condición del movimiento
             (SELECT cc.descripcion_condicion 
              FROM movimiento_persona mp 
@@ -248,9 +249,9 @@ try {
             
         FROM personas p
         LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
-        LEFT JOIN politicas_publicas pol ON p.id_politica_publica = pol.id_politica
         LEFT JOIN barrios b ON p.id_barrio_persona = b.id_bar
         LEFT JOIN comunas c ON p.id_comuna_persona = c.id_com
+        LEFT JOIN usuarios u ON p.id_usuario = u.id
         WHERE p.estado_persona = 1 
         ORDER BY p.apellidos_persona ASC, p.nombres_persona ASC
     ";
@@ -312,7 +313,10 @@ try {
             $activo_hasta = $row['ultimo_centro_traslado'] ? 'Trasladado a: ' . $row['ultimo_centro_traslado'] : 'Traslado sin destino';
         } elseif ($estado_actual == 'RETIRADO VOLUNTARIO') {
             $activo_hasta = $fecha_ultimo_estado ?: 'No registrada';
-        } else {
+        } elseif($estado_actual == 'CPSAM EVADADIDO') {
+            $activo_hasta = $fecha_ultimo_estado ?: 'No registrada';
+        }
+        else {
             $activo_hasta = 'N/A';
         }
 
@@ -336,7 +340,6 @@ try {
 
         // Escribir datos en las celdas
         $data = [
-            $row['id_persona'] ?? '',
             $row['cedula_persona'] ?? '',
             $row['tipo_identificacion'] ?? '',
             $row['nombres_persona'] ?? '',
@@ -357,17 +360,14 @@ try {
             $row['grupo_etnico'] ?? '',
             $row['tipo_salud'] ?? '',
             $row['nivel_educativo'] ?? '',
-            $row['fecha_alta_persona'] ?? '',
-            $row['id_grupo'] ?? '',
-            $row['id_centro'] ?? '',
-            $row['id_politica_publica'] ?? '',
-            $row['estado_persona'] ?? '',
-            $row['id_usuario'] ?? '',
+            $row['centro_vida'] ?? '',
+            $row['descripcion_politica'] ?? '',
+            $row['nombre_usuario'] ?? '',
             $row['zona_persona'] ?? '',
-            $row['direccion'] ?? '',
-            $row['correo'] ?? '',
-            $row['id_barrio_persona'] ?? '',
-            $row['id_comuna_persona'] ?? '',
+            $row['direccion_persona'] ?? '',
+            $row['correo_persona'] ?? '',
+            $row['barrio_nombre'] ?? '',
+            $row['comuna_nombre'] ?? '',
             $row['eps'] ?? '',
             $row['peso'] ?? '',
             $row['talla'] ?? '',
@@ -378,9 +378,7 @@ try {
             $row['convivencia_actual'] ?? '',
             $row['resultado_actividad'] ?? '',
             $row['remision'] ?? '',
-            $row['correo_persona'] ?? '',
             $row['telefono_referencia_persona'] ?? '',
-            $row['direccion_persona'] ?? '',
             $row['condicion_ocupacion'] ?? '',
             $row['condicion_componente'] ?? '',
             // Datos de movimiento y cálculos
@@ -426,9 +424,10 @@ try {
     }
 
     // Configurar anchos de columna automáticamente
+    // Configurar ancho fijo de todas las columnas a 30
     for ($colIdx = 1; $colIdx <= count($headers); $colIdx++) {
         $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
-        $sheet->getColumnDimension($col)->setAutoSize(true);
+        $sheet->getColumnDimension($col)->setWidth(30);
     }
 
     // Configurar altura mínima de filas
