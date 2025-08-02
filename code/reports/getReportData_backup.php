@@ -18,7 +18,7 @@ if ($mysqli->connect_error) {
 }
 
 try {
-    // Consulta mejorada para obtener todos los campos de personas y movimientos (consulta plana)
+    // Consulta mejorada para obtener todos los campos de personas y movimientos
     $query = "
         SELECT 
             p.*,
@@ -26,43 +26,55 @@ try {
             pol.descripcion_politica,
             b.nombre_bar as barrio_nombre,
             c.nombre_com as comuna_nombre,
+             
+            -- Estado actual basado en el último movimiento
             (SELECT cc.descripcion_condicion 
              FROM movimiento_persona mp 
              JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
              WHERE mp.cedula_persona = p.cedula_persona 
              ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
              LIMIT 1) AS ultimo_estado_movimiento,
+             
+            -- Fecha del último movimiento
             (SELECT mp.fecha_movimiento 
              FROM movimiento_persona mp 
              WHERE mp.cedula_persona = p.cedula_persona 
              ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
              LIMIT 1) AS fecha_ultimo_movimiento,
+             
+            -- Datos del último movimiento (meta, actividad, acción, departamento)
             (SELECT m.descripcion_meta 
              FROM movimiento_persona mp 
              LEFT JOIN metas m ON mp.id_meta = m.id_meta
              WHERE mp.cedula_persona = p.cedula_persona 
              ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
              LIMIT 1) AS ultima_meta,
+             
             (SELECT a.descripcion_actividad 
              FROM movimiento_persona mp 
              LEFT JOIN actividades a ON mp.id_actividad = a.id_actividad
              WHERE mp.cedula_persona = p.cedula_persona 
              ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
              LIMIT 1) AS ultima_actividad,
+             
             (SELECT ac.descripcion_accion 
              FROM movimiento_persona mp 
              LEFT JOIN acciones ac ON mp.id_accion = ac.id_accion
              WHERE mp.cedula_persona = p.cedula_persona 
              ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
              LIMIT 1) AS ultima_accion,
+             
             (SELECT mp.departamento_procedencia 
              FROM movimiento_persona mp 
              WHERE mp.cedula_persona = p.cedula_persona 
              ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
              LIMIT 1) AS ultimo_departamento_procedencia,
+             
+            -- Cálculo de días activos basado en fecha_alta_persona y último movimiento según estado
             CASE 
                 WHEN p.fecha_alta_persona IS NOT NULL AND p.fecha_alta_persona != '0000-00-00' THEN
                     CASE
+                        -- Si tiene un último movimiento de fallecimiento, evasión o retiro, calcular hasta esa fecha
                         WHEN (SELECT cc.descripcion_condicion 
                               FROM movimiento_persona mp 
                               JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
@@ -92,16 +104,21 @@ try {
                                      WHERE mp.cedula_persona = p.cedula_persona 
                                      ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
                                      LIMIT 1), p.fecha_alta_persona)
+                        -- Si está activo o trasladado, calcular hasta hoy
                         ELSE DATEDIFF(CURDATE(), p.fecha_alta_persona)
                     END
                 ELSE NULL
             END AS dias_activos,
+             
+            -- Traslados en el año
             (SELECT COUNT(*)
              FROM movimiento_persona mp2
              JOIN condiciones_componente cc2 ON mp2.id_condicion = cc2.id_condicion
              WHERE mp2.cedula_persona = p.cedula_persona
              AND cc2.descripcion_condicion LIKE '%TRASLADADO%'
-             AND YEAR(mp2.fecha_movimiento) = " . intval($year) . ") AS traslados_en_year,
+             AND YEAR(mp2.fecha_movimiento) = ?) AS traslados_en_year,
+             
+            -- Último centro de traslado
             (SELECT g2.descripcion_grupo
              FROM movimiento_persona mp3
              JOIN condiciones_componente cc3 ON mp3.id_condicion = cc3.id_condicion
@@ -110,15 +127,20 @@ try {
              AND cc3.descripcion_condicion LIKE '%TRASLADADO%'
              ORDER BY mp3.fecha_movimiento DESC
              LIMIT 1) AS ultimo_centro_traslado,
+             
+            -- Total de movimientos en el año
             (SELECT COUNT(*)
              FROM movimiento_persona mp4
              WHERE mp4.cedula_persona = p.cedula_persona
-             AND YEAR(mp4.fecha_movimiento) = " . intval($year) . ") AS movimientos_en_year,
+             AND YEAR(mp4.fecha_movimiento) = ?) AS movimientos_en_year,
+             
+            -- Edad calculada
             CASE 
                 WHEN p.fecha_nacimiento IS NOT NULL AND p.fecha_nacimiento != '0000-00-00' 
                 THEN TIMESTAMPDIFF(YEAR, p.fecha_nacimiento, CURDATE())
                 ELSE NULL 
             END AS edad_actual
+            
         FROM personas p
         LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
         LEFT JOIN politicas_publicas pol ON p.id_politica_publica = pol.id_politica
@@ -127,70 +149,62 @@ try {
         WHERE p.estado_persona = 1 
         ORDER BY p.apellidos_persona ASC, p.nombres_persona ASC
     ";
-    $result = $mysqli->query($query);
-
+    
+    $stmt = $mysqli->prepare($query);
+    $stmt->bind_param("ii", $year, $year);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
     $data = [];
-
+    
     while ($row = $result->fetch_assoc()) {
         // Determinar el estado actual basado en el último movimiento
         $estado_actual = 'ACTIVO'; // Estado por defecto
-
+        
         if ($row['ultimo_estado_movimiento']) {
             $ultimo_estado = strtoupper($row['ultimo_estado_movimiento']);
-
+            
             // Mapear estados según condiciones - mejorado para capturar más casos
-            if (
-                strpos($ultimo_estado, 'EVADIDO') !== false ||
+            if (strpos($ultimo_estado, 'EVADIDO') !== false || 
                 strpos($ultimo_estado, 'EVASION') !== false ||
-                strpos($ultimo_estado, 'FUGA') !== false
-            ) {
+                strpos($ultimo_estado, 'FUGA') !== false) {
                 $estado_actual = 'EVADIDO';
-            } elseif (
-                strpos($ultimo_estado, 'FALLECIDO') !== false ||
-                strpos($ultimo_estado, 'MUERTE') !== false ||
-                strpos($ultimo_estado, 'DEFUNCION') !== false
-            ) {
+            } elseif (strpos($ultimo_estado, 'FALLECIDO') !== false || 
+                      strpos($ultimo_estado, 'MUERTE') !== false ||
+                      strpos($ultimo_estado, 'DEFUNCION') !== false) {
                 $estado_actual = 'FALLECIDO';
-            } elseif (
-                strpos($ultimo_estado, 'RETIRADO') !== false ||
-                strpos($ultimo_estado, 'RETIRO') !== false ||
-                strpos($ultimo_estado, 'SALIDA') !== false
-            ) {
+            } elseif (strpos($ultimo_estado, 'RETIRADO') !== false || 
+                      strpos($ultimo_estado, 'RETIRO') !== false ||
+                      strpos($ultimo_estado, 'SALIDA') !== false) {
                 $estado_actual = 'RETIRADO VOLUNTARIO';
-            } elseif (
-                strpos($ultimo_estado, 'TRASLADADO') !== false ||
-                strpos($ultimo_estado, 'TRASLADO') !== false
-            ) {
+            } elseif (strpos($ultimo_estado, 'TRASLADADO') !== false || 
+                      strpos($ultimo_estado, 'TRASLADO') !== false) {
                 $estado_actual = 'TRASLADADO';
-            } elseif (
-                strpos($ultimo_estado, 'SUSPENDIDO') !== false ||
-                strpos($ultimo_estado, 'SUSPENSION') !== false
-            ) {
+            } elseif (strpos($ultimo_estado, 'SUSPENDIDO') !== false || 
+                      strpos($ultimo_estado, 'SUSPENSION') !== false) {
                 $estado_actual = 'SUSPENDIDO';
-            } elseif (
-                strpos($ultimo_estado, 'ACTIVO') !== false ||
-                strpos($ultimo_estado, 'INGRESO') !== false ||
-                strpos($ultimo_estado, 'ACTIVACION') !== false
-            ) {
+            } elseif (strpos($ultimo_estado, 'ACTIVO') !== false || 
+                      strpos($ultimo_estado, 'INGRESO') !== false ||
+                      strpos($ultimo_estado, 'ACTIVACION') !== false) {
                 $estado_actual = 'ACTIVO';
             } else {
                 // Si no coincide con ningún patrón conocido, usar el estado original
                 $estado_actual = $ultimo_estado;
             }
         }
-
+        
         // Formatear fecha de nacimiento
         $fecha_nacimiento_formatted = '';
         if ($row['fecha_nacimiento'] && $row['fecha_nacimiento'] != '0000-00-00') {
             $fecha_nacimiento_formatted = date('d/m/Y', strtotime($row['fecha_nacimiento']));
         }
-
+        
         // Formatear fecha "Activo Desde" (usar fecha_alta_persona)
         $activo_desde_formatted = 'No registrada';
         if ($row['fecha_alta_persona'] && $row['fecha_alta_persona'] != '0000-00-00') {
             $activo_desde_formatted = date('d/m/Y', strtotime($row['fecha_alta_persona']));
         }
-
+        
         // Formatear fecha del último estado
         $fecha_ultimo_estado_formatted = '';
         if ($row['fecha_ultimo_movimiento']) {
@@ -215,7 +229,7 @@ try {
 
         // Obtener programas de la persona - verificar si la tabla existe
         $programas = 'Sin programa';
-
+        
         // Verificar si la tabla persona_programa existe
         $table_check = $mysqli->query("SHOW TABLES LIKE 'persona_programa'");
         if ($table_check && $table_check->num_rows > 0) {
@@ -233,94 +247,95 @@ try {
             // Si no existe la tabla, usar el centro de vida como programa
             $programas = $row['centro_vida'] ?: 'Sin programa';
         }
-
+        
         $persona = [
             // Campos básicos de identificación
-            'cedula_persona' => $row['cedula_persona'] ?? '',
-            'nombres_persona' => $row['nombres_persona'] ?? '',
-            'apellidos_persona' => $row['apellidos_persona'] ?? '',
-            'genero_persona' => $row['genero_persona'] ?? '',
+            'cedula_persona' => $row['cedula_persona'],
+            'nombres_persona' => $row['nombres_persona'],
+            'apellidos_persona' => $row['apellidos_persona'],
+            'genero_persona' => $row['genero_persona'],
             'fecha_nacimiento' => $fecha_nacimiento_formatted,
-            'edad_actual' => $row['edad_actual'] ?? '',
-
+            'edad_actual' => $row['edad_actual'],
+            
             // Información de contacto
-            'telefono_persona' => $row['telefono_persona'] ?? '',
-            'telefono_referencia_persona' => $row['telefono_referencia_persona'] ?? '',
-            'correo_persona' => $row['correo_persona'] ?? '',
-            'referencia_persona' => $row['referencia_persona'] ?? '',
-
+            'telefono_persona' => $row['telefono_persona'],
+            'telefono_referencia_persona' => $row['telefono_referencia_persona'],
+            'correo_persona' => $row['correo_persona'],
+            'referencia_persona' => $row['referencia_persona'],
+            
             // Información demográfica
-            'estado_civil_persona' => $row['estado_civil_persona'] ?? '',
-            'nacionalidad_persona' => $row['nacionalidad_persona'] ?? '',
-            'pais_procedencia_persona' => $row['pais_procedencia_persona'] ?? '',
-            'departamento_procedencia_persona' => $row['departamento_procedencia_persona'] ?? '',
-            'municipio_procedencia_persona' => $row['municipio_procedencia_persona'] ?? '',
-
+            'estado_civil_persona' => $row['estado_civil_persona'],
+            'nacionalidad_persona' => $row['nacionalidad_persona'],
+            'pais_procedencia_persona' => $row['pais_procedencia_persona'],
+            'departamento_procedencia_persona' => $row['departamento_procedencia_persona'],
+            'municipio_procedencia_persona' => $row['municipio_procedencia_persona'],
+            
             // Ubicación actual
-            'direccion_persona' => $row['direccion_persona'] ?? '',
-            'barrio_nombre' => $row['barrio_nombre'] ?? 'No asignado',
-            'comuna_nombre' => $row['comuna_nombre'] ?? 'No asignada',
-
+            'direccion_persona' => $row['direccion_persona'],
+            'barrio_nombre' => $row['barrio_nombre'] ?: 'No asignado',
+            'comuna_nombre' => $row['comuna_nombre'] ?: 'No asignada',
+            
             // Información educativa y laboral
-            'nivel_educativo_persona' => $row['nivel_educativo_persona'] ?? '',
-            'profesion_persona' => $row['profesion_persona'] ?? '',
-            'ocupacion_persona' => $row['ocupacion_persona'] ?? '',
-
+            'nivel_educativo_persona' => $row['nivel_educativo_persona'],
+            'profesion_persona' => $row['profesion_persona'],
+            'ocupacion_persona' => $row['ocupacion_persona'],
+            
             // Información familiar
-            'nombre_padre' => $row['nombre_padre'] ?? '',
-            'nombre_madre' => $row['nombre_madre'] ?? '',
-            'nombre_conyuge' => $row['nombre_conyuge'] ?? '',
-            'numero_hijos' => $row['numero_hijos'] ?? '',
-
+            'nombre_padre' => $row['nombre_padre'],
+            'nombre_madre' => $row['nombre_madre'],
+            'nombre_conyuge' => $row['nombre_conyuge'],
+            'numero_hijos' => $row['numero_hijos'],
+            
             // Información médica y social
-            'eps_persona' => $row['eps_persona'] ?? '',
-            'regimen_salud_persona' => $row['regimen_salud_persona'] ?? '',
-            'discapacidad_persona' => $row['discapacidad_persona'] ?? '',
-            'tipo_discapacidad_persona' => $row['tipo_discapacidad_persona'] ?? '',
-            'grupo_poblacional_persona' => $row['grupo_poblacional_persona'] ?? '',
-            'situacion_juridica_persona' => $row['situacion_juridica_persona'] ?? '',
-
+            'eps_persona' => $row['eps_persona'],
+            'regimen_salud_persona' => $row['regimen_salud_persona'],
+            'discapacidad_persona' => $row['discapacidad_persona'],
+            'tipo_discapacidad_persona' => $row['tipo_discapacidad_persona'],
+            'grupo_poblacional_persona' => $row['grupo_poblacional_persona'],
+            'situacion_juridica_persona' => $row['situacion_juridica_persona'],
+            
             // Fechas del sistema
             'fecha_registro' => $activo_desde_formatted, // "Activo Desde"
-            'dias_activos' => $row['dias_activos'] ?? 'N/A',
-
+            'dias_activos' => $row['dias_activos'] ?: 'N/A',
+            
             // Información institucional
-            'centro_vida' => $row['centro_vida'] ?? 'No asignado',
-            'descripcion_politica' => $row['descripcion_politica'] ?? 'No asignada',
+            'centro_vida' => $row['centro_vida'] ?: 'No asignado',
+            'descripcion_politica' => $row['descripcion_politica'] ?: 'No asignada',
             'programas' => $programas,
-
+            
             // Estado y movimientos
             'estado_actual' => $estado_actual, // Estado real basado en movimientos
             'fecha_ultimo_estado' => $fecha_ultimo_estado_formatted,
             'activo_hasta' => $activo_hasta, // Nueva columna "ACTIVO HASTA"
-
+            
             // Datos de movimientos recientes
-            'ultima_meta' => $row['ultima_meta'] ?? 'No registrada',
-            'ultima_actividad' => $row['ultima_actividad'] ?? 'No registrada',
-            'ultima_accion' => $row['ultima_accion'] ?? 'No registrada',
-            'ultimo_departamento_procedencia' => $row['ultimo_departamento_procedencia'] ?? 'No registrado',
-
+            'ultima_meta' => $row['ultima_meta'] ?: 'No registrada',
+            'ultima_actividad' => $row['ultima_actividad'] ?: 'No registrada',
+            'ultima_accion' => $row['ultima_accion'] ?: 'No registrada',
+            'ultimo_departamento_procedencia' => $row['ultimo_departamento_procedencia'] ?: 'No registrado',
+            
             // Estadísticas del año
-            'traslados_en_year' => $row['traslados_en_year'] ?? 0,
-            'ultimo_centro_traslado' => $row['ultimo_centro_traslado'] ?? 'N/A',
-            'movimientos_en_year' => $row['movimientos_en_year'] ?? 0,
-
+            'traslados_en_year' => $row['traslados_en_year'],
+            'ultimo_centro_traslado' => $row['ultimo_centro_traslado'] ?: 'N/A',
+            'movimientos_en_year' => $row['movimientos_en_year'],
+            
             // Información adicional si existe
             'observaciones_persona' => $row['observaciones_persona'] ?? '',
             'documentos_persona' => $row['documentos_persona'] ?? '',
             'ingresos_economicos_persona' => $row['ingresos_economicos_persona'] ?? '',
             'sisben_persona' => $row['sisben_persona'] ?? ''
         ];
-
+        
         $data[] = $persona;
     }
-
+    
     echo json_encode([
         'success' => true,
         'year' => $year,
         'total_registros' => count($data),
         'data' => $data
     ]);
+    
 } catch (Exception $e) {
     $errorMsg = $e->getMessage();
     // Si hay error de MySQL, mostrarlo también
@@ -331,3 +346,4 @@ try {
 }
 
 $mysqli->close();
+?>

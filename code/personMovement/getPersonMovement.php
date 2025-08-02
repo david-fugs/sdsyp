@@ -22,11 +22,16 @@ if (!empty($_GET['condicion'])) {
 
 // Consulta SQL para obtener los datos
 $query = " SELECT mp.id_movimiento_persona,c.id_condicion,p.cedula_persona,p.nombres_persona,p.apellidos_persona,c.descripcion_condicion, 
-           mp.fecha_movimiento,mp.observacion_movimiento,mp.id_centro_vida_traslado,g.descripcion_grupo as centro_vida_traslado
+           mp.fecha_movimiento,mp.observacion_movimiento,mp.id_centro_vida_traslado,g.descripcion_grupo as centro_vida_traslado,
+           mp.id_meta, mp.id_actividad, mp.id_accion, mp.departamento_procedencia,
+           m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion
            FROM personas as p
         JOIN movimiento_persona as mp ON p.cedula_persona = mp.cedula_persona
         JOIN condiciones_componente as c ON mp.id_condicion = c.id_condicion
         LEFT JOIN grupos g ON mp.id_centro_vida_traslado = g.id_grupo
+        LEFT JOIN metas m ON mp.id_meta = m.id_meta
+        LEFT JOIN actividades a ON mp.id_actividad = a.id_actividad
+        LEFT JOIN acciones ac ON mp.id_accion = ac.id_accion
         $where
         ORDER BY mp.fecha_movimiento DESC
 ";
@@ -41,6 +46,8 @@ if ($result->num_rows > 0) {
         echo "<td>" . $row['nombres_persona'] . "</td>";
         echo "<td>" . $row['apellidos_persona'] . "</td>";
         echo "<td>" . $row['descripcion_condicion'] . "</td>";
+        echo "<td>" . ($row['descripcion_meta'] ? $row['descripcion_meta'] : 'N/A') . "</td>";
+        echo "<td>" . ($row['departamento_procedencia'] ? $row['departamento_procedencia'] : 'N/A') . "</td>";
         echo "<td>" . ($row['centro_vida_traslado'] ? $row['centro_vida_traslado'] : 'N/A') . "</td>";
         echo "<td>" . $row['fecha_movimiento'] . "</td>";
         echo "<td>" . $row['observacion_movimiento'] . "</td>";
@@ -59,7 +66,11 @@ if ($result->num_rows > 0) {
                         data-observacion_movimiento="' . $row['observacion_movimiento'] . '"
                         data-condicion="' . $row['id_condicion'] . '"
                         data-centro_vida_traslado="' . $row['id_centro_vida_traslado'] . '"
-                        data-id_movimiento_persona="' . $row['id_movimiento_persona'] . '">
+                        data-id_movimiento_persona="' . $row['id_movimiento_persona'] . '"
+                        data-meta="' . ($row['id_meta'] ?? '') . '"
+                        data-actividad="' . ($row['id_actividad'] ?? '') . '"
+                        data-accion="' . ($row['id_accion'] ?? '') . '"
+                        data-departamento_procedencia="' . ($row['departamento_procedencia'] ?? '') . '">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
                     <a href="?delete=' . $row['cedula_persona'] . '" 
@@ -73,7 +84,7 @@ if ($result->num_rows > 0) {
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='8' class='text-center text-muted'>
+    echo "<tr><td colspan='10' class='text-center text-muted'>
             <i class='bi bi-search'></i><br>
             No se encontraron registros que coincidan con los filtros aplicados.
           </td></tr>";

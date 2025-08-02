@@ -1073,8 +1073,24 @@ function deleteMember($cedula_persona)
                                 <input type="text" class="form-control" id="edit-telefono" name="telefono_persona">
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label for="edit-telefono-referencia" class="form-label">Teléfono Referencia</label>
+                                <input type="text" class="form-control" id="edit-telefono-referencia" name="telefono_referencia_persona">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label for="edit-referencia" class="form-label">Referencia</label>
                                 <input type="text" class="form-control" id="edit-referencia" name="referencia_persona">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-correo" class="form-label">Correo</label>
+                                <input type="text" class="form-control" id="edit-correo" name="correo_persona">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="edit-direccion" class="form-label">Dirección</label>
+                                <input type="text" class="form-control" id="edit-direccion" name="direccion_persona">
                             </div>
                         </div>
                         <!-- Fila nueva: Barrio, Comuna y Zona (Edición) -->
@@ -1097,8 +1113,52 @@ function deleteMember($cedula_persona)
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
+                                <label for="edit-condicion-ocupacion" class="form-label">Condición Ocupación</label>
+                                <select class="form-select" id="edit-condicion-ocupacion" name="condicion_ocupacion">
+                                    <option value="" selected disabled>¿Condición Ocupación?</option>
+                                    <option value="Ama de Casa">Ama de Casa</option>
+                                    <option value="Estudiante">Estudiante</option>
+                                    <option value="Empleado">Empleado</option>
+                                    <option value="Desempleado">Desempleado</option>
+                                    <option value="Independiente">Independiente</option>
+                                    <option value="Pensionado">Pensionado</option>
+                                    <option value="Buscando Empleo">Buscando Empleo</option>
+                                    <option value="Ninguno">Ninguno</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-condicion-componente" class="form-label">Condición Componente</label>
+                                <select class="form-select" id="edit-condicion-componente" name="condicion_componente">
+                                    <option value="" selected disabled>Condición Componente...</option>
+                                    <option value="C.V Beneficiario Activo">C.V Beneficiario Activo</option>
+                                    <option value="C.V Beneficiario Inactivo">C.V Beneficiario Inactivo</option>
+                                    <option value="CPSAM Activo">CPSAM Activo</option>
+                                    <option value="CPSAM Evadido">CPSAM Evadido</option>
+                                    <option value="CPSAM Fallecido">CPSAM Fallecido</option>
+                                    <option value="CPSAM Retiro Voluntario">CPSAM Retiro Voluntario</option>
+                                    <option value="CPSAM Trasladado">CPSAM Trasladado</option>
+                                    <option value="C.M Retiro Definitivo">C.M Retiro Definitivo</option>
+                                    <option value="C.M Activo">C.M Activo</option>
+                                    <option value="C.M BDUA">C.M BDUA</option>
+                                    <option value="C.M Bloqueo Registraduria">C.M Bloqueo Registraduria</option>
+                                    <option value="C.M Duplicidad Documento">C.M Duplicidad Documento</option>
+                                    <option value="C.M Ejercicio Mendicidad Comprobada">C.M Ejercicio Mendicidad Comprobada</option>
+                                    <option value="C.M En lista de Espera">C.M En lista de Espera</option>
+                                    <option value="C.M Fallecido">C.M Fallecido</option>
+                                    <option value="C.M Fallecido sin Certificado">C.M Fallecido sin Certificado</option>
+                                    <option value="C.M Familias en Accion">C.M Familias en Accion</option>
+                                    <option value="C.M Fuera de la Ciudad">C.M Fuera de la Ciudad</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label for="edit-fecha-nacimiento" class="form-label">Fecha de Nacimiento</label>
                                 <input type="date" class="form-control" id="edit-fecha-nacimiento" name="fecha_nacimiento">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-activo-desde" class="form-label">Activo Desde</label>
+                                <input type="date" class="form-control" id="edit-activo-desde" name="activo_desde">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="edit-grupo" class="form-label">Centro Vida / CPSAM</label>
@@ -1552,7 +1612,16 @@ function deleteMember($cedula_persona)
                             document.getElementById("edit-apellido").value = button.getAttribute("data-apellidos");
                         }
                         document.getElementById("edit-telefono").value = button.getAttribute("data-telefono");
+                        if (document.getElementById("edit-telefono-referencia")) {
+                            document.getElementById("edit-telefono-referencia").value = button.getAttribute("data-telefono-referencia");
+                        }
                         document.getElementById("edit-referencia").value = button.getAttribute("data-referencia");
+                        if (document.getElementById("edit-correo")) {
+                            document.getElementById("edit-correo").value = button.getAttribute("data-correo");
+                        }
+                        if (document.getElementById("edit-direccion")) {
+                            document.getElementById("edit-direccion").value = button.getAttribute("data-direccion");
+                        }
                         document.getElementById("edit-fecha-nacimiento").value = button.getAttribute("data-fecha-nacimiento");
                         document.getElementById("cedula_original").value = button.getAttribute("data-cedula");
                         document.getElementById("edit-genero").value = button.getAttribute("data-genero");
@@ -1625,9 +1694,50 @@ function deleteMember($cedula_persona)
                         if (document.getElementById("edit-nivel-educativo")) {
                             document.getElementById("edit-nivel-educativo").value = button.getAttribute("data-nivel-educativo");
                         }
+                        if (document.getElementById("edit-condicion-ocupacion")) {
+                            document.getElementById("edit-condicion-ocupacion").value = button.getAttribute("data-condicion-ocupacion");
+                        }
+                        if (document.getElementById("edit-condicion-componente")) {
+                            document.getElementById("edit-condicion-componente").value = button.getAttribute("data-condicion-componente");
+                        }
+                        if (document.getElementById("edit-activo-desde")) {
+                            document.getElementById("edit-activo-desde").value = button.getAttribute("data-activo-desde");
+                        }
                         // Precargar grupo sisben
                         if (document.getElementById("edit-grupo-sisben")) {
                             document.getElementById("edit-grupo-sisben").value = button.getAttribute("data-grupo-sisben");
+                        }
+                        
+                        // Precargar campos adicionales médicos
+                        if (document.getElementById("edit-eps")) {
+                            document.getElementById("edit-eps").value = button.getAttribute("data-eps");
+                        }
+                        if (document.getElementById("edit-peso")) {
+                            document.getElementById("edit-peso").value = button.getAttribute("data-peso");
+                        }
+                        if (document.getElementById("edit-talla")) {
+                            document.getElementById("edit-talla").value = button.getAttribute("data-talla");
+                        }
+                        if (document.getElementById("edit-patologias")) {
+                            document.getElementById("edit-patologias").value = button.getAttribute("data-patologias");
+                        }
+                        if (document.getElementById("edit-factores-riesgo")) {
+                            document.getElementById("edit-factores-riesgo").value = button.getAttribute("data-factores-riesgo");
+                        }
+                        if (document.getElementById("edit-factores-preventivos")) {
+                            document.getElementById("edit-factores-preventivos").value = button.getAttribute("data-factores-preventivos");
+                        }
+                        if (document.getElementById("edit-ingresos-economicos")) {
+                            document.getElementById("edit-ingresos-economicos").value = button.getAttribute("data-ingresos-economicos");
+                        }
+                        if (document.getElementById("edit-convivencia-actual")) {
+                            document.getElementById("edit-convivencia-actual").value = button.getAttribute("data-convivencia-actual");
+                        }
+                        if (document.getElementById("edit-resultado-actividad")) {
+                            document.getElementById("edit-resultado-actividad").value = button.getAttribute("data-resultado-actividad");
+                        }
+                        if (document.getElementById("edit-remision")) {
+                            document.getElementById("edit-remision").value = button.getAttribute("data-remision");
                         }
                         // Precargar persona discapacidad
                         if (document.getElementById("edit-persona-discapacidad")) {

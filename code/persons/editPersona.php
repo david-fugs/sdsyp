@@ -21,7 +21,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $nombres_persona = $_POST['nombres_persona'];
     $apellidos_persona = $_POST['apellidos_persona'];
     $telefono_persona = $_POST['telefono_persona'];
+    $telefono_referencia_persona = $_POST['telefono_referencia_persona'] ?? '';
     $referencia_persona = $_POST['referencia_persona'];
+    $correo_persona = $_POST['correo_persona'] ?? '';
+    $direccion_persona = $_POST['direccion_persona'] ?? '';
     $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? null;
     $genero_persona = $_POST['genero_persona'];
     $grupo_sisben = $_POST['grupo_sisben'] ?? '';
@@ -35,6 +38,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $grupo_etnico = $_POST['grupo_etnico'] ?? '';
     $tipo_salud = $_POST['tipo_salud'] ?? '';
     $nivel_educativo = $_POST['nivel_educativo'] ?? '';
+    $condicion_ocupacion = $_POST['condicion_ocupacion'] ?? '';
+    $condicion_componente = $_POST['condicion_componente'] ?? '';
+    $activo_desde = $_POST['activo_desde'] ?? null;
     $programa = $_POST['programa'];
     $cedula_original = $_POST['cedula_original'];
     $id_grupo = $_POST['id_grupo'] ?? '';
@@ -51,7 +57,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         nombres_persona='$nombres_persona',
         apellidos_persona='$apellidos_persona',
         telefono_persona='$telefono_persona',
+        telefono_referencia_persona='$telefono_referencia_persona',
         referencia_persona='$referencia_persona',
+        correo_persona='$correo_persona',
+        direccion_persona='$direccion_persona',
         fecha_nacimiento='$fecha_nacimiento',
         genero_persona='$genero_persona',
         grupo_sisben='$grupo_sisben',
@@ -65,6 +74,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         grupo_etnico='$grupo_etnico',
         tipo_salud='$tipo_salud',
         nivel_educativo='$nivel_educativo',
+        condicion_ocupacion='$condicion_ocupacion',
+        condicion_componente='$condicion_componente',
+        activo_desde='$activo_desde',
         id_barrio_persona=" . ($id_barrio_persona !== null ? "'$id_barrio_persona'" : 'NULL') . ",
         id_comuna_persona=" . ($id_comuna_persona !== null ? "'$id_comuna_persona'" : 'NULL') . ",
         zona_persona='$zona_persona',

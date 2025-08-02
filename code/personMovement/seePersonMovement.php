@@ -142,6 +142,12 @@ if (!$result_grupos) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
+$metas = "SELECT * FROM metas ORDER BY descripcion_meta ASC";
+$result_metas = mysqli_query($mysqli, $metas);
+if (!$result_metas) {
+    die("Error en la consulta de metas: " . mysqli_error($mysqli));
+}
+
 if (isset($_GET['delete'])) {
     $cedula_persona = $_GET['delete'];
     deleteMember($cedula_persona);
@@ -239,6 +245,8 @@ function deleteMember($cedula_persona)
                             <th>Nombres</th>
                             <th>Apellidos</th>
                             <th>Condición</th>
+                            <th>Meta</th>
+                            <th>Departamento</th>
                             <th>Centro Vida Traslado</th>
                             <th>Fecha Movimiento</th>
                             <th>Observación</th>
@@ -252,7 +260,7 @@ function deleteMember($cedula_persona)
             </div>
         </div>
     </div>
-    <!-- Modal Add Person -->
+    <!-- Modal Add movimiento-->
     <div class="modal fade" id="modalNewPerson" tabindex="-1" aria-labelledby="modalNewPersonLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg"> <!-- Hacemos el modal más ancho -->
             <div class="modal-content">
@@ -282,6 +290,77 @@ function deleteMember($cedula_persona)
                                 <label class="" for="condicion">Condición</label>
                             </div>
                         </div>
+                        <!-- Fila 2: Meta, Actividad, Acción -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3 form-floating">
+                                <select class="form-select" id="meta" name="id_meta" required>
+                                    <option value="" selected>Seleccione Meta...</option>
+                                    <?php foreach ($result_metas as $meta) { ?>
+                                        <option value="<?= $meta['id_meta']; ?>"><?= $meta['descripcion_meta']; ?></option>
+                                    <?php } ?>
+                                </select>
+                                <label for="meta">Meta</label>
+                            </div>
+                            <div class="col-md-4 mb-3 form-floating">
+                                <select class="form-select" id="actividad" name="id_actividad" required disabled>
+                                    <option value="" selected>Seleccione Actividad...</option>
+                                </select>
+                                <label for="actividad">Actividad</label>
+                            </div>
+                            <div class="col-md-4 mb-3 form-floating">
+                                <select class="form-select" id="accion" name="id_accion" required disabled>
+                                    <option value="" selected>Seleccione Acción...</option>
+                                </select>
+                                <label for="accion">Acción</label>
+                            </div>
+                        </div>
+                        <!-- Fila 3: Departamento de Procedencia y Fecha -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="departamento_procedencia" name="departamento_procedencia" required>
+                                    <option value="" selected>Seleccione Departamento...</option>
+                                    <option value="Amazonas">Amazonas</option>
+                                    <option value="Antioquia">Antioquia</option>
+                                    <option value="Arauca">Arauca</option>
+                                    <option value="Atlántico">Atlántico</option>
+                                    <option value="Bolívar">Bolívar</option>
+                                    <option value="Boyacá">Boyacá</option>
+                                    <option value="Caldas">Caldas</option>
+                                    <option value="Caquetá">Caquetá</option>
+                                    <option value="Casanare">Casanare</option>
+                                    <option value="Cauca">Cauca</option>
+                                    <option value="Cesar">Cesar</option>
+                                    <option value="Chocó">Chocó</option>
+                                    <option value="Córdoba">Córdoba</option>
+                                    <option value="Cundinamarca">Cundinamarca</option>
+                                    <option value="Guainía">Guainía</option>
+                                    <option value="Guaviare">Guaviare</option>
+                                    <option value="Huila">Huila</option>
+                                    <option value="La Guajira">La Guajira</option>
+                                    <option value="Magdalena">Magdalena</option>
+                                    <option value="Meta">Meta</option>
+                                    <option value="Nariño">Nariño</option>
+                                    <option value="Norte de Santander">Norte de Santander</option>
+                                    <option value="Putumayo">Putumayo</option>
+                                    <option value="Quindío">Quindío</option>
+                                    <option value="Risaralda">Risaralda</option>
+                                    <option value="San Andrés y Providencia">San Andrés y Providencia</option>
+                                    <option value="Santander">Santander</option>
+                                    <option value="Sucre">Sucre</option>
+                                    <option value="Tolima">Tolima</option>
+                                    <option value="Valle del Cauca">Valle del Cauca</option>
+                                    <option value="Vaupés">Vaupés</option>
+                                    <option value="Vichada">Vichada</option>
+                                    <option value="Bogotá D.C.">Bogotá D.C.</option>
+                                </select>
+                                <label for="departamento_procedencia">Departamento de Procedencia</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="date" class="form-control" id="fecha_movimiento" name="fecha_movimiento" placeholder="Fecha Movimiento">
+                                <label for="fecha_movimiento">Fecha Movimiento</label>
+                            </div>
+                        </div>
+                        <!-- Fila 4: Centro Vida Traslado (oculto por defecto) -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating mt-1 d-none">
                                 <select class="form-select" id="grupo" name="id_centro_vida_traslado" disabled>
@@ -292,11 +371,8 @@ function deleteMember($cedula_persona)
                                 </select>
                                 <label class="" for="grupo">Centro Vida Traslado</label>
                             </div>
-                            <div class="col-md-6 mb-3 form-floating mt-2">
-                                <input type="date" class="form-control" id="fecha_movimiento" name="fecha_movimiento" placeholder="Fecha Movimiento">
-                                <label for="fecha_movimiento">Fecha Movimiento</label>
-                            </div>
                         </div>
+                        <!-- Fila 5: Observación -->
                         <div class="row">
                             <div class="col-md-12 mb-3 form-floating">
                                 <input type="text" class="form-control" id="observacion_movimiento" name="observacion_movimiento" placeholder="Observacion Movimiento">
@@ -350,6 +426,66 @@ function deleteMember($cedula_persona)
                                 <?php foreach ($result_condiciones as $condicion) { ?>
                                     <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
                                 <?php } ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-meta" class="form-label">Meta</label>
+                            <select class="form-select" id="edit-meta" name="id_meta">
+                                <option value="" selected>Seleccione Meta...</option>
+                                <?php foreach ($result_metas as $meta) { ?>
+                                    <option value="<?= $meta['id_meta']; ?>"><?= $meta['descripcion_meta']; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-actividad" class="form-label">Actividad</label>
+                            <select class="form-select" id="edit-actividad" name="id_actividad" disabled>
+                                <option value="" selected>Seleccione Actividad...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-accion" class="form-label">Acción</label>
+                            <select class="form-select" id="edit-accion" name="id_accion" disabled>
+                                <option value="" selected>Seleccione Acción...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-departamento-procedencia" class="form-label">Departamento de Procedencia</label>
+                            <select class="form-select" id="edit-departamento-procedencia" name="departamento_procedencia">
+                                <option value="" selected>Seleccione Departamento...</option>
+                                <option value="Amazonas">Amazonas</option>
+                                <option value="Antioquia">Antioquia</option>
+                                <option value="Arauca">Arauca</option>
+                                <option value="Atlántico">Atlántico</option>
+                                <option value="Bolívar">Bolívar</option>
+                                <option value="Boyacá">Boyacá</option>
+                                <option value="Caldas">Caldas</option>
+                                <option value="Caquetá">Caquetá</option>
+                                <option value="Casanare">Casanare</option>
+                                <option value="Cauca">Cauca</option>
+                                <option value="Cesar">Cesar</option>
+                                <option value="Chocó">Chocó</option>
+                                <option value="Córdoba">Córdoba</option>
+                                <option value="Cundinamarca">Cundinamarca</option>
+                                <option value="Guainía">Guainía</option>
+                                <option value="Guaviare">Guaviare</option>
+                                <option value="Huila">Huila</option>
+                                <option value="La Guajira">La Guajira</option>
+                                <option value="Magdalena">Magdalena</option>
+                                <option value="Meta">Meta</option>
+                                <option value="Nariño">Nariño</option>
+                                <option value="Norte de Santander">Norte de Santander</option>
+                                <option value="Putumayo">Putumayo</option>
+                                <option value="Quindío">Quindío</option>
+                                <option value="Risaralda">Risaralda</option>
+                                <option value="San Andrés y Providencia">San Andrés y Providencia</option>
+                                <option value="Santander">Santander</option>
+                                <option value="Sucre">Sucre</option>
+                                <option value="Tolima">Tolima</option>
+                                <option value="Valle del Cauca">Valle del Cauca</option>
+                                <option value="Vaupés">Vaupés</option>
+                                <option value="Vichada">Vichada</option>
+                                <option value="Bogotá D.C.">Bogotá D.C.</option>
                             </select>
                         </div>
                         <div class="mb-3 d-none" id="edit-centro-vida-container">
@@ -406,6 +542,49 @@ function deleteMember($cedula_persona)
             document.getElementById("edit-observacion").value = button.getAttribute("data-observacion_movimiento");
             document.getElementById("edit-centro-vida").value = button.getAttribute("data-centro_vida_traslado") || "";
             document.getElementById("id_movimiento_persona").value = button.getAttribute("data-id_movimiento_persona");
+            
+            // Prellenar nuevos campos
+            document.getElementById("edit-meta").value = button.getAttribute("data-meta") || "";
+            document.getElementById("edit-departamento-procedencia").value = button.getAttribute("data-departamento_procedencia") || "";
+            
+            // Cargar actividad y acción si existen
+            const idMeta = button.getAttribute("data-meta");
+            const idActividad = button.getAttribute("data-actividad");
+            const idAccion = button.getAttribute("data-accion");
+            
+            if (idMeta) {
+                // Cargar actividades para esta meta
+                $.ajax({
+                    url: 'getActividades.php',
+                    type: 'POST',
+                    data: { id_meta: idMeta },
+                    success: function(response) {
+                        $('#edit-actividad').empty().append('<option value="">Seleccione Actividad...</option>');
+                        $('#edit-actividad').append(response).prop('disabled', false);
+                        
+                        // Seleccionar la actividad guardada
+                        if (idActividad) {
+                            $('#edit-actividad').val(idActividad);
+                            
+                            // Cargar acciones para esta actividad
+                            $.ajax({
+                                url: 'getAcciones.php',
+                                type: 'POST',
+                                data: { id_actividad: idActividad },
+                                success: function(response) {
+                                    $('#edit-accion').empty().append('<option value="">Seleccione Acción...</option>');
+                                    $('#edit-accion').append(response).prop('disabled', false);
+                                    
+                                    // Seleccionar la acción guardada
+                                    if (idAccion) {
+                                        $('#edit-accion').val(idAccion);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
             
             // Trigger change en condición para mostrar/ocultar centro de vida
             $('#edit-condicion').trigger('change');
@@ -482,6 +661,116 @@ function deleteMember($cedula_persona)
 
         // Inicializar estado del campo grupo
         $('#condicion').trigger('change');
+
+        // Manejar selección de Meta para cargar Actividades
+        $('#meta').on('change', function() {
+            const idMeta = $(this).val();
+            
+            // Limpiar y deshabilitar campos dependientes
+            $('#actividad').empty().append('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
+            $('#accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+            
+            if (idMeta) {
+                $.ajax({
+                    url: 'getActividades.php',
+                    type: 'POST',
+                    data: { id_meta: idMeta },
+                    success: function(response) {
+                        $('#actividad').append(response).prop('disabled', false);
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al cargar las actividades',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            }
+        });
+
+        // Manejar selección de Actividad para cargar Acciones
+        $('#actividad').on('change', function() {
+            const idActividad = $(this).val();
+            
+            // Limpiar y deshabilitar campo de acciones
+            $('#accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+            
+            if (idActividad) {
+                $.ajax({
+                    url: 'getAcciones.php',
+                    type: 'POST',
+                    data: { id_actividad: idActividad },
+                    success: function(response) {
+                        $('#accion').append(response).prop('disabled', false);
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al cargar las acciones',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            }
+        });
+
+        // Manejar selección de Meta para cargar Actividades (Modal de Edición)
+        $('#edit-meta').on('change', function() {
+            const idMeta = $(this).val();
+            
+            // Limpiar y deshabilitar campos dependientes
+            $('#edit-actividad').empty().append('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
+            $('#edit-accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+            
+            if (idMeta) {
+                $.ajax({
+                    url: 'getActividades.php',
+                    type: 'POST',
+                    data: { id_meta: idMeta },
+                    success: function(response) {
+                        $('#edit-actividad').append(response).prop('disabled', false);
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al cargar las actividades',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            }
+        });
+
+        // Manejar selección de Actividad para cargar Acciones (Modal de Edición)
+        $('#edit-actividad').on('change', function() {
+            const idActividad = $(this).val();
+            
+            // Limpiar y deshabilitar campo de acciones
+            $('#edit-accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+            
+            if (idActividad) {
+                $.ajax({
+                    url: 'getAcciones.php',
+                    type: 'POST',
+                    data: { id_actividad: idActividad },
+                    success: function(response) {
+                        $('#edit-accion').append(response).prop('disabled', false);
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al cargar las acciones',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            }
+        });
 
         // Controlar habilitación del campo grupo según la condición en modal de edición
         $('#edit-condicion').on('change', function() {
@@ -689,10 +978,10 @@ function deleteMember($cedula_persona)
                 url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
             },
             columnDefs: [
-                { orderable: false, targets: [7] }, // Deshabilitar orden en la columna de acciones
-                { className: "text-center", targets: [0, 7] } // Centrar columna de ID y acciones
+                { orderable: false, targets: [9] }, // Deshabilitar orden en la columna de acciones (ahora es la columna 9)
+                { className: "text-center", targets: [0, 9] } // Centrar columna de ID y acciones
             ],
-            order: [[5, 'desc']], // Ordenar por fecha de movimiento (columna 5) descendente
+            order: [[7, 'desc']], // Ordenar por fecha de movimiento (ahora es la columna 7) descendente
             dom: 'frtip', // Solo mostrar filtro, tabla, información y paginación
             searching: false, // Deshabilitar búsqueda de DataTables (usamos filtros propios)
             info: true,

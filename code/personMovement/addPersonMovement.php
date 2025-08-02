@@ -11,6 +11,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id_centro_vida_traslado = isset($_POST['id_centro_vida_traslado']) ? $_POST['id_centro_vida_traslado'] : null;
     $fecha_movimiento = $_POST['fecha_movimiento'];
     $observacion_movimiento = $_POST['observacion_movimiento'];
+    
+    // Nuevos campos
+    $id_meta = $_POST['id_meta'];
+    $id_actividad = $_POST['id_actividad'];
+    $id_accion = $_POST['id_accion'];
+    $departamento_procedencia = $_POST['departamento_procedencia'];
 
     // Solo validar límite si se especificó un centro de vida para traslado
     if ($id_centro_vida_traslado) {
@@ -60,8 +66,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $mysqli->query($sql_update_persona);
     }
 
-    $sql_insert_movimiento = "INSERT INTO movimiento_persona (cedula_persona, id_condicion, id_centro_vida_traslado, fecha_movimiento, observacion_movimiento)
-    VALUES ('$cedula_persona', '$id_condicion', " . ($id_centro_vida_traslado ? "'$id_centro_vida_traslado'" : "0") . ", '$fecha_movimiento', '$observacion_movimiento')";
+    $sql_insert_movimiento = "INSERT INTO movimiento_persona (cedula_persona, id_condicion, id_centro_vida_traslado, fecha_movimiento, observacion_movimiento, id_meta, id_actividad, id_accion, departamento_procedencia)
+    VALUES ('$cedula_persona', '$id_condicion', " . ($id_centro_vida_traslado ? "'$id_centro_vida_traslado'" : "0") . ", '$fecha_movimiento', '$observacion_movimiento', '$id_meta', '$id_actividad', '$id_accion', '$departamento_procedencia')";
 
     // Ejecutar consulta
     if ($mysqli->query($sql_insert_movimiento)) {

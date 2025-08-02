@@ -545,6 +545,16 @@ $endYear = $currentYear + 1;
             }
         }
 
+        /* Estilos para modal de debugging */
+        .swal-wide {
+            max-width: 90% !important;
+        }
+
+        .swal2-html-container {
+            max-height: 400px !important;
+            overflow-y: auto !important;
+        }
+
         /* Estilos mejorados para la tabla de reportes */
         .modern-table thead th {
             background: linear-gradient(135deg, #fff3a0, #ffeaa7) !important;
@@ -910,21 +920,31 @@ $endYear = $currentYear + 1;
                     year: year
                 })
                 .done(function(response) {
-                    if (response.success) {
+                    console.log('Response getReportStats:', response);
+                    if (response && response.success) {
                         currentStats = response.stats;
                         updateStatsDisplay();
+                    } else {
+                        console.error('Error getReportStats.php:', response ? response.error : 'Respuesta inválida');
                     }
                 })
-                .fail(function() {
-                    console.error('Error al cargar estadísticas');
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX Error getReportStats:');
+                    console.error('Status:', jqXHR.status);
+                    console.error('Response:', jqXHR.responseText);
+                    console.error('Error:', errorThrown);
                 });
 
             // Cargar datos detallados
             $.get('getReportData.php', {
                     year: year
                 })
-                .done(function(response) {
-                    if (response.success) {
+                .done(function(response, textStatus, jqXHR) {
+                    console.log('Response getReportData:', response);
+                    console.log('TextStatus:', textStatus);
+                    console.log('Response Type:', typeof response);
+                    
+                    if (response && response.success) {
                         currentData = response.data;
                         updateTable();
                         updateStatsDisplay();
@@ -936,11 +956,60 @@ $endYear = $currentYear + 1;
                         // Actualizar contador de registros
                         $('#statsTotalRegistros').text(response.total_registros);
                     } else {
-                        Swal.fire('Error', response.error || 'Error al cargar datos', 'error');
+                        // Mostrar error detallado en el modal y en la consola
+                        let errorMsg = response && response.error ? response.error : 'Error al cargar datos - Respuesta inválida';
+                        console.error('Error getReportData.php:', errorMsg);
+                        console.error('Full response:', response);
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error al cargar datos',
+                            html: `
+                                <div style="text-align: left;">
+                                    <strong>Error:</strong> ${errorMsg}<br><br>
+                                    <strong>Para debugging:</strong><br>
+                                    • Revisa la consola del navegador (F12)<br>
+                                    • Verifica el archivo debug_report_error.php<br>
+                                    • Tipo de respuesta: ${typeof response}<br>
+                                    • Estado: ${textStatus}
+                                </div>
+                            `,
+                            width: 600
+                        });
                     }
                 })
-                .fail(function() {
-                    Swal.fire('Error', 'Error de conexión al cargar datos', 'error');
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX Error Details:');
+                    console.error('Status:', jqXHR.status);
+                    console.error('Status Text:', jqXHR.statusText);
+                    console.error('Response Text:', jqXHR.responseText);
+                    console.error('Text Status:', textStatus);
+                    console.error('Error Thrown:', errorThrown);
+                    
+                    let errorDetails = `
+                        <div style="text-align: left; font-family: monospace; font-size: 12px;">
+                            <strong>Detalles del error AJAX:</strong><br>
+                            • Status Code: ${jqXHR.status}<br>
+                            • Status Text: ${jqXHR.statusText}<br>
+                            • Text Status: ${textStatus}<br>
+                            • Error: ${errorThrown}<br><br>
+                            
+                            <strong>Respuesta del servidor:</strong><br>
+                            <div style="max-height: 200px; overflow-y: auto; background: #f5f5f5; padding: 10px; border: 1px solid #ddd;">
+                                ${jqXHR.responseText ? jqXHR.responseText.substring(0, 1000) + (jqXHR.responseText.length > 1000 ? '...' : '') : 'Sin respuesta'}
+                            </div>
+                        </div>
+                    `;
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de conexión al cargar datos',
+                        html: errorDetails,
+                        width: 700,
+                        customClass: {
+                            popup: 'swal-wide'
+                        }
+                    });
                 });
         }
 
@@ -998,174 +1067,90 @@ $endYear = $currentYear + 1;
         }
 
         function exportToExcel() {
-            if (currentData.length === 0) {
-                Swal.fire('Advertencia', 'No hay datos para exportar', 'warning');
-                return;
-            }
-
-            // Crear workbook
-            const wb = XLSX.utils.book_new();
-
-            // ========== SOLO HOJA DE DATOS DETALLADOS ==========
-            const wsData = [];
-
-            // Headers en MAYÚSCULAS con el nuevo orden (ACTIVO DESDE y ACTIVO HASTA al final)
-            wsData.push([
-                'CÉDULA', 'NOMBRES', 'APELLIDOS', 'GÉNERO', 'FECHA NACIMIENTO', 'EDAD',
-                'TELÉFONO', 'REFERENCIA', 'CENTRO DE VIDA', 'PROGRAMAS',
-                'ESTADO ACTUAL', 'POLÍTICA PÚBLICA', 'MOVIMIENTOS', 'TRASLADOS', 'ACTIVO DESDE', 'ACTIVO HASTA'
-            ]);
-
-            // Datos con el nuevo orden de columnas
-            currentData.forEach(function(persona) {
-                wsData.push([
-                    persona.cedula_persona,
-                    persona.nombres_persona,
-                    persona.apellidos_persona,
-                    persona.genero_persona,
-                    persona.fecha_nacimiento || 'No registrada',
-                    persona.edad_actual ? persona.edad_actual + ' años' : 'N/A',
-                    persona.telefono_persona || '',
-                    persona.referencia_persona || '',
-                    persona.centro_vida,
-                    persona.programas,
-                    persona.estado_actual,
-                    persona.descripcion_politica,
-                    persona.movimientos_en_year,
-                    persona.traslados_en_year,
-                    persona.fecha_registro, // ACTIVO DESDE
-                    persona.activo_hasta || 'N/A' // ACTIVO HASTA
-                ]);
+            // Mostrar loading
+            Swal.fire({
+                title: 'Generando Excel...',
+                text: 'Consultando datos de la base de datos y creando archivo',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
             });
 
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-            // Configurar altura de filas (más simple y compatible)
-            ws['!rows'] = [];
-            for (let i = 0; i <= currentData.length; i++) {
-                if (i === 0) {
-                    // Fila de cabeceras más alta
-                    ws['!rows'][i] = {
-                        hpx: 35
-                    };
-                } else {
-                    // Filas de datos más altas
-                    ws['!rows'][i] = {
-                        hpx: 25
-                    };
-                }
-            }
-
-            // Aplicar formato básico a las cabeceras (más compatible)
-            const headerRow = 0;
-            const range = XLSX.utils.decode_range(ws['!ref']);
-
-            for (let col = range.s.c; col <= range.e.c; col++) {
-                const cellAddress = XLSX.utils.encode_cell({
-                    r: headerRow,
-                    c: col
-                });
-                if (!ws[cellAddress]) continue;
-
-                // Formato básico que sí funciona
-                ws[cellAddress].s = {
-                    font: {
-                        bold: true,
-                        sz: 12
-                    },
-                    alignment: {
-                        horizontal: "center",
-                        vertical: "center"
-                    },
-                    fill: {
-                        fgColor: {
-                            rgb: "FFFFCC"
+            // Llamar al generador de Excel con PhpSpreadsheet
+            $.ajax({
+                url: 'generateExcel.php',
+                method: 'GET',
+                data: { year: currentYear },
+                dataType: 'json'
+            })
+            .done(function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Excel Generado Exitosamente!',
+                        html: `
+                            <div style="text-align: left; padding: 15px;">
+                                <p><strong>✅ Archivo generado con PhpSpreadsheet</strong></p>
+                                <p>📁 <strong>Archivo:</strong> ${response.fileName}</p>
+                                <p>📊 <strong>Registros incluidos:</strong> ${response.totalRegistros}</p>
+                                <p>📋 <strong>Columnas:</strong> ${response.totalColumnas} campos completos</p>
+                                <p>📅 <strong>Año del informe:</strong> ${response.year}</p>
+                                <p>🎨 <strong>Características:</strong></p>
+                                <ul style="text-align: left; margin: 10px 0;">
+                                    <li>Cabeceras con fondo amarillo suave y bordes</li>
+                                    <li>Datos completos de personas y movimientos</li>
+                                    <li>Últimas columnas: Activo Desde, Activo Hasta, Días Activos</li>
+                                    <li>Consulta directa a la base de datos</li>
+                                    <li>Formato profesional con ajuste automático</li>
+                                </ul>
+                                <br>
+                                <button onclick="window.open('${response.downloadUrl}', '_blank')" 
+                                        class="btn btn-primary">
+                                    <i class="bi bi-download"></i> Descargar Archivo
+                                </button>
+                            </div>
+                        `,
+                        confirmButtonText: 'Entendido',
+                        width: 600,
+                        showCancelButton: true,
+                        cancelButtonText: 'Descargar',
+                        preConfirm: () => {
+                            window.open(response.downloadUrl, '_blank');
                         }
-                    } // Amarillo claro simple
-                };
-            }
-
-            // Configurar anchos de columna optimizados (usando wpx para píxeles)
-            ws['!cols'] = [{
-                    wpx: 80
-                }, // CÉDULA
-                {
-                    wpx: 150
-                }, // NOMBRES
-                {
-                    wpx: 150
-                }, // APELLIDOS
-                {
-                    wpx: 80
-                }, // GÉNERO
-                {
-                    wpx: 100
-                }, // FECHA NACIMIENTO
-                {
-                    wpx: 60
-                }, // EDAD
-                {
-                    wpx: 120
-                }, // TELÉFONO
-                {
-                    wpx: 150
-                }, // REFERENCIA
-                {
-                    wpx: 200
-                }, // CENTRO DE VIDA
-                {
-                    wpx: 200
-                }, // PROGRAMAS
-                {
-                    wpx: 120
-                }, // ESTADO ACTUAL
-                {
-                    wpx: 200
-                }, // POLÍTICA PÚBLICA
-                {
-                    wpx: 80
-                }, // MOVIMIENTOS
-                {
-                    wpx: 80
-                }, // TRASLADOS
-                {
-                    wpx: 100
-                }, // ACTIVO DESDE
-                {
-                    wpx: 200
-                } // ACTIVO HASTA
-            ];
-
-            // Solo agregar la hoja de datos detallados
-            XLSX.utils.book_append_sheet(wb, ws, "Datos Detallados");
-
-            // Configurar propiedades del workbook
-            wb.Props = {
-                Title: "Informe Anual SDSYP " + currentYear,
-                Subject: "Sistema de Seguimiento y Datos para Personas",
-                Author: "SDSYP",
-                CreatedDate: new Date(),
-                Company: "SDSYP"
-            };
-
-            // Descargar archivo con nombre más descriptivo
-            const fileName = `SDSYP_Informe_${currentYear}_${new Date().toISOString().slice(0,10)}.xlsx`;
-            XLSX.writeFile(wb, fileName);
-
-            Swal.fire({
-                icon: 'success',
-                title: '¡Excel Generado!',
-                html: `
-                    <div style="text-align: left; padding: 10px;">
-                        <p><strong>✅ Archivo generado exitosamente</strong></p>
-                        <p>📁 <strong>Archivo:</strong> ${fileName}</p>
-                        <p>📊 <strong>Registros incluidos:</strong> ${currentData.length}</p>
-                        <p>� <strong>Columnas:</strong> 17 campos detallados</p>
-                    </div>
-                `,
-                confirmButtonText: 'Entendido',
-                timer: 4000,
-                timerProgressBar: true
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al generar Excel',
+                        html: `
+                            <div style="text-align: left;">
+                                <strong>Error:</strong> ${response.error}<br><br>
+                                <strong>Posibles causas:</strong><br>
+                                • Error en la consulta a la base de datos<br>
+                                • Problema con PhpSpreadsheet<br>
+                                • Permisos de escritura en la carpeta temp<br>
+                            </div>
+                        `,
+                        width: 500
+                    });
+                }
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    html: `
+                        <div style="text-align: left; font-family: monospace; font-size: 12px;">
+                            <strong>Error de conexión al generar Excel:</strong><br>
+                            • Status: ${jqXHR.status}<br>
+                            • Error: ${errorThrown}<br>
+                            • Respuesta: ${jqXHR.responseText ? jqXHR.responseText.substring(0, 200) + '...' : 'Sin respuesta'}<br>
+                        </div>
+                    `,
+                    width: 600
+                });
             });
         }
 
