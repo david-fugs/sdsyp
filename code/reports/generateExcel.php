@@ -10,11 +10,13 @@ use PhpOffice\PhpSpreadsheet\Style\Font;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 
-header('Content-Type: application/json');
+
+
 
 // Verificar que se proporcione el año
 if (!isset($_GET['year']) || empty($_GET['year'])) {
-    echo json_encode(['success' => false, 'error' => 'Año no proporcionado']);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo 'Error: Año no proporcionado';
     exit;
 }
 
@@ -340,6 +342,7 @@ try {
 
         // Escribir datos en las celdas
         $data = [
+
             $row['cedula_persona'] ?? '',
             $row['tipo_identificacion'] ?? '',
             $row['nombres_persona'] ?? '',
@@ -435,36 +438,19 @@ try {
         $sheet->getRowDimension($i)->setRowHeight(25);
     }
 
-    // Crear nombre de archivo
+
+    // Descargar el archivo directamente sin guardarlo
     $fileName = 'SDSYP_Informe_Completo_' . $year . '_' . date('Y-m-d_H-i-s') . '.xlsx';
-    $filePath = './temp/' . $fileName;
-
-    // Crear directorio temp si no existe
-    if (!is_dir('./temp/')) {
-        mkdir('./temp/', 0755, true);
-    }
-
-    // Guardar archivo
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment; filename="' . $fileName . '"');
+    header('Cache-Control: max-age=0');
     $writer = new Xlsx($spreadsheet);
-    $writer->save($filePath);
-
-    // Respuesta JSON
-    echo json_encode([
-        'success' => true,
-        'message' => 'Excel generado exitosamente',
-        'fileName' => $fileName,
-        'filePath' => $filePath,
-        'downloadUrl' => 'download.php?file=' . $fileName,
-        'totalRegistros' => $total_registros,
-        'year' => $year,
-        'totalColumnas' => count($headers)
-    ]);
+    $writer->save('php://output');
+    exit;
 
 } catch (Exception $e) {
-    echo json_encode([
-        'success' => false,
-        'error' => 'Error al generar Excel: ' . $e->getMessage()
-    ]);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo 'Error al generar Excel: ' . $e->getMessage();
 }
 
 $mysqli->close();

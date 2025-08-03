@@ -758,9 +758,6 @@ $endYear = $currentYear + 1;
                         <button type="button" id="btnExportExcel" class="export-btn">
                             <i class="bi bi-file-earmark-excel"></i> Exportar Excel
                         </button>
-                        <button type="button" id="btnExportPDF" class="export-btn">
-                            <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
-                        </button>
                     </div>
                 </div>
             </div>
@@ -1061,79 +1058,8 @@ $endYear = $currentYear + 1;
         }
 
         function exportToExcel() {
-            // Mostrar loading
-            Swal.fire({
-                title: 'Generando Excel...',
-                text: 'Consultando datos de la base de datos y creando archivo',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            // Llamar al generador de Excel con PhpSpreadsheet
-            $.ajax({
-                url: 'generateExcel.php',
-                method: 'GET',
-                data: { year: currentYear },
-                dataType: 'json'
-            })
-            .done(function(response) {
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Excel Generado Exitosamente!',
-                        html: `
-                            <div style="text-align: left; padding: 15px;">
-                                <p>📁 <strong>Archivo:</strong> ${response.fileName}</p>
-                                <p>📊 <strong>Registros incluidos:</strong> ${response.totalRegistros}</p>
-                                <p>📋 <strong>Columnas:</strong> ${response.totalColumnas} campos completos</p>
-                                <p>📅 <strong>Año del informe:</strong> ${response.year}</p>
-                                <br>
-                                
-                            </div>
-                        `,
-                        confirmButtonText: 'Descargar',
-                        width: 600,
-                        showCancelButton: true,
-                        cancelButtonText: 'Cerrar',
-                        preConfirm: () => {
-                            window.open(response.downloadUrl, '_blank');
-                        }
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error al generar Excel',
-                        html: `
-                            <div style="text-align: left;">
-                                <strong>Error:</strong> ${response.error}<br><br>
-                                <strong>Posibles causas:</strong><br>
-                                • Error en la consulta a la base de datos<br>
-                                • Problema con PhpSpreadsheet<br>
-                                • Permisos de escritura en la carpeta temp<br>
-                            </div>
-                        `,
-                        width: 500
-                    });
-                }
-            })
-            .fail(function(jqXHR, textStatus, errorThrown) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de conexión',
-                    html: `
-                        <div style="text-align: left; font-family: monospace; font-size: 12px;">
-                            <strong>Error de conexión al generar Excel:</strong><br>
-                            • Status: ${jqXHR.status}<br>
-                            • Error: ${errorThrown}<br>
-                            • Respuesta: ${jqXHR.responseText ? jqXHR.responseText.substring(0, 200) + '...' : 'Sin respuesta'}<br>
-                        </div>
-                    `,
-                    width: 600
-                });
-            });
+            // Abrir el generador de Excel directamente para descargar
+            window.open('generateExcel.php?year=' + currentYear, '_blank');
         }
 
         function exportToPDF() {
