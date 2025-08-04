@@ -224,10 +224,12 @@ function deleteMember($cedula_persona)
             <!-- Header moderno -->
             <div class="modern-header">
                 <h2><i class="bi bi-people-fill"></i> Personas Registradas</h2>
+                <?php if($tipo_usuario != 3) { ?>
                 <button type="button" class="btn-modern btn-success" data-bs-toggle="modal" data-bs-target="#modalNewPerson">
                     <i class="bi bi-person-plus-fill"></i>
                     Agregar Persona
                 </button>
+                <?php } ?>
             </div>
 
             <!-- Filtros modernos -->

@@ -136,7 +136,8 @@ if ($result->num_rows > 0) {
         echo "<td>" . htmlspecialchars($row['programas']) . "</td>";
         echo "<td>" . ($row['descripcion_grupo'] ? htmlspecialchars($row['descripcion_grupo']) : 'No asignado') . "</td>";
         echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('CPSAM ', '', $estado_persona) . "</span></td>";
-        
+        if($tipo_usuario != 3) { 
+
         // Botones de acción modernos
         echo '<td class="col-actions">
                 <div class="action-buttons">
@@ -194,8 +195,10 @@ if ($result->num_rows > 0) {
                        onclick="return confirm(\'¿Estás seguro de que deseas eliminar esta persona?\')">
                         <i class="bi bi-trash-fill"></i>
                     </a>
+
                 </div>
             </td>';
+        } // Fin del if para tipo_usuario != 3
         // Agregar data attributes para barrio, comuna y zona
         // NOTA: Estos campos deben existir en la tabla personas, si no, se deben agregar en la consulta y en la base de datos
         // Si no existen, dejar string vacío

@@ -690,6 +690,19 @@ $mysqli->close();
       <div class="menu_content">
         <ul class="menu_items">
           <div class="menu_title menu_dahsboard"></div>
+           <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-users"></i>
+              </span>
+              <span class="navlink">Personas</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/persons/seePerson.php" class="nav_link sublink">Ver Personas</a>
+              <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
+            </ul>
+          </li>
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
@@ -701,7 +714,7 @@ $mysqli->close();
             <ul class="menu_items submenu">
               <a href="code/contratista/seeActivities.php" class="nav_link sublink">Ver Actividades</a>
               <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
-              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
+              <a href="code/contratista/form.php" class="nav_link sublink">Formulario</a>
             </ul>
           </li>
 
