@@ -12,6 +12,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id_condicion = $_POST['id_condicion'];
     $id_centro_vida_traslado = isset($_POST['id_centro_vida_traslado']) ? $_POST['id_centro_vida_traslado'] : null;
     $id_movimiento_persona = $_POST['id_movimiento_persona'];
+    
+    // Nuevos campos
+    $id_meta = $_POST['id_meta'] ?? null;
+    $id_actividad = $_POST['id_actividad'] ?? null;
+    $id_accion = $_POST['id_accion'] ?? null;
+    $departamento_procedencia = $_POST['departamento_procedencia'] ?? '';
 
     // Solo validar límite si se especificó un centro de vida para traslado
     if ($id_centro_vida_traslado) {
@@ -73,7 +79,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                              fecha_movimiento = '$fecha_movimiento', 
                              observacion_movimiento = '$observacion_movimiento', 
                              id_condicion = '$id_condicion',
-                             id_centro_vida_traslado = " . ($id_centro_vida_traslado ? "'$id_centro_vida_traslado'" : "0") . "
+                             id_centro_vida_traslado = " . ($id_centro_vida_traslado ? "'$id_centro_vida_traslado'" : "0") . ",
+                             id_meta = " . ($id_meta ? "'$id_meta'" : "NULL") . ",
+                             id_actividad = " . ($id_actividad ? "'$id_actividad'" : "NULL") . ",
+                             id_accion = " . ($id_accion ? "'$id_accion'" : "NULL") . ",
+                             departamento_procedencia = '$departamento_procedencia'
                              WHERE id_movimiento_persona = '$id_movimiento_persona'";
     
     // Si se especificó un centro de vida para traslado, actualizar también el grupo de la persona

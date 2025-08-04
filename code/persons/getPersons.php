@@ -136,7 +136,6 @@ if ($result->num_rows > 0) {
         echo "<td>" . htmlspecialchars($row['programas']) . "</td>";
         echo "<td>" . ($row['descripcion_grupo'] ? htmlspecialchars($row['descripcion_grupo']) : 'No asignado') . "</td>";
         echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('CPSAM ', '', $estado_persona) . "</span></td>";
-        echo "<td>" . ($row['descripcion_politica'] ? htmlspecialchars($row['descripcion_politica']) : 'No asignada') . "</td>";
         
         // Botones de acción modernos
         echo '<td class="col-actions">
@@ -167,6 +166,22 @@ if ($result->num_rows > 0) {
                         data-grupo-etnico="' . $row['grupo_etnico'] . '"
                         data-tipo-salud="' . $row['tipo_salud'] . '"
                         data-nivel-educativo="' . $row['nivel_educativo'] . '"
+                        data-telefono-referencia="' . (isset($row['telefono_referencia_persona']) ? htmlspecialchars($row['telefono_referencia_persona']) : '') . '"
+                        data-correo="' . (isset($row['correo_persona']) ? htmlspecialchars($row['correo_persona']) : '') . '"
+                        data-direccion="' . (isset($row['direccion_persona']) ? htmlspecialchars($row['direccion_persona']) : '') . '"
+                        data-condicion-ocupacion="' . (isset($row['condicion_ocupacion']) ? htmlspecialchars($row['condicion_ocupacion']) : '') . '"
+                        data-condicion-componente="' . (isset($row['condicion_componente']) ? htmlspecialchars($row['condicion_componente']) : '') . '"
+                        data-activo-desde="' . (isset($row['activo_desde']) ? htmlspecialchars($row['activo_desde']) : '') . '"
+                        data-eps="' . (isset($row['eps']) ? htmlspecialchars($row['eps']) : '') . '"
+                        data-peso="' . (isset($row['peso']) ? htmlspecialchars($row['peso']) : '') . '"
+                        data-talla="' . (isset($row['talla']) ? htmlspecialchars($row['talla']) : '') . '"
+                        data-patologias="' . (isset($row['patologias']) ? htmlspecialchars($row['patologias']) : '') . '"
+                        data-factores-riesgo="' . (isset($row['factores_riesgo']) ? htmlspecialchars($row['factores_riesgo']) : '') . '"
+                        data-factores-preventivos="' . (isset($row['factores_preventivos']) ? htmlspecialchars($row['factores_preventivos']) : '') . '"
+                        data-ingresos-economicos="' . (isset($row['ingresos_economicos']) ? htmlspecialchars($row['ingresos_economicos']) : '') . '"
+                        data-convivencia-actual="' . (isset($row['convivencia_actual']) ? htmlspecialchars($row['convivencia_actual']) : '') . '"
+                        data-resultado-actividad="' . (isset($row['resultado_actividad']) ? htmlspecialchars($row['resultado_actividad']) : '') . '"
+                        data-remision="' . (isset($row['remision']) ? htmlspecialchars($row['remision']) : '') . '"
                         data-id-barrio-persona="' . (isset($row['id_barrio_persona']) ? htmlspecialchars($row['id_barrio_persona']) : '') . '"
                         data-id-comuna-persona="' . (isset($row['id_comuna_persona']) ? htmlspecialchars($row['id_comuna_persona']) : '') . '"
                         data-zona-persona="' . (isset($row['zona_persona']) ? htmlspecialchars($row['zona_persona']) : '') . '"
