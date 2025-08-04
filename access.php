@@ -517,6 +517,7 @@ $mysqli->close();
   </nav>
 
   <!-- Barra lateral superior -->
+   <?php if ($tipo_usuario != 3) { ?>
   <div class="top-sidebar" id="topSidebar">
     <div class="top-sidebar-content">
       <div class="quick-nav">
@@ -563,119 +564,177 @@ $mysqli->close();
     </div>
   </div>
 
+  <?php } ?>
   <!-- sidebar -->
+  <?php if ($tipo_usuario != 3) { ?>
+    <nav class="sidebar">
+      <div class="menu_content">
+        <ul class="menu_items">
+          <div class="menu_title menu_dahsboard"></div>
 
-  <nav class="sidebar">
-    <div class="menu_content">
-      <ul class="menu_items">
-        <div class="menu_title menu_dahsboard"></div>
-        <?php if ($tipo_usuario == 1) { ?>
-        <li class="item">
-          <div href="#" class="nav_link submenu_item">
-            <span class="navlink_icon">
-              <i class="fa-solid fa-user-pen"></i>
-            </span>
-            <span class="navlink">Usuarios Plataforma</span>
-            <i class="bx bx-chevron-right arrow-left"></i>
-          </div>
-          <ul class="menu_items submenu">
-            <a href="code/users/showusers.php" class="nav_link sublink">Permisos</a>
-            <a href="code/users/register.php" class="nav_link sublink">Crear Nuevo</a>
-          </ul>
-        </li>
-        <?php } ?>
-        <li class="item">
-          <div href="#" class="nav_link submenu_item">
-            <span class="navlink_icon">
-              <i class="fa-solid fa-users"></i>
-            </span>
-            <span class="navlink">Personas</span>
-            <i class="bx bx-chevron-right arrow-left"></i>
-          </div>
-          <ul class="menu_items submenu">
-            <a href="code/persons/seePerson.php" class="nav_link sublink">Ver Personas</a>
-            <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
-            <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
-          </ul>
-        </li>
-        <li class="item">
-          <div href="#" class="nav_link submenu_item">
-            <span class="navlink_icon">
-              <i class="fa-solid fa-bullseye"></i>
-            </span>
-            <span class="navlink">Metas</span>
-            <i class="bx bx-chevron-right arrow-left"></i>
-          </div>
-          <ul class="menu_items submenu">
-            <a href="code/goals/seeGoals.php" class="nav_link sublink">Ver Metas</a>
-            <a href="code/activities/seeActivity.php" class="nav_link sublink">Ver Actividades</a>
-            <a href="code/action/seeActions.php" class="nav_link sublink">Ver Acciones</a>
-          </ul>
-        </li>
-        <li class="item">
-          <div href="#" class="nav_link submenu_item">
-            <span class="navlink_icon">
-              <i class="fa-solid fa-scale-balanced"></i>
-            </span>
-            <span class="navlink">Políticas Públicas</span>
-            <i class="bx bx-chevron-right arrow-left"></i>
-          </div>
-          <ul class="menu_items submenu">
-            <a href="code/publicPolicies/seePublicPolicies.php" class="nav_link sublink">Ver Políticas Públicas</a>
-          </ul>
-        </li>
-        <li class="item">
-          <div href="#" class="nav_link submenu_item">
-            <span class="navlink_icon">
-              <i class="fa-solid fa-list-check"></i>
-            </span>
-            <span class="navlink">Condiciones</span>
-            <i class="bx bx-chevron-right arrow-left"></i>
-          </div>
-          <ul class="menu_items submenu">
-            <a href="code/condition/seeCondition.php" class="nav_link sublink">Ver Condiciones</a>
-            <a href="code/group/seeGroup.php" class="nav_link sublink">Grupo o CPSAM</a>
-            <!-- <a href="code/center/seeCenter.php" class="nav_link sublink">Centro Vida</a> -->
-          </ul>
-        </li>
-        <li class="item">
-          <div href="#" class="nav_link submenu_item">
-            <span class="navlink_icon">
-              <i class="fa-solid fa-chart-bar"></i>
-            </span>
-            <span class="navlink">Informes</span>
-            <i class="bx bx-chevron-right arrow-left"></i>
-          </div>
-          <ul class="menu_items submenu">
-            <a href="code/reports/seeReports.php" class="nav_link sublink">Informes Anuales</a>
-          </ul>
-        </li>
-        <li class="item">
-          <div href="#" class="nav_link submenu_item">
-            <span class="navlink_icon">
-              <i class="fa-solid fa-screwdriver-wrench"></i>
-            </span>
-            <span class="navlink">Mi Cuenta</span>
-            <i class="bx bx-chevron-right arrow-left"></i>
-          </div>
-          <ul class="menu_items submenu">
-            <a href="reset-password.php" class="nav_link sublink">Cambiar Contraseña</a>
-          </ul>
-        </li>
-        <div class="bottom_content">
-          <div class="bottom expand_sidebar">
-            <span> Expand</span>
-            <i class='bx bx-log-in'></i>
-          </div>
-          <div class="bottom collapse_sidebar">
-            <span> Collapse</span>
-            <i class='bx bx-log-out'></i>
-          </div>
-        </div>
-      </ul>
-    </div>
-  </nav>
 
+          <?php if ($tipo_usuario == 1) { ?>
+            <li class="item">
+              <div href="#" class="nav_link submenu_item">
+                <span class="navlink_icon">
+                  <i class="fa-solid fa-user-pen"></i>
+                </span>
+                <span class="navlink">Usuarios Plataforma</span>
+                <i class="bx bx-chevron-right arrow-left"></i>
+              </div>
+              <ul class="menu_items submenu">
+                <a href="code/users/showusers.php" class="nav_link sublink">Permisos</a>
+                <a href="code/users/register.php" class="nav_link sublink">Crear Nuevo</a>
+              </ul>
+            </li>
+          <?php } ?>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-users"></i>
+              </span>
+              <span class="navlink">Personas</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/persons/seePerson.php" class="nav_link sublink">Ver Personas</a>
+              <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
+              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-bullseye"></i>
+              </span>
+              <span class="navlink">Metas</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/goals/seeGoals.php" class="nav_link sublink">Ver Metas</a>
+              <a href="code/activities/seeActivity.php" class="nav_link sublink">Ver Actividades</a>
+              <a href="code/action/seeActions.php" class="nav_link sublink">Ver Acciones</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-scale-balanced"></i>
+              </span>
+              <span class="navlink">Políticas Públicas</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/publicPolicies/seePublicPolicies.php" class="nav_link sublink">Ver Políticas Públicas</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-list-check"></i>
+              </span>
+              <span class="navlink">Condiciones</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/condition/seeCondition.php" class="nav_link sublink">Ver Condiciones</a>
+              <a href="code/group/seeGroup.php" class="nav_link sublink">Grupo o CPSAM</a>
+              <!-- <a href="code/center/seeCenter.php" class="nav_link sublink">Centro Vida</a> -->
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-chart-bar"></i>
+              </span>
+              <span class="navlink">Informes</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/reports/seeReports.php" class="nav_link sublink">Informes Anuales</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+              </span>
+              <span class="navlink">Mi Cuenta</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="reset-password.php" class="nav_link sublink">Cambiar Contraseña</a>
+            </ul>
+          </li>
+          <div class="bottom_content">
+            <div class="bottom expand_sidebar">
+              <span> Expand</span>
+              <i class='bx bx-log-in'></i>
+            </div>
+            <div class="bottom collapse_sidebar">
+              <span> Collapse</span>
+              <i class='bx bx-log-out'></i>
+            </div>
+
+
+          </div>
+        </ul>
+
+      </div>
+    </nav>
+  <?php } ?>
+
+
+<?php if ($tipo_usuario == 3) { ?>
+<nav class="sidebar">
+      <div class="menu_content">
+        <ul class="menu_items">
+          <div class="menu_title menu_dahsboard"></div>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-bullseye"></i>
+              </span>
+              <span class="navlink">Actividades </span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/contratista/seeActivities.php" class="nav_link sublink">Ver Actividades</a>
+              <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
+              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
+            </ul>
+          </li>
+
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+              </span>
+              <span class="navlink">Mi Cuenta</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="reset-password.php" class="nav_link sublink">Cambiar Contraseña</a>
+            </ul>
+          </li>
+          <div class="bottom_content">
+            <div class="bottom expand_sidebar">
+              <span> Expand</span>
+              <i class='bx bx-log-in'></i>
+            </div>
+            <div class="bottom collapse_sidebar">
+              <span> Collapse</span>
+              <i class='bx bx-log-out'></i>
+            </div>
+
+
+          </div>
+        </ul>
+
+      </div>
+    </nav>
+<?php } ?>
 
   <!-- Main Content -->
   <div class="main-content" id="mainContent">

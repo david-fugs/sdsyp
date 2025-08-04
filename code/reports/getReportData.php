@@ -1,7 +1,10 @@
 <?php
+session_start();
 include("../../conexion.php");
-
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
 header('Content-Type: application/json');
+
 
 // Verificar que se haya proporcionado el año
 if (!isset($_GET['year']) || empty($_GET['year'])) {
@@ -19,114 +22,119 @@ if ($mysqli->connect_error) {
 
 try {
     // Consulta mejorada para obtener todos los campos de personas y movimientos (consulta plana)
-    $query = "
-        SELECT 
-            p.*,
-            g.descripcion_grupo as centro_vida,
-            pol.descripcion_politica,
-            b.nombre_bar as barrio_nombre,
-            c.nombre_com as comuna_nombre,
-            (SELECT cc.descripcion_condicion 
-             FROM movimiento_persona mp 
-             JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
-             WHERE mp.cedula_persona = p.cedula_persona 
-             ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
-             LIMIT 1) AS ultimo_estado_movimiento,
-            (SELECT mp.fecha_movimiento 
-             FROM movimiento_persona mp 
-             WHERE mp.cedula_persona = p.cedula_persona 
-             ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
-             LIMIT 1) AS fecha_ultimo_movimiento,
-            (SELECT m.descripcion_meta 
-             FROM movimiento_persona mp 
-             LEFT JOIN metas m ON mp.id_meta = m.id_meta
-             WHERE mp.cedula_persona = p.cedula_persona 
-             ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
-             LIMIT 1) AS ultima_meta,
-            (SELECT a.descripcion_actividad 
-             FROM movimiento_persona mp 
-             LEFT JOIN actividades a ON mp.id_actividad = a.id_actividad
-             WHERE mp.cedula_persona = p.cedula_persona 
-             ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
-             LIMIT 1) AS ultima_actividad,
-            (SELECT ac.descripcion_accion 
-             FROM movimiento_persona mp 
-             LEFT JOIN acciones ac ON mp.id_accion = ac.id_accion
-             WHERE mp.cedula_persona = p.cedula_persona 
-             ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
-             LIMIT 1) AS ultima_accion,
-            (SELECT mp.departamento_procedencia 
-             FROM movimiento_persona mp 
-             WHERE mp.cedula_persona = p.cedula_persona 
-             ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
-             LIMIT 1) AS ultimo_departamento_procedencia,
-            CASE 
-                WHEN p.fecha_alta_persona IS NOT NULL AND p.fecha_alta_persona != '0000-00-00' THEN
-                    CASE
-                        WHEN (SELECT cc.descripcion_condicion 
-                              FROM movimiento_persona mp 
-                              JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
-                              WHERE mp.cedula_persona = p.cedula_persona 
-                              ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
-                              LIMIT 1) IS NOT NULL 
-                             AND (UPPER((SELECT cc.descripcion_condicion 
-                                        FROM movimiento_persona mp 
-                                        JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
-                                        WHERE mp.cedula_persona = p.cedula_persona 
-                                        ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
-                                        LIMIT 1)) LIKE '%FALLECIDO%' 
-                                  OR UPPER((SELECT cc.descripcion_condicion 
-                                           FROM movimiento_persona mp 
-                                           JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
-                                           WHERE mp.cedula_persona = p.cedula_persona 
-                                           ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
-                                           LIMIT 1)) LIKE '%EVADIDO%'
-                                  OR UPPER((SELECT cc.descripcion_condicion 
-                                           FROM movimiento_persona mp 
-                                           JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
-                                           WHERE mp.cedula_persona = p.cedula_persona 
-                                           ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
-                                           LIMIT 1)) LIKE '%RETIRADO%') THEN
-                            DATEDIFF((SELECT mp.fecha_movimiento 
-                                     FROM movimiento_persona mp 
-                                     WHERE mp.cedula_persona = p.cedula_persona 
-                                     ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
-                                     LIMIT 1), p.fecha_alta_persona)
-                        ELSE DATEDIFF(CURDATE(), p.fecha_alta_persona)
-                    END
-                ELSE NULL
-            END AS dias_activos,
-            (SELECT COUNT(*)
-             FROM movimiento_persona mp2
-             JOIN condiciones_componente cc2 ON mp2.id_condicion = cc2.id_condicion
-             WHERE mp2.cedula_persona = p.cedula_persona
-             AND cc2.descripcion_condicion LIKE '%TRASLADADO%'
-             AND YEAR(mp2.fecha_movimiento) = " . intval($year) . ") AS traslados_en_year,
-            (SELECT g2.descripcion_grupo
-             FROM movimiento_persona mp3
-             JOIN condiciones_componente cc3 ON mp3.id_condicion = cc3.id_condicion
-             LEFT JOIN grupos g2 ON mp3.id_centro_vida_traslado = g2.id_grupo
-             WHERE mp3.cedula_persona = p.cedula_persona
-             AND cc3.descripcion_condicion LIKE '%TRASLADADO%'
-             ORDER BY mp3.fecha_movimiento DESC
-             LIMIT 1) AS ultimo_centro_traslado,
-            (SELECT COUNT(*)
-             FROM movimiento_persona mp4
-             WHERE mp4.cedula_persona = p.cedula_persona
-             AND YEAR(mp4.fecha_movimiento) = " . intval($year) . ") AS movimientos_en_year,
-            CASE 
-                WHEN p.fecha_nacimiento IS NOT NULL AND p.fecha_nacimiento != '0000-00-00' 
-                THEN TIMESTAMPDIFF(YEAR, p.fecha_nacimiento, CURDATE())
-                ELSE NULL 
-            END AS edad_actual
-        FROM personas p
-        LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
-        LEFT JOIN politicas_publicas pol ON p.id_politica_publica = pol.id_politica
-        LEFT JOIN barrios b ON p.id_barrio_persona = b.id_bar
-        LEFT JOIN comunas c ON p.id_comuna_persona = c.id_com
-        WHERE p.estado_persona = 1 
-        ORDER BY p.apellidos_persona ASC, p.nombres_persona ASC
-    ";
+$where = "WHERE p.estado_persona = 1";
+if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 2) {
+    $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
+}
+
+$query = "
+    SELECT 
+        p.*,
+        g.descripcion_grupo as centro_vida,
+        pol.descripcion_politica,
+        b.nombre_bar as barrio_nombre,
+        c.nombre_com as comuna_nombre,
+        (SELECT cc.descripcion_condicion 
+         FROM movimiento_persona mp 
+         JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
+         WHERE mp.cedula_persona = p.cedula_persona 
+         ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+         LIMIT 1) AS ultimo_estado_movimiento,
+        (SELECT mp.fecha_movimiento 
+         FROM movimiento_persona mp 
+         WHERE mp.cedula_persona = p.cedula_persona 
+         ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+         LIMIT 1) AS fecha_ultimo_movimiento,
+        (SELECT m.descripcion_meta 
+         FROM movimiento_persona mp 
+         LEFT JOIN metas m ON mp.id_meta = m.id_meta
+         WHERE mp.cedula_persona = p.cedula_persona 
+         ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+         LIMIT 1) AS ultima_meta,
+        (SELECT a.descripcion_actividad 
+         FROM movimiento_persona mp 
+         LEFT JOIN actividades a ON mp.id_actividad = a.id_actividad
+         WHERE mp.cedula_persona = p.cedula_persona 
+         ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+         LIMIT 1) AS ultima_actividad,
+        (SELECT ac.descripcion_accion 
+         FROM movimiento_persona mp 
+         LEFT JOIN acciones ac ON mp.id_accion = ac.id_accion
+         WHERE mp.cedula_persona = p.cedula_persona 
+         ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+         LIMIT 1) AS ultima_accion,
+        (SELECT mp.departamento_procedencia 
+         FROM movimiento_persona mp 
+         WHERE mp.cedula_persona = p.cedula_persona 
+         ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+         LIMIT 1) AS ultimo_departamento_procedencia,
+        CASE 
+            WHEN p.fecha_alta_persona IS NOT NULL AND p.fecha_alta_persona != '0000-00-00' THEN
+                CASE
+                    WHEN (SELECT cc.descripcion_condicion 
+                          FROM movimiento_persona mp 
+                          JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
+                          WHERE mp.cedula_persona = p.cedula_persona 
+                          ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+                          LIMIT 1) IS NOT NULL 
+                         AND (UPPER((SELECT cc.descripcion_condicion 
+                                    FROM movimiento_persona mp 
+                                    JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
+                                    WHERE mp.cedula_persona = p.cedula_persona 
+                                    ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+                                    LIMIT 1)) LIKE '%FALLECIDO%' 
+                              OR UPPER((SELECT cc.descripcion_condicion 
+                                       FROM movimiento_persona mp 
+                                       JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
+                                       WHERE mp.cedula_persona = p.cedula_persona 
+                                       ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+                                       LIMIT 1)) LIKE '%EVADIDO%'
+                              OR UPPER((SELECT cc.descripcion_condicion 
+                                       FROM movimiento_persona mp 
+                                       JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
+                                       WHERE mp.cedula_persona = p.cedula_persona 
+                                       ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+                                       LIMIT 1)) LIKE '%RETIRADO%') THEN
+                        DATEDIFF((SELECT mp.fecha_movimiento 
+                                 FROM movimiento_persona mp 
+                                 WHERE mp.cedula_persona = p.cedula_persona 
+                                 ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+                                 LIMIT 1), p.fecha_alta_persona)
+                    ELSE DATEDIFF(CURDATE(), p.fecha_alta_persona)
+                END
+            ELSE NULL
+        END AS dias_activos,
+        (SELECT COUNT(*)
+         FROM movimiento_persona mp2
+         JOIN condiciones_componente cc2 ON mp2.id_condicion = cc2.id_condicion
+         WHERE mp2.cedula_persona = p.cedula_persona
+         AND cc2.descripcion_condicion LIKE '%TRASLADADO%'
+         AND YEAR(mp2.fecha_movimiento) = " . intval($year) . ") AS traslados_en_year,
+        (SELECT g2.descripcion_grupo
+         FROM movimiento_persona mp3
+         JOIN condiciones_componente cc3 ON mp3.id_condicion = cc3.id_condicion
+         LEFT JOIN grupos g2 ON mp3.id_centro_vida_traslado = g2.id_grupo
+         WHERE mp3.cedula_persona = p.cedula_persona
+         AND cc3.descripcion_condicion LIKE '%TRASLADADO%'
+         ORDER BY mp3.fecha_movimiento DESC
+         LIMIT 1) AS ultimo_centro_traslado,
+        (SELECT COUNT(*)
+         FROM movimiento_persona mp4
+         WHERE mp4.cedula_persona = p.cedula_persona
+         AND YEAR(mp4.fecha_movimiento) = " . intval($year) . ") AS movimientos_en_year,
+        CASE 
+            WHEN p.fecha_nacimiento IS NOT NULL AND p.fecha_nacimiento != '0000-00-00' 
+            THEN TIMESTAMPDIFF(YEAR, p.fecha_nacimiento, CURDATE())
+            ELSE NULL 
+        END AS edad_actual
+    FROM personas p
+    LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
+    LEFT JOIN politicas_publicas pol ON p.id_politica_publica = pol.id_politica
+    LEFT JOIN barrios b ON p.id_barrio_persona = b.id_bar
+    LEFT JOIN comunas c ON p.id_comuna_persona = c.id_com
+    $where
+    ORDER BY p.apellidos_persona ASC, p.nombres_persona ASC
+";
     $result = $mysqli->query($query);
 
     $data = [];
