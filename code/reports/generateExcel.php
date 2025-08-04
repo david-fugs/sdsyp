@@ -1,4 +1,13 @@
 <?php
+if (ob_get_length()) {
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "ERROR: Hay salida previa al header. El archivo Excel se corromperá.\n";
+    echo "Verifica que no haya espacios, saltos de línea o echo/print antes de los headers.\n";
+    exit;
+}
+
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 require_once '../../vendor/autoload.php';
 require_once '../../conexion.php';
 
