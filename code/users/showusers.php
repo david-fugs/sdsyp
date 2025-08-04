@@ -8,7 +8,6 @@ if (!isset($_SESSION['id'])) {
 $usuario      = $_SESSION['usuario'];
 $nombre       = $_SESSION['nombre'];
 $tipo_usuario = $_SESSION['tipo_usuario'];
-$cod_dane_ie  = $_SESSION['cod_dane_ie'];
 ?>
 
 <!DOCTYPE html>
@@ -32,6 +31,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://kit.fontawesome.com/fed2435e21.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Estilos personalizados para aumentar tamaño de fuente -->
     <style>
@@ -163,8 +163,6 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
 <body>
 
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"></script>
-
     <center style="margin-top: 20px;">
         <img src='../../img/logo.png' width="150" height="120" class='responsive'>
     </center>
@@ -177,7 +175,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             <!-- Header moderno -->
             <div class="modern-header">
                 <h2><i class="bi bi-person-gear"></i> Administración de Usuarios</h2>
-                <a href="addusers.php" class="btn-modern btn-success">
+                <a href="register.php" class="btn-modern btn-success">
                     <i class="bi bi-person-plus-fill"></i>
                     Agregar Usuario
                 </a>
@@ -244,6 +242,7 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                                 <th class="col-id">No.</th>
                                 <th>Usuario</th>
                                 <th>Nombre</th>
+                                <th>Centro Asociado</th>
                                 <th>Tipo Usuario</th>
                                 <th class="col-actions">Acciones</th>
                             </tr>
@@ -257,12 +256,16 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                     $badge_class = '';
                     switch($row['tipo_usuario']) {
                         case 1:
-                            $tipo_usuario_texto = 'ADMIN';
+                            $tipo_usuario_texto = 'ADMINISTRADOR';
                             $badge_class = 'badge bg-success';
                             break;
                         case 2:
-                            $tipo_usuario_texto = 'EMPLEADO';
+                            $tipo_usuario_texto = 'CONTRATISTA';
                             $badge_class = 'badge bg-primary';
+                            break;
+                        case 3:
+                            $tipo_usuario_texto = 'CPSAM O CENTRO VIDA';
+                            $badge_class = 'badge bg-info';
                             break;
                         case 7:
                             $tipo_usuario_texto = 'SIN ACCESO';
@@ -272,17 +275,27 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                             $tipo_usuario_texto = 'DESCONOCIDO';
                             $badge_class = 'badge bg-warning';
                     }
-
-                    echo '<tr class="fade-in">
+                    // Obtener nombre del centro asociado
+                    $nombre_centro = '';
+                    if (!empty($row['id_grupo'])) {
+                        $q_centro = $mysqli->query("SELECT descripcion_grupo FROM grupos WHERE id_grupo = '" . $row['id_grupo'] . "'");
+                        if ($q_centro && $centro = $q_centro->fetch_assoc()) {
+                            $nombre_centro = $centro['descripcion_grupo'];
+                        }
+                    }
+                    echo '<tr class="fade-in" data-id-grupo="' . $row['id_grupo'] . '">
                         <td class="col-id">' . ($i + (($paginacion->get_page() - 1) * $resul_x_pagina)) . '</td>
                         <td>' . htmlspecialchars($row['usuario']) . '</td>
                         <td>' . htmlspecialchars(utf8_encode($row['nombre'])) . '</td>
-                        <td><span class="' . $badge_class . '">' . $tipo_usuario_texto . '</span></td>
+                        <td>' . htmlspecialchars($nombre_centro) . '</td>
+                        <td><span class="' . $badge_class . '" data-tipo-usuario="' . $row['tipo_usuario'] . '">' . $tipo_usuario_texto . '</span></td>
                         <td class="col-actions">
                             <div class="action-buttons">
-                                <a href="editusers.php?id=' . $row['id'] . '" 
+                                <a href="#" 
                                    class="btn-action btn-edit" 
-                                   title="Editar usuario">
+                                   title="Editar usuario"
+                                   data-id="' . $row['id'] . '"
+                                   >
                                     <i class="bi bi-pencil-fill"></i>
                                 </a>
                                 <a href="#" 
@@ -317,8 +330,6 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             <br /><a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="Regresar" /></a>
         </center>
 
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"></script>
     <script src="https://www.jose-aguilar.com/scripts/fontawesome/js/all.min.js" data-auto-replace-svg="nest"></script>
 
     <script>
@@ -337,8 +348,8 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
                     url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
                 },
                 columnDefs: [
-                    { orderable: false, targets: [4] }, // Deshabilitar orden en la columna de acciones
-                    { className: "text-center", targets: [0, 4] } // Centrar columna de ID y acciones
+                    { orderable: false, targets: [5] }, // Deshabilitar orden en la columna de acciones
+                    { className: "text-center", targets: [0, 5] } // Centrar columna de ID y acciones
                 ],
                 order: [[0, 'asc']], // Ordenar por número ascendente
                 dom: 'frtip', // Solo mostrar filtro, tabla, información y paginación
@@ -354,6 +365,93 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
             initDataTable();
         });
     </script>
+
+    <!-- Modal para editar usuario -->
+<div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editUserModalLabel">Editar Usuario</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="editUserForm">
+          <input type="hidden" id="edit_id" name="id">
+          <div class="form-group">
+            <label for="edit_usuario">Usuario</label>
+            <input type="text" class="form-control" id="edit_usuario" name="usuario" required>
+          </div>
+          <div class="form-group">
+            <label for="edit_nombre">Nombre</label>
+            <input type="text" class="form-control" id="edit_nombre" name="nombre" required>
+          </div>
+          <div class="form-group">
+            <label for="edit_id_grupo">Centro Asociado</label>
+            <select class="form-control" id="edit_id_grupo" name="id_grupo" required>
+              <option value="">Seleccione un centro</option>
+              <?php
+                $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos ORDER BY descripcion_grupo ASC";
+                $result_grupos = $mysqli->query($query_grupos);
+                while ($row_grupo = $result_grupos->fetch_assoc()) {
+                  echo '<option value="' . $row_grupo['id_grupo'] . '">' . htmlspecialchars($row_grupo['descripcion_grupo']) . '</option>';
+                }
+              ?>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit_tipo_usuario">Tipo Usuario</label>
+            <select class="form-control" id="edit_tipo_usuario" name="tipo_usuario" required>
+              <option value="">Seleccione tipo usuario</option>
+              <option value="1">ADMINISTRADOR</option>
+              <option value="2">CONTRATISTA</option>
+              <option value="3">CPSAM O CENTRO VIDA</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Abrir modal y precargar datos
+$(document).on('click', '.btn-edit', function(e) {
+    e.preventDefault();
+    var row = $(this).closest('tr');
+    var id = $(this).attr('data-id');
+    var usuario = row.find('td').eq(1).text();
+    var nombre = row.find('td').eq(2).text();
+    var id_grupo = row.attr('data-id-grupo');
+    var tipo_usuario = row.find('span').attr('data-tipo-usuario') || row.find('span').text();
+    $('#edit_id').val(id);
+    $('#edit_usuario').val(usuario);
+    $('#edit_nombre').val(nombre);
+    $('#edit_id_grupo').val(id_grupo);
+    $('#edit_tipo_usuario').val(tipo_usuario);
+    $('#editUserModal').modal('show');
+});
+
+// Enviar cambios por AJAX
+$('#editUserForm').submit(function(e) {
+    e.preventDefault();
+    $.ajax({
+        url: 'editusers.php',
+        type: 'POST',
+        data: $(this).serialize(),
+        success: function(response) {
+            Swal.fire('Actualizado', 'Usuario actualizado correctamente', 'success');
+            $('#editUserModal').modal('hide');
+            setTimeout(function(){ location.reload(); }, 1000);
+        },
+        error: function() {
+            Swal.fire('Error', 'No se pudo actualizar el usuario', 'error');
+        }
+    });
+});
+</script>
 
 </body>
 

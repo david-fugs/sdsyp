@@ -1,5 +1,8 @@
 <?php
 include("../../conexion.php");
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
+
 $where = "WHERE p.estado_persona = 1";
 
 // Filtro por cédula
@@ -19,7 +22,9 @@ if (!empty($_GET['condicion'])) {
     $condicion = $mysqli->real_escape_string($_GET['condicion']);
     $where .= " AND c.id_condicion = '$condicion'";
 }
-
+if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 2) {
+    $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
+}
 // Consulta SQL para obtener los datos
 $query = " SELECT mp.id_movimiento_persona,c.id_condicion,p.cedula_persona,p.nombres_persona,p.apellidos_persona,c.descripcion_condicion, 
            mp.fecha_movimiento,mp.observacion_movimiento,mp.id_centro_vida_traslado,g.descripcion_grupo as centro_vida_traslado

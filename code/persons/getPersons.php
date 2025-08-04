@@ -1,7 +1,9 @@
 <?php
 include("../../conexion.php");
-$where = "WHERE p.estado_persona = 1";
 
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
+$where = "WHERE p.estado_persona = 1";
 // Filtro por cédula
 if (!empty($_GET['cedula_persona'])) {
     $cedula = $mysqli->real_escape_string($_GET['cedula_persona']);
@@ -18,6 +20,11 @@ if (!empty($_GET['nombre'])) {
 if (!empty($_GET['programa'])) {
     $programa = $mysqli->real_escape_string($_GET['programa']);
     $where .= " AND pp.id_programa = '$programa'";
+}
+
+// Filtrar por id_grupo si el tipo_usuario en la sesión es diferente de 1
+if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 2) {
+    $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
 
 // Preparar filtro por estado (se aplicará después de la consulta principal)

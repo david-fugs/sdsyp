@@ -71,7 +71,7 @@ ORDER BY g.descripcion_grupo ASC
 $result_grupos_personas = $mysqli->query($query_grupos_personas);
 $grupos_stats = array();
 while ($row = $result_grupos_personas->fetch_assoc()) {
-    $grupos_stats[] = $row;
+  $grupos_stats[] = $row;
 }
 
 $mysqli->close();
@@ -84,21 +84,21 @@ $mysqli->close();
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - SDSYP</title>
-  
+
   <!-- Boxicons CSS -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer></script>
-  
+
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  
+
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
-  
+
   <!-- Menu CSS -->
   <link rel="stylesheet" href="menu/style.css" />
-  
+
   <style>
     body {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -107,24 +107,28 @@ $mysqli->close();
       margin: 0;
       padding: 0;
     }
-    
+
     .main-content {
-      margin-left: 80px; /* Margen mínimo para sidebar colapsado */
+      margin-left: 80px;
+      /* Margen mínimo para sidebar colapsado */
       transition: margin-left 0.3s ease;
       padding: 20px;
-      padding-top: 140px; /* Compensar navbar fijo + barra superior */
-      width: calc(100% - 80px); /* Ajustar ancho considerando sidebar colapsado */
+      padding-top: 140px;
+      /* Compensar navbar fijo + barra superior */
+      width: calc(100% - 80px);
+      /* Ajustar ancho considerando sidebar colapsado */
       box-sizing: border-box;
       position: relative;
       z-index: 1;
       min-height: calc(100vh - 140px);
     }
-    
+
     .main-content.sidebar-open {
-      margin-left: 350px; /* Ancho completo del sidebar cuando está abierto */
+      margin-left: 350px;
+      /* Ancho completo del sidebar cuando está abierto */
       width: calc(100% - 350px);
     }
-    
+
     /* Asegurar que el sidebar no tape el contenido */
     .sidebar {
       position: fixed !important;
@@ -132,7 +136,7 @@ $mysqli->close();
       left: 0;
       top: 0;
     }
-    
+
     .navbar {
       position: fixed !important;
       z-index: 1001;
@@ -140,14 +144,17 @@ $mysqli->close();
       top: 0;
       left: 0;
     }
-    
+
     /* Barra lateral superior */
     .top-sidebar {
       position: fixed;
-      top: 70px; /* Debajo del navbar - ajustado */
-      left: 80px; /* Iniciar después del sidebar colapsado */
+      top: 70px;
+      /* Debajo del navbar - ajustado */
+      left: 80px;
+      /* Iniciar después del sidebar colapsado */
       right: 0;
-      width: calc(100% - 80px); /* Ajustar ancho considerando sidebar colapsado */
+      width: calc(100% - 80px);
+      /* Ajustar ancho considerando sidebar colapsado */
       height: 60px;
       background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(15px);
@@ -158,12 +165,13 @@ $mysqli->close();
       display: flex;
       align-items: center;
     }
-    
+
     .top-sidebar.sidebar-open {
-      left: 350px; /* Mover después del sidebar completamente abierto */
+      left: 350px;
+      /* Mover después del sidebar completamente abierto */
       width: calc(100% - 350px);
     }
-    
+
     .top-sidebar-content {
       display: flex;
       align-items: center;
@@ -172,13 +180,13 @@ $mysqli->close();
       padding: 0 20px;
       overflow-x: auto;
     }
-    
+
     .quick-nav {
       display: flex;
       gap: 15px;
       align-items: center;
     }
-    
+
     .quick-nav-item {
       display: flex;
       align-items: center;
@@ -194,38 +202,38 @@ $mysqli->close();
       box-shadow: 0 3px 10px rgba(0, 123, 255, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    
+
     .quick-nav-item:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
       color: white;
       text-decoration: none;
     }
-    
+
     .quick-nav-item i {
       margin-right: 6px;
       font-size: 16px;
     }
-    
+
     .quick-nav-item .badge {
       margin-left: 6px;
       background-color: rgba(255, 255, 255, 0.3);
       color: white;
       border: 1px solid rgba(255, 255, 255, 0.5);
     }
-    
+
     .breadcrumb-info {
       display: flex;
       align-items: center;
       color: #6c757d;
       font-size: 14px;
     }
-    
+
     .breadcrumb-info i {
       margin-right: 8px;
       color: #007bff;
     }
-    
+
     .welcome-section {
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
@@ -235,7 +243,7 @@ $mysqli->close();
       color: white;
       text-align: center;
     }
-    
+
     .stats-card {
       background: rgba(255, 255, 255, 0.95);
       border-radius: 15px;
@@ -245,23 +253,23 @@ $mysqli->close();
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       border: none;
     }
-    
+
     .stats-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
     }
-    
+
     .stats-icon {
       font-size: 2.5rem;
       margin-bottom: 1rem;
     }
-    
+
     .stats-number {
       font-size: 2.5rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
     }
-    
+
     .stats-label {
       color: #6c757d;
       font-weight: 600;
@@ -269,7 +277,7 @@ $mysqli->close();
       font-size: 0.9rem;
       letter-spacing: 0.5px;
     }
-    
+
     .chart-container {
       background: rgba(255, 255, 255, 0.95);
       border-radius: 15px;
@@ -277,7 +285,7 @@ $mysqli->close();
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
       margin-bottom: 2rem;
     }
-    
+
     .page-title {
       color: white;
       text-align: center;
@@ -286,14 +294,14 @@ $mysqli->close();
       font-weight: 700;
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
     }
-    
+
     .quick-actions {
       background: rgba(255, 255, 255, 0.95);
       border-radius: 15px;
       padding: 2rem;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     }
-    
+
     .action-btn {
       background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
       border: none;
@@ -306,19 +314,19 @@ $mysqli->close();
       transition: all 0.3s ease;
       text-align: center;
     }
-    
+
     .action-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);
       color: white;
       text-decoration: none;
     }
-    
+
     /* Estilos específicos para la tabla de grupos */
     .groups-table {
       overflow-x: auto;
     }
-    
+
     .groups-table table {
       width: 100%;
       border-collapse: collapse;
@@ -327,7 +335,7 @@ $mysqli->close();
       overflow: hidden;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
-    
+
     .groups-table th {
       background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
       color: white;
@@ -338,18 +346,18 @@ $mysqli->close();
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
+
     .groups-table td {
       padding: 12px 15px;
       text-align: center;
       border-bottom: 1px solid #eee;
       vertical-align: middle;
     }
-    
+
     .groups-table tr:hover {
       background-color: #f8f9fa;
     }
-    
+
     .status-badge {
       padding: 6px 12px;
       border-radius: 20px;
@@ -358,22 +366,22 @@ $mysqli->close();
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
+
     .status-disponible {
       background-color: #d4edda;
       color: #155724;
     }
-    
+
     .status-medio {
       background-color: #fff3cd;
       color: #856404;
     }
-    
+
     .status-lleno {
       background-color: #f8d7da;
       color: #721c24;
     }
-    
+
     .progress-bar-custom {
       height: 8px;
       border-radius: 10px;
@@ -381,109 +389,111 @@ $mysqli->close();
       overflow: hidden;
       margin: 5px 0;
     }
-    
+
     .progress-fill {
       height: 100%;
       border-radius: 10px;
       transition: width 0.3s ease;
     }
-    
+
     .progress-low {
       background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
     }
-    
+
     .progress-medium {
       background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);
     }
-    
+
     .progress-high {
       background: linear-gradient(90deg, #dc3545 0%, #e83e8c 100%);
     }
-    
+
     @media (max-width: 768px) {
       .main-content {
-        margin-left: 0 !important; /* En móvil, no hay margen */
+        margin-left: 0 !important;
+        /* En móvil, no hay margen */
         width: 100% !important;
         padding: 15px;
         padding-top: 130px;
       }
-      
+
       .main-content.sidebar-open {
         margin-left: 0 !important;
         width: 100% !important;
       }
-      
+
       .top-sidebar {
-        left: 0 !important; /* En móvil, barra superior ocupa todo el ancho */
+        left: 0 !important;
+        /* En móvil, barra superior ocupa todo el ancho */
         width: 100% !important;
       }
-      
+
       .top-sidebar.sidebar-open {
         left: 0 !important;
         width: 100% !important;
       }
-      
+
       .stats-card {
         margin-bottom: 1rem;
         padding: 1rem;
       }
-      
+
       .stats-number {
         font-size: 2rem;
       }
-      
+
       .page-title {
         font-size: 2rem;
         margin: 1rem 0;
       }
-      
+
       .quick-nav {
         gap: 8px;
       }
-      
+
       .quick-nav-item {
         padding: 6px 10px;
         font-size: 12px;
       }
-      
+
       .quick-nav-item .badge {
         font-size: 10px;
       }
     }
-    
+
     @media (max-width: 576px) {
       .main-content {
         padding: 10px;
         padding-top: 125px;
       }
-      
+
       .stats-card {
         padding: 0.8rem;
       }
-      
+
       .page-title {
         font-size: 1.5rem;
       }
-      
+
       .action-btn {
         padding: 0.8rem;
         margin-bottom: 0.8rem;
       }
-      
+
       .top-sidebar-content {
         padding: 0 10px;
       }
-      
+
       .quick-nav {
         gap: 5px;
         flex-wrap: wrap;
       }
-      
+
       .quick-nav-item {
         padding: 4px 8px;
         font-size: 11px;
       }
-      
+
       .breadcrumb-info {
         display: none;
       }
@@ -545,7 +555,7 @@ $mysqli->close();
           Informes
         </a>
       </div>
-      
+
       <div class="breadcrumb-info" style="color: #6c757d; font-weight: 600;">
         <i class="bi bi-house-fill"></i>
         Dashboard Principal
@@ -554,11 +564,12 @@ $mysqli->close();
   </div>
 
   <!-- sidebar -->
-  <?php if ($tipo_usuario == 1) { ?>
+
   <nav class="sidebar">
     <div class="menu_content">
       <ul class="menu_items">
         <div class="menu_title menu_dahsboard"></div>
+        <?php if ($tipo_usuario == 1) { ?>
         <li class="item">
           <div href="#" class="nav_link submenu_item">
             <span class="navlink_icon">
@@ -572,6 +583,7 @@ $mysqli->close();
             <a href="code/users/register.php" class="nav_link sublink">Crear Nuevo</a>
           </ul>
         </li>
+        <?php } ?>
         <li class="item">
           <div href="#" class="nav_link submenu_item">
             <span class="navlink_icon">
@@ -582,7 +594,7 @@ $mysqli->close();
           </div>
           <ul class="menu_items submenu">
             <a href="code/persons/seePerson.php" class="nav_link sublink">Ver Personas</a>
-            <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a>
+            <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
             <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
           </ul>
         </li>
@@ -623,7 +635,7 @@ $mysqli->close();
           <ul class="menu_items submenu">
             <a href="code/condition/seeCondition.php" class="nav_link sublink">Ver Condiciones</a>
             <a href="code/group/seeGroup.php" class="nav_link sublink">Grupo o CPSAM</a>
-            <a href="code/center/seeCenter.php" class="nav_link sublink">Centro Vida</a>
+            <!-- <a href="code/center/seeCenter.php" class="nav_link sublink">Centro Vida</a> -->
           </ul>
         </li>
         <li class="item">
@@ -663,7 +675,7 @@ $mysqli->close();
       </ul>
     </div>
   </nav>
-  <?php } ?>
+
 
   <!-- Main Content -->
   <div class="main-content" id="mainContent">
@@ -678,7 +690,7 @@ $mysqli->close();
       <h2><i class="bi bi-house-heart me-2"></i>Bienvenido al Sistema SDSYP</h2>
       <p class="lead mb-3">Sistema de Desarrollo Social y Políticas Públicas - Panel de Control</p>
       <small>Acceso como: <?php echo $tipo_usuario == 1 ? 'Administrador' : 'Usuario'; ?> | Usuario: <?php echo htmlspecialchars($nombre); ?></small>
-      
+
       <!-- Botón de acceso rápido destacado -->
       <div class="mt-4">
         <a href="code/persons/seePerson.php" class="btn btn-light btn-lg px-4 py-2" style="border-radius: 25px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
@@ -773,24 +785,24 @@ $mysqli->close();
                 </thead>
                 <tbody>
                   <?php foreach ($grupos_stats as $grupo): ?>
-                    <?php 
-                      $disponibles = $grupo['limite_personas'] - $grupo['total_personas'];
-                      $porcentaje = $grupo['limite_personas'] > 0 ? round(($grupo['total_personas'] / $grupo['limite_personas']) * 100, 1) : 0;
-                      
-                      // Determinar el color según la ocupación
-                      if ($porcentaje >= 90) {
-                        $badge_class = 'bg-danger';
-                        $estado = 'Lleno';
-                      } elseif ($porcentaje >= 70) {
-                        $badge_class = 'bg-warning';
-                        $estado = 'Alto';
-                      } elseif ($porcentaje >= 40) {
-                        $badge_class = 'bg-info';
-                        $estado = 'Medio';
-                      } else {
-                        $badge_class = 'bg-success';
-                        $estado = 'Bajo';
-                      }
+                    <?php
+                    $disponibles = $grupo['limite_personas'] - $grupo['total_personas'];
+                    $porcentaje = $grupo['limite_personas'] > 0 ? round(($grupo['total_personas'] / $grupo['limite_personas']) * 100, 1) : 0;
+
+                    // Determinar el color según la ocupación
+                    if ($porcentaje >= 90) {
+                      $badge_class = 'bg-danger';
+                      $estado = 'Lleno';
+                    } elseif ($porcentaje >= 70) {
+                      $badge_class = 'bg-warning';
+                      $estado = 'Alto';
+                    } elseif ($porcentaje >= 40) {
+                      $badge_class = 'bg-info';
+                      $estado = 'Medio';
+                    } else {
+                      $badge_class = 'bg-success';
+                      $estado = 'Bajo';
+                    }
                     ?>
                     <tr>
                       <td>
@@ -826,14 +838,14 @@ $mysqli->close();
 
   <!-- Menu Script -->
   <script src="menu/script.js"></script>
-  
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const sidebarOpen = document.getElementById('sidebarOpen');
       const mainContent = document.getElementById('mainContent');
       const topSidebar = document.getElementById('topSidebar');
       const sidebar = document.querySelector('.sidebar');
-      
+
       // Función para actualizar el estado del contenido principal y barra superior
       function updateMainContentState() {
         // El sidebar siempre está presente, pero cambia su ancho
@@ -849,10 +861,10 @@ $mysqli->close();
           if (topSidebar) topSidebar.classList.add('sidebar-open');
         }
       }
-      
+
       // Configurar el estado inicial - sidebar cerrado por defecto
       updateMainContentState();
-      
+
       // Escuchar eventos de hover en el sidebar
       if (sidebar) {
         sidebar.addEventListener('mouseenter', function() {
@@ -860,21 +872,21 @@ $mysqli->close();
             setTimeout(updateMainContentState, 50);
           }
         });
-        
+
         sidebar.addEventListener('mouseleave', function() {
           if (sidebar.classList.contains('hoverable')) {
             setTimeout(updateMainContentState, 50);
           }
         });
       }
-      
+
       // Escuchar clicks en el botón del menú
       if (sidebarOpen && mainContent) {
         sidebarOpen.addEventListener('click', function() {
           setTimeout(updateMainContentState, 150);
         });
       }
-      
+
       // Observer para detectar cambios en las clases del sidebar
       if (sidebar) {
         const observer = new MutationObserver(function(mutations) {
@@ -884,13 +896,13 @@ $mysqli->close();
             }
           });
         });
-        
+
         observer.observe(sidebar, {
           attributes: true,
           attributeFilter: ['class']
         });
       }
-      
+
       // Manejar redimensionamiento de ventana
       window.addEventListener('resize', function() {
         updateMainContentState();

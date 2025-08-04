@@ -1,77 +1,64 @@
 <?php
-  
-  // Configurar codificación UTF-8 más específica
-  ini_set('default_charset', 'UTF-8');
-  header('Content-Type: text/html; charset=UTF-8');
-  mb_internal_encoding('UTF-8');
-  
-  require "conexion.php";
-  
-  // Configurar charset para MySQL con verificación
-  if ($mysqli->connect_error) {
-      die("Error de conexión: " . $mysqli->connect_error);
-  }
-  $mysqli->set_charset("utf8mb4");
- 
-  session_start();
 
-  if($_POST)
-  {
-    $usuario = $_POST['usuario'];
-    $password = $_POST['password'];
+// Configurar codificación UTF-8 más específica
+ini_set('default_charset', 'UTF-8');
+header('Content-Type: text/html; charset=UTF-8');
+mb_internal_encoding('UTF-8');
 
-    $sql = "SELECT * FROM usuarios WHERE usuario='$usuario'";
-    $resultado = $mysqli->query($sql);
-    $num = $resultado->num_rows;
+require "conexion.php";
 
-      if($num>0)
-      {
-        $row = $resultado->fetch_assoc();
-        $password_bd = $row['password'];
+// Configurar charset para MySQL con verificación
+if ($mysqli->connect_error) {
+  die("Error de conexión: " . $mysqli->connect_error);
+}
+$mysqli->set_charset("utf8mb4");
 
-        $pass_c = sha1($password);
+session_start();
 
-        if($password_bd == $pass_c)
-        {
-          $_SESSION['id'] = $row['id'];
-          $_SESSION['nombre'] = $row['nombre'];
-          $_SESSION['tipo_usuario'] = $row['tipo_usuario'];
-          $_SESSION['usuario'] = $row['usuario'];
+if ($_POST) {
+  $usuario = $_POST['usuario'];
+  $password = $_POST['password'];
 
-          if($row['tipo_usuario']==1)
-          {
-            header("Location: access.php");
-          }
-          elseif($row['tipo_usuario']==2)
-          {
-            header("Location: access.php");
-          }
-          elseif($row['tipo_usuario']==5)
-          {
-            header("Location: access.php");
-          }
-          elseif($row['tipo_usuario']==6)
-          {
-            header("Location: access.php");
-          }
-          else
-          {
-            header("Location: index.php");
-          }
-        }else
-        {
-          $error_message = "La contrase&ntilde;a no coincide";
-        }
-      }else
-      {
-        $error_message = "El usuario no existe";
+  $sql = "SELECT * FROM usuarios WHERE usuario='$usuario'";
+  $resultado = $mysqli->query($sql);
+  $num = $resultado->num_rows;
+
+  if ($num > 0) {
+    $row = $resultado->fetch_assoc();
+    $password_bd = $row['password'];
+
+    $pass_c = sha1($password);
+
+    if ($password_bd == $pass_c) {
+      $_SESSION['id'] = $row['id'];
+      $_SESSION['nombre'] = $row['nombre'];
+      $_SESSION['tipo_usuario'] = $row['tipo_usuario'];
+      $_SESSION['usuario'] = $row['usuario'];
+      $_SESSION['id_grupo'] = $row['id_grupo'];
+
+      if ($row['tipo_usuario'] == 1 || $row['tipo_usuario'] == 2 || $row['tipo_usuario'] == 3) {
+        header("Location: access.php");
+      } elseif ($row['tipo_usuario'] == 7) {
+        echo '<script>
+        alert("Usuario aun sin acceso, contacto con administrador");
+        window.location.href = "index.php";
+    </script>';
+      } else {
+        header("Location: index.php");
       }
+    } else {
+      $error_message = "La contrase&ntilde;a no coincide";
+    }
+  } else {
+    $error_message = "El usuario no existe";
   }
+}
 ?>
 
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -137,8 +124,15 @@
     }
 
     @keyframes float {
-      0%, 100% { transform: translate(-20px, -20px) rotate(0deg); }
-      50% { transform: translate(20px, 20px) rotate(180deg); }
+
+      0%,
+      100% {
+        transform: translate(-20px, -20px) rotate(0deg);
+      }
+
+      50% {
+        transform: translate(20px, 20px) rotate(180deg);
+      }
     }
 
     .brand-content {
@@ -152,7 +146,7 @@
     }
 
     .logo {
-      width: 80px !important;
+      width: 183px !important;
       height: 80px !important;
       border-radius: 50% !important;
       object-fit: cover !important;
@@ -341,12 +335,12 @@
       transition: all 0.3s ease !important;
     }
 
-    .checkbox-container input:checked + .checkmark {
+    .checkbox-container input:checked+.checkmark {
       background: #3498db !important;
       border-color: #3498db !important;
     }
 
-    .checkbox-container input:checked + .checkmark::after {
+    .checkbox-container input:checked+.checkmark::after {
       content: '' !important;
       position: absolute !important;
       left: 5px !important;
@@ -482,6 +476,7 @@
     }
   </style>
 </head>
+
 <body class="login-page">
   <div class="login-container">
     <!-- Parte izquierda con imagen/branding -->
@@ -517,7 +512,7 @@
           <p>Ingresa tus credenciales para acceder</p>
         </div>
 
-        <?php if(isset($error_message)): ?>
+        <?php if (isset($error_message)): ?>
           <div class="error-message">
             <i class="fas fa-exclamation-circle"></i>
             <?php echo $error_message; ?>
@@ -559,7 +554,7 @@
           </button>
 
           <div class="signup-link">
-            &iquest;No tienes cuenta? <a href="register.php">Crear cuenta</a>
+            &iquest;No tienes cuenta? <a href="code/users/register.php">Crear cuenta</a>
           </div>
         </form>
       </div>
@@ -570,7 +565,7 @@
     function togglePassword() {
       const passwordInput = document.getElementById('password');
       const toggleIcon = document.getElementById('toggleIcon');
-      
+
       if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         toggleIcon.classList.remove('fa-eye');
@@ -587,7 +582,7 @@
       input.addEventListener('focus', function() {
         this.parentElement.classList.add('focused');
       });
-      
+
       input.addEventListener('blur', function() {
         if (this.value === '') {
           this.parentElement.classList.remove('focused');
@@ -596,4 +591,5 @@
     });
   </script>
 </body>
+
 </html>

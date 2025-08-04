@@ -1,3 +1,7 @@
+
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -124,6 +128,7 @@
 </head>
 <?php
 include("../../conexion.php");
+
 $programas = "SELECT * FROM programas ";
 $result_programas = mysqli_query($mysqli, $programas);
 if (!$result_programas) {

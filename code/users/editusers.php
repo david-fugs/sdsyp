@@ -106,7 +106,8 @@
                         <select class="form-control" name="tipo_usuario" required id="selctUsuario" />
                             <option value="">SELECCIONE:</option>
                             <option value=1 <?php if($row['tipo_usuario']==1){echo 'selected';} ?>>ADMIN</option>
-                            <option value=2 <?php if($row['tipo_usuario']==2){echo 'selected';} ?>>EMPLEADO</option>
+                            <option value=2 <?php if($row['tipo_usuario']==2){echo 'selected';} ?>>CONTRATISTA</option>
+                            <option value=3 <?php if($row['tipo_usuario']==3){echo 'selected';} ?>>CPSAM O CENTRO VIDA</option>
                             <option value=7 <?php if($row['tipo_usuario']==7){echo 'selected';} ?>>SIN ACCESO</option>
                         </select>
                     </div>
@@ -123,5 +124,23 @@
             </button>
         </form>
     </div>
+    <?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['id'])) {
+    include("../../conexion.php");
+    $id = intval($_POST['id']);
+    $usuario = mysqli_real_escape_string($mysqli, $_POST['usuario']);
+    $nombre = mysqli_real_escape_string($mysqli, $_POST['nombre']);
+    $id_grupo = isset($_POST['id_grupo']) ? intval($_POST['id_grupo']) : 0;
+    $tipo_usuario = isset($_POST['tipo_usuario']) ? intval($_POST['tipo_usuario']) : 0;
+    $update = "UPDATE usuarios SET usuario='$usuario', nombre='$nombre', id_grupo='$id_grupo', tipo_usuario='$tipo_usuario' WHERE id='$id'";
+    $result = mysqli_query($mysqli, $update);
+    if ($result) {
+        echo 'OK';
+    } else {
+        echo 'ERROR';
+    }
+    exit;
+}
+?>
     </body>
 </html>

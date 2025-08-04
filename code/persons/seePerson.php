@@ -1,3 +1,65 @@
+<?php
+session_start();
+include("../../conexion.php");
+$programas = "SELECT * FROM programas ";
+$result_programas = mysqli_query($mysqli, $programas);
+if (!$result_programas) {
+    die("Error en la consulta: " . mysqli_error($mysqli));
+}
+
+$grupos = "SELECT * FROM grupos ";
+$result_grupos = mysqli_query($mysqli, $grupos);
+if (!$result_grupos) {
+    die("Error en la consulta: " . mysqli_error($mysqli));
+}
+$politicas_publicas = "SELECT * FROM politicas_publicas ";
+$result_politicas_publicas = mysqli_query($mysqli, $politicas_publicas);
+if (!$result_politicas_publicas) {
+    die("Error en la consulta: " . mysqli_error($mysqli));
+}
+
+// Obtener tipo_usuario e id_grupo de la sesión
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
+
+// Filtrar grupos para el select según tipo_usuario
+$grupos_filtrados = [];
+if ($tipo_usuario == 3 && $id_grupo_session) {
+    foreach ($result_grupos as $grupo) {
+        if ($grupo['id_grupo'] == $id_grupo_session) {
+            $grupos_filtrados[] = $grupo;
+        }
+    }
+} else {
+    $grupos_filtrados = $result_grupos;
+}
+
+if (isset($_GET['delete'])) {
+    $cedula_persona = $_GET['delete'];
+    deleteMember($cedula_persona);
+}
+
+function deleteMember($cedula_persona)
+{
+    global $mysqli; // Asegurar acceso a la conexión global
+
+    $query = "DELETE FROM personas WHERE cedula_persona  = ?";
+    $stmt = $mysqli->prepare($query);
+    $stmt->bind_param("s", $cedula_persona);
+
+    if ($stmt->execute()) {
+        echo "<script>alert('Persona borrada corecctamente');
+        window.location = 'seePerson.php';</script>";
+    } else {
+        echo "<script>alert('Error borrando la persona');
+        window.location = 'seePerson.php';</script>";
+    }
+
+    $stmt->close();
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -141,51 +203,6 @@
         }
     </style>
 </head>
-<?php
-include("../../conexion.php");
-$programas = "SELECT * FROM programas ";
-$result_programas = mysqli_query($mysqli, $programas);
-if (!$result_programas) {
-    die("Error en la consulta: " . mysqli_error($mysqli));
-}
-
-$grupos = "SELECT * FROM grupos ";
-$result_grupos = mysqli_query($mysqli, $grupos);
-if (!$result_grupos) {
-    die("Error en la consulta: " . mysqli_error($mysqli));
-}
-$politicas_publicas = "SELECT * FROM politicas_publicas ";
-$result_politicas_publicas = mysqli_query($mysqli, $politicas_publicas);
-if (!$result_politicas_publicas) {
-    die("Error en la consulta: " . mysqli_error($mysqli));
-}
-
-if (isset($_GET['delete'])) {
-    $cedula_persona = $_GET['delete'];
-    deleteMember($cedula_persona);
-}
-
-function deleteMember($cedula_persona)
-{
-    global $mysqli; // Asegurar acceso a la conexión global
-
-    $query = "DELETE FROM personas WHERE cedula_persona  = ?";
-    $stmt = $mysqli->prepare($query);
-    $stmt->bind_param("s", $cedula_persona);
-
-    if ($stmt->execute()) {
-        echo "<script>alert('Persona borrada corecctamente');
-        window.location = 'seePerson.php';</script>";
-    } else {
-        echo "<script>alert('Error borrando la persona');
-        window.location = 'seePerson.php';</script>";
-    }
-
-    $stmt->close();
-}
-
-?>
-
 <body>
     <center style="margin-top: 20px;">
         <img src='../../img/logo.png' width="150" height="120" class="responsive">
@@ -647,7 +664,7 @@ function deleteMember($cedula_persona)
                             <div class="col-md-6 mb-3 form-floating mt-1">
                                 <select class="form-select" id="id_grupo" name="id_grupo">
                                     <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_grupos as $grupo) { ?>
+                                    <?php foreach ($grupos_filtrados as $grupo) { ?>
                                         <option value="<?= $grupo['id_grupo']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
                                     <?php } ?>
                                 </select>
@@ -756,6 +773,7 @@ function deleteMember($cedula_persona)
                             <div class="col-md-4 mb-3">
                                 <label for="edit-talla" class="form-label">Talla (cm)</label>
                                 <input type="number" step="0.01" class="form-control" id="edit-talla" name="talla">
+                                <label for="talla">Talla (cm)</label>
                             </div>
                         </div>
                         <!-- Fila: Patologías, Factores de Riesgo (Edición) -->
