@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -225,6 +226,7 @@ function deleteMember($id_movimiento)
                     <form id="exportExcelForm" action="exportActividadesExcel.php" method="get" style="display:inline;">
                         <input type="hidden" name="filtro_anio" id="export_filtro_anio">
                         <input type="hidden" name="filtro_mes" id="export_filtro_mes">
+                        <input type="hidden" name="filtro_funcionario" id="export_filtro_funcionario">
                         <button type="submit" class="btn-modern btn-warning">
                             <i class="bi bi-file-earmark-excel"></i>
                             Exportar Excel
@@ -240,11 +242,13 @@ function deleteMember($id_movimiento)
                 function syncExportFilters() {
                     document.getElementById('export_filtro_anio').value = document.getElementById('filtro_anio').value;
                     document.getElementById('export_filtro_mes').value = document.getElementById('filtro_mes').value;
+                    document.getElementById('export_filtro_funcionario').value = document.getElementById('filtro_funcionario').value;
                 }
                 // Actualizar al cargar y cuando cambian los filtros
                 syncExportFilters();
                 document.getElementById('filtro_anio').addEventListener('change', syncExportFilters);
                 document.getElementById('filtro_mes').addEventListener('change', syncExportFilters);
+                document.getElementById('filtro_funcionario').addEventListener('change', syncExportFilters);
             });
             </script>
             <div class="modern-filters">
@@ -281,6 +285,22 @@ function deleteMember($id_movimiento)
                         </select>
                     </div>
                     <div class="filter-group">
+                        <label for="filtro_funcionario">Funcionario Responsable</label>
+                        <select id="filtro_funcionario" name="filtro_funcionario" class="modern-select">
+                            <option value="">Todos</option>
+                            <?php
+                            $query_funcionarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario = 3 ORDER BY nombre ASC";
+                            $result_funcionarios = mysqli_query($mysqli, $query_funcionarios);
+                            if ($result_funcionarios) {
+                                while ($funcionario = mysqli_fetch_assoc($result_funcionarios)) {
+                                    $selected = (isset($_GET['filtro_funcionario']) && $_GET['filtro_funcionario'] == $funcionario['id']) ? 'selected' : '';
+                                    echo "<option value='" . $funcionario['id'] . "' $selected>" . htmlspecialchars($funcionario['nombre']) . "</option>";
+                                }
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="filter-group">
                         <button type="submit" class="btn-modern btn-primary">
                             <i class="bi bi-search"></i>
                             Buscar
@@ -309,6 +329,7 @@ function deleteMember($id_movimiento)
                             <th>Cant. Femenino</th>
                             <th>Tipo Actividad</th>
                             <th>Observación Actividad</th>
+                            <th>Funcionario Responsable</th>
                             <th class="col-actions">Acciones</th>
                         </tr>
                     </thead>
@@ -333,47 +354,6 @@ function deleteMember($id_movimiento)
 
                     <div class="modal-body">
                         <!-- Fila 2: Meta, Actividad, Acción -->
-                        <div class="row">
-                            <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="meta" name="id_meta" required>
-                                    <option value="" selected>Seleccione Meta...</option>
-                                    <?php foreach ($result_metas as $meta) { ?>
-                                        <option value="<?= $meta['id_meta']; ?>"><?= $meta['descripcion_meta']; ?></option>
-                                    <?php } ?>
-                                </select>
-                                <label for="meta">Meta</label>
-                            </div>
-                            <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="actividad" name="id_actividad" required disabled>
-                                    <option value="" selected>Seleccione Actividad...</option>
-                                </select>
-                                <label for="actividad">Actividad</label>
-                            </div>
-                            <div class="col-md-3 mb-3 form-floating">
-                                <select class="form-select" id="accion" name="id_accion" required disabled>
-                                    <option value="" selected>Seleccione Acción...</option>
-                                </select>
-                                <label for="accion">Acción</label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="politica-publica" name="politica_publica" required>
-                                    <option value="" selected>Seleccione Política Pública...</option>
-                                </select>
-                                <label for="politica-publica">Política Pública</label>
-                            </div>
-                            <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="grupo_actividad" name="id_centro_vida">
-                                    <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_grupos as $grupo) { ?>
-                                        <option value="<?= $grupo['id_grupo']; ?>" data-limite="<?= $grupo['limite_personas']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
-                                    <?php } ?>
-                                </select>
-                                <label class="" for="grupo">Lugar del evento</label>
-                            </div>
-
-                        </div>
 
                         <!-- Fila 5: Observación -->
                         <div class="row">

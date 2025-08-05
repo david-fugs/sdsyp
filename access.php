@@ -587,6 +587,20 @@ $mysqli->close();
                 <a href="code/users/register.php" class="nav_link sublink">Crear Nuevo</a>
               </ul>
             </li>
+            <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-bullseye"></i>
+              </span>
+              <span class="navlink">Actividades </span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/contratista/seeActivities.php" class="nav_link sublink">Ver Actividades</a>
+              <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
+              <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades</a>
+            </ul>
+          </li>
           <?php } ?>
           <li class="item">
             <div href="#" class="nav_link submenu_item">

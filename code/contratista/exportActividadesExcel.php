@@ -21,8 +21,10 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 
 // Obtener filtros
+// Filtros año, mes y funcionario responsable
 $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
 $filtro_mes = isset($_GET['filtro_mes']) ? intval($_GET['filtro_mes']) : '';
+$filtro_funcionario = isset($_GET['filtro_funcionario']) ? intval($_GET['filtro_funcionario']) : '';
 $where = '';
 if ($filtro_anio) {
     $where .= " AND YEAR(ra.fecha_atencion) = $filtro_anio ";
@@ -30,10 +32,14 @@ if ($filtro_anio) {
 if ($filtro_mes) {
     $where .= " AND MONTH(ra.fecha_atencion) = $filtro_mes ";
 }
+if ($filtro_funcionario) {
+    $where .= " AND ra.id_usuario = $filtro_funcionario ";
+}
 
 $query = "SELECT ra.id_registro, m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica,
        g.descripcion_grupo AS centro_vida, ra.fecha_atencion, ra.nombre_lider, ra.telefono_contacto, c.nombre_com AS nombre_comuna,
-       ra.medio_verificacion, ra.cantidad_masculino, ra.cantidad_femenino, ra.tipo_actividad, ra.observacion_actividad
+       ra.medio_verificacion, ra.cantidad_masculino, ra.cantidad_femenino, ra.tipo_actividad, ra.observacion_actividad,
+       ra.id_usuario, u.nombre AS funcionario_responsable
 FROM registro_actividades AS ra
 LEFT JOIN metas m ON ra.id_meta = m.id_meta
 LEFT JOIN actividades a ON ra.id_actividad = a.id_actividad
@@ -41,6 +47,7 @@ LEFT JOIN acciones ac ON ra.id_accion = ac.id_accion
 LEFT JOIN politicas_publicas pp ON ra.politica_publica = pp.id_politica
 LEFT JOIN grupos g ON ra.id_centro_vida = g.id_grupo
 LEFT JOIN comunas c ON ra.id_comuna = c.id_com
+LEFT JOIN usuarios u ON ra.id_usuario = u.id
 WHERE 1 $where
 ORDER BY ra.fecha_atencion DESC
 ";
@@ -56,7 +63,7 @@ $sheet->setTitle('Actividades');
 $headers = [
     'ID', 'Meta', 'Actividad', 'Acción', 'Política Pública', 'Centro Vida', 'Fecha Atención',
     'Nombre Líder', 'Teléfono Contacto', 'Comuna/Corregimiento', 'Medio de Verificación',
-    'Cant. Masculino', 'Cant. Femenino', 'Tipo Actividad', 'Observación Actividad'
+    'Cant. Masculino', 'Cant. Femenino', 'Tipo Actividad', 'Observación Actividad', 'Funcionario Responsable'
 ];
 $col = 'A';
 foreach ($headers as $header) {
@@ -93,7 +100,8 @@ while ($row = $result->fetch_assoc()) {
         $row['cantidad_masculino'],
         $row['cantidad_femenino'],
         $row['tipo_actividad'],
-        $row['observacion_actividad']
+        $row['observacion_actividad'],
+        $row['funcionario_responsable']
     ];
     $col = 'A';
     foreach ($data as $value) {
