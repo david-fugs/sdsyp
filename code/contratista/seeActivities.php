@@ -188,7 +188,7 @@ function deleteMember($id_meta)
                         </tr>
                     </thead>
                     <tbody id="table-body">
-                        <?php include "getActividades.php"; ?>
+                        <?php include "getActivities.php"; ?>
                     </tbody>
                 </table>
             </div>

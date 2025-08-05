@@ -1,4 +1,5 @@
 <?php
+// Eliminar cualquier salida previa
 if (ob_get_length()) {
     header('Content-Type: text/plain; charset=utf-8');
     echo "ERROR: Hay salida previa al header. El archivo Excel se corromperá.\n";
@@ -6,10 +7,17 @@ if (ob_get_length()) {
     exit;
 }
 
+// Forzar codificación UTF-8 en la conexión MySQL
+require_once '../../conexion.php';
+if (isset($mysqli)) {
+    $mysqli->set_charset('utf8mb4');
+    $mysqli->query("SET NAMES 'utf8mb4'");
+    $mysqli->query("SET CHARACTER SET 'utf8mb4'");
+}
+
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once '../../vendor/autoload.php';
-require_once '../../conexion.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -18,9 +26,6 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Font;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-
-
-
 
 // Verificar que se proporcione el año
 if (!isset($_GET['year']) || empty($_GET['year'])) {
@@ -32,8 +37,11 @@ if (!isset($_GET['year']) || empty($_GET['year'])) {
 $year = intval($_GET['year']);
 
 try {
+
     // Crear nuevo objeto Spreadsheet
     $spreadsheet = new Spreadsheet();
+    // Forzar codificación UTF-8 en Spreadsheet
+    \PhpOffice\PhpSpreadsheet\Settings::setLocale('es');
     $sheet = $spreadsheet->getActiveSheet();
     $sheet->setTitle('Informe SDSYP ' . $year);
 
@@ -448,8 +456,13 @@ try {
     }
 
 
+
     // Descargar el archivo directamente sin guardarlo
     $fileName = 'SDSYP_Informe_Completo_' . $year . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+    // Limpiar el buffer de salida antes de enviar headers
+    if (ob_get_length()) {
+        ob_end_clean();
+    }
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     header('Content-Disposition: attachment; filename="' . $fileName . '"');
     header('Cache-Control: max-age=0');
@@ -463,4 +476,4 @@ try {
 }
 
 $mysqli->close();
-?>
+// No cierre PHP para evitar salida accidental
