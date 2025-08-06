@@ -1,6 +1,6 @@
+
 <?php
 session_start();
-
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -28,12 +28,7 @@ session_start();
 
     <!-- Estilos personalizados para aumentar tamaño de fuente -->
     <style>
-        /* Aumentar tamaño de fuente general */
-        body {
-            font-size: 16px !important;
-        }
-
-        /* Tabla - aumentar tamaño de fuente */
+         /* Tabla - aumentar tamaño de fuente */
         .modern-table {
             font-size: 15px !important;
         }
@@ -57,6 +52,32 @@ session_start();
         .modern-table td.col-actividad,
         .modern-table td.col-accion {
             max-width: 250px;
+        }
+
+        /* Filtros y inputs - aumentar tamaño */
+        .modern-input,
+        .modern-select {
+            font-size: 15px !important;
+            padding: 10px 12px !important;
+        }
+        /* Aumentar tamaño de fuente general */
+        body {
+            font-size: 16px !important;
+        }
+
+        /* Tabla - aumentar tamaño de fuente */
+        .modern-table {
+            font-size: 45px !important;
+        }
+
+        .modern-table th {
+            font-size: 16px !important;
+            font-weight: 600 !important;
+        }
+
+        .modern-table td {
+            font-size: 15px !important;
+            padding: 12px 8px !important;
         }
 
         /* Filtros y inputs - aumentar tamaño */
@@ -169,16 +190,7 @@ $result_metas = mysqli_query($mysqli, $metas);
 if (!$result_metas) {
     die("Error en la consulta de metas: " . mysqli_error($mysqli));
 }
-$actividades = "SELECT * FROM actividad_contratista ORDER BY descripcion_actividad ASC";
-$result_actividades = mysqli_query($mysqli, $actividades);
-if (!$result_actividades) {
-    die("Error en la consulta de actividades: " . mysqli_error($mysqli));
-}
-$comunas = "SELECT * FROM comunas ORDER BY nombre_com ASC";
-$result_comunas = mysqli_query($mysqli, $comunas);
-if (!$result_comunas) {
-    die("Error en la consulta de comunas: " . mysqli_error($mysqli));
-}
+
 if (isset($_GET['delete'])) {
     $cedula_persona = $_GET['delete'];
     deleteMember($cedula_persona);
@@ -188,15 +200,15 @@ function deleteMember($id_movimiento)
 {
     global $mysqli; // Asegurar acceso a la conexión global
 
-    $query = "DELETE FROM registro_actividades WHERE id_registro  = ?";
+    $query = "DELETE FROM movimiento_persona WHERE id_movimiento  = ?";
     $stmt = $mysqli->prepare($query);
-    $stmt->bind_param("i", $id_registro);
+    $stmt->bind_param("i", $id_movimiento);
 
     if ($stmt->execute()) {
-        echo "<script>alert('registro borrado correctamente');
+        echo "<script>alert('Movimiento borrado correctamente');
         window.location = 'seePersonMovement.php';</script>";
     } else {
-        echo "<script>alert('Error borrando el registro');
+        echo "<script>alert('Error borrando el movimiento');
         window.location = 'seePersonMovement.php';</script>";
     }
 
@@ -210,94 +222,52 @@ function deleteMember($id_movimiento)
         <img src='../../img/logo.png' width="150" height="120" class="responsive">
     </center>
     <h1 style="color: #412fd1; text-shadow: #FFFFFF 0.1em 0.1em 0.2em; font-size: 48px; text-align: center; font-weight: bold;"><b><i
-                class="bi bi-arrow-left-right"></i> REGISTRO ACTIVIDADES MASIVAS</b></h1>
+                class="bi bi-arrow-left-right"></i> REGISTROS INDIVIDUALES</b></h1>
 
     <!-- Tabla de Movimientos -->
     <div class="container mt-5">
         <div class="modern-container">
             <!-- Header moderno -->
             <div class="modern-header">
-                <h2><i class="bi bi-arrow-left-right"></i> Actividades Realizadas</h2>
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn-modern btn-success" data-bs-toggle="modal" data-bs-target="#modalNewPerson">
-                        <i class="bi bi-plus-circle-fill"></i>
-                        Agregar actividad
-                    </button>
-                    <form id="exportExcelForm" action="exportActividadesExcel.php" method="get" style="display:inline;">
-                        <input type="hidden" name="filtro_anio" id="export_filtro_anio">
-                        <input type="hidden" name="filtro_mes" id="export_filtro_mes">
-                        <input type="hidden" name="filtro_funcionario" id="export_filtro_funcionario">
-                        <button type="submit" class="btn-modern btn-warning">
-                            <i class="bi bi-file-earmark-excel"></i>
-                            Exportar Excel
-                        </button>
-                    </form>
-                </div>
+                <h2><i class="bi bi-arrow-left-right"></i> Registros Individuales</h2>
+                <button type="button" class="btn-modern btn-success" data-bs-toggle="modal" data-bs-target="#modalNewPerson">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    Agregar Registro
+                </button>
             </div>
 
             <!-- Filtros modernos -->
-            <script>
-            // Sincronizar los filtros con el formulario de exportación
-            document.addEventListener('DOMContentLoaded', function() {
-                function syncExportFilters() {
-                    document.getElementById('export_filtro_anio').value = document.getElementById('filtro_anio').value;
-                    document.getElementById('export_filtro_mes').value = document.getElementById('filtro_mes').value;
-                    document.getElementById('export_filtro_funcionario').value = document.getElementById('filtro_funcionario').value;
-                }
-                // Actualizar al cargar y cuando cambian los filtros
-                syncExportFilters();
-                document.getElementById('filtro_anio').addEventListener('change', syncExportFilters);
-                document.getElementById('filtro_mes').addEventListener('change', syncExportFilters);
-                document.getElementById('filtro_funcionario').addEventListener('change', syncExportFilters);
-            });
-            </script>
             <div class="modern-filters">
                 <form action="form.php" method="get" class="filter-row">
                     <div class="filter-group">
-                        <label for="filtro_anio">Año</label>
-                        <select id="filtro_anio" name="filtro_anio" class="modern-select">
-                            <option value="">Todos los años</option>
-                            <?php
-                            $currentYear = date('Y');
-                            $startYear = 2022;
-                            for ($y = $startYear; $y <= $currentYear; $y++) {
-                                $selected = (isset($_GET['filtro_anio']) && $_GET['filtro_anio'] == $y) ? 'selected' : '';
-                                echo "<option value='$y' $selected>$y</option>";
-                            }
-                            ?>
-                        </select>
+                        <label for="cedula_persona">Cédula</label>
+                        <input type="number"
+                            id="cedula_persona"
+                            name="cedula_persona"
+                            class="modern-input"
+                            placeholder="Buscar por cédula..."
+                            value="<?= isset($_GET['cedula_persona']) ? htmlspecialchars($_GET['cedula_persona']) : '' ?>">
                     </div>
                     <div class="filter-group">
-                        <label for="filtro_mes">Mes</label>
-                        <select id="filtro_mes" name="filtro_mes" class="modern-select">
-                            <option value="">Todos los meses</option>
-                            <?php
-                            $meses = [
-                                1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
-                                5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
-                                9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
-                            ];
-                            foreach ($meses as $num => $nombre) {
-                                $selected = (isset($_GET['filtro_mes']) && $_GET['filtro_mes'] == $num) ? 'selected' : '';
-                                echo "<option value='$num' $selected>$nombre</option>";
-                            }
-                            ?>
-                        </select>
+                        <label for="nombre">Nombre</label>
+                        <input type="text"
+                            id="nombre"
+                            name="nombre"
+                            class="modern-input"
+                            placeholder="Buscar por nombre..."
+                            value="<?= isset($_GET['nombre']) ? htmlspecialchars($_GET['nombre']) : '' ?>">
                     </div>
                     <div class="filter-group">
-                        <label for="filtro_funcionario">Funcionario Responsable</label>
-                        <select id="filtro_funcionario" name="filtro_funcionario" class="modern-select">
-                            <option value="">Todos</option>
-                            <?php
-                            $query_funcionarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario = 3 ORDER BY nombre ASC";
-                            $result_funcionarios = mysqli_query($mysqli, $query_funcionarios);
-                            if ($result_funcionarios) {
-                                while ($funcionario = mysqli_fetch_assoc($result_funcionarios)) {
-                                    $selected = (isset($_GET['filtro_funcionario']) && $_GET['filtro_funcionario'] == $funcionario['id']) ? 'selected' : '';
-                                    echo "<option value='" . $funcionario['id'] . "' $selected>" . htmlspecialchars($funcionario['nombre']) . "</option>";
-                                }
-                            }
+                        <label for="condicion">Condición</label>
+                        <select name="condicion" id="condicion" class="modern-select">
+                            <option value="">Todas las condiciones</option>
+                            <?php foreach ($result_condiciones as $condicion) {
+                                $selected = (isset($_GET['condicion']) && $_GET['condicion'] == $condicion['id_condicion']) ? 'selected' : '';
                             ?>
+                                <option value="<?= $condicion['id_condicion']; ?>" <?= $selected ?>>
+                                    <?= $condicion['descripcion_condicion']; ?>
+                                </option>
+                            <?php } ?>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -314,176 +284,60 @@ function deleteMember($id_movimiento)
                 <table class="modern-table" id="salesTable">
                     <thead>
                         <tr>
-                            <th class="col-id">ID</th>
+                            <th class="col-id">Cédula</th>
+                            <th>Nombres</th>
+                            <th>Apellidos</th>
+                            <th>Condición</th>
                             <th class="col-meta">Meta</th>
                             <th class="col-actividad">Actividad</th>
                             <th class="col-accion">Acción</th>
-                            <th>Política Pública</th>
-                            <th>Centro Vida</th>
-                            <th>Fecha Atención</th>
-                            <th>Nombre Líder</th>
-                            <th>Teléfono Contacto</th>
-                            <th>Comuna/Corregimiento</th>
-                            <th>Medio de Verificación</th>
-                            <th>Cant. Masculino</th>
-                            <th>Cant. Femenino</th>
-                            <th>Tipo Actividad</th>
-                            <th>Observación Actividad</th>
-                            <th>Funcionario Responsable</th>
+                            <th>Politica Publica</th>
+                            <th>Departamento</th>
+                            <th>Centro Vida Traslado</th>
+                            <th>Fecha Registro</th>
+                            <th>Observación</th>
+                            <th>Funcionario</th>
                             <th class="col-actions">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php include "getActivitiesForm.php"; ?>
+                        <?php include "getRegistros.php"; ?>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-    <br /><a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="back" /></a><br>
-      <div class="modal fade" id="modalEdicion" tabindex="-1" aria-labelledby="modalEdicionLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content rounded-4 shadow-sm">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="modalEdicionLabel">Editar registro actividad</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="editRegistro.php" method="POST">
-                    <div class="modal-body px-4 py-3">
-                        <input type="hidden" name="id_registro" id="edit-id_registro" value="">
-                        <!-- Fila 2: Meta, Actividad, Acción, Política Pública, Lugar del evento -->
-                        <div class="row">
-                            <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="edit-meta" name="id_meta" required>
-                                    <option value="" selected>Seleccione Meta...</option>
-                                    <?php foreach ($result_metas as $meta) { ?>
-                                        <option value="<?= $meta['id_meta']; ?>"><?= $meta['descripcion_meta']; ?></option>
-                                    <?php } ?>
-                                </select>
-                                <label for="edit-meta">Meta</label>
-                            </div>
-                            <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="edit-actividad" name="id_actividad" required disabled>
-                                    <option value="" selected>Seleccione Actividad...</option>
-                                </select>
-                                <label for="edit-actividad">Actividad</label>
-                            </div>
-                            <div class="col-md-3 mb-3 form-floating">
-                                <select class="form-select" id="edit-accion" name="id_accion" required disabled>
-                                    <option value="" selected>Seleccione Acción...</option>
-                                </select>
-                                <label for="edit-accion">Acción</label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="edit-politica-publica" name="politica_publica" required>
-                                    <option value="" selected>Seleccione Política Pública...</option>
-                                </select>
-                                <label for="edit-politica-publica">Política Pública</label>
-                            </div>
-                            <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="edit-centro-vida" name="id_centro_vida">
-                                    <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_grupos as $grupo) { ?>
-                                        <option value="<?= $grupo['id_grupo']; ?>" data-limite="<?= $grupo['limite_personas']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
-                                    <?php } ?>
-                                </select>
-                                <label for="edit-centro-vida">Lugar del evento</label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3 form-floating">
-                                <input type="date" class="form-control" id="edit-fecha_atencion" name="fecha_atencion">
-                                <label for="edit-fecha_atencion">Fecha Atención</label>
-                            </div>
-                            <div class="col-md-6 mb-3 form-floating">
-                                <input type="text" class="form-control" id="edit-nombre_lider" name="nombre_lider" placeholder="Funcionario responsable">
-                                <label for="edit-nombre_lider">Nombre del líder</label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3 form-floating">
-                                <input type="text" class="form-control" id="edit-telefono_contacto" name="telefono_contacto" placeholder="Teléfono de contacto">
-                                <label for="edit-telefono_contacto">Teléfono de contacto</label>
-                            </div>
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select name="id_comuna" id="edit-id_comuna" class="form-select">
-                                    <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_comunas as $comuna) { ?>
-                                        <option value="<?= $comuna['id_com']; ?>"><?= $comuna['nombre_com']; ?></option>
-                                    <?php } ?>
-                                </select>
-                                <label for="edit-id_comuna">Comuna/Corregimiento</label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select name="medio_verificacion" id="edit-medio_verificacion" class="form-select">
-                                    <option value="" selected>Seleccione...</option>
-                                    <option value="Acta">Acta</option>
-                                    <option value="Acta y registro fotografico">Acta y registro fotografico</option>
-                                    <option value="Registro campo">Registro Campo</option>
-                                    <option value="Historio/ expediente">Historio/ expediente</option>
-                                    <option value="Captura pantalla digital">Captura pantalla digital</option>
-                                    <option value="SPP">SPP</option>
-                                    <option value="SPP - Registro fotografico">SPP - Registro fotografico</option>
-                                </select>
-                                <label for="edit-medio_verificacion">Medio de Verificación</label>
-                            </div>
-                            <div class="col-md-3 mb-3 form-floating">
-                                <input type="number" name="cantidad_masculino" id="edit-cantidad_masculino" class="form-control" placeholder="Cantidad Masculino">
-                                <label for="edit-cantidad_masculino">Cantidad Masculino</label>
-                            </div>
-                            <div class="col-md-3 mb-3 form-floating">
-                                <input type="number" name="cantidad_femenino" id="edit-cantidad_femenino" class="form-control" placeholder="Cantidad Femenino">
-                                <label for="edit-cantidad_femenino">Cantidad Femenino</label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3 form-floating">
-                                <select name="tipo_actividad" id="edit-tipo_actividad" class="form-select">
-                                    <option value="" selected>Seleccione...</option>
-                                    <option value="Articulacion">Articulacion</option>
-                                    <option value="Masiva">Masiva</option>
-                                    <option value="Registro de Actividad">Registro de Actividad</option>
-                                </select>
-                                <label for="edit-tipo_actividad">Tipo Actividad</label>
-                            </div>
-                            <div class="col-md-8 mb-3 form-floating">
-                                <input type="text" class="form-control" id="edit-observacion_actividad" name="observacion_actividad" placeholder="Observación Actividad">
-                                <label for="edit-observacion_actividad">Observación Actividad</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn-modern btn-outline btn-secondary" data-bs-dismiss="modal">
-                            <i class="bi bi-x-lg"></i>
-                            Cancelar
-                        </button>
-                        <button type="submit" class="btn-modern btn-primary" id="guardarCambios">
-                            <i class="bi bi-check-lg"></i>
-                            Guardar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!-- Modal Add registro-->
+    <!-- Modal Add movimiento-->
     <div class="modal fade" id="modalNewPerson" tabindex="-1" aria-labelledby="modalNewPersonLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg"> <!-- Hacemos el modal más ancho -->
             <div class="modal-content">
                 <form action="addRegistro.php" method="POST">
                     <div class="modal-header bg-success text-white">
                         <h5 class="modal-title" id="modalNewPersonLabel">
-                            <i class="bi bi-person-plus-fill me-2"></i>Agregar registro actividad
+                            <i class="bi bi-person-plus-fill me-2"></i>Agregar Movimiento
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
                     <div class="modal-body">
-                        <!-- Fila 2: Meta, Actividad, Acción, Política Pública -->
+                        <!-- Fila 1 -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="text" class="form-control" id="cedula_form" name="cedula_persona" placeholder="Cédula" required autocomplete="off" autofocus>
+                                <label class="" for="cedula_persona">Cédula</label>
+                            </div>
+
+                            <div class="col-md-6 mb-3 form-floating mt-1">
+                                <select class="form-select" id="condicion" name="id_condicion" required>
+                                    <option value="" selected>Seleccione...</option>
+                                    <?php foreach ($result_condiciones as $condicion) { ?>
+                                        <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
+                                    <?php } ?>
+                                </select>
+                                <label class="" for="condicion">Condición</label>
+                            </div>
+                        </div>
+                        <!-- Fila 2: Meta, Actividad, Acción -->
                         <div class="row">
                             <div class="col-md-4 mb-3 form-floating">
                                 <select class="form-select" id="meta" name="id_meta" required>
@@ -508,102 +362,79 @@ function deleteMember($id_movimiento)
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-4 mb-3 form-floating">
+                            <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="politica-publica" name="politica_publica" required>
                                     <option value="" selected>Seleccione Política Pública...</option>
                                 </select>
                                 <label for="politica-publica">Política Pública</label>
                             </div>
-                            <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="centro-vida" name="id_centro_vida">
+                        </div>
+                        <!-- Fila 3: Departamento de Procedencia y Fecha -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="departamento_procedencia" name="departamento_procedencia" required>
+                                    <option value="" selected>Seleccione Departamento...</option>
+                                    <option value="Amazonas">Amazonas</option>
+                                    <option value="Antioquia">Antioquia</option>
+                                    <option value="Arauca">Arauca</option>
+                                    <option value="Atlántico">Atlántico</option>
+                                    <option value="Bolívar">Bolívar</option>
+                                    <option value="Boyacá">Boyacá</option>
+                                    <option value="Caldas">Caldas</option>
+                                    <option value="Caquetá">Caquetá</option>
+                                    <option value="Casanare">Casanare</option>
+                                    <option value="Cauca">Cauca</option>
+                                    <option value="Cesar">Cesar</option>
+                                    <option value="Chocó">Chocó</option>
+                                    <option value="Córdoba">Córdoba</option>
+                                    <option value="Cundinamarca">Cundinamarca</option>
+                                    <option value="Guainía">Guainía</option>
+                                    <option value="Guaviare">Guaviare</option>
+                                    <option value="Huila">Huila</option>
+                                    <option value="La Guajira">La Guajira</option>
+                                    <option value="Magdalena">Magdalena</option>
+                                    <option value="Meta">Meta</option>
+                                    <option value="Nariño">Nariño</option>
+                                    <option value="Norte de Santander">Norte de Santander</option>
+                                    <option value="Putumayo">Putumayo</option>
+                                    <option value="Quindío">Quindío</option>
+                                    <option value="Risaralda">Risaralda</option>
+                                    <option value="San Andrés y Providencia">San Andrés y Providencia</option>
+                                    <option value="Santander">Santander</option>
+                                    <option value="Sucre">Sucre</option>
+                                    <option value="Tolima">Tolima</option>
+                                    <option value="Valle del Cauca">Valle del Cauca</option>
+                                    <option value="Vaupés">Vaupés</option>
+                                    <option value="Vichada">Vichada</option>
+                                    <option value="Bogotá D.C.">Bogotá D.C.</option>
+                                </select>
+                                <label for="departamento_procedencia">Departamento de Procedencia</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="date" class="form-control" id="fecha_movimiento" name="fecha_movimiento" placeholder="Fecha Movimiento">
+                                <label for="fecha_movimiento">Fecha Atencion</label>
+                            </div>
+                        </div>
+                        <!-- Fila 4: Centro Vida Traslado (oculto por defecto) -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating mt-1 d-none">
+                                <select class="form-select" id="grupo" name="id_centro_vida_traslado" disabled>
                                     <option value="" selected>Seleccione...</option>
                                     <?php foreach ($result_grupos as $grupo) { ?>
                                         <option value="<?= $grupo['id_grupo']; ?>" data-limite="<?= $grupo['limite_personas']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
                                     <?php } ?>
                                 </select>
-                                <label for="centro-vida">Lugar del evento</label>
+                                <label class="" for="grupo">Centro Vida Traslado</label>
                             </div>
-
+                        </div>
                         <!-- Fila 5: Observación -->
                         <div class="row">
-                            <div class="col-md-6 mb-3 form-floating">
-                                <!-- <input type="text" class="form-control" id="id_actividad" name="id_actividad" placeholder="Entregas/Actividades" > -->
-                                <select class="form-select" id="id_actividad" name="id_actividad" required>
-                                    <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_actividades as $actividad) { ?>
-                                        <option value="<?= $actividad['id_actividad_contratista']; ?>"><?= $actividad['descripcion_actividad']; ?></option>
-                                    <?php } ?>
-                                </select>
-                                <label for="id_actividad">Entregas/Actividades</label>
-                            </div>
-                            <div class="col-md-6 mb-3 form-floating">
-                                <input type="date" class="form-control" id="fecha_atencion" name="fecha_atencion">
-                                <label for="fecha_atencion">Fecha Atencion</label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3 form-floating">
-                                <input type="text" class="form-control" id="nombre_lider" name="nombre_lider" placeholder="Funcionario responsable">
-                                <label for="nombre_lider">Nombre del lider</label>
-                            </div>
-                            <div class="col-md-6 mb-3 form-floating">
-                                <input type="text" class="form-control" id="telefono_contacto" name="telefono_contacto" placeholder="Telefono de contacto">
-                                <label for="telefono_contacto">Telefono de contacto</label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select name="id_comuna" id="id_comuna" class="form-select">
-                                    <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_comunas as $comuna) { ?>
-                                        <option value="<?= $comuna['id_com']; ?>"><?= $comuna['nombre_com']; ?></option>
-                                    <?php } ?>
-                                </select>
-                                <label for="id_comuna">Comuna/Corregimiento</label>
-                            </div>
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select name="medio_verificacion" id="medio_verificacion" class="form-select">
-                                    <option value="" selected>Seleccione...</option>
-                                    <option value="Acta">Acta</option>
-                                    <option value="Acta y registro fotografico">Acta y registro fotografico</option>
-                                    <option value="Registro campo">Registro Campo</option>
-                                    <option value="Historio/ expediente">Historio/ expediente</option>
-                                    <option value="Captura pantalla digital">Captura pantalla digital</option>
-                                    <option value="SPP">SPP</option>
-                                    <option value="SPP - Registro fotografico">SPP - Registro fotografico</option>
-                                </select>
-                                <label for="medio_verificacion">Medio de Verificación</label>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-4 mb-3 form-floating">
-                                    <input type="number" name="cantidad_masculino" id="cantidad_masculino" class="form-control" placeholder="Cantidad Masculino">
-                                    <label for="cantidad_masculino">Cantidad Masculino</label>
-                                </div>
-                                <div class="col-md-4 mb-3 form-floating">
-                                    <input type="number" name="cantidad_femenino" id="cantidad_femenino" class="form-control" placeholder="Cantidad Femenino">
-                                    <label for="cantidad_femenino">Cantidad Femenino</label>
-                                </div>
-                                <div class="col-md-4 mb-3 form-floating">
-                                    <select name="tipo_actividad" id="tipo_actividad" class="form-select">
-                                        <option value="" selected>Seleccione...</option>
-                                        <option value="Articulacion">Articulacion</option>
-                                        <option value="Masiva">Masiva</option>
-                                        <option value="Registro de Actividad">Registro de Actividad</option>
-                                        
-                                    </select>
-                                    <label for="tipo_actividad">Tipo Actividad</label>
-                                </div>
-                            </div>
-
-                        </div>
-                        <div class="row">
                             <div class="col-md-12 mb-3 form-floating">
-                                <input type="text" class="form-control" id="observacion_actividad" name="observacion_actividad" placeholder="Observacion Actividad">
-                                <label for="observacion_actividad">Observacion Actividad</label>
+                                <input type="text" class="form-control" id="observacion_movimiento" name="observacion_movimiento" placeholder="Observacion Movimiento">
+                                <label for="observacion_movimiento">Observacion</label>
                             </div>
                         </div>
                     </div>
-
 
                     <div class="modal-footer justify-content-between">
                         <button type="button" class="btn-modern btn-outline btn-secondary" data-bs-dismiss="modal">
@@ -618,55 +449,172 @@ function deleteMember($id_movimiento)
         </div>
     </div>
 
-    
 
     <!-- modal edicion -->
+    <div class="modal fade" id="modalEdicion" tabindex="-1" aria-labelledby="modalEdicionLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content rounded-4 shadow-sm">
+                <div class="modal-header bg-dark text-white"> <!-- Negro con texto blanco -->
+                    <h5 class="modal-title" id="modalEdicionLabel">Edit Store Info</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
 
+                <form action="editPersonMovement.php" method="POST">
+                    <div class="modal-body px-4 py-3">
+
+                        <div class="mb-3">
+                            <label for="edit-cedula" class="form-label">Cedula </label>
+                            <input type="text" class="form-control" id="edit-cedula" name="cedula_persona" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-nombre" class="form-label">Nombres</label>
+                            <input type="text" class="form-control" id="edit-nombre" name="nombres_persona" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-apellido" class="form-label">Apellidos</label>
+                            <input type="text" class="form-control" id="edit-apellido" name="apellidos_persona" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-condicion" class="form-label">Condición</label>
+                            <select class="form-select" id="edit-condicion" name="id_condicion">
+                                <option value="" selected>Seleccione...</option>
+                                <?php foreach ($result_condiciones as $condicion) { ?>
+                                    <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-meta" class="form-label">Meta</label>
+                            <select class="form-select" id="edit-meta" name="id_meta">
+                                <option value="" selected>Seleccione Meta...</option>
+                                <?php foreach ($result_metas as $meta) { ?>
+                                    <option value="<?= $meta['id_meta']; ?>"><?= $meta['descripcion_meta']; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-actividad" class="form-label">Actividad</label>
+                            <select class="form-select" id="edit-actividad" name="id_actividad" disabled>
+                                <option value="" selected>Seleccione Actividad...</option>
+                            </select>
+                            <label for="edit-accion" class="form-label">Acción</label>
+                            <select class="form-select" id="edit-accion" name="id_accion" disabled>
+                                <option value="" selected>Seleccione Acción...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-politica-publica" class="form-label">Política Pública</label>
+                            <select class="form-select" id="edit-politica-publica" name="id_politica_publica" required>
+                                <option value="" selected>Seleccione Política Pública...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-departamento-procedencia" class="form-label">Departamento de Procedencia</label>
+                            <select class="form-select" id="edit-departamento-procedencia" name="departamento_procedencia">
+                                <option value="" selected>Seleccione Departamento...</option>
+                                <option value="Amazonas">Amazonas</option>
+                                <option value="Antioquia">Antioquia</option>
+                                <option value="Arauca">Arauca</option>
+                                <option value="Atlántico">Atlántico</option>
+                                <option value="Bolívar">Bolívar</option>
+                                <option value="Boyacá">Boyacá</option>
+                                <option value="Caldas">Caldas</option>
+                                <option value="Caquetá">Caquetá</option>
+                                <option value="Casanare">Casanare</option>
+                                <option value="Cauca">Cauca</option>
+                                <option value="Cesar">Cesar</option>
+                                <option value="Chocó">Chocó</option>
+                                <option value="Córdoba">Córdoba</option>
+                                <option value="Cundinamarca">Cundinamarca</option>
+                                <option value="Guainía">Guainía</option>
+                                <option value="Guaviare">Guaviare</option>
+                                <option value="Huila">Huila</option>
+                                <option value="La Guajira">La Guajira</option>
+                                <option value="Magdalena">Magdalena</option>
+                                <option value="Meta">Meta</option>
+                                <option value="Nariño">Nariño</option>
+                                <option value="Norte de Santander">Norte de Santander</option>
+                                <option value="Putumayo">Putumayo</option>
+                                <option value="Quindío">Quindío</option>
+                                <option value="Risaralda">Risaralda</option>
+                                <option value="San Andrés y Providencia">San Andrés y Providencia</option>
+                                <option value="Santander">Santander</option>
+                                <option value="Sucre">Sucre</option>
+                                <option value="Tolima">Tolima</option>
+                                <option value="Valle del Cauca">Valle del Cauca</option>
+                                <option value="Vaupés">Vaupés</option>
+                                <option value="Vichada">Vichada</option>
+                                <option value="Bogotá D.C.">Bogotá D.C.</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 d-none" id="edit-centro-vida-container">
+                            <label for="edit-centro-vida" class="form-label">Centro Vida Traslado</label>
+                            <select class="form-select" id="edit-centro-vida" name="id_centro_vida_traslado" disabled>
+                                <option value="" selected>Seleccione...</option>
+                                <?php foreach ($result_grupos as $grupo) { ?>
+                                    <option value="<?= $grupo['id_grupo']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-fecha_movimiento" class="form-label">fecha_movimiento</label>
+                            <input type="date" class="form-control" id="edit-fecha_movimiento" name="fecha_movimiento">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-observacion" class="form-label">Observacion</label>
+                            <input type="text" class="form-control" id="edit-observacion" name="observacion_movimiento">
+                        </div>
+                        <input type="hidden" name="cedula_original" id="cedula_original" value="">
+                        <input type="hidden" name="id_movimiento_persona" id="id_movimiento_persona" value="">
+                    </div>
+
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn-modern btn-outline btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg"></i>
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-modern btn-primary" id="guardarCambios">
+                            <i class="bi bi-check-lg"></i>
+                            Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <br /><a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="back" /></a><br>
 </body>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const modalEdicion = document.getElementById("modalEdicion");
-        if (!modalEdicion) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de modal',
-                text: 'No se encontró el modal de edición en el HTML.'
-            });
-            return;
-        }
+
         modalEdicion.addEventListener("shown.bs.modal", function(event) {
             const button = event.relatedTarget;
-            if (!button) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de edición',
-                    text: 'No se detectó el botón que abrió el modal. Verifica la estructura del HTML.'
-                });
-                return;
-            }
-            // Precargar todos los campos del modal de edición
-            $("#edit-id_registro").val(button.getAttribute("data-id_registro") || "");
-            $("#edit-meta").val(button.getAttribute("data-meta") || "");
-            // Actividad y acción se cargan por AJAX
+        window.lastEditButton = button; // Guardar referencia global para el JS de política pública
+            document.getElementById("edit-cedula").value = button.getAttribute("data-cedula");
+            document.getElementById("edit-nombre").value = button.getAttribute("data-nombre");
+            document.getElementById("edit-apellido").value = button.getAttribute("data-apellidos");
+            document.getElementById("edit-fecha_movimiento").value = button.getAttribute("data-fecha_movimiento");
+            document.getElementById("cedula_original").value = button.getAttribute("data-cedula");
+            document.getElementById("edit-condicion").value = button.getAttribute("data-condicion");
+            document.getElementById("edit-observacion").value = button.getAttribute("data-observacion_movimiento");
+            document.getElementById("edit-centro-vida").value = button.getAttribute("data-centro_vida_traslado") || "";
+            document.getElementById("id_movimiento_persona").value = button.getAttribute("data-id_movimiento_persona");
+
+            // Prellenar nuevos campos
+            document.getElementById("edit-meta").value = button.getAttribute("data-meta") || "";
+            document.getElementById("edit-departamento-procedencia").value = button.getAttribute("data-departamento_procedencia") || "";
+
+            // Cargar actividad, acción y política pública si existen
             const idMeta = button.getAttribute("data-meta");
             const idActividad = button.getAttribute("data-actividad");
             const idAccion = button.getAttribute("data-accion");
-            const idPolitica = button.getAttribute("data-politica_publica");
-            $("#edit-centro-vida").val(button.getAttribute("data-centro_vida") || "");
-            $("#edit-fecha_atencion").val(button.getAttribute("data-fecha_atencion") || "");
-            $("#edit-nombre_lider").val(button.getAttribute("data-nombre_lider") || "");
-            $("#edit-telefono_contacto").val(button.getAttribute("data-telefono_contacto") || "");
-            $("#edit-id_comuna").val(button.getAttribute("data-comuna") || "");
-            $("#edit-medio_verificacion").val(button.getAttribute("data-medio_verificacion") || "");
-            $("#edit-cantidad_masculino").val(button.getAttribute("data-cantidad_masculino") || "");
-            $("#edit-cantidad_femenino").val(button.getAttribute("data-cantidad_femenino") || "");
-            $("#edit-tipo_actividad").val(button.getAttribute("data-tipo_actividad") || "");
-            $("#edit-observacion_actividad").val(button.getAttribute("data-observacion_actividad") || "");
+            const idPolitica = button.getAttribute("data-id_politica_publica");
 
-            // Cargar actividades y acciones por AJAX
             if (idMeta) {
                 $.ajax({
-                    url: 'getActividades.php',
+                    url: '../personMovement/getActividades.php',
                     type: 'POST',
                     data: { id_meta: idMeta },
                     success: function(response) {
@@ -675,27 +623,18 @@ function deleteMember($id_movimiento)
                         if (idActividad) {
                             $('#edit-actividad').val(idActividad);
                             $.ajax({
-                                url: 'getAcciones.php',
+                                url: '../personMovement/getAcciones.php',
                                 type: 'POST',
                                 data: { id_actividad: idActividad },
                                 success: function(response) {
                                     $('#edit-accion').empty().append('<option value="">Seleccione Acción...</option>');
                                     $('#edit-accion').append(response).prop('disabled', false);
-                                    // Precargar el valor de acción igual que actividad
                                     if (idAccion) {
                                         $('#edit-accion').val(idAccion);
-                                        // Si no lo selecciona, forzar con trigger
-                                        if ($('#edit-accion').val() !== idAccion) {
-                                            setTimeout(function() {
-                                                $('#edit-accion').val(idAccion).trigger('change');
-                                            }, 100);
-                                        }
-                                    }
-                                    // Cargar políticas públicas para esta acción
-                                    if (idAccion) {
+                                        // Cargar políticas públicas para esta acción
                                         $('#edit-politica-publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
                                         $.ajax({
-                                            url: 'getPoliticaPublica.php',
+                                            url: '../personMovement/getPoliticaPublica.php',
                                             type: 'POST',
                                             data: { id_accion: idAccion },
                                             dataType: 'json',
@@ -704,6 +643,7 @@ function deleteMember($id_movimiento)
                                                     response.politicas.forEach(function(p) {
                                                         $('#edit-politica-publica').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
                                                     });
+                                                    // Seleccionar la opción después de agregar todas
                                                     $('#edit-politica-publica').val(idPolitica);
                                                 } else {
                                                     $('#edit-politica-publica').append('<option value="">No asignada</option>');
@@ -720,6 +660,9 @@ function deleteMember($id_movimiento)
                     }
                 });
             }
+
+            // Trigger change en condición para mostrar/ocultar centro de vida
+            $('#edit-condicion').trigger('change');
         });
     });
     $(document).ready(function() {
@@ -804,7 +747,7 @@ function deleteMember($id_movimiento)
 
             if (idMeta) {
                 $.ajax({
-                    url: 'getActividades.php',
+                    url: '../personMovement/getActividades.php',
                     type: 'POST',
                     data: {
                         id_meta: idMeta
@@ -832,7 +775,7 @@ function deleteMember($id_movimiento)
             $('#politica-publica').val(''); // Limpiar política pública
             if (idActividad) {
                 $.ajax({
-                    url: 'getAcciones.php',
+                    url: '../personMovement/getAcciones.php',
                     type: 'POST',
                     data: {
                         id_actividad: idActividad
@@ -860,11 +803,9 @@ function deleteMember($id_movimiento)
             $('#politica-publica').prop('selectedIndex', 0);
             if (idAccion) {
                 $.ajax({
-                    url: 'getPoliticaPublica.php',
+                    url: '../personMovement/getPoliticaPublica.php',
                     type: 'POST',
-                    data: {
-                        id_accion: idAccion
-                    },
+                    data: { id_accion: idAccion },
                     dataType: 'json',
                     success: function(response) {
                         if (response && response.politicas && response.politicas.length > 0) {
@@ -893,7 +834,7 @@ function deleteMember($id_movimiento)
 
             if (idMeta) {
                 $.ajax({
-                    url: 'getActividades.php',
+                    url: '../personMovement/getActividades.php',
                     type: 'POST',
                     data: {
                         id_meta: idMeta
@@ -923,7 +864,7 @@ function deleteMember($id_movimiento)
 
             if (idActividad) {
                 $.ajax({
-                    url: 'getAcciones.php',
+                    url: '../personMovement/getAcciones.php',
                     type: 'POST',
                     data: {
                         id_actividad: idActividad
@@ -949,20 +890,18 @@ function deleteMember($id_movimiento)
             // Vaciar y resetear el select de política pública cada vez que se cambia la acción
             $('#edit-politica-publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
             $('#edit-politica-publica').prop('selectedIndex', 0);
-
+            
             // Obtener el valor actual de id_politica_publica del botón que abrió el modal
             let idPolitica = null;
             if (window.lastEditButton) {
                 idPolitica = window.lastEditButton.getAttribute('data-id_politica_publica');
             }
-
+            
             if (idAccion) {
                 $.ajax({
-                    url: 'getPoliticaPublica.php',
+                    url: '../personMovement/getPoliticaPublica.php',
                     type: 'POST',
-                    data: {
-                        id_accion: idAccion
-                    },
+                    data: { id_accion: idAccion },
                     dataType: 'json',
                     success: function(response) {
                         if (response && response.politicas && response.politicas.length > 0) {

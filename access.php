@@ -598,7 +598,8 @@ $mysqli->close();
             <ul class="menu_items submenu">
               <a href="code/contratista/seeActivities.php" class="nav_link sublink">Ver Actividades</a>
               <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
-              <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades</a>
+              <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades Masivas</a>
+              <a href="code/contratistaIndividual/form.php" class="nav_link sublink">Registro Actividades Individuales</a>
             </ul>
           </li>
           <?php } ?>

@@ -259,11 +259,11 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                             $tipo_usuario_texto = 'ADMINISTRADOR';
                             $badge_class = 'badge bg-success';
                             break;
-                        case 2:
+                        case 3:
                             $tipo_usuario_texto = 'CONTRATISTA';
                             $badge_class = 'badge bg-primary';
                             break;
-                        case 3:
+                        case 2:
                             $tipo_usuario_texto = 'CPSAM O CENTRO VIDA';
                             $badge_class = 'badge bg-info';
                             break;
@@ -405,8 +405,8 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
             <select class="form-control" id="edit_tipo_usuario" name="tipo_usuario" required>
               <option value="">Seleccione tipo usuario</option>
               <option value="1">ADMINISTRADOR</option>
-              <option value="2">CONTRATISTA</option>
-              <option value="3">CPSAM O CENTRO VIDA</option>
+              <option value="3">CONTRATISTA</option>
+              <option value="2">CPSAM O CENTRO VIDA</option>
             </select>
           </div>
           <button type="submit" class="btn btn-primary">Guardar Cambios</button>

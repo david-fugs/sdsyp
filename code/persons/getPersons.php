@@ -23,7 +23,7 @@ if (!empty($_GET['programa'])) {
 }
 
 // Filtrar por id_grupo si el tipo_usuario en la sesión es diferente de 1
-if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 2) {
+if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3) {
     $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
 

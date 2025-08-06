@@ -292,7 +292,7 @@ function deleteMember($id_movimiento)
                             </div>
 
                             <div class="col-md-6 mb-3 form-floating mt-1">
-                                <select class="form-select" id="condicion" name="id_condicion" required>
+                                <select class="form-select" id="condicion1" name="id_condicion" required>
                                     <option value="" selected>Seleccione...</option>
                                     <?php foreach ($result_condiciones as $condicion) { ?>
                                         <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
@@ -682,15 +682,17 @@ function deleteMember($id_movimiento)
         });
 
         // Controlar habilitación del campo grupo según la condición
-        $('#condicion').on('change', function() {
+        $('#condicion1').on('change', function() {
             const selectedOption = $(this).find('option:selected');
             const condicionTexto = selectedOption.text().toUpperCase();
 
             if (condicionTexto.includes('CPSAM TRASLADADO')) {
+                console.log("si lo incluye");
                 $('#grupo').prop('disabled', false).prop('required', true);
                 $('#grupo').parent().removeClass('d-none');
                 $('#grupo').parent().find('label').text('Centro Vida Traslado');
             } else {
+                console.log("nada")
                 $('#grupo').prop('disabled', true).prop('required', false);
                 $('#grupo').val(''); // Limpiar selección
                 $('#grupo').parent().addClass('d-none');

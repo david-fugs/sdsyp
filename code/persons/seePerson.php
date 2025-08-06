@@ -211,6 +211,7 @@ function deleteMember($cedula_persona)
         }
     </style>
 </head>
+
 <body>
     <center style="margin-top: 20px;">
         <img src='../../img/logo.png' width="150" height="120" class="responsive">
@@ -224,12 +225,10 @@ function deleteMember($cedula_persona)
             <!-- Header moderno -->
             <div class="modern-header">
                 <h2><i class="bi bi-people-fill"></i> Personas Registradas</h2>
-                <?php if($tipo_usuario != 3) { ?>
                 <button type="button" class="btn-modern btn-success" data-bs-toggle="modal" data-bs-target="#modalNewPerson">
                     <i class="bi bi-person-plus-fill"></i>
                     Agregar Persona
                 </button>
-                <?php } ?>
             </div>
 
             <!-- Filtros modernos -->
@@ -397,7 +396,7 @@ function deleteMember($cedula_persona)
                             </div>
                         </div>
 
-                         <div class="row">
+                        <div class="row">
                             <div class="col-md-12 mb-3 form-floating">
                                 <input type="text" class="form-control" id="direccion_persona" name="direccion_persona" placeholder="Direccion">
                                 <label for="direccion_persona">Direccion</label>
@@ -700,6 +699,10 @@ function deleteMember($cedula_persona)
                                     <option value="C.V Beneficiario Inactivo">C.V Beneficiario Inactivo</option>
                                     <option value="CPSAM Activo">CPSAM Activo</option>
                                     <option value="CPSAM Evadido">CPSAM Evadido</option>
+                                    <option value="Trasladado">Trasladado</option>
+                                    <option value="Usuario indirecto">Usuario indirecto</option>
+                                    <option value="CPSAM Remitido">CPSAM Remitido</option>
+                                    <option value="Usuario interesado">Usuario interesado</option>
                                     <option value="CPSAM Fallecido">CPSAM Fallecido</option>
                                     <option value="CPSAM Retiro Voluntario">CPSAM Retiro Voluntario</option>
                                     <option value="CPSAM Trasladado">CPSAM Trasladado</option>
@@ -751,7 +754,7 @@ function deleteMember($cedula_persona)
                         <!-- fila 5 -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <input type="date" class="form-control" id="activo_desde" name="activo_desde" placeholder="Activo Desde">   
+                                <input type="date" class="form-control" id="activo_desde" name="activo_desde" placeholder="Activo Desde">
                                 <label for="activo_desde">Activo Desde</label>
                             </div>
                         </div>
@@ -1155,6 +1158,10 @@ function deleteMember($cedula_persona)
                                     <option value="CPSAM Activo">CPSAM Activo</option>
                                     <option value="CPSAM Evadido">CPSAM Evadido</option>
                                     <option value="CPSAM Fallecido">CPSAM Fallecido</option>
+                                    <option value="Trasladado">Trasladado</option>
+                                    <option value="Usuario indirecto">Usuario indirecto</option>
+                                    <option value="CPSAM Remitido">CPSAM Remitido</option>
+                                    <option value="Usuario interesado">Usuario interesado</option>
                                     <option value="CPSAM Retiro Voluntario">CPSAM Retiro Voluntario</option>
                                     <option value="CPSAM Trasladado">CPSAM Trasladado</option>
                                     <option value="C.M Retiro Definitivo">C.M Retiro Definitivo</option>
@@ -1719,7 +1726,7 @@ function deleteMember($cedula_persona)
                         if (document.getElementById("edit-grupo-sisben")) {
                             document.getElementById("edit-grupo-sisben").value = button.getAttribute("data-grupo-sisben");
                         }
-                        
+
                         // Precargar campos adicionales médicos
                         if (document.getElementById("edit-eps")) {
                             document.getElementById("edit-eps").value = button.getAttribute("data-eps");
