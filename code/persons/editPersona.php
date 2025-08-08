@@ -50,6 +50,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id_comuna_persona = $_POST['id_comuna_persona'] ?? null;
     $zona_persona = $_POST['zona_persona'] ?? '';
 
+    // Nuevos campos: Meta, Actividad, Acción y Política Pública
+    $id_meta = $_POST['id_meta'] ?? null;
+    $id_actividad = $_POST['id_actividad'] ?? null;
+    $id_accion = $_POST['id_accion'] ?? null;
+    $id_politica_publica = $_POST['id_politica_publica'] ?? null;
+
     // Actualizar persona
     $sql_update_persona = "UPDATE personas SET
         cedula_persona='$cedula_persona',
@@ -81,7 +87,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         id_comuna_persona=" . ($id_comuna_persona !== null ? "'$id_comuna_persona'" : 'NULL') . ",
         zona_persona='$zona_persona',
         id_grupo='$id_grupo',
-        id_politica_publica='$id_politica_publica',
+        id_meta=" . ($id_meta !== null ? "'$id_meta'" : 'NULL') . ",
+        id_actividad=" . ($id_actividad !== null ? "'$id_actividad'" : 'NULL') . ",
+        id_accion=" . ($id_accion !== null ? "'$id_accion'" : 'NULL') . ",
+        id_politica_publica=" . ($id_politica_publica !== null ? "'$id_politica_publica'" : 'NULL') . ",
         eps='$eps',
         peso='$peso',
         talla='$talla',

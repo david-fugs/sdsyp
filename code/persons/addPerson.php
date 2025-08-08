@@ -52,6 +52,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $zona_persona = $_POST['zona_persona'] ?? '';
     $activo_desde = $_POST['activo_desde'] ?? null;
 
+    // Nuevos campos: Meta, Actividad, Acción y Política Pública
+    $id_meta = $_POST['id_meta'] ?? null;
+    $id_actividad = $_POST['id_actividad'] ?? null;
+    $id_accion = $_POST['id_accion'] ?? null;
+    $id_politica_publica = $_POST['id_politica_publica'] ?? null;
+
     // Obtener fecha actual para fecha_alta_persona
     $fecha_alta_persona = date('Y-m-d H:i:s');
 
@@ -97,7 +103,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         remision,
         id_usuario,
         fecha_alta_persona,
-        activo_desde
+        activo_desde,
+        id_meta,
+        id_actividad,
+        id_accion,
+        id_politica_publica
     ) VALUES (
         '$cedula_persona',
         '$tipo_identificacion',
@@ -139,7 +149,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         '$remision',
         '$id_usuario',
         '$fecha_alta_persona',
-        '$activo_desde'
+        '$activo_desde',
+        " . ($id_meta !== null ? "'$id_meta'" : 'NULL') . ",
+        " . ($id_actividad !== null ? "'$id_actividad'" : 'NULL') . ",
+        " . ($id_accion !== null ? "'$id_accion'" : 'NULL') . ",
+        " . ($id_politica_publica !== null ? "'$id_politica_publica'" : 'NULL') . "
     )";
 
 

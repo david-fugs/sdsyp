@@ -18,6 +18,12 @@ if (!$result_politicas_publicas) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
+$metas = "SELECT * FROM metas ORDER BY descripcion_meta ASC";
+$result_metas = mysqli_query($mysqli, $metas);
+if (!$result_metas) {
+    die("Error en la consulta de metas: " . mysqli_error($mysqli));
+}
+
 // Obtener tipo_usuario e id_grupo de la sesión
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
@@ -193,6 +199,31 @@ function deleteMember($cedula_persona)
         .text-success,
         .text-danger {
             font-size: 13px !important;
+        }
+
+        /* Columnas específicas más anchas para Meta, Actividad, Acción y Política Pública */
+        .modern-table .col-meta,
+        .modern-table .col-actividad,
+        .modern-table .col-accion,
+        .modern-table .col-politica {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .modern-table td.col-meta,
+        .modern-table td.col-actividad,
+        .modern-table td.col-accion,
+        .modern-table td.col-politica {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            white-space: normal;
         }
 
         /* Botón Cancelar del modal edición: negrita y color oscuro siempre */
@@ -759,6 +790,39 @@ function deleteMember($cedula_persona)
                             </div>
                         </div>
 
+                        <!-- Fila: Meta, Actividad, Acción y Política Pública -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="meta" name="id_meta" required>
+                                    <option value="" selected>Seleccione Meta...</option>
+                                    <?php foreach ($result_metas as $meta) { ?>
+                                        <option value="<?= $meta['id_meta']; ?>"><?= $meta['descripcion_meta']; ?></option>
+                                    <?php } ?>
+                                </select>
+                                <label for="meta">Meta</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="actividad" name="id_actividad" required disabled>
+                                    <option value="" selected>Seleccione Actividad...</option>
+                                </select>
+                                <label for="actividad">Actividad</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="accion" name="id_accion" required disabled>
+                                    <option value="" selected>Seleccione Acción...</option>
+                                </select>
+                                <label for="accion">Acción</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="politica-publica" name="id_politica_publica" required>
+                                    <option value="" selected>Seleccione Política Pública...</option>
+                                </select>
+                                <label for="politica-publica">Política Pública</label>
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="modal-footer justify-content-between">
@@ -1217,6 +1281,40 @@ function deleteMember($cedula_persona)
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Fila: Meta, Actividad, Acción y Política Pública (Edición) -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-meta" class="form-label">Meta</label>
+                                <select class="form-select" id="edit-meta" name="id_meta" required>
+                                    <option value="" selected>Seleccione Meta...</option>
+                                    <?php foreach ($result_metas as $meta) { ?>
+                                        <option value="<?= $meta['id_meta']; ?>"><?= $meta['descripcion_meta']; ?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-actividad" class="form-label">Actividad</label>
+                                <select class="form-select" id="edit-actividad" name="id_actividad" required disabled>
+                                    <option value="" selected>Seleccione Actividad...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-accion" class="form-label">Acción</label>
+                                <select class="form-select" id="edit-accion" name="id_accion" required disabled>
+                                    <option value="" selected>Seleccione Acción...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-politica-publica" class="form-label">Política Pública</label>
+                                <select class="form-select" id="edit-politica-publica" name="id_politica_publica" required>
+                                    <option value="" selected>Seleccione Política Pública...</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <input type="hidden" name="cedula_original" id="cedula_original" value="">
                     </div>
                     <div class="modal-footer bg-light">
@@ -1776,6 +1874,66 @@ function deleteMember($cedula_persona)
                         document.getElementById("edit-grupo").value = grupoValue;
                         $('#edit-grupo').data('original-value', grupoValue);
 
+                        // Precargar Meta, Actividad, Acción y Política Pública
+                        const idMeta = button.getAttribute("data-id-meta");
+                        const idActividad = button.getAttribute("data-id-actividad");
+                        const idAccion = button.getAttribute("data-id-accion");
+                        const idPoliticaNueva = button.getAttribute("data-id-politica-publica-nueva");
+
+                        // Establecer Meta
+                        if (document.getElementById("edit-meta")) {
+                            document.getElementById("edit-meta").value = idMeta || '';
+                        }
+
+                        // Cargar actividades si hay meta seleccionada
+                        if (idMeta) {
+                            $.ajax({
+                                url: 'getActividades.php',
+                                type: 'POST',
+                                data: { id_meta: idMeta },
+                                success: function(response) {
+                                    $('#edit-actividad').empty().append('<option value="">Seleccione Actividad...</option>');
+                                    $('#edit-actividad').append(response).prop('disabled', false);
+                                    if (idActividad) {
+                                        $('#edit-actividad').val(idActividad);
+                                        
+                                        // Cargar acciones si hay actividad seleccionada
+                                        $.ajax({
+                                            url: 'getAcciones.php',
+                                            type: 'POST',
+                                            data: { id_actividad: idActividad },
+                                            success: function(response) {
+                                                $('#edit-accion').empty().append('<option value="">Seleccione Acción...</option>');
+                                                $('#edit-accion').append(response).prop('disabled', false);
+                                                if (idAccion) {
+                                                    $('#edit-accion').val(idAccion);
+                                                    
+                                                    // Cargar políticas públicas si hay acción seleccionada
+                                                    $.ajax({
+                                                        url: 'getPoliticaPublica.php',
+                                                        type: 'POST',
+                                                        data: { id_accion: idAccion },
+                                                        dataType: 'json',
+                                                        success: function(response) {
+                                                            $('#edit-politica-publica').empty().append('<option value="">Seleccione Política Pública...</option>');
+                                                            if (response && response.politicas && response.politicas.length > 0) {
+                                                                response.politicas.forEach(function(p) {
+                                                                    $('#edit-politica-publica').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
+                                                                });
+                                                                if (idPoliticaNueva) {
+                                                                    $('#edit-politica-publica').val(idPoliticaNueva);
+                                                                }
+                                                            }
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        }
+
                         // Seleccionar los checks de programas
                         const idsProgramas = button.getAttribute('data-ids-programas') || '';
                         // Elimina comillas simples si existen y separa por coma
@@ -1924,6 +2082,186 @@ function deleteMember($cedula_persona)
                     });
                 } else {
                     $('#edit-grupo-info').remove();
+                }
+            });
+
+            // *** FUNCIONALIDAD PARA META, ACTIVIDAD, ACCIÓN Y POLÍTICA PÚBLICA ***
+            
+            // Manejar selección de Meta para cargar Actividades (Modal Agregar)
+            $('#meta').on('change', function() {
+                const idMeta = $(this).val();
+
+                // Limpiar y deshabilitar campos dependientes
+                $('#actividad').empty().append('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
+                $('#accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+                $('#politica-publica').empty().append('<option value="">Seleccione Política Pública...</option>');
+
+                if (idMeta) {
+                    $.ajax({
+                        url: 'getActividades.php',
+                        type: 'POST',
+                        data: {
+                            id_meta: idMeta
+                        },
+                        success: function(response) {
+                            $('#actividad').append(response).prop('disabled', false);
+                        },
+                        error: function() {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error al cargar las actividades',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Manejar selección de Actividad para cargar Acciones (Modal Agregar)
+            $('#actividad').on('change', function() {
+                const idActividad = $(this).val();
+                // Limpiar y deshabilitar campo de acciones
+                $('#accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+                $('#politica-publica').empty().append('<option value="">Seleccione Política Pública...</option>');
+
+                if (idActividad) {
+                    $.ajax({
+                        url: 'getAcciones.php',
+                        type: 'POST',
+                        data: {
+                            id_actividad: idActividad
+                        },
+                        success: function(response) {
+                            $('#accion').append(response).prop('disabled', false);
+                        },
+                        error: function() {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error al cargar las acciones',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Manejar selección de Acción para consultar políticas públicas (Modal Agregar)
+            $('#accion').on('change', function() {
+                const idAccion = $(this).val();
+                // Vaciar y resetear el select de política pública cada vez que se cambia la acción
+                $('#politica-publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
+                $('#politica-publica').prop('selectedIndex', 0);
+                if (idAccion) {
+                    $.ajax({
+                        url: 'getPoliticaPublica.php',
+                        type: 'POST',
+                        data: { id_accion: idAccion },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response && response.politicas && response.politicas.length > 0) {
+                                response.politicas.forEach(function(p) {
+                                    $('#politica-publica').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
+                                });
+                            } else {
+                                $('#politica-publica').append('<option value="">No asignada</option>');
+                            }
+                        },
+                        error: function() {
+                            $('#politica-publica').append('<option value="">Error al consultar</option>');
+                        }
+                    });
+                }
+            });
+
+            // Manejar selección de Meta para cargar Actividades (Modal de Edición)
+            $('#edit-meta').on('change', function() {
+                const idMeta = $(this).val();
+
+                // Limpiar y deshabilitar campos dependientes
+                $('#edit-actividad').empty().append('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
+                $('#edit-accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+                $('#edit-politica-publica').empty().append('<option value="">Seleccione Política Pública...</option>');
+
+                if (idMeta) {
+                    $.ajax({
+                        url: 'getActividades.php',
+                        type: 'POST',
+                        data: {
+                            id_meta: idMeta
+                        },
+                        success: function(response) {
+                            $('#edit-actividad').append(response).prop('disabled', false);
+                        },
+                        error: function() {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error al cargar las actividades',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Manejar selección de Actividad para cargar Acciones (Modal de Edición)
+            $('#edit-actividad').on('change', function() {
+                const idActividad = $(this).val();
+
+                // Limpiar y deshabilitar campo de acciones
+                $('#edit-accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+                $('#edit-politica-publica').empty().append('<option value="">Seleccione Política Pública...</option>');
+
+                if (idActividad) {
+                    $.ajax({
+                        url: 'getAcciones.php',
+                        type: 'POST',
+                        data: {
+                            id_actividad: idActividad
+                        },
+                        success: function(response) {
+                            $('#edit-accion').append(response).prop('disabled', false);
+                        },
+                        error: function() {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error al cargar las acciones',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Manejar selección de Acción para consultar política pública (Modal de Edición)
+            $('#edit-accion').on('change', function() {
+                const idAccion = $(this).val();
+                // Vaciar y resetear el select de política pública cada vez que se cambia la acción
+                $('#edit-politica-publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
+                $('#edit-politica-publica').prop('selectedIndex', 0);
+                
+                if (idAccion) {
+                    $.ajax({
+                        url: 'getPoliticaPublica.php',
+                        type: 'POST',
+                        data: { id_accion: idAccion },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response && response.politicas && response.politicas.length > 0) {
+                                response.politicas.forEach(function(p) {
+                                    $('#edit-politica-publica').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
+                                });
+                            } else {
+                                $('#edit-politica-publica').append('<option value="">No asignada</option>');
+                            }
+                        },
+                        error: function() {
+                            $('#edit-politica-publica').append('<option value="">Error al consultar</option>');
+                        }
+                    });
                 }
             });
         });

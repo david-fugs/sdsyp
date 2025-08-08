@@ -40,6 +40,9 @@ SELECT p.*,
        GROUP_CONCAT(pr.id_programa ORDER BY pr.nombre_programa ASC) AS ids_programas,
        g.descripcion_grupo,
        pol.descripcion_politica,
+       m.descripcion_meta,
+       a.descripcion_actividad,
+       acc.descripcion_accion,
        (SELECT cc.descripcion_condicion 
         FROM movimiento_persona mp 
         JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
@@ -52,6 +55,9 @@ LEFT JOIN persona_programa pp ON p.cedula_persona = pp.cedula_persona
 LEFT JOIN programas pr ON pp.id_programa = pr.id_programa
 LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
 LEFT JOIN politicas_publicas pol ON p.id_politica_publica = pol.id_politica
+LEFT JOIN metas m ON p.id_meta = m.id_meta
+LEFT JOIN actividades a ON p.id_actividad = a.id_actividad
+LEFT JOIN acciones acc ON p.id_accion = acc.id_accion
 $where
 GROUP BY p.cedula_persona
 ORDER BY p.apellidos_persona ASC
@@ -186,6 +192,10 @@ if ($result->num_rows > 0) {
                         data-id-barrio-persona="' . (isset($row['id_barrio_persona']) ? htmlspecialchars($row['id_barrio_persona']) : '') . '"
                         data-id-comuna-persona="' . (isset($row['id_comuna_persona']) ? htmlspecialchars($row['id_comuna_persona']) : '') . '"
                         data-zona-persona="' . (isset($row['zona_persona']) ? htmlspecialchars($row['zona_persona']) : '') . '"
+                        data-id-meta="' . (isset($row['id_meta']) ? htmlspecialchars($row['id_meta']) : '') . '"
+                        data-id-actividad="' . (isset($row['id_actividad']) ? htmlspecialchars($row['id_actividad']) : '') . '"
+                        data-id-accion="' . (isset($row['id_accion']) ? htmlspecialchars($row['id_accion']) : '') . '"
+                        data-id-politica-publica-nueva="' . (isset($row['id_politica_publica']) ? htmlspecialchars($row['id_politica_publica']) : '') . '"
                     >
                         <i class="bi bi-pencil-fill"></i>
                     </button>
@@ -213,7 +223,7 @@ if ($result->num_rows > 0) {
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='9'>No se encontraron registros.</td></tr>";
+    echo "<tr><td colspan='8'>No se encontraron registros.</td></tr>";
 }
 
 

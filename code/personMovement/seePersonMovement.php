@@ -649,6 +649,64 @@ function deleteMember($id_movimiento)
                             text: 'Nombre: ' + response.nombres + ' ' + response.apellidos,
                             confirmButtonText: 'OK'
                         });
+
+                        // Precargar Meta, Actividad, Acción y Política Pública si existen
+                        if (response.id_meta) {
+                            $('#meta').val(response.id_meta);
+                            
+                            // Cargar actividades para esta meta
+                            $.ajax({
+                                url: 'getActividades.php',
+                                type: 'POST',
+                                data: { id_meta: response.id_meta },
+                                success: function(actividadesResponse) {
+                                    $('#actividad').empty().append('<option value="">Seleccione Actividad...</option>');
+                                    $('#actividad').append(actividadesResponse).prop('disabled', false);
+                                    
+                                    // Seleccionar la actividad si existe
+                                    if (response.id_actividad) {
+                                        $('#actividad').val(response.id_actividad);
+                                        
+                                        // Cargar acciones para esta actividad
+                                        $.ajax({
+                                            url: 'getAcciones.php',
+                                            type: 'POST',
+                                            data: { id_actividad: response.id_actividad },
+                                            success: function(accionesResponse) {
+                                                $('#accion').empty().append('<option value="">Seleccione Acción...</option>');
+                                                $('#accion').append(accionesResponse).prop('disabled', false);
+                                                
+                                                // Seleccionar la acción si existe
+                                                if (response.id_accion) {
+                                                    $('#accion').val(response.id_accion);
+                                                    
+                                                    // Cargar políticas públicas para esta acción
+                                                    $.ajax({
+                                                        url: 'getPoliticaPublica.php',
+                                                        type: 'POST',
+                                                        data: { id_accion: response.id_accion },
+                                                        dataType: 'json',
+                                                        success: function(politicasResponse) {
+                                                            $('#politica-publica').empty().append('<option value="">Seleccione Política Pública...</option>');
+                                                            if (politicasResponse && politicasResponse.politicas && politicasResponse.politicas.length > 0) {
+                                                                politicasResponse.politicas.forEach(function(p) {
+                                                                    $('#politica-publica').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
+                                                                });
+                                                                
+                                                                // Seleccionar la política pública si existe
+                                                                if (response.id_politica_publica) {
+                                                                    $('#politica-publica').val(response.id_politica_publica);
+                                                                }
+                                                            }
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        }
                     } else {
                         Swal.fire({
                             icon: 'error',
