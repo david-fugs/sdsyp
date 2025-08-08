@@ -517,7 +517,7 @@ $mysqli->close();
   </nav>
 
   <!-- Barra lateral superior -->
-   <?php if ($tipo_usuario != 3) { ?>
+   <?php if ($tipo_usuario == 1) { ?>
   <div class="top-sidebar" id="topSidebar">
     <div class="top-sidebar-content">
       <div class="quick-nav">
@@ -602,22 +602,7 @@ $mysqli->close();
               <a href="code/contratistaIndividual/form.php" class="nav_link sublink">Registro Actividades Individuales</a>
             </ul>
           </li>
-          <?php } ?>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-users"></i>
-              </span>
-              <span class="navlink">Personas</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/persons/seePerson.php" class="nav_link sublink">Ver Personas</a>
-              <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
-              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
-            </ul>
-          </li>
-          <li class="item">
+           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
                 <i class="fa-solid fa-bullseye"></i>
@@ -657,6 +642,22 @@ $mysqli->close();
               <!-- <a href="code/center/seeCenter.php" class="nav_link sublink">Centro Vida</a> -->
             </ul>
           </li>
+          <?php } ?>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-users"></i>
+              </span>
+              <span class="navlink">Personas</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/persons/seePerson.php" class="nav_link sublink">Ver Personas</a>
+              <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
+              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
+            </ul>
+          </li>
+         
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
