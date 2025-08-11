@@ -70,22 +70,27 @@ if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         // Determinar el estado de la persona
         $estado_persona = $row['estado_movimiento'] ? $row['estado_movimiento'] : 'CPSAM ACTIVO';
-        
+        // Permitir también el estado 'Usuario Interesado' (sin importar mayúsculas/minúsculas)
+        if (isset($row['estado_movimiento']) && trim(mb_strtolower($row['estado_movimiento'])) === 'usuario interesado') {
+            $estado_persona = 'USUARIO INTERESADO';
+        }
+
         // Aplicar filtro por estado si está seleccionado
         if (!empty($filtro_estado)) {
-            $estado_filtro_map = [
-                'ACTIVO' => 'CPSAM ACTIVO',
-                'EVADIDO' => 'CPSAM EVADIDO',
-                'FALLECIDO' => 'CPSAM FALLECIDO',
-                'RETIRADO_VOLUNTARIO' => 'CPSAM RETIRADO VOLUNTARIO',
-                'TRASLADADO' => 'CPSAM TRASLADADO'
-            ];
-            
+        $estado_filtro_map = [
+            'ACTIVO' => 'CPSAM ACTIVO',
+            'EVADIDO' => 'CPSAM EVADIDO',
+            'FALLECIDO' => 'CPSAM FALLECIDO',
+            'RETIRADO_VOLUNTARIO' => 'CPSAM RETIRADO VOLUNTARIO',
+            'TRASLADADO' => 'CPSAM TRASLADADO',
+            'USUARIO_INTERESADO' => 'USUARIO INTERESADO'
+        ];
+
             if (isset($estado_filtro_map[$filtro_estado]) && $estado_persona !== $estado_filtro_map[$filtro_estado]) {
                 continue; // Saltar esta fila si no coincide con el filtro
             }
         }
-        
+
         // Determinar color del estado
         $badge_class = '';
         switch ($estado_persona) {
@@ -104,8 +109,11 @@ if ($result->num_rows > 0) {
             case 'CPSAM TRASLADADO':
                 $badge_class = 'status-badge status-info';
                 break;
+            case 'USUARIO INTERESADO':
+                $badge_class = 'status-badge status-interesado';
+                break;
         }
-        
+
         // Determinar icono del estado
         $estado_icon = '';
         switch ($estado_persona) {
@@ -123,6 +131,9 @@ if ($result->num_rows > 0) {
                 break;
             case 'CPSAM TRASLADADO':
                 $estado_icon = '<i class="bi bi-arrow-right-circle-fill"></i>';
+                break;
+            case 'USUARIO INTERESADO':
+                $estado_icon = '<i class="bi bi-person-lines-fill"></i>';
                 break;
         }
         // Agregar datos al array
@@ -144,11 +155,16 @@ if ($result->num_rows > 0) {
         $estado_sin_cpsam = str_ireplace('CPSAM ', '', $estado_persona);
         if (strtoupper($estado_sin_cpsam) === 'TRASLADADO') {
             $estado_mostrar = 'ACTIVO (TRASLADADO)';
+        } elseif ($estado_persona == 'Usuario interesado') {
+            $estado_mostrar = 'Usuario Interesado';
         } else {
             $estado_mostrar = $estado_sin_cpsam;
         }
+
+         if ($row['condicion_componente'] == 'Usuario interesado') {
+            $estado_mostrar = 'Usuario Interesado';
+        }
         echo "<td class='col-status'><span class='$badge_class'>$estado_icon $estado_mostrar</span></td>";
-        if($tipo_usuario != 3) { 
 
         // Botones de acción modernos
         echo '<td class="col-actions">
@@ -214,7 +230,7 @@ if ($result->num_rows > 0) {
 
                 </div>
             </td>';
-        } // Fin del if para tipo_usuario != 3
+        // Fin del if para tipo_usuario != 3
         // Agregar data attributes para barrio, comuna y zona
         // NOTA: Estos campos deben existir en la tabla personas, si no, se deben agregar en la consulta y en la base de datos
         // Si no existen, dejar string vacío

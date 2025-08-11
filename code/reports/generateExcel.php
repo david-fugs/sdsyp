@@ -101,6 +101,7 @@ try {
         'ÚLTIMA META', 'ÚLTIMA ACTIVIDAD', 'ÚLTIMA ACCIÓN', 'ÚLTIMO DPTO PROCEDENCIA',
         'MOVIMIENTOS AÑO', 'TRASLADOS AÑO', 'ÚLTIMO CENTRO TRASLADO',
         'ACTIVO DESDE', 'ACTIVO HASTA', 'DÍAS ACTIVOS'
+        , 'DÍAS EN CENTRO ANTERIOR / ACTUAL (TRASLADADO)'
     ];
 
     // Escribir cabeceras en la fila 1
@@ -300,9 +301,11 @@ try {
     while ($row = $result->fetch_assoc()) {
         $total_registros++;
 
-        // Determinar el estado actual basado en el último movimiento
+        // Determinar el estado actual basado en el último movimiento o condicion_componente
         $estado_actual = 'ACTIVO';
-        if ($row['ultimo_estado_movimiento']) {
+        if (isset($row['condicion_componente']) && trim(mb_strtolower($row['condicion_componente'])) === 'usuario interesado') {
+            $estado_actual = 'Usuario Interesado';
+        } elseif ($row['ultimo_estado_movimiento']) {
             $ultimo_estado = strtoupper($row['ultimo_estado_movimiento']);
             if (strpos($ultimo_estado, 'EVADIDO') !== false || strpos($ultimo_estado, 'EVASION') !== false) {
                 $estado_actual = 'EVADIDO';
@@ -377,7 +380,61 @@ try {
             $programas = $row['centro_vida'] ?: 'Sin programa';
         }
 
+        // Calcular días en cada centro por cada traslado
+        $traslados_info = '';
+        if (strpos($estado_actual, 'TRASLADADO') !== false) {
+            // Obtener todos los movimientos de traslado ordenados por fecha ASC
+            $traslados_query = "SELECT mp.fecha_movimiento, mp.id_centro_vida_traslado_anterior, mp.id_centro_vida_traslado, g_ant.descripcion_grupo as centro_anterior, g_act.descripcion_grupo as centro_actual FROM movimiento_persona mp LEFT JOIN grupos g_ant ON mp.id_centro_vida_traslado_anterior = g_ant.id_grupo LEFT JOIN grupos g_act ON mp.id_centro_vida_traslado = g_act.id_grupo WHERE mp.cedula_persona = ? AND mp.id_centro_vida_traslado IS NOT NULL ORDER BY mp.fecha_movimiento ASC, mp.id_movimiento_persona ASC";
+            $stmt_tras = $mysqli->prepare($traslados_query);
+            $stmt_tras->bind_param("s", $row['cedula_persona']);
+            $stmt_tras->execute();
+            $res_tras = $stmt_tras->get_result();
+            $fechas_traslados = [];
+            while ($row_tras = $res_tras->fetch_assoc()) {
+                $fechas_traslados[] = $row_tras;
+            }
+            // Si hay traslados, calcular los días en cada centro
+            if (count($fechas_traslados) > 0) {
+                $fechas = [];
+                // Fecha de inicio (activo_desde)
+                $fecha_inicio = ($row['activo_desde'] && $row['activo_desde'] != '0000-00-00') ? $row['activo_desde'] : null;
+                for ($i = 0; $i < count($fechas_traslados); $i++) {
+                    $tras = $fechas_traslados[$i];
+                    // Días en centro anterior
+                    if ($fecha_inicio) {
+                        $dt1 = new DateTime($fecha_inicio);
+                        $dt2 = new DateTime($tras['fecha_movimiento']);
+                        $dias = $dt1->diff($dt2)->days;
+                        $centro = $tras['centro_anterior'] ?? 'anterior';
+                        $traslados_info .= $dias . ' días en ' . $centro . "\n";
+                    }
+                    // Preparar para el siguiente ciclo: la fecha de inicio para el siguiente traslado es la fecha de este traslado
+                    $fecha_inicio = $tras['fecha_movimiento'];
+                }
+                // Días en el último centro actual: desde el último traslado hasta hoy o fecha último movimiento si no está activo
+                $ultimo_tras = end($fechas_traslados);
+                $dt3 = new DateTime($ultimo_tras['fecha_movimiento']);
+                // Buscar el siguiente movimiento después del último traslado
+                $sig_mov_query = "SELECT mp.fecha_movimiento FROM movimiento_persona mp WHERE mp.cedula_persona = ? AND mp.fecha_movimiento > ? ORDER BY mp.fecha_movimiento ASC, mp.id_movimiento_persona ASC LIMIT 1";
+                $stmt_sig = $mysqli->prepare($sig_mov_query);
+                $stmt_sig->bind_param("ss", $row['cedula_persona'], $ultimo_tras['fecha_movimiento']);
+                $stmt_sig->execute();
+                $res_sig = $stmt_sig->get_result();
+                $row_sig = $res_sig->fetch_assoc();
+                if ($row_sig && $row_sig['fecha_movimiento']) {
+                    $dt4 = new DateTime($row_sig['fecha_movimiento']);
+                } else {
+                    $dt4 = new DateTime(); // hoy
+                }
+                $dias = $dt3->diff($dt4)->days;
+                $centro = $ultimo_tras['centro_actual'] ?? 'actual';
+                $traslados_info .= $dias . ' días en ' . $centro;
+            }
+        }
+
         // Escribir datos en las celdas
+        // Si es Usuario Interesado, días activos debe ser N/A
+        $dias_activos_val = (mb_strtolower($estado_actual) === 'usuario interesado') ? 'N/A' : ($row['dias_activos'] ?? 'N/A');
         $data = [
 
             $row['cedula_persona'] ?? '',
@@ -435,7 +492,8 @@ try {
             $row['ultimo_centro_traslado'] ?? 'N/A',
             $activo_desde,
             $activo_hasta,
-            $row['dias_activos'] ?? 'N/A'
+            $dias_activos_val,
+            $traslados_info
         ];
 
         // Escribir datos en la fila

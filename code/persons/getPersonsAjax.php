@@ -30,7 +30,7 @@ if (!empty($_GET['estado'])) {
 
 // Consulta SQL para obtener los datos
 $query = "
-SELECT p.*, 
+SELECT p.*, p.condicion_componente as condicion_componente,
        GROUP_CONCAT(pr.nombre_programa ORDER BY pr.nombre_programa ASC) AS programas,
        GROUP_CONCAT(pr.id_programa ORDER BY pr.nombre_programa ASC) AS ids_programas,
        g.descripcion_grupo,
@@ -58,7 +58,7 @@ if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         // Determinar el estado de la persona
         $estado_persona = $row['estado_movimiento'] ? $row['estado_movimiento'] : 'CPSAM ACTIVO';
-        
+
         // Aplicar filtro por estado si está seleccionado
         if (!empty($filtro_estado)) {
             $estado_filtro_map = [
@@ -68,16 +68,15 @@ if ($result && $result->num_rows > 0) {
                 'RETIRADO_VOLUNTARIO' => 'CPSAM RETIRADO VOLUNTARIO',
                 'TRASLADADO' => 'CPSAM TRASLADADO'
             ];
-            
+
             if (isset($estado_filtro_map[$filtro_estado]) && $estado_persona !== $estado_filtro_map[$filtro_estado]) {
                 continue; // Saltar esta fila si no coincide con el filtro
             }
         }
-        
+
         // Determinar clase del badge y icono del estado
         $badge_class = '';
         $estado_icon = '';
-        
         switch ($estado_persona) {
             case 'CPSAM ACTIVO':
                 $badge_class = 'status-badge status-active';
@@ -99,8 +98,12 @@ if ($result && $result->num_rows > 0) {
                 $badge_class = 'status-badge status-info';
                 $estado_icon = '<i class="bi bi-arrow-right-circle-fill"></i>';
                 break;
+            case 'USUARIO INTERESADO':
+                $badge_class = 'status-badge status-interesado';
+                $estado_icon = '<i class="bi bi-person-lines-fill"></i>';
+                break;
         }
-        
+
         echo "<tr class='fade-in'>";
         // 1. Cédula
         echo "<td class='col-id'>" . htmlspecialchars($row['cedula_persona']) . "</td>";
@@ -123,11 +126,16 @@ if ($result && $result->num_rows > 0) {
         // 6. Centro Vida / CPSAM
         echo "<td>" . htmlspecialchars($row['descripcion_grupo'] ?: 'No asignado') . "</td>";
         // 7. Estado
-        // Mostrar 'ACTIVO (TRASLADADO)' si el estado es 'CPSAM TRASLADADO'
+        // Mostrar 'ACTIVO (TRASLADADO)' si el estado es 'CPSAM TRASLADADO', o 'Usuario Interesado' si corresponde (sin importar mayúsculas/minúsculas)
         if ($estado_persona === 'CPSAM TRASLADADO') {
             $estado_mostrar = 'ACTIVO (TRASLADADO)';
+        } elseif ($estado_persona == 'Usuario interesado') {
+            $estado_mostrar = 'Usuario Interesado';
         } else {
             $estado_mostrar = str_replace('CPSAM ', '', $estado_persona);
+        }
+        if ($row['condicion_componente'] == 'Usuario interesado') {
+            $estado_mostrar = 'Usuario Interesado';
         }
         echo "<td class='col-status'><span class='$badge_class'>$estado_icon $estado_mostrar</span></td>";
         // 8. Política Pública
@@ -178,4 +186,3 @@ if ($result && $result->num_rows > 0) {
 }
 
 $mysqli->close();
-?>
