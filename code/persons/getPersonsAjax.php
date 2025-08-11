@@ -123,7 +123,13 @@ if ($result && $result->num_rows > 0) {
         // 6. Centro Vida / CPSAM
         echo "<td>" . htmlspecialchars($row['descripcion_grupo'] ?: 'No asignado') . "</td>";
         // 7. Estado
-        echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('CPSAM ', '', $estado_persona) . "</span></td>";
+        // Mostrar 'ACTIVO (TRASLADADO)' si el estado es 'CPSAM TRASLADADO'
+        if ($estado_persona === 'CPSAM TRASLADADO') {
+            $estado_mostrar = 'ACTIVO (TRASLADADO)';
+        } else {
+            $estado_mostrar = str_replace('CPSAM ', '', $estado_persona);
+        }
+        echo "<td class='col-status'><span class='$badge_class'>$estado_icon $estado_mostrar</span></td>";
         // 8. Política Pública
         // 9. Acciones
         echo '<td class="col-actions">

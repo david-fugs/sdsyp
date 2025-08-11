@@ -141,8 +141,8 @@ if ($result->num_rows > 0) {
         }
         echo "<td>" . htmlspecialchars($row['programas']) . "</td>";
         echo "<td>" . ($row['descripcion_grupo'] ? htmlspecialchars($row['descripcion_grupo']) : 'No asignado') . "</td>";
-        $estado_sin_cpsam = str_replace('CPSAM ', '', $estado_persona);
-        if ($estado_sin_cpsam === 'TRASLADADO') {
+        $estado_sin_cpsam = str_ireplace('CPSAM ', '', $estado_persona);
+        if (strtoupper($estado_sin_cpsam) === 'TRASLADADO') {
             $estado_mostrar = 'ACTIVO (TRASLADADO)';
         } else {
             $estado_mostrar = $estado_sin_cpsam;
