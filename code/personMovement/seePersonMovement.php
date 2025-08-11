@@ -168,7 +168,7 @@ function deleteMember($id_movimiento)
 {
     global $mysqli; // Asegurar acceso a la conexión global
 
-    $query = "DELETE FROM movimiento_persona WHERE id_movimiento  = ?";
+    $query = "DELETE FROM movimiento_persona WHERE id_movimiento_persona  = ?";
     $stmt = $mysqli->prepare($query);
     $stmt->bind_param("i", $id_movimiento);
 
@@ -256,8 +256,6 @@ function deleteMember($id_movimiento)
                             <th>Nombres</th>
                             <th>Apellidos</th>
                             <th>Condición</th>
-                            <th>Meta</th>
-                            <th>Departamento</th>
                             <th>Centro Vida Traslado</th>
                             <th>Fecha Movimiento</th>
                             <th>Observación</th>
@@ -337,7 +335,7 @@ function deleteMember($id_movimiento)
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="departamento_procedencia" name="departamento_procedencia" required>
-                                    <option value="" selected>Seleccione Departamento...</option>
+                                    <option value="">Seleccione Departamento...</option>
                                     <option value="Amazonas">Amazonas</option>
                                     <option value="Antioquia">Antioquia</option>
                                     <option value="Arauca">Arauca</option>
@@ -362,7 +360,7 @@ function deleteMember($id_movimiento)
                                     <option value="Norte de Santander">Norte de Santander</option>
                                     <option value="Putumayo">Putumayo</option>
                                     <option value="Quindío">Quindío</option>
-                                    <option value="Risaralda">Risaralda</option>
+                                    <option value="Risaralda" selected>Risaralda</option>
                                     <option value="San Andrés y Providencia">San Andrés y Providencia</option>
                                     <option value="Santander">Santander</option>
                                     <option value="Sucre">Sucre</option>
@@ -643,6 +641,22 @@ function deleteMember($id_movimiento)
                 dataType: 'json',
                 success: function(response) {
                     if (response.encontrado) {
+                        if (response.fallecido) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Persona fallecida',
+                                text: 'Esta persona ha fallecido. No es posible registrar movimientos.',
+                                confirmButtonText: 'OK'
+                            }).then(function() {
+                                $('#cedula_form').val('').focus();
+                                // Opcional: limpiar selects y campos dependientes
+                                $('#meta').val('');
+                                $('#actividad').empty().append('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
+                                $('#accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+                                $('#politica-publica').empty().append('<option value="">Seleccione Política Pública...</option>').prop('disabled', true);
+                            });
+                            return;
+                        }
                         Swal.fire({
                             icon: 'success',
                             title: 'Persona encontrada',
@@ -653,7 +667,6 @@ function deleteMember($id_movimiento)
                         // Precargar Meta, Actividad, Acción y Política Pública si existen
                         if (response.id_meta) {
                             $('#meta').val(response.id_meta);
-                            
                             // Cargar actividades para esta meta
                             $.ajax({
                                 url: 'getActividades.php',
@@ -662,11 +675,9 @@ function deleteMember($id_movimiento)
                                 success: function(actividadesResponse) {
                                     $('#actividad').empty().append('<option value="">Seleccione Actividad...</option>');
                                     $('#actividad').append(actividadesResponse).prop('disabled', false);
-                                    
                                     // Seleccionar la actividad si existe
                                     if (response.id_actividad) {
                                         $('#actividad').val(response.id_actividad);
-                                        
                                         // Cargar acciones para esta actividad
                                         $.ajax({
                                             url: 'getAcciones.php',
@@ -675,11 +686,9 @@ function deleteMember($id_movimiento)
                                             success: function(accionesResponse) {
                                                 $('#accion').empty().append('<option value="">Seleccione Acción...</option>');
                                                 $('#accion').append(accionesResponse).prop('disabled', false);
-                                                
                                                 // Seleccionar la acción si existe
                                                 if (response.id_accion) {
                                                     $('#accion').val(response.id_accion);
-                                                    
                                                     // Cargar políticas públicas para esta acción
                                                     $.ajax({
                                                         url: 'getPoliticaPublica.php',
@@ -692,7 +701,6 @@ function deleteMember($id_movimiento)
                                                                 politicasResponse.politicas.forEach(function(p) {
                                                                     $('#politica-publica').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
                                                                 });
-                                                                
                                                                 // Seleccionar la política pública si existe
                                                                 if (response.id_politica_publica) {
                                                                     $('#politica-publica').val(response.id_politica_publica);
@@ -1157,16 +1165,16 @@ function deleteMember($id_movimiento)
             },
             columnDefs: [{
                     orderable: false,
-                    targets: [9]
-                }, // Deshabilitar orden en la columna de acciones (ahora es la columna 9)
+                    targets: [7]
+                }, // Deshabilitar orden en la columna de acciones (ahora es la columna 7)
                 {
                     className: "text-center",
-                    targets: [0, 9]
+                    targets: [0, 7]
                 } // Centrar columna de ID y acciones
             ],
             order: [
-                [7, 'desc']
-            ], // Ordenar por fecha de movimiento (ahora es la columna 7) descendente
+                [5, 'desc']
+            ], // Ordenar por fecha de movimiento (ahora es la columna 5) descendente
             dom: 'frtip', // Solo mostrar filtro, tabla, información y paginación
             searching: false, // Deshabilitar búsqueda de DataTables (usamos filtros propios)
             info: true,

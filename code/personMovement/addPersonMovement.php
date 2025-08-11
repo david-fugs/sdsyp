@@ -62,13 +62,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             exit;
         }
 
+        // Capturar el grupo anterior antes de actualizar
+        $grupo_anterior = null;
+        $sql_get_grupo = "SELECT id_grupo FROM personas WHERE cedula_persona = '$cedula_persona' LIMIT 1";
+        $result_grupo = $mysqli->query($sql_get_grupo);
+        if ($result_grupo && $row_grupo = $result_grupo->fetch_assoc()) {
+            $grupo_anterior = $row_grupo['id_grupo'];
+        }
+
         // Actualizar el grupo de la persona si se especificó traslado
         $sql_update_persona = "UPDATE personas SET id_grupo = '$id_centro_vida_traslado' WHERE cedula_persona = '$cedula_persona'";
         $mysqli->query($sql_update_persona);
     }
 
-    $sql_insert_movimiento = "INSERT INTO movimiento_persona (cedula_persona, id_condicion, id_centro_vida_traslado, fecha_movimiento, observacion_movimiento, id_meta, id_actividad, id_accion, departamento_procedencia,id_politica_publica)
-    VALUES ('$cedula_persona', '$id_condicion', " . ($id_centro_vida_traslado ? "'$id_centro_vida_traslado'" : "0") . ", '$fecha_movimiento', '$observacion_movimiento', '$id_meta', '$id_actividad', '$id_accion', '$departamento_procedencia','$politica_publica')";
+    $sql_insert_movimiento = "INSERT INTO movimiento_persona (cedula_persona, id_condicion, id_centro_vida_traslado, id_centro_vida_traslado_anterior, fecha_movimiento, observacion_movimiento, id_meta, id_actividad, id_accion, departamento_procedencia, id_politica_publica)
+    VALUES ('$cedula_persona', '$id_condicion', " . ($id_centro_vida_traslado ? "'$id_centro_vida_traslado'" : "0") . ", " . ($grupo_anterior !== null ? "'$grupo_anterior'" : "NULL") . ", '$fecha_movimiento', '$observacion_movimiento', '$id_meta', '$id_actividad', '$id_accion', '$departamento_procedencia','$politica_publica')";
 
     // Ejecutar consulta
     if ($mysqli->query($sql_insert_movimiento)) {

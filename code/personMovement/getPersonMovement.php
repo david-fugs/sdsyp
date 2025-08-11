@@ -28,12 +28,14 @@ if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3) {
 // Consulta SQL para obtener los datos
 $query = " SELECT mp.id_movimiento_persona,c.id_condicion,p.cedula_persona,p.nombres_persona,p.apellidos_persona,c.descripcion_condicion, 
            mp.fecha_movimiento,mp.observacion_movimiento,mp.id_centro_vida_traslado,g.descripcion_grupo as centro_vida_traslado,
+           mp.id_centro_vida_traslado_anterior, g_ant.descripcion_grupo as centro_vida_traslado_anterior,
            mp.id_meta, mp.id_actividad, mp.id_accion, mp.departamento_procedencia, mp.id_politica_publica,
            m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion
            FROM personas as p
         JOIN movimiento_persona as mp ON p.cedula_persona = mp.cedula_persona
         JOIN condiciones_componente as c ON mp.id_condicion = c.id_condicion
         LEFT JOIN grupos g ON mp.id_centro_vida_traslado = g.id_grupo
+        LEFT JOIN grupos g_ant ON mp.id_centro_vida_traslado_anterior = g_ant.id_grupo
         LEFT JOIN metas m ON mp.id_meta = m.id_meta
         LEFT JOIN actividades a ON mp.id_actividad = a.id_actividad
         LEFT JOIN acciones ac ON mp.id_accion = ac.id_accion
@@ -51,9 +53,12 @@ if ($result->num_rows > 0) {
         echo "<td>" . $row['nombres_persona'] . "</td>";
         echo "<td>" . $row['apellidos_persona'] . "</td>";
         echo "<td>" . $row['descripcion_condicion'] . "</td>";
-        echo "<td>" . ($row['descripcion_meta'] ? $row['descripcion_meta'] : 'N/A') . "</td>";
-        echo "<td>" . ($row['departamento_procedencia'] ? $row['departamento_procedencia'] : 'N/A') . "</td>";
-        echo "<td>" . ($row['centro_vida_traslado'] ? $row['centro_vida_traslado'] : 'N/A') . "</td>";
+        // Mostrar traslado si ambos centros existen
+        if ($row['centro_vida_traslado'] && $row['centro_vida_traslado_anterior']) {
+            echo "<td>Trasladado de " . $row['centro_vida_traslado_anterior'] . " a " . $row['centro_vida_traslado'] . "</td>";
+        } else {
+            echo "<td>" . ($row['centro_vida_traslado'] ? $row['centro_vida_traslado'] : 'N/A') . "</td>";
+        }
         echo "<td>" . $row['fecha_movimiento'] . "</td>";
         echo "<td>" . $row['observacion_movimiento'] . "</td>";
         
@@ -79,7 +84,7 @@ if ($result->num_rows > 0) {
                         data-departamento_procedencia="' . ($row['departamento_procedencia'] ?? '') . '">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
-                    <a href="?delete=' . $row['cedula_persona'] . '" 
+                    <a href="?delete=' . $row['id_movimiento_persona'] . '" 
                        class="btn-action btn-delete" 
                        title="Eliminar movimiento"
                        onclick="return confirm(\'¿Estás seguro de que deseas eliminar este movimiento?\')">

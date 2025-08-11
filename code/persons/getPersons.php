@@ -141,7 +141,13 @@ if ($result->num_rows > 0) {
         }
         echo "<td>" . htmlspecialchars($row['programas']) . "</td>";
         echo "<td>" . ($row['descripcion_grupo'] ? htmlspecialchars($row['descripcion_grupo']) : 'No asignado') . "</td>";
-        echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('CPSAM ', '', $estado_persona) . "</span></td>";
+        $estado_sin_cpsam = str_replace('CPSAM ', '', $estado_persona);
+        if ($estado_sin_cpsam === 'TRASLADADO') {
+            $estado_mostrar = 'ACTIVO (TRASLADADO)';
+        } else {
+            $estado_mostrar = $estado_sin_cpsam;
+        }
+        echo "<td class='col-status'><span class='$badge_class'>$estado_icon $estado_mostrar</span></td>";
         if($tipo_usuario != 3) { 
 
         // Botones de acción modernos

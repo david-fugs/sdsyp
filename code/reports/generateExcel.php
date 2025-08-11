@@ -196,7 +196,21 @@ try {
              WHERE mp.cedula_persona = p.cedula_persona 
              ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
              LIMIT 1) AS ultimo_departamento_procedencia,
-             
+
+            -- Centro de vida anterior y actual del último movimiento
+            (SELECT g_ant.descripcion_grupo
+             FROM movimiento_persona mp
+             LEFT JOIN grupos g_ant ON mp.id_centro_vida_traslado_anterior = g_ant.id_grupo
+             WHERE mp.cedula_persona = p.cedula_persona
+             ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+             LIMIT 1) AS ultimo_centro_traslado_anterior,
+            (SELECT g_act.descripcion_grupo
+             FROM movimiento_persona mp
+             LEFT JOIN grupos g_act ON mp.id_centro_vida_traslado = g_act.id_grupo
+             WHERE mp.cedula_persona = p.cedula_persona
+             ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+             LIMIT 1) AS ultimo_centro_traslado_actual,
+
             -- Estadísticas de movimientos en el año
             (SELECT COUNT(*)
              FROM movimiento_persona mp2
@@ -210,8 +224,8 @@ try {
              WHERE mp3.cedula_persona = p.cedula_persona
              AND cc3.descripcion_condicion LIKE '%TRASLADADO%'
              AND YEAR(mp3.fecha_movimiento) = ?) AS traslados_en_year,
-             
-            -- Último centro de traslado
+
+            -- Último centro de traslado (para compatibilidad)
             (SELECT g2.descripcion_grupo
              FROM movimiento_persona mp4
              JOIN condiciones_componente cc4 ON mp4.id_condicion = cc4.id_condicion
@@ -290,7 +304,6 @@ try {
         $estado_actual = 'ACTIVO';
         if ($row['ultimo_estado_movimiento']) {
             $ultimo_estado = strtoupper($row['ultimo_estado_movimiento']);
-            
             if (strpos($ultimo_estado, 'EVADIDO') !== false || strpos($ultimo_estado, 'EVASION') !== false) {
                 $estado_actual = 'EVADIDO';
             } elseif (strpos($ultimo_estado, 'FALLECIDO') !== false || strpos($ultimo_estado, 'MUERTE') !== false) {
@@ -298,7 +311,7 @@ try {
             } elseif (strpos($ultimo_estado, 'RETIRADO') !== false || strpos($ultimo_estado, 'RETIRO') !== false) {
                 $estado_actual = 'RETIRADO VOLUNTARIO';
             } elseif (strpos($ultimo_estado, 'TRASLADADO') !== false || strpos($ultimo_estado, 'TRASLADO') !== false) {
-                $estado_actual = 'TRASLADADO';
+                $estado_actual = 'ACTIVO (TRASLADADO)';
             } elseif (strpos($ultimo_estado, 'SUSPENDIDO') !== false || strpos($ultimo_estado, 'SUSPENSION') !== false) {
                 $estado_actual = 'SUSPENDIDO';
             } elseif (strpos($ultimo_estado, 'ACTIVO') !== false || strpos($ultimo_estado, 'INGRESO') !== false) {
@@ -327,9 +340,16 @@ try {
         // Determinar "ACTIVO HASTA"
         $activo_hasta = '';
         if ($estado_actual == 'FALLECIDO' || $estado_actual == 'EVADIDO') {
-            $activo_hasta = $fecha_ultimo_estado ?: 'No registrada';
-        } elseif ($estado_actual == 'TRASLADADO') {
-            $activo_hasta = $row['ultimo_centro_traslado'] ? 'Trasladado a: ' . $row['ultimo_centro_traslado'] : 'Traslado sin destino';
+        $activo_hasta = $fecha_ultimo_estado ?: 'No registrada';
+    } elseif ($estado_actual == 'TRASLADADO') {
+        // Si hay centro anterior y centro traslado, mostrar ambos
+        if (!empty($row['ultimo_centro_traslado_anterior']) && !empty($row['ultimo_centro_traslado_actual'])) {
+            $activo_hasta = 'Trasladado de: ' . $row['ultimo_centro_traslado_anterior'] . ' a: ' . $row['ultimo_centro_traslado_actual'];
+        } elseif (!empty($row['ultimo_centro_traslado_actual'])) {
+            $activo_hasta = 'Trasladado a: ' . $row['ultimo_centro_traslado_actual'];
+        } else {
+            $activo_hasta = 'Traslado sin destino';
+        }
         } elseif ($estado_actual == 'RETIRADO VOLUNTARIO') {
             $activo_hasta = $fecha_ultimo_estado ?: 'No registrada';
         } elseif($estado_actual == 'CPSAM EVADADIDO') {

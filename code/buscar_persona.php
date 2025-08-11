@@ -28,6 +28,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $resultado = $stmt->get_result();
 
     if ($row = $resultado->fetch_assoc()) {
+        // Consultar si existe algún movimiento con id_condicion = 8 (fallecimiento)
+        $fallecido = false;
+        $stmt_fall = $mysqli->prepare("SELECT 1 FROM movimiento_persona WHERE cedula_persona = ? AND id_condicion = 8 LIMIT 1");
+        $stmt_fall->bind_param("s", $cedula);
+        $stmt_fall->execute();
+        $res_fall = $stmt_fall->get_result();
+        if ($res_fall->fetch_assoc()) {
+            $fallecido = true;
+        }
+        $stmt_fall->close();
         echo json_encode([
             'encontrado' => true,
             'nombres' => $row['nombres_persona'],
@@ -39,7 +49,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             'descripcion_meta' => $row['descripcion_meta'],
             'descripcion_actividad' => $row['descripcion_actividad'],
             'descripcion_accion' => $row['descripcion_accion'],
-            'descripcion_politica' => $row['descripcion_politica']
+            'descripcion_politica' => $row['descripcion_politica'],
+            'fallecido' => $fallecido
         ]);
     } else {
         echo json_encode(['encontrado' => false, 'mensaje' => 'Persona no encontrada']);

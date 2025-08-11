@@ -444,11 +444,19 @@ function deleteMember($cedula_persona)
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="grupo_sisben" name="grupo_sisben">
                                     <option value="" selected>Seleccione grupo...</option>
-                                    <?php for ($l = 'A'; $l <= 'D'; $l++) {
-                                        for ($n = 1; $n <= 9; $n++) { ?>
-                                            <option value="<?= $l . $n ?>"><?= $l . $n ?></option>
-                                    <?php }
-                                    } ?>
+                                    <?php
+                                    $grupos = [
+                                        'A' => 5,
+                                        'B' => 7,
+                                        'C' => 18,
+                                        'D' => 21
+                                    ];
+                                    foreach ($grupos as $letra => $max) {
+                                        for ($n = 1; $n <= $max; $n++) {
+                                            echo "<option value=\"{$letra}{$n}\">{$letra}{$n}</option>";
+                                        }
+                                    }
+                                    ?>
                                 </select>
                                 <label for="grupo_sisben">Grupo Sisbén</label>
                             </div>
@@ -893,11 +901,19 @@ function deleteMember($cedula_persona)
                                 <label for="edit-grupo-sisben" class="form-label">Grupo Sisbén</label>
                                 <select class="form-select" id="edit-grupo-sisben" name="grupo_sisben">
                                     <option value="" selected>Seleccione grupo...</option>
-                                    <?php for ($l = 'A'; $l <= 'D'; $l++) {
-                                        for ($n = 1; $n <= 9; $n++) { ?>
-                                            <option value="<?= $l . $n ?>"><?= $l . $n ?></option>
-                                    <?php }
-                                    } ?>
+                                    <?php
+                                    $grupos = [
+                                        'A' => 5,
+                                        'B' => 7,
+                                        'C' => 18,
+                                        'D' => 21
+                                    ];
+                                    foreach ($grupos as $letra => $max) {
+                                        for ($n = 1; $n <= $max; $n++) {
+                                            echo "<option value=\"{$letra}{$n}\">{$letra}{$n}</option>";
+                                        }
+                                    }
+                                    ?>
                                 </select>
                             </div>
                         </div>
