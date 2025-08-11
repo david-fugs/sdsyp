@@ -17,7 +17,16 @@ include("conexion.php");
 $stats = array();
 
 // Total de personas
-$query_personas = "SELECT COUNT(*) as total FROM personas";
+
+// Contar personas que NO tienen ningún movimiento con id_condicion = 8 (fallecido)
+$query_personas = "
+SELECT COUNT(*) as total FROM personas p
+WHERE NOT EXISTS (
+    SELECT 1 FROM movimiento_persona mp
+    WHERE mp.cedula_persona = p.cedula_persona
+    AND mp.id_condicion = 8
+)
+";
 $result_personas = $mysqli->query($query_personas);
 $stats['personas'] = $result_personas->fetch_assoc()['total'];
 
@@ -65,6 +74,11 @@ SELECT
     COUNT(p.id_persona) as total_personas
 FROM grupos g
 LEFT JOIN personas p ON g.id_grupo = p.id_grupo
+    AND NOT EXISTS (
+        SELECT 1 FROM movimiento_persona mp
+        WHERE mp.cedula_persona = p.cedula_persona
+        AND mp.id_condicion = 8
+    )
 GROUP BY g.id_grupo, g.descripcion_grupo, g.limite_personas
 ORDER BY g.descripcion_grupo ASC
 ";
