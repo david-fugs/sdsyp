@@ -21,10 +21,11 @@ if ($filtro_funcionario) {
     $where .= " AND ra.id_usuario = $filtro_funcionario ";
 }
 
-$query = "SELECT ra.id_registro, ra.id_meta, ra.id_actividad, ra.id_accion, ra.politica_publica, ra.id_centro_vida,
+$query = "SELECT ra.id_registro, ra.id_meta, ra.id_actividad, ra.id_entregas, ra.id_accion, ra.politica_publica, ra.id_centro_vida,
        ra.fecha_atencion, ra.nombre_lider, ra.telefono_contacto, ra.id_comuna, ra.medio_verificacion,
        ra.cantidad_masculino, ra.cantidad_femenino, ra.tipo_actividad, ra.observacion_actividad,
        m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica,
+       actc.descripcion_actividad AS descripcion_entrega,
        g.descripcion_grupo AS centro_vida, c.nombre_com AS nombre_comuna, u.nombre AS funcionario_responsable
 FROM registro_actividades AS ra
 LEFT JOIN metas m ON ra.id_meta = m.id_meta
@@ -34,6 +35,7 @@ LEFT JOIN politicas_publicas pp ON ra.politica_publica = pp.id_politica
 LEFT JOIN grupos g ON ra.id_centro_vida = g.id_grupo
 LEFT JOIN comunas c ON ra.id_comuna = c.id_com
 LEFT JOIN usuarios u ON ra.id_usuario = u.id
+LEFT JOIN actividad_contratista actc ON ra.id_entregas = actc.id_actividad_contratista
 WHERE 1 $where
 ORDER BY ra.fecha_atencion DESC
 ";
@@ -70,6 +72,7 @@ if ($result->num_rows > 0) {
                         data-meta="' . ($row['id_meta'] ?? '') . '"
                         data-actividad="' . ($row['id_actividad'] ?? '') . '"
                         data-accion="' . ($row['id_accion'] ?? '') . '"
+                        data-entregas_actividad="' . ($row['id_entregas'] ?? '') . '"
                         data-politica_publica="' . ($row['politica_publica'] ?? '') . '"
                         data-centro_vida="' . ($row['id_centro_vida'] ?? '') . '"
                         data-fecha_atencion="' . ($row['fecha_atencion'] ?? '') . '"

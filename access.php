@@ -531,52 +531,52 @@ $mysqli->close();
   </nav>
 
   <!-- Barra lateral superior -->
-   <?php if ($tipo_usuario == 1) { ?>
-  <div class="top-sidebar" id="topSidebar">
-    <div class="top-sidebar-content">
-      <div class="quick-nav">
-        <a href="code/persons/seePerson.php" class="quick-nav-item">
-          <i class="bi bi-people-fill"></i>
-          Personas
-          <span class="badge"><?php echo $stats['personas']; ?></span>
-        </a>
-        <a href="code/goals/seeGoals.php" class="quick-nav-item">
-          <i class="bi bi-bullseye"></i>
-          Metas
-          <span class="badge"><?php echo $stats['metas']; ?></span>
-        </a>
-        <a href="code/activities/seeActivity.php" class="quick-nav-item">
-          <i class="bi bi-list-task"></i>
-          Actividades
-          <span class="badge"><?php echo $stats['actividades']; ?></span>
-        </a>
-        <a href="code/action/seeActions.php" class="quick-nav-item">
-          <i class="bi bi-lightning"></i>
-          Acciones
-          <span class="badge"><?php echo $stats['acciones']; ?></span>
-        </a>
-        <a href="code/publicPolicies/seePublicPolicies.php" class="quick-nav-item">
-          <i class="bi bi-clipboard-check"></i>
-          Políticas
-          <span class="badge"><?php echo $stats['politicas']; ?></span>
-        </a>
-        <a href="code/group/seeGroup.php" class="quick-nav-item">
-          <i class="bi bi-collection"></i>
-          Grupos
-          <span class="badge"><?php echo $stats['grupos']; ?></span>
-        </a>
-        <a href="code/reports/seeReports.php" class="quick-nav-item">
-          <i class="bi bi-file-earmark-bar-graph"></i>
-          Informes
-        </a>
-      </div>
+  <?php if ($tipo_usuario == 1) { ?>
+    <div class="top-sidebar" id="topSidebar">
+      <div class="top-sidebar-content">
+        <div class="quick-nav">
+          <a href="code/persons/seePerson.php" class="quick-nav-item">
+            <i class="bi bi-people-fill"></i>
+            Personas
+            <span class="badge"><?php echo $stats['personas']; ?></span>
+          </a>
+          <a href="code/goals/seeGoals.php" class="quick-nav-item">
+            <i class="bi bi-bullseye"></i>
+            Metas
+            <span class="badge"><?php echo $stats['metas']; ?></span>
+          </a>
+          <a href="code/activities/seeActivity.php" class="quick-nav-item">
+            <i class="bi bi-list-task"></i>
+            Actividades
+            <span class="badge"><?php echo $stats['actividades']; ?></span>
+          </a>
+          <a href="code/action/seeActions.php" class="quick-nav-item">
+            <i class="bi bi-lightning"></i>
+            Acciones
+            <span class="badge"><?php echo $stats['acciones']; ?></span>
+          </a>
+          <a href="code/publicPolicies/seePublicPolicies.php" class="quick-nav-item">
+            <i class="bi bi-clipboard-check"></i>
+            Políticas
+            <span class="badge"><?php echo $stats['politicas']; ?></span>
+          </a>
+          <a href="code/group/seeGroup.php" class="quick-nav-item">
+            <i class="bi bi-collection"></i>
+            Grupos
+            <span class="badge"><?php echo $stats['grupos']; ?></span>
+          </a>
+          <a href="code/reports/seeReports.php" class="quick-nav-item">
+            <i class="bi bi-file-earmark-bar-graph"></i>
+            Informes
+          </a>
+        </div>
 
-      <div class="breadcrumb-info" style="color: #6c757d; font-weight: 600;">
-        <i class="bi bi-house-fill"></i>
-        Dashboard Principal
+        <div class="breadcrumb-info" style="color: #6c757d; font-weight: 600;">
+          <i class="bi bi-house-fill"></i>
+          Dashboard Principal
+        </div>
       </div>
     </div>
-  </div>
 
   <?php } ?>
   <!-- sidebar -->
@@ -602,76 +602,77 @@ $mysqli->close();
               </ul>
             </li>
             <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-bullseye"></i>
-              </span>
-              <span class="navlink">Actividades </span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/contratista/seeActivities.php" class="nav_link sublink">Ver Actividades</a>
-              <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
-              <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades Masivas</a>
-              <a href="code/contratistaIndividual/form.php" class="nav_link sublink">Registro Actividades Individuales</a>
-            </ul>
-          </li>
-           <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-bullseye"></i>
-              </span>
-              <span class="navlink">Metas</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/goals/seeGoals.php" class="nav_link sublink">Ver Metas</a>
-              <a href="code/activities/seeActivity.php" class="nav_link sublink">Ver Actividades</a>
-              <a href="code/action/seeActions.php" class="nav_link sublink">Ver Acciones</a>
-            </ul>
-          </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-scale-balanced"></i>
-              </span>
-              <span class="navlink">Políticas Públicas</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/publicPolicies/seePublicPolicies.php" class="nav_link sublink">Ver Políticas Públicas</a>
-            </ul>
-          </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-list-check"></i>
-              </span>
-              <span class="navlink">Condiciones</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/condition/seeCondition.php" class="nav_link sublink">Ver Condiciones</a>
-              <a href="code/group/seeGroup.php" class="nav_link sublink">Grupo o CPSAM</a>
-              <!-- <a href="code/center/seeCenter.php" class="nav_link sublink">Centro Vida</a> -->
-            </ul>
-          </li>
+              <div href="#" class="nav_link submenu_item">
+                <span class="navlink_icon">
+                  <i class="fa-solid fa-bullseye"></i>
+                </span>
+                <span class="navlink">Registro art masivas </span>
+                <i class="bx bx-chevron-right arrow-left"></i>
+              </div>
+              <ul class="menu_items submenu">
+                <a href="code/contratista/seeActivities.php" class="nav_link sublink">Agregar Actividades contratista</a>
+                <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
+                <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades Masivas</a>
+                <a href="code/contratistaIndividual/form.php" class="nav_link sublink">Registro Actividades Individuales</a>
+                <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
+
+              </ul>
+            </li>
+            <li class="item">
+              <div href="#" class="nav_link submenu_item">
+                <span class="navlink_icon">
+                  <i class="fa-solid fa-bullseye"></i>
+                </span>
+                <span class="navlink">Metas</span>
+                <i class="bx bx-chevron-right arrow-left"></i>
+              </div>
+              <ul class="menu_items submenu">
+                <a href="code/goals/seeGoals.php" class="nav_link sublink">Ver Metas</a>
+                <a href="code/activities/seeActivity.php" class="nav_link sublink">Ver Actividades</a>
+                <a href="code/action/seeActions.php" class="nav_link sublink">Ver Acciones</a>
+              </ul>
+            </li>
+            <li class="item">
+              <div href="#" class="nav_link submenu_item">
+                <span class="navlink_icon">
+                  <i class="fa-solid fa-scale-balanced"></i>
+                </span>
+                <span class="navlink">Políticas Públicas</span>
+                <i class="bx bx-chevron-right arrow-left"></i>
+              </div>
+              <ul class="menu_items submenu">
+                <a href="code/publicPolicies/seePublicPolicies.php" class="nav_link sublink">Ver Políticas Públicas</a>
+              </ul>
+            </li>
+            <li class="item">
+              <div href="#" class="nav_link submenu_item">
+                <span class="navlink_icon">
+                  <i class="fa-solid fa-list-check"></i>
+                </span>
+                <span class="navlink">Condiciones</span>
+                <i class="bx bx-chevron-right arrow-left"></i>
+              </div>
+              <ul class="menu_items submenu">
+                <a href="code/condition/seeCondition.php" class="nav_link sublink">Ver Condiciones</a>
+                <a href="code/group/seeGroup.php" class="nav_link sublink">Grupo o CPSAM</a>
+                <!-- <a href="code/center/seeCenter.php" class="nav_link sublink">Centro Vida</a> -->
+              </ul>
+            </li>
           <?php } ?>
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
                 <i class="fa-solid fa-users"></i>
               </span>
-              <span class="navlink">Personas</span>
+              <span class="navlink">Caracterizacion</span>
               <i class="bx bx-chevron-right arrow-left"></i>
             </div>
             <ul class="menu_items submenu">
               <a href="code/persons/seePerson.php" class="nav_link sublink">Ver Personas</a>
               <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
-              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
             </ul>
           </li>
-         
+
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
@@ -715,12 +716,12 @@ $mysqli->close();
   <?php } ?>
 
 
-<?php if ($tipo_usuario == 3) { ?>
-<nav class="sidebar">
+  <?php if ($tipo_usuario == 3) { ?>
+    <nav class="sidebar">
       <div class="menu_content">
         <ul class="menu_items">
           <div class="menu_title menu_dahsboard"></div>
-           <li class="item">
+          <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
                 <i class="fa-solid fa-users"></i>
@@ -738,13 +739,15 @@ $mysqli->close();
               <span class="navlink_icon">
                 <i class="fa-solid fa-bullseye"></i>
               </span>
-              <span class="navlink">Actividades </span>
+              <span class="navlink">Registro art masivas </span>
               <i class="bx bx-chevron-right arrow-left"></i>
             </div>
             <ul class="menu_items submenu">
-              <a href="code/contratista/seeActivities.php" class="nav_link sublink">Ver Actividades</a>
+              <a href="code/contratista/seeActivities.php" class="nav_link sublink">Agregar Actividades contratista</a>
               <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
               <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades</a>
+              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
+
             </ul>
           </li>
 
@@ -777,7 +780,7 @@ $mysqli->close();
 
       </div>
     </nav>
-<?php } ?>
+  <?php } ?>
 
   <!-- Main Content -->
   <div class="main-content" id="mainContent">
