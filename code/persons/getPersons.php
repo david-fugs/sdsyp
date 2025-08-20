@@ -161,7 +161,15 @@ if ($result->num_rows > 0) {
             $estado_mostrar = $estado_sin_cpsam;
         }
 
-         if ($row['condicion_componente'] == 'Usuario interesado') {
+        // Si la condicion_componente indica una visita psicosocial fallida, mostrar 'Visita fallida'
+        if (isset($row['condicion_componente']) && mb_strtolower(trim($row['condicion_componente'])) === 'visita psicosocial fallida') {
+            $estado_mostrar = 'Visita fallida';
+            // ajustar badge y icono para este caso
+            $badge_class = 'status-badge status-warning';
+            $estado_icon = '<i class="bi bi-exclamation-circle-fill"></i>';
+        }
+
+        if (isset($row['condicion_componente']) && $row['condicion_componente'] == 'Usuario interesado') {
             $estado_mostrar = 'Usuario Interesado';
         }
         echo "<td class='col-status'><span class='$badge_class'>$estado_icon $estado_mostrar</span></td>";

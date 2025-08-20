@@ -342,7 +342,7 @@ function deleteMember($cedula_persona)
                         <!-- Fila 1: Tipo de identificación y número -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="tipo_identificacion" name="tipo_identificacion" required>
+                                <select class="form-select" id="tipo_identificacion" name="tipo_identificacion">
                                     <option value="" selected disabled>Seleccione tipo...</option>
                                     <option value="Cédula de Ciudadanía">Cédula de Ciudadanía</option>
                                     <option value="Tarjeta de Identidad">Tarjeta de Identidad</option>
@@ -353,14 +353,14 @@ function deleteMember($cedula_persona)
                                 <label for="tipo_identificacion">Tipo de Identificación</label>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
-                                <input type="text" class="form-control" id="cedula_persona" name="cedula_persona" placeholder="Número de Identificación" required autocomplete="off" autofocus>
+                                <input type="text" class="form-control" id="cedula_persona" name="cedula_persona" placeholder="Número de Identificación" autocomplete="off" autofocus required>
                                 <label for="cedula_persona">Número de Identificación</label>
                             </div>
                         </div>
                         <!-- Fila 1.5: Género y Nombres -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="genero_persona" name="genero_persona" required>
+                                <select class="form-select" id="genero_persona" name="genero_persona">
                                     <option value="" selected disabled>Seleccione...</option>
                                     <option value="Masculino">Masculino</option>
                                     <option value="Femenino">Femenino</option>
@@ -376,7 +376,7 @@ function deleteMember($cedula_persona)
                         <!-- Fila 2: Apellidos y Referencia -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <input type="text" class="form-control" id="apellidos_persona" name="apellidos_persona" placeholder="Apellidos" required>
+                                <input type="text" class="form-control" id="apellidos_persona" name="apellidos_persona" placeholder="Apellidos">
                                 <label for="apellidos_persona">Apellidos</label>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
@@ -387,7 +387,7 @@ function deleteMember($cedula_persona)
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <input type="text" class="form-control" id="telefono_referencia_persona" name="telefono_referencia_persona" placeholder="Teléfono" required>
+                                <input type="text" class="form-control" id="telefono_referencia_persona" name="telefono_referencia_persona" placeholder="Teléfono">
                                 <label for="telefono_referencia_persona">Teléfono Referencia</label>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
@@ -600,7 +600,7 @@ function deleteMember($cedula_persona)
                         <!-- Fila 1.7: Discapacidad y cabeza de hogar -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="persona_discapacidad" name="persona_discapacidad" required>
+                                <select class="form-select" id="persona_discapacidad" name="persona_discapacidad">
                                     <option value="" selected disabled>¿Persona con discapacidad?</option>
                                     <option value="Si">Sí</option>
                                     <option value="No">No</option>
@@ -623,7 +623,7 @@ function deleteMember($cedula_persona)
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="cabeza_hogar" name="cabeza_hogar" required>
+                                <select class="form-select" id="cabeza_hogar" name="cabeza_hogar">
                                     <option value="" selected disabled>¿Cabeza de hogar?</option>
                                     <option value="Si">Sí</option>
                                     <option value="No">No</option>
@@ -631,7 +631,7 @@ function deleteMember($cedula_persona)
                                 <label for="cabeza_hogar">¿Cabeza de hogar?</label>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="lider_comunidad" name="lider_comunidad" required>
+                                <select class="form-select" id="lider_comunidad" name="lider_comunidad">
                                     <option value="" selected disabled>¿Líder/representante comunidad?</option>
                                     <option value="Si">Sí</option>
                                     <option value="No">No</option>
@@ -718,7 +718,7 @@ function deleteMember($cedula_persona)
 
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="condicion_ocupacion" name="condicion_ocupacion" required>
+                                <select class="form-select" id="condicion_ocupacion" name="condicion_ocupacion">
                                     <option value="" selected disabled>¿Condicion Ocupacion?</option>
                                     <option value="Ama de Casa">Ama de Casa</option>
                                     <option value="Estudiante">Estudiante</option>
@@ -756,6 +756,7 @@ function deleteMember($cedula_persona)
                                     <option value="C.M Fallecido sin Certificado">C.M Fallecido sin Certificado</option>
                                     <option value="C.M Familias en Accion">C.M Familias en Accion</option>
                                     <option value="C.M Fuera de la Ciudad">C.M Fuera de la Ciudad</option>
+                                    <option value="Visita psicosocial fallida">Visita psicosocial fallida</option>
                                 </select>
                                 <label for="condicion_componente">Condicion Componente</label>
                             </div>
@@ -801,7 +802,7 @@ function deleteMember($cedula_persona)
                         <!-- Fila: Meta, Actividad, Acción y Política Pública -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="meta" name="id_meta" required>
+                                <select class="form-select" id="meta" name="id_meta">
                                     <option value="" selected>Seleccione Meta...</option>
                                     <?php foreach ($result_metas as $meta) { ?>
                                         <option value="<?= $meta['id_meta']; ?>"><?= $meta['descripcion_meta']; ?></option>
@@ -810,7 +811,7 @@ function deleteMember($cedula_persona)
                                 <label for="meta">Meta</label>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="actividad" name="id_actividad" required disabled>
+                                <select class="form-select" id="actividad" name="id_actividad" disabled>
                                     <option value="" selected>Seleccione Actividad...</option>
                                 </select>
                                 <label for="actividad">Actividad</label>
@@ -818,13 +819,13 @@ function deleteMember($cedula_persona)
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="accion" name="id_accion" required disabled>
+                                <select class="form-select" id="accion" name="id_accion" disabled>
                                     <option value="" selected>Seleccione Acción...</option>
                                 </select>
                                 <label for="accion">Acción</label>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="politica-publica" name="id_politica_publica" required>
+                                <select class="form-select" id="politica-publica" name="id_politica_publica">
                                     <option value="" selected>Seleccione Política Pública...</option>
                                 </select>
                                 <label for="politica-publica">Política Pública</label>

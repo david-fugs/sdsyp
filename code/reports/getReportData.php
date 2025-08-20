@@ -140,50 +140,58 @@ $query = "
     $data = [];
 
     while ($row = $result->fetch_assoc()) {
-        // Determinar el estado actual basado en el último movimiento
+        // Determinar el estado actual: priorizar la columna condicion_componente en personas
         $estado_actual = 'ACTIVO'; // Estado por defecto
 
-        if ($row['ultimo_estado_movimiento']) {
-            $ultimo_estado = strtoupper($row['ultimo_estado_movimiento']);
+        if (isset($row['condicion_componente']) && trim(mb_strtolower($row['condicion_componente'])) === 'visita psicosocial fallida') {
+            // Si la persona ya tiene esa condición en su registro, respetarla
+            $estado_actual = 'VISITA FALLIDA';
+        } else {
+            // Si no, basar el estado en el último movimiento cuando exista
+            if ($row['ultimo_estado_movimiento']) {
+                $ultimo_estado = strtoupper($row['ultimo_estado_movimiento']);
 
-            // Mapear estados según condiciones - mejorado para capturar más casos
-            if (
-                strpos($ultimo_estado, 'EVADIDO') !== false ||
-                strpos($ultimo_estado, 'EVASION') !== false ||
-                strpos($ultimo_estado, 'FUGA') !== false
-            ) {
-                $estado_actual = 'EVADIDO';
-            } elseif (
-                strpos($ultimo_estado, 'FALLECIDO') !== false ||
-                strpos($ultimo_estado, 'MUERTE') !== false ||
-                strpos($ultimo_estado, 'DEFUNCION') !== false
-            ) {
-                $estado_actual = 'FALLECIDO';
-            } elseif (
-                strpos($ultimo_estado, 'RETIRADO') !== false ||
-                strpos($ultimo_estado, 'RETIRO') !== false ||
-                strpos($ultimo_estado, 'SALIDA') !== false
-            ) {
-                $estado_actual = 'RETIRADO VOLUNTARIO';
-            } elseif (
-                strpos($ultimo_estado, 'TRASLADADO') !== false ||
-                strpos($ultimo_estado, 'TRASLADO') !== false
-            ) {
-                $estado_actual = 'TRASLADADO';
-            } elseif (
-                strpos($ultimo_estado, 'SUSPENDIDO') !== false ||
-                strpos($ultimo_estado, 'SUSPENSION') !== false
-            ) {
-                $estado_actual = 'SUSPENDIDO';
-            } elseif (
-                strpos($ultimo_estado, 'ACTIVO') !== false ||
-                strpos($ultimo_estado, 'INGRESO') !== false ||
-                strpos($ultimo_estado, 'ACTIVACION') !== false
-            ) {
-                $estado_actual = 'ACTIVO';
-            } else {
-                // Si no coincide con ningún patrón conocido, usar el estado original
-                $estado_actual = $ultimo_estado;
+                // Mapear estados según condiciones - mejorado para capturar más casos
+                if (strpos($ultimo_estado, 'VISITA PSICOSOCIAL FALLIDA') !== false) {
+                    $estado_actual = 'VISITA FALLIDA';
+                } elseif (
+                    strpos($ultimo_estado, 'EVADIDO') !== false ||
+                    strpos($ultimo_estado, 'EVASION') !== false ||
+                    strpos($ultimo_estado, 'FUGA') !== false
+                ) {
+                    $estado_actual = 'EVADIDO';
+                } elseif (
+                    strpos($ultimo_estado, 'FALLECIDO') !== false ||
+                    strpos($ultimo_estado, 'MUERTE') !== false ||
+                    strpos($ultimo_estado, 'DEFUNCION') !== false
+                ) {
+                    $estado_actual = 'FALLECIDO';
+                } elseif (
+                    strpos($ultimo_estado, 'RETIRADO') !== false ||
+                    strpos($ultimo_estado, 'RETIRO') !== false ||
+                    strpos($ultimo_estado, 'SALIDA') !== false
+                ) {
+                    $estado_actual = 'RETIRADO VOLUNTARIO';
+                } elseif (
+                    strpos($ultimo_estado, 'TRASLADADO') !== false ||
+                    strpos($ultimo_estado, 'TRASLADO') !== false
+                ) {
+                    $estado_actual = 'TRASLADADO';
+                } elseif (
+                    strpos($ultimo_estado, 'SUSPENDIDO') !== false ||
+                    strpos($ultimo_estado, 'SUSPENSION') !== false
+                ) {
+                    $estado_actual = 'SUSPENDIDO';
+                } elseif (
+                    strpos($ultimo_estado, 'ACTIVO') !== false ||
+                    strpos($ultimo_estado, 'INGRESO') !== false ||
+                    strpos($ultimo_estado, 'ACTIVACION') !== false
+                ) {
+                    $estado_actual = 'ACTIVO';
+                } else {
+                    // Si no coincide con ningún patrón conocido, usar el estado original
+                    $estado_actual = $ultimo_estado;
+                }
             }
         }
 

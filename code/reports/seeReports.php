@@ -1046,6 +1046,7 @@ $endYear = $currentYear + 1;
 
         function getEstadoBadge(estado) {
             const badgeMap = {
+                    'VISITA FALLIDA': '<span class="status-badge status-warning"><i class="bi bi-exclamation-circle-fill"></i> Visita fallida</span>',
                 'ACTIVO': '<span class="status-badge status-active"><i class="bi bi-check-circle-fill"></i> ACTIVO</span>',
                 'EVADIDO': '<span class="status-badge status-warning"><i class="bi bi-exclamation-triangle-fill"></i> EVADIDO</span>',
                 'FALLECIDO': '<span class="status-badge status-secondary"><i class="bi bi-x-circle-fill"></i> FALLECIDO</span>',

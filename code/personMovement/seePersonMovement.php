@@ -167,12 +167,20 @@ if (isset($_GET['delete'])) {
 function deleteMember($id_movimiento)
 {
     global $mysqli; // Asegurar acceso a la conexión global
+    // Primero eliminar registros relacionados en persona_traslados (si existen)
+    $query1 = "DELETE FROM persona_traslados WHERE id_movimiento_persona = ?";
+    if ($stmt1 = $mysqli->prepare($query1)) {
+        $stmt1->bind_param("i", $id_movimiento);
+        $stmt1->execute();
+        $stmt1->close();
+    }
 
-    $query = "DELETE FROM movimiento_persona WHERE id_movimiento_persona  = ?";
-    $stmt = $mysqli->prepare($query);
-    $stmt->bind_param("i", $id_movimiento);
+    // Luego eliminar el movimiento en movimiento_persona
+    $query2 = "DELETE FROM movimiento_persona WHERE id_movimiento_persona = ?";
+    $stmt2 = $mysqli->prepare($query2);
+    $stmt2->bind_param("i", $id_movimiento);
 
-    if ($stmt->execute()) {
+    if ($stmt2->execute()) {
         echo "<script>alert('Movimiento borrado correctamente');
         window.location = 'seePersonMovement.php';</script>";
     } else {
@@ -180,7 +188,7 @@ function deleteMember($id_movimiento)
         window.location = 'seePersonMovement.php';</script>";
     }
 
-    $stmt->close();
+    $stmt2->close();
 }
 
 ?>

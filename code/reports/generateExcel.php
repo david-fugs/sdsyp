@@ -100,8 +100,7 @@ try {
         'ESTADO ACTUAL', 'FECHA ÚLTIMO ESTADO',
         'ÚLTIMA META', 'ÚLTIMA ACTIVIDAD', 'ÚLTIMA ACCIÓN', 'ÚLTIMO DPTO PROCEDENCIA',
         'MOVIMIENTOS AÑO', 'TRASLADOS AÑO', 'ÚLTIMO CENTRO TRASLADO',
-        'ACTIVO DESDE', 'ACTIVO HASTA', 'DÍAS ACTIVOS'
-        , 'DÍAS EN CENTRO ANTERIOR / ACTUAL (TRASLADADO)'
+    'ACTIVO DESDE', 'ACTIVO HASTA', 'DÍAS ACTIVOS'
     ];
 
     // Escribir cabeceras en la fila 1
@@ -177,6 +176,11 @@ try {
              WHERE mp.cedula_persona = p.cedula_persona 
              ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
              LIMIT 1) AS ultima_meta,
+            (SELECT mp.id_meta 
+             FROM movimiento_persona mp 
+             WHERE mp.cedula_persona = p.cedula_persona 
+             ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+             LIMIT 1) AS ultima_meta_id,
              
             (SELECT a.descripcion_actividad 
              FROM movimiento_persona mp 
@@ -184,6 +188,11 @@ try {
              WHERE mp.cedula_persona = p.cedula_persona 
              ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
              LIMIT 1) AS ultima_actividad,
+            (SELECT mp.id_actividad 
+             FROM movimiento_persona mp 
+             WHERE mp.cedula_persona = p.cedula_persona 
+             ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+             LIMIT 1) AS ultima_actividad_id,
              
             (SELECT ac.descripcion_accion 
              FROM movimiento_persona mp 
@@ -191,6 +200,11 @@ try {
              WHERE mp.cedula_persona = p.cedula_persona 
              ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
              LIMIT 1) AS ultima_accion,
+            (SELECT mp.id_accion 
+             FROM movimiento_persona mp 
+             WHERE mp.cedula_persona = p.cedula_persona 
+             ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
+             LIMIT 1) AS ultima_accion_id,
              
             (SELECT mp.departamento_procedencia 
              FROM movimiento_persona mp 
@@ -295,17 +309,88 @@ try {
     $stmt->execute();
     $result = $stmt->get_result();
 
+    // Prefetch all persons into array to allow bulk prefetch of movimientos
+    $persons = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Map grupos id => descripcion for lookups
+    $gruposMap = [];
+    $resG = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos");
+    if ($resG) {
+        while ($g = $resG->fetch_assoc()) {
+            $gruposMap[$g['id_grupo']] = $g['descripcion_grupo'];
+        }
+    }
+
+    // Prefetch metas, actividades y acciones para fallback desde campos en la tabla personas
+    $metasMap = [];
+    $resM = $mysqli->query("SELECT id_meta, descripcion_meta FROM metas");
+    if ($resM) {
+        while ($m = $resM->fetch_assoc()) {
+            $metasMap[$m['id_meta']] = $m['descripcion_meta'];
+        }
+    }
+
+    $actividadesMap = [];
+    $resA = $mysqli->query("SELECT id_actividad, descripcion_actividad FROM actividades");
+    if ($resA) {
+        while ($a = $resA->fetch_assoc()) {
+            $actividadesMap[$a['id_actividad']] = $a['descripcion_actividad'];
+        }
+    }
+
+    $accionesMap = [];
+    $resAc = $mysqli->query("SELECT id_accion, descripcion_accion FROM acciones");
+    if ($resAc) {
+        while ($ac = $resAc->fetch_assoc()) {
+            $accionesMap[$ac['id_accion']] = $ac['descripcion_accion'];
+        }
+    }
+
+    // Prefetch all movimientos for these persons in one query
+    $movimientosByCedula = [];
+    if (count($persons) > 0) {
+        $cedulas = array_map(function ($p) {
+            return $p['cedula_persona'];
+        }, $persons);
+        $escaped = array_map(function ($v) use ($mysqli) {
+            return "'" . $mysqli->real_escape_string($v) . "'";
+        }, $cedulas);
+        $in = implode(',', $escaped);
+        $movQ = "SELECT * FROM movimiento_persona WHERE cedula_persona IN ($in) ORDER BY cedula_persona, fecha_movimiento ASC, id_movimiento_persona ASC";
+        $resMov = $mysqli->query($movQ);
+        if ($resMov) {
+            while ($m = $resMov->fetch_assoc()) {
+                $movimientosByCedula[$m['cedula_persona']][] = $m;
+            }
+        }
+    }
+
+    // OPTIONAL: if you create a precomputed table 'persona_traslados' we will prefer it.
+    // This table should include: id_persona_traslado, cedula_persona, id_movimiento_persona,
+    // fecha_movimiento, id_grupo_anterior, id_grupo_nuevo, periodo_inicio (opt), periodo_fin (opt)
+    $trasladosByCedula = [];
+    $tableCheckTras = $mysqli->query("SHOW TABLES LIKE 'persona_traslados'");
+    if ($tableCheckTras && $tableCheckTras->num_rows > 0 && count($persons) > 0) {
+        $trasQ = "SELECT * FROM persona_traslados WHERE cedula_persona IN ($in) ORDER BY cedula_persona, fecha_movimiento ASC, id_persona_traslado ASC";
+        $resTras = $mysqli->query($trasQ);
+        if ($resTras) {
+            while ($t = $resTras->fetch_assoc()) {
+                $trasladosByCedula[$t['cedula_persona']][] = $t;
+            }
+        }
+    }
+
     $row_num = 2; // Empezar en la fila 2 (después de las cabeceras)
     $total_registros = 0;
 
-    while ($row = $result->fetch_assoc()) {
+    foreach ($persons as $row) {
         $total_registros++;
 
         // Determinar el estado actual basado en el último movimiento o condicion_componente
         $estado_actual = 'ACTIVO';
         if (isset($row['condicion_componente']) && trim(mb_strtolower($row['condicion_componente'])) === 'usuario interesado') {
             $estado_actual = 'Usuario Interesado';
-        } elseif ($row['ultimo_estado_movimiento']) {
+        } elseif (!empty($row['ultimo_estado_movimiento'])) {
             $ultimo_estado = strtoupper($row['ultimo_estado_movimiento']);
             if (strpos($ultimo_estado, 'EVADIDO') !== false || strpos($ultimo_estado, 'EVASION') !== false) {
                 $estado_actual = 'EVADIDO';
@@ -326,40 +411,14 @@ try {
 
         // Formatear fechas
         $fecha_nacimiento = '';
-        if ($row['fecha_nacimiento'] && $row['fecha_nacimiento'] != '0000-00-00') {
+        if (!empty($row['fecha_nacimiento']) && $row['fecha_nacimiento'] != '0000-00-00') {
             $fecha_nacimiento = date('d/m/Y', strtotime($row['fecha_nacimiento']));
         }
 
-        $activo_desde = 'No registrada';
-        if ($row['activo_desde'] && $row['activo_desde'] != '0000-00-00') {
-            $activo_desde = date('d/m/Y', strtotime($row['activo_desde']));
-        }
-
+        $activo_desde_raw = (!empty($row['activo_desde']) && $row['activo_desde'] != '0000-00-00') ? $row['activo_desde'] : null;
         $fecha_ultimo_estado = '';
-        if ($row['fecha_ultimo_movimiento']) {
+        if (!empty($row['fecha_ultimo_movimiento'])) {
             $fecha_ultimo_estado = date('d/m/Y', strtotime($row['fecha_ultimo_movimiento']));
-        }
-
-        // Determinar "ACTIVO HASTA"
-        $activo_hasta = '';
-        if ($estado_actual == 'FALLECIDO' || $estado_actual == 'EVADIDO') {
-        $activo_hasta = $fecha_ultimo_estado ?: 'No registrada';
-    } elseif ($estado_actual == 'TRASLADADO') {
-        // Si hay centro anterior y centro traslado, mostrar ambos
-        if (!empty($row['ultimo_centro_traslado_anterior']) && !empty($row['ultimo_centro_traslado_actual'])) {
-            $activo_hasta = 'Trasladado de: ' . $row['ultimo_centro_traslado_anterior'] . ' a: ' . $row['ultimo_centro_traslado_actual'];
-        } elseif (!empty($row['ultimo_centro_traslado_actual'])) {
-            $activo_hasta = 'Trasladado a: ' . $row['ultimo_centro_traslado_actual'];
-        } else {
-            $activo_hasta = 'Traslado sin destino';
-        }
-        } elseif ($estado_actual == 'RETIRADO VOLUNTARIO') {
-            $activo_hasta = $fecha_ultimo_estado ?: 'No registrada';
-        } elseif($estado_actual == 'CPSAM EVADADIDO') {
-            $activo_hasta = $fecha_ultimo_estado ?: 'No registrada';
-        }
-        else {
-            $activo_hasta = 'N/A';
         }
 
         // Obtener programas
@@ -380,145 +439,271 @@ try {
             $programas = $row['centro_vida'] ?: 'Sin programa';
         }
 
-        // Calcular días en cada centro por cada traslado
-        $traslados_info = '';
-        if (strpos($estado_actual, 'TRASLADADO') !== false) {
-            // Obtener todos los movimientos de traslado ordenados por fecha ASC
-            $traslados_query = "SELECT mp.fecha_movimiento, mp.id_centro_vida_traslado_anterior, mp.id_centro_vida_traslado, g_ant.descripcion_grupo as centro_anterior, g_act.descripcion_grupo as centro_actual FROM movimiento_persona mp LEFT JOIN grupos g_ant ON mp.id_centro_vida_traslado_anterior = g_ant.id_grupo LEFT JOIN grupos g_act ON mp.id_centro_vida_traslado = g_act.id_grupo WHERE mp.cedula_persona = ? AND mp.id_centro_vida_traslado IS NOT NULL ORDER BY mp.fecha_movimiento ASC, mp.id_movimiento_persona ASC";
-            $stmt_tras = $mysqli->prepare($traslados_query);
-            $stmt_tras->bind_param("s", $row['cedula_persona']);
-            $stmt_tras->execute();
-            $res_tras = $stmt_tras->get_result();
-            $fechas_traslados = [];
-            while ($row_tras = $res_tras->fetch_assoc()) {
-                $fechas_traslados[] = $row_tras;
+        // Movimientos de la persona (prefetched)
+        // Preferimos la tabla persona_traslados si existe; de lo contrario usamos movimiento_persona
+        $movs = [];
+        if (!empty($trasladosByCedula[$row['cedula_persona']])) {
+            // Map persona_traslados a la misma forma esperada (fecha_movimiento, id_centro_vida_traslado_anterior, id_centro_vida_traslado)
+            foreach ($trasladosByCedula[$row['cedula_persona']] as $t) {
+                $movs[] = [
+                    'fecha_movimiento' => $t['fecha_movimiento'],
+                    'id_centro_vida_traslado_anterior' => $t['id_grupo_anterior'] ?? null,
+                    'id_centro_vida_traslado' => $t['id_grupo_nuevo'] ?? null,
+                    'id_movimiento_persona' => $t['id_movimiento_persona'] ?? null
+                ];
             }
-            // Si hay traslados, calcular los días en cada centro
-            if (count($fechas_traslados) > 0) {
-                $fechas = [];
-                // Fecha de inicio (activo_desde)
-                $fecha_inicio = ($row['activo_desde'] && $row['activo_desde'] != '0000-00-00') ? $row['activo_desde'] : null;
-                for ($i = 0; $i < count($fechas_traslados); $i++) {
-                    $tras = $fechas_traslados[$i];
-                    // Días en centro anterior
-                    if ($fecha_inicio) {
-                        $dt1 = new DateTime($fecha_inicio);
-                        $dt2 = new DateTime($tras['fecha_movimiento']);
-                        $dias = $dt1->diff($dt2)->days;
-                        $centro = $tras['centro_anterior'] ?? 'anterior';
-                        $traslados_info .= $dias . ' días en ' . $centro . "\n";
-                    }
-                    // Preparar para el siguiente ciclo: la fecha de inicio para el siguiente traslado es la fecha de este traslado
-                    $fecha_inicio = $tras['fecha_movimiento'];
-                }
-                // Días en el último centro actual: desde el último traslado hasta hoy o fecha último movimiento si no está activo
-                $ultimo_tras = end($fechas_traslados);
-                $dt3 = new DateTime($ultimo_tras['fecha_movimiento']);
-                // Buscar el siguiente movimiento después del último traslado
-                $sig_mov_query = "SELECT mp.fecha_movimiento FROM movimiento_persona mp WHERE mp.cedula_persona = ? AND mp.fecha_movimiento > ? ORDER BY mp.fecha_movimiento ASC, mp.id_movimiento_persona ASC LIMIT 1";
-                $stmt_sig = $mysqli->prepare($sig_mov_query);
-                $stmt_sig->bind_param("ss", $row['cedula_persona'], $ultimo_tras['fecha_movimiento']);
-                $stmt_sig->execute();
-                $res_sig = $stmt_sig->get_result();
-                $row_sig = $res_sig->fetch_assoc();
-                if ($row_sig && $row_sig['fecha_movimiento']) {
-                    $dt4 = new DateTime($row_sig['fecha_movimiento']);
+        } else {
+            $movs = $movimientosByCedula[$row['cedula_persona']] ?? [];
+        }
+
+        // Detectar si hay traslados entre los movimientos
+        $hasTraslados = false;
+        foreach ($movs as $m) {
+            if (!empty($m['id_centro_vida_traslado'])) {
+                $hasTraslados = true;
+                break;
+            }
+        }
+
+        // Si hay traslados, generamos segmentos por cada periodo en un centro
+        $segments = [];
+        // Si la persona tiene condicion_componente = 'Visita psicosocial fallida', entonces
+        // no generamos segmentos ni calculamos 'Activo Desde'/'Activo Hasta'/'DÍAS ACTIVOS'.
+        // Solo escribiremos una fila con los datos disponibles y el estado 'VISITA FALLIDA'.
+        $isVisitaFallida = (isset($row['condicion_componente']) && trim(mb_strtolower($row['condicion_componente'])) === 'visita psicosocial fallida');
+        if ($isVisitaFallida) {
+            $estado_actual = 'VISITA FALLIDA';
+            // single empty segment to write one row with blanks for fechas/días
+            $segments[] = [
+                'start' => '',
+                'end' => '',
+                'centro_desc' => $row['centro_vida'] ?? ''
+            ];
+        } else {
+            if ($hasTraslados) {
+                // start from activo_desde if exists, otherwise from first movement date or today
+                if ($activo_desde_raw) {
+                    $current_start = $activo_desde_raw;
+                } elseif (count($movs) > 0) {
+                    $current_start = $movs[0]['fecha_movimiento'];
                 } else {
-                    $dt4 = new DateTime(); // hoy
+                    $current_start = date('Y-m-d');
                 }
-                $dias = $dt3->diff($dt4)->days;
-                $centro = $ultimo_tras['centro_actual'] ?? 'actual';
-                $traslados_info .= $dias . ' días en ' . $centro;
+                // initial group id and description:
+                // prefer the earliest traslado's 'id_centro_vida_traslado_anterior' if present (this represents the group before the first traslado)
+                $current_group_id = null;
+                if (count($movs) > 0) {
+                    foreach ($movs as $mv) {
+                        if (!empty($mv['id_centro_vida_traslado_anterior'])) {
+                            $current_group_id = $mv['id_centro_vida_traslado_anterior'];
+                            break; // use the earliest traslado anterior found
+                        }
+                    }
+                }
+                // fallback to persona's current group id if we couldn't deduce a previous group
+                if (empty($current_group_id) && !empty($row['id_grupo'])) {
+                    $current_group_id = $row['id_grupo'];
+                }
+                $current_group_desc = isset($gruposMap[$current_group_id]) ? $gruposMap[$current_group_id] : ($row['centro_vida'] ?? '');
+
+                foreach ($movs as $mov) {
+                    // treat as traslado when id_centro_vida_traslado is set
+                    if (!empty($mov['id_centro_vida_traslado'])) {
+                        $segment_end = $mov['fecha_movimiento'];
+                        // Prefer explicit anterior id from movimiento/traslado when available
+                        $pre_centro_id = !empty($mov['id_centro_vida_traslado_anterior']) ? $mov['id_centro_vida_traslado_anterior'] : $current_group_id;
+                        $segments[] = [
+                            'start' => $current_start,
+                            'end' => $segment_end,
+                            'centro_id' => $pre_centro_id
+                        ];
+                        // next segment starts the day after the movimiento
+                        $current_start = date('Y-m-d', strtotime($mov['fecha_movimiento'] . ' +1 day'));
+                        // update current_group_id to the target group for next segment
+                        $current_group_id = $mov['id_centro_vida_traslado'];
+                    }
+                }
+                // push final segment until today
+                $segments[] = [
+                    'start' => $current_start,
+                    'end' => date('Y-m-d'),
+                    'centro_id' => $current_group_id
+                ];
+            } else {
+                // no traslados -> single segment using existing activo_desde/activo_hasta logic
+                $start = $activo_desde_raw ?: ($row['fecha_ultimo_movimiento'] ?: date('Y-m-d'));
+                // compute activo_hasta similarly to existing logic
+                $activo_hasta_calc = '';
+                if ($estado_actual == 'FALLECIDO' || $estado_actual == 'EVADIDO') {
+                    $activo_hasta_calc = $fecha_ultimo_estado ?: 'No registrada';
+                } else {
+                    $activo_hasta_calc = 'N/A';
+                }
+                $segments[] = [
+                    'start' => $start,
+                    'end' => ($activo_hasta_calc === 'N/A' ? date('Y-m-d') : $row['fecha_ultimo_movimiento']),
+                    'centro_desc' => $row['centro_vida'] ?? ''
+                ];
             }
         }
 
-        // Escribir datos en las celdas
-        // Si es Usuario Interesado, días activos debe ser N/A
-        $dias_activos_val = (mb_strtolower($estado_actual) === 'usuario interesado') ? 'N/A' : ($row['dias_activos'] ?? 'N/A');
-        $data = [
+        // For each segment, write a row in the spreadsheet
+            $segCount = count($segments);
+            $iSeg = 0;
+            foreach ($segments as $seg) {
+                $iSeg++;
+            // calculate inclusive days in segment
+            $dias_seg = '';
+                try {
+                    // When start or end are empty (e.g., visita fallida case), DateTime will throw; handle below
+                    if (!empty($seg['start']) && !empty($seg['end'])) {
+                        $ds = new DateTime($seg['start']);
+                        $de = new DateTime($seg['end']);
+                        $interval = $ds->diff($de);
+                        $days = isset($interval->days) ? $interval->days : 0;
+                        $dias_seg = $days + 1;
+                    } else {
+                        $dias_seg = '';
+                    }
+                } catch (Exception $e) {
+                    $dias_seg = '';
+                }
 
-            $row['cedula_persona'] ?? '',
-            $row['tipo_identificacion'] ?? '',
-            $row['nombres_persona'] ?? '',
-            $row['apellidos_persona'] ?? '',
-            $fecha_nacimiento,
-            $row['telefono_persona'] ?? '',
-            $row['telefono_referencia_persona'] ?? '',
-            $row['referencia_persona'] ?? '',
-            $row['genero_persona'] ?? '',
-            $row['grupo_sisben'] ?? '',
-            $row['persona_discapacidad'] ?? '',
-            $row['cual_discapacidad'] ?? '',
-            $row['cabeza_hogar'] ?? '',
-            $row['lider_comunidad'] ?? '',
-            $row['se_reconoce_como'] ?? '',
-            $row['orientacion_sexual'] ?? '',
-            $row['experiencia_migratoria'] ?? '',
-            $row['grupo_etnico'] ?? '',
-            $row['tipo_salud'] ?? '',
-            $row['nivel_educativo'] ?? '',
-            $row['centro_vida'] ?? '',
-            $row['descripcion_politica'] ?? '',
-            $row['nombre_usuario'] ?? '',
-            $row['zona_persona'] ?? '',
-            $row['direccion_persona'] ?? '',
-            $row['correo_persona'] ?? '',
-            $row['barrio_nombre'] ?? '',
-            $row['comuna_nombre'] ?? '',
-            $row['eps'] ?? '',
-            $row['peso'] ?? '',
-            $row['talla'] ?? '',
-            $row['patologias'] ?? '',
-            $row['factores_riesgo'] ?? '',
-            $row['factores_preventivos'] ?? '',
-            $row['ingresos_economicos'] ?? '',
-            $row['convivencia_actual'] ?? '',
-            $row['resultado_actividad'] ?? '',
-            $row['remision'] ?? '',
-            $row['telefono_referencia_persona'] ?? '',
-            $row['condicion_ocupacion'] ?? '',
-            $row['condicion_componente'] ?? '',
-            // Datos de movimiento y cálculos
-            $row['centro_vida'] ?? 'No asignado',
-            $row['descripcion_politica'] ?? 'No asignada',
-            $estado_actual,
-            $fecha_ultimo_estado,
-            $row['ultima_meta'] ?? 'No registrada',
-            $row['ultima_actividad'] ?? 'No registrada',
-            $row['ultima_accion'] ?? 'No registrada',
-            $row['ultimo_departamento_procedencia'] ?? 'No registrado',
-            $row['movimientos_en_year'] ?? 0,
-            $row['traslados_en_year'] ?? 0,
-            $row['ultimo_centro_traslado'] ?? 'N/A',
-            $activo_desde,
-            $activo_hasta,
-            $dias_activos_val,
-            $traslados_info
-        ];
+            // Días activos por segmento: para el segmento final contar hasta hoy, para segmentos previos usar duración del segmento
+            if (isset($isVisitaFallida) && $isVisitaFallida) {
+                // Requerimiento: cuando condicion_componente == 'Visita psicosocial fallida', DÍAS ACTIVOS debe ser 0
+                $dias_activos_val = 0;
+            } elseif (mb_strtolower($estado_actual) === 'usuario interesado') {
+                $dias_activos_val = 'N/A';
+            } else {
+                // If this is the last segment (current), count days from segment start to today; else use segment length
+                $isLast = ($iSeg === $segCount);
+                if ($isLast) {
+                    try {
+                        $ds2 = new DateTime($seg['start']);
+                        $de2 = new DateTime(); // today
+                        $interval2 = $ds2->diff($de2);
+                        $dias_activos_val = (isset($interval2->days) ? $interval2->days : 0) + 1;
+                    } catch (Exception $e) {
+                        $dias_activos_val = '';
+                    }
+                } else {
+                    $dias_activos_val = $dias_seg;
+                }
+            }
 
-        // Escribir datos en la fila
-        $col = 'A';
-        foreach ($data as $value) {
-            $sheet->setCellValue($col . $row_num, $value);
-            $col++;
-        }
+            // Calcular descripciones finales para última meta/actividad/acción (prioridad: movimiento.descripcion -> movimiento.id -> persona.id -> 'No registrada')
+            $ultima_meta_desc = 'No registrada';
+            if (!empty($row['ultima_meta'])) {
+                $ultima_meta_desc = $row['ultima_meta'];
+            } elseif (!empty($row['ultima_meta_id']) && isset($metasMap[$row['ultima_meta_id']])) {
+                $ultima_meta_desc = $metasMap[$row['ultima_meta_id']];
+            } elseif (!empty($row['id_meta']) && isset($metasMap[$row['id_meta']])) {
+                $ultima_meta_desc = $metasMap[$row['id_meta']];
+            }
 
-        // Aplicar estilos a las filas de datos
-        $dataRange = 'A' . $row_num . ':' . $lastCol . $row_num;
-        $sheet->getStyle($dataRange)->applyFromArray([
-            'borders' => [
-                'allBorders' => [
-                    'borderStyle' => Border::BORDER_THIN,
-                    'color' => ['rgb' => 'E0E0E0']
+            $ultima_actividad_desc = 'No registrada';
+            if (!empty($row['ultima_actividad'])) {
+                $ultima_actividad_desc = $row['ultima_actividad'];
+            } elseif (!empty($row['ultima_actividad_id']) && isset($actividadesMap[$row['ultima_actividad_id']])) {
+                $ultima_actividad_desc = $actividadesMap[$row['ultima_actividad_id']];
+            } elseif (!empty($row['id_actividad']) && isset($actividadesMap[$row['id_actividad']])) {
+                $ultima_actividad_desc = $actividadesMap[$row['id_actividad']];
+            }
+
+            $ultima_accion_desc = 'No registrada';
+            if (!empty($row['ultima_accion'])) {
+                $ultima_accion_desc = $row['ultima_accion'];
+            } elseif (!empty($row['ultima_accion_id']) && isset($accionesMap[$row['ultima_accion_id']])) {
+                $ultima_accion_desc = $accionesMap[$row['ultima_accion_id']];
+            } elseif (!empty($row['id_accion']) && isset($accionesMap[$row['id_accion']])) {
+                $ultima_accion_desc = $accionesMap[$row['id_accion']];
+            }
+
+            $data = [
+                $row['cedula_persona'] ?? '',
+                $row['tipo_identificacion'] ?? '',
+                $row['nombres_persona'] ?? '',
+                $row['apellidos_persona'] ?? '',
+                $fecha_nacimiento,
+                $row['telefono_persona'] ?? '',
+                $row['telefono_referencia_persona'] ?? '',
+                $row['referencia_persona'] ?? '',
+                $row['genero_persona'] ?? '',
+                $row['grupo_sisben'] ?? '',
+                $row['persona_discapacidad'] ?? '',
+                $row['cual_discapacidad'] ?? '',
+                $row['cabeza_hogar'] ?? '',
+                $row['lider_comunidad'] ?? '',
+                $row['se_reconoce_como'] ?? '',
+                $row['orientacion_sexual'] ?? '',
+                $row['experiencia_migratoria'] ?? '',
+                $row['grupo_etnico'] ?? '',
+                $row['tipo_salud'] ?? '',
+                $row['nivel_educativo'] ?? '',
+                // Resolve centro description from centro_id if present
+                (isset($seg['centro_id']) ? (isset($gruposMap[$seg['centro_id']]) ? $gruposMap[$seg['centro_id']] : ($row['centro_vida'] ?? 'No asignado')) : ($seg['centro_desc'] ?? ($row['centro_vida'] ?? 'No asignado'))),
+                $row['descripcion_politica'] ?? 'No asignada',
+                $row['nombre_usuario'] ?? '',
+                $row['zona_persona'] ?? '',
+                $row['direccion_persona'] ?? '',
+                $row['correo_persona'] ?? '',
+                $row['barrio_nombre'] ?? '',
+                $row['comuna_nombre'] ?? '',
+                $row['eps'] ?? '',
+                $row['peso'] ?? '',
+                $row['talla'] ?? '',
+                $row['patologias'] ?? '',
+                $row['factores_riesgo'] ?? '',
+                $row['factores_preventivos'] ?? '',
+                $row['ingresos_economicos'] ?? '',
+                $row['convivencia_actual'] ?? '',
+                $row['resultado_actividad'] ?? '',
+                $row['remision'] ?? '',
+                $row['telefono_referencia_persona'] ?? '',
+                $row['condicion_ocupacion'] ?? '',
+                $row['condicion_componente'] ?? '',
+                // Datos de movimiento y cálculos
+                (isset($seg['centro_id']) ? (isset($gruposMap[$seg['centro_id']]) ? $gruposMap[$seg['centro_id']] : ($row['centro_vida'] ?? 'No asignado')) : ($seg['centro_desc'] ?? ($row['centro_vida'] ?? 'No asignado'))),
+                $row['descripcion_politica'] ?? 'No asignada',
+                $estado_actual,
+                $fecha_ultimo_estado,
+                $ultima_meta_desc,
+                $ultima_actividad_desc,
+                $ultima_accion_desc,
+                $row['ultimo_departamento_procedencia'] ?? 'No registrado',
+                $row['movimientos_en_year'] ?? 0,
+                $row['traslados_en_year'] ?? 0,
+                $row['ultimo_centro_traslado'] ?? 'N/A',
+                $seg['start'] ? date('d/m/Y', strtotime($seg['start'])) : '',
+                $seg['end'] ? date('d/m/Y', strtotime($seg['end'])) : '',
+                $dias_activos_val
+            ];
+
+            // Escribir datos en la fila
+            $col = 'A';
+            foreach ($data as $value) {
+                $sheet->setCellValue($col . $row_num, $value);
+                $col++;
+            }
+
+            // Aplicar estilos a las filas de datos
+            $dataRange = 'A' . $row_num . ':' . $lastCol . $row_num;
+            $sheet->getStyle($dataRange)->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['rgb' => 'E0E0E0']
+                    ]
+                ],
+                'alignment' => [
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                    'wrapText' => true
                 ]
-            ],
-            'alignment' => [
-                'vertical' => Alignment::VERTICAL_CENTER,
-                'wrapText' => true
-            ]
-        ]);
+            ]);
 
-        $row_num++;
+            $row_num++;
+        }
     }
 
     // Configurar anchos de columna automáticamente

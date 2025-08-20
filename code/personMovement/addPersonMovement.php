@@ -80,6 +80,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Ejecutar consulta
     if ($mysqli->query($sql_insert_movimiento)) {
+        // Si se especificó un traslado, registrar en persona_traslados
+        if ($id_centro_vida_traslado) {
+            $id_movimiento_insertado = $mysqli->insert_id;
+            $sql_insert_tras = "INSERT INTO persona_traslados (cedula_persona, id_movimiento_persona, fecha_movimiento, id_grupo_anterior, id_grupo_nuevo) VALUES ('" . $mysqli->real_escape_string($cedula_persona) . "', " . ($id_movimiento_insertado ? "'" . $mysqli->real_escape_string($id_movimiento_insertado) . "'" : "NULL") . ", '" . $mysqli->real_escape_string($fecha_movimiento) . "', " . ($grupo_anterior !== null ? "'" . $mysqli->real_escape_string($grupo_anterior) . "'" : "NULL") . ", '" . $mysqli->real_escape_string($id_centro_vida_traslado) . "')";
+            $mysqli->query($sql_insert_tras);
+        }
+
         echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
         echo "<script>
             document.addEventListener('DOMContentLoaded', function() {

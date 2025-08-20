@@ -58,6 +58,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id_accion = $_POST['id_accion'] ?? null;
     $id_politica_publica = $_POST['id_politica_publica'] ?? null;
 
+    // Normalizar cadenas vacías a NULL para columnas FK y opcionales
+    if ($id_meta === '' ) $id_meta = null;
+    if ($id_actividad === '' ) $id_actividad = null;
+    if ($id_accion === '' ) $id_accion = null;
+    if ($id_politica_publica === '' ) $id_politica_publica = null;
+    if ($id_barrio_persona === '' ) $id_barrio_persona = null;
+    if ($id_comuna_persona === '' ) $id_comuna_persona = null;
+    if ($id_grupo === '' ) $id_grupo = null;
+
     // Obtener fecha actual para fecha_alta_persona
     $fecha_alta_persona = date('Y-m-d H:i:s');
 
@@ -86,6 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         id_comuna_persona,
         zona_persona,
         id_grupo,
+        id_grupo_inicial,
         correo_persona,
         telefono_referencia_persona,
         direccion_persona,
@@ -131,6 +141,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         " . ($id_barrio_persona !== null ? "'$id_barrio_persona'" : 'NULL') . ",
         " . ($id_comuna_persona !== null ? "'$id_comuna_persona'" : 'NULL') . ",
         '$zona_persona',
+        '$id_grupo',
         '$id_grupo',
         '$correo_persona',
         '$telefono_referencia_persona',
