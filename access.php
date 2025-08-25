@@ -615,7 +615,8 @@ $mysqli->close();
                 <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
                 <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades Masivas</a>
                 <a href="code/contratistaIndividual/form.php" class="nav_link sublink">Registro Actividades Individuales</a>
-                <a href="code/contratistaCentroVida/formCentroVida.php" class="nav_link sublink">Registros Centro Vida</a>
+                <a href="code/contratistaCentroVida/formCentroVida.php" class="nav_link sublink">Registros indiv Centro Vida</a>
+                <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
                 <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
 
               </ul>
