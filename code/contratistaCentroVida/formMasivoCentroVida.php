@@ -460,15 +460,12 @@ $result = $mysqli->query($query);
                         </div>
                         <div class="row">
                             <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="centro_vida" name="id_centro_vida">
-                                    <option value="" selected>Seleccione...</option>
-                                    <?php if ($grupos) {
-                                        while ($g = $grupos->fetch_assoc()) {
-                                            echo "<option value='{$g['id_grupo']}'>" . htmlspecialchars($g['descripcion_grupo']) . "</option>";
-                                        }
-                                    } ?>
+                                <select class="form-select" id="tipo_registro" name="tipo_registro">
+                                    <option value=""></option>
+                                    <option value="Registro Actividad">Registro Actividad</option>
+                                    <option value="Masivas">Masivas</option>
                                 </select>
-                                <label for="centro_vida">Lugar del evento</label>
+                                <label for="tipo_registro">Tipo de Registro</label>
                             </div>
                             <div class="col-md-4 mb-3 form-floating">
                                 <input type="date" class="form-control" id="fecha_atencion" name="fecha_atencion" required>
@@ -533,13 +530,17 @@ $result = $mysqli->query($query);
                         </div>
                         <div class="row">
                             <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="tipo_registro" name="tipo_registro">
-                                    <option value=""></option>
-                                    <option value="Registro Actividad">Registro Actividad</option>
-                                    <option value="Masivas">Masivas</option>
+                                <select class="form-select" id="centro_vida" name="id_centro_vida">
+                                    <option value="" selected>Seleccione...</option>
+                                    <?php if ($grupos) {
+                                        while ($g = $grupos->fetch_assoc()) {
+                                            echo "<option value='{$g['id_grupo']}'>" . htmlspecialchars($g['descripcion_grupo']) . "</option>";
+                                        }
+                                    } ?>
                                 </select>
-                                <label for="tipo_registro">Tipo de Registro</label>
+                                <label for="centro_vida">Lugar del evento</label>
                             </div>
+
 
                         </div>
                         <div class="row">
@@ -712,6 +713,22 @@ $result = $mysqli->query($query);
                 $('#actividad_centro_vida').val(data.id_actividad_centro_vida || '');
                 // tipo_registro preload
                 $('#tipo_registro').val(data.tipo_registro || '');
+                // cargar conteos solo si tipo_registro es 'Registro Actividad' y fecha+actividad están presentes
+                if (data.tipo_registro === 'Registro Actividad' && data.id_actividad_centro_vida && data.fecha_atencion) {
+                    $.post('countRegistrosByActivityDate.php', {
+                        id_actividad_centro_vida: data.id_actividad_centro_vida,
+                        fecha_atencion: data.fecha_atencion
+                    }, function(resp) {
+                        if (resp && !resp.error) {
+                            $('#cantidad_masculino').val(resp.masculino || 0);
+                            $('#cantidad_femenino').val(resp.femenino || 0);
+                        }
+                    }, 'json');
+                } else {
+                    // si no es Registro Actividad limpiar campos para evitar confusión
+                    $('#cantidad_masculino').val(0);
+                    $('#cantidad_femenino').val(0);
+                }
                 // Carga en cascada: meta -> actividad -> acción -> política
                 const metaId = data.id_meta || '';
                 const actividadId = data.id_actividad || '';
@@ -793,6 +810,46 @@ $result = $mysqli->query($query);
                         window.location = 'formMasivoCentroVida.php?delete=' + id;
                     }
                 });
+            });
+
+            // Debounced fetch for counts by activity+date
+            let _countTimer = null;
+
+            function fetchCountsForSelection() {
+                clearTimeout(_countTimer);
+                _countTimer = setTimeout(function() {
+                    const actividad = $('#actividad_centro_vida').val();
+                    const fecha = $('#fecha_atencion').val();
+                    const tipo = $('#tipo_registro').val();
+                    if (tipo !== 'Registro Actividad') {
+                        // clear and skip
+                        $('#cantidad_masculino').val(0);
+                        $('#cantidad_femenino').val(0);
+                        return;
+                    }
+                    if (!actividad || !fecha) return;
+                    $.post('countRegistrosByActivityDate.php', {
+                        id_actividad_centro_vida: actividad,
+                        fecha_atencion: fecha
+                    }, function(resp) {
+                        if (resp && !resp.error) {
+                            $('#cantidad_masculino').val(resp.masculino || 0);
+                            $('#cantidad_femenino').val(resp.femenino || 0);
+                        }
+                    }, 'json');
+                }, 300);
+            }
+
+            // Trigger when the user changes the date or the activity inside the modal
+            $(document).on('change', '#fecha_atencion', function() {
+                fetchCountsForSelection();
+            });
+            $(document).on('change', '#actividad_centro_vida', function() {
+                fetchCountsForSelection();
+            });
+            // cuando el tipo cambia, actualizar o limpiar según corresponda
+            $(document).on('change', '#tipo_registro', function() {
+                fetchCountsForSelection();
             });
         });
     </script>
