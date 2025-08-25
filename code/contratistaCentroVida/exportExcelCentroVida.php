@@ -118,6 +118,20 @@ try {
         $types .= 'i';
     }
 
+    // Soporte filtro por mes y año (se esperan GET 'mes' = 1-12 y 'anio' = YYYY)
+    $mes = isset($_GET['mes']) && $_GET['mes'] !== '' ? intval($_GET['mes']) : 0;
+    $anio = isset($_GET['anio']) && $_GET['anio'] !== '' ? intval($_GET['anio']) : 0;
+    if ($mes >= 1 && $mes <= 12 && $anio > 0) {
+        // insertar INNER JOIN para forzar existencia de alguna fecha en ese mes/año
+        $query = str_replace("LEFT JOIN registro_centro_vida_fechas rcvf ON rcv.id_registro_centro_vida = rcvf.id_registro_centro_vida",
+                              "LEFT JOIN registro_centro_vida_fechas rcvf ON rcv.id_registro_centro_vida = rcvf.id_registro_centro_vida\n    INNER JOIN registro_centro_vida_fechas rcvf_filter ON rcv.id_registro_centro_vida = rcvf_filter.id_registro_centro_vida AND YEAR(rcvf_filter.fecha_atencion) = ? AND MONTH(rcvf_filter.fecha_atencion) = ?",
+                              $query);
+        // agregar params al inicio para que el bind mantenga el orden
+        array_unshift($params, $mes);
+        array_unshift($params, $anio);
+        $types = 'ii' . $types;
+    }
+
     if (!empty($where)) {
         $query .= ' WHERE ' . implode(' AND ', $where);
     }

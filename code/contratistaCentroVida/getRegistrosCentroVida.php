@@ -54,6 +54,23 @@ if (!empty($where_conditions)) {
 $query .= " GROUP BY rcv.id_registro_centro_vida ORDER BY rcv.fecha_registro DESC";
 
 // Preparar y ejecutar la consulta
+// Soporte para filtro por mes: se espera GET['mes'] con formato YYYY-MM
+$mes = $_GET['mes'] ?? '';
+if (!empty($mes)) {
+    $dt = DateTime::createFromFormat('Y-m', $mes);
+    if ($dt) {
+        $filter_year = (int)$dt->format('Y');
+        $filter_month = (int)$dt->format('m');
+        // INNER JOIN adicional obliga a que exista al menos una fecha en ese mes
+        $query = str_replace("LEFT JOIN registro_centro_vida_fechas rcvf ON rcv.id_registro_centro_vida = rcvf.id_registro_centro_vida", 
+                              "LEFT JOIN registro_centro_vida_fechas rcvf ON rcv.id_registro_centro_vida = rcvf.id_registro_centro_vida\n    INNER JOIN registro_centro_vida_fechas rcvf_filter ON rcv.id_registro_centro_vida = rcvf_filter.id_registro_centro_vida AND YEAR(rcvf_filter.fecha_atencion) = ? AND MONTH(rcvf_filter.fecha_atencion) = ?",
+                              $query);
+        // agregar parámetros al inicio (se respetará el orden al bindear)
+        array_unshift($params, $filter_month);
+        array_unshift($params, $filter_year);
+        $types = 'ii' . $types;
+    }
+}
 if (!empty($params)) {
     $stmt = $mysqli->prepare($query);
     if (!empty($types)) {

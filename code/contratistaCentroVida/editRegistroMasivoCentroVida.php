@@ -27,15 +27,17 @@ $cantidad_femenino = intval($_POST['cantidad_femenino'] ?? 0);
 $observacion_actividad = $mysqli->real_escape_string($_POST['observacion_actividad'] ?? '');
 $funcionario_responsable = intval($_POST['funcionario_responsable'] ?? 0);
 $tipo_actividad = 'Masiva';
+// nuevo campo tipo_registro
+$tipo_registro = $mysqli->real_escape_string($_POST['tipo_registro'] ?? '');
 
 $sql = "UPDATE masiva_centro_vida SET 
- id_meta=?, id_actividad=?, id_accion=?, politica_publica=?, id_centro_vida=?, fecha_atencion=?, nombre_lider=?, telefono_contacto=?, id_comuna=?, medio_verificacion=?, cantidad_masculino=?, cantidad_femenino=?, tipo_actividad=?, observacion_actividad=?, funcionario_responsable=?, id_actividad_centro_vida=?
+ id_meta=?, id_actividad=?, id_accion=?, politica_publica=?, id_centro_vida=?, fecha_atencion=?, nombre_lider=?, telefono_contacto=?, id_comuna=?, medio_verificacion=?, cantidad_masculino=?, cantidad_femenino=?, tipo_actividad=?, tipo_registro=?, observacion_actividad=?, funcionario_responsable=?, id_actividad_centro_vida=?
  WHERE id_masiva_centro_vida=?";
 $stmt = $mysqli->prepare($sql);
 if(!$stmt){
   echo "<script>alert('Error preparando actualización: {$mysqli->error}');window.location='formMasivoCentroVida.php';</script>";exit;
 }
-$stmt->bind_param('iiisisssiisissiii',
+ $stmt->bind_param('iiisisssisiisssiii',
  $id_meta,
  $id_actividad,
  $id_accion,
@@ -49,11 +51,12 @@ $stmt->bind_param('iiisisssiisissiii',
  $cantidad_masculino,
  $cantidad_femenino,
  $tipo_actividad,
+ $tipo_registro,
  $observacion_actividad,
  $funcionario_responsable,
  $id_actividad_centro_vida,
  $id
-);
+ );
 
 if($stmt->execute()){
   echo "<script>alert('Registro actualizado');window.location='formMasivoCentroVida.php';</script>";

@@ -23,42 +23,43 @@ $cantidad_femenino = intval($_POST['cantidad_femenino'] ?? 0);
 $observacion_actividad = $mysqli->real_escape_string($_POST['observacion_actividad'] ?? '');
 $id_usuario = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
 $funcionario_responsable = intval($_POST['funcionario_responsable'] ?? 0);
+$tipo_registro = $mysqli->real_escape_string($_POST['tipo_registro'] ?? '');
 
 // Insertar (sin tipo_actividad: siempre 'Masiva')
 $tipo_actividad = 'Masiva';
 
-$sql = "INSERT INTO masiva_centro_vida (
-    id_meta,id_actividad,id_accion,politica_publica,id_centro_vida,fecha_atencion,nombre_lider,telefono_contacto,id_comuna,medio_verificacion,cantidad_masculino,cantidad_femenino,tipo_actividad,observacion_actividad,id_usuario,funcionario_responsable,id_actividad_centro_vida
-) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-$stmt = $mysqli->prepare($sql);
-if(!$stmt){
-    echo "<script>alert('Error preparando sentencia: {$mysqli->error}');window.location='formMasivoCentroVida.php';</script>";exit;
-}
-// Tipos: i i i s i s s s i s i i s s i i i
-$stmt->bind_param('iiisisssiisissiii', 
-    $id_meta,
-    $id_actividad,
-    $id_accion,
-    $politica_publica,
-    $id_centro_vida,
-    $fecha_atencion,
-    $nombre_lider,
-    $telefono_contacto,
-    $id_comuna,
-    $medio_verificacion,
-    $cantidad_masculino,
-    $cantidad_femenino,
-    $tipo_actividad,
-    $observacion_actividad,
-    $id_usuario,
-    $funcionario_responsable,
-    $id_actividad_centro_vida
-);
+// Construir consulta SQL plana (escapando valores de texto y casteando enteros)
+$cols = "id_meta,id_actividad,id_accion,politica_publica,id_centro_vida,fecha_atencion,nombre_lider,telefono_contacto,id_comuna,medio_verificacion,cantidad_masculino,cantidad_femenino,tipo_actividad,observacion_actividad,id_usuario,funcionario_responsable,id_actividad_centro_vida,tipo_registro";
 
-if($stmt->execute()){
+// Escapar y formatear valores
+$vals = [
+    intval($id_meta),
+    intval($id_actividad),
+    intval($id_accion),
+    "'" . $mysqli->real_escape_string($politica_publica) . "'",
+    intval($id_centro_vida),
+    "'" . $mysqli->real_escape_string($fecha_atencion) . "'",
+    "'" . $mysqli->real_escape_string($nombre_lider) . "'",
+    "'" . $mysqli->real_escape_string($telefono_contacto) . "'",
+    intval($id_comuna),
+    "'" . $mysqli->real_escape_string($medio_verificacion) . "'",
+    intval($cantidad_masculino),
+    intval($cantidad_femenino),
+    "'" . $mysqli->real_escape_string($tipo_actividad) . "'",
+    "'" . $mysqli->real_escape_string($observacion_actividad) . "'",
+    intval($id_usuario),
+    intval($funcionario_responsable),
+    intval($id_actividad_centro_vida),
+    "'" . $mysqli->real_escape_string($tipo_registro) . "'"
+];
+
+$sql = "INSERT INTO masiva_centro_vida (" . $cols . ") VALUES (" . implode(',', $vals) . ")";
+
+if ($mysqli->query($sql)) {
     echo "<script>alert('Registro guardado correctamente');window.location='formMasivoCentroVida.php';</script>";
-}else{
-    echo "<script>alert('Error al guardar: {$stmt->error}');window.location='formMasivoCentroVida.php';</script>";
+} else {
+    $error = $mysqli->error;
+    echo "<script>alert('Error al guardar: " . addslashes($error) . "');window.location='formMasivoCentroVida.php';</script>";
 }
-$stmt->close();
+
 $mysqli->close();

@@ -214,13 +214,21 @@ session_start();
             margin-bottom: 5px;
         }
 
+        :root { --filter-input-height: 44px; }
+
         .modern-input,
-        .modern-select {
+        .modern-select,
+        .filter-group input[type="month"] {
             border: 1px solid #d1d5db;
             border-radius: 6px;
-            padding: 8px 12px;
+            padding: 10px 12px;
             font-size: 14px;
             transition: border-color 0.2s;
+            height: var(--filter-input-height);
+            box-sizing: border-box;
+            line-height: normal;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         .modern-input:focus,
@@ -478,6 +486,14 @@ function deleteRegistro($id_registro)
                             class="modern-input"
                             placeholder="Buscar por nombre..."
                             value="<?= isset($_GET['nombre']) ? htmlspecialchars($_GET['nombre']) : '' ?>">
+                    </div>
+                    <div class="filter-group">
+                        <label for="mes">Mes</label>
+                        <input type="month"
+                            id="mes"
+                            name="mes"
+                            class="modern-input"
+                            value="<?= isset($_GET['mes']) ? htmlspecialchars($_GET['mes']) : '' ?>">
                     </div>
                     <div class="filter-group">
                         <label for="actividad">Actividad</label>
