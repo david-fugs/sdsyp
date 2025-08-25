@@ -14,7 +14,7 @@ session_start();
     <link rel="stylesheet" type="text/css" href="../../css/estilos2024.css">
     <link rel="stylesheet" type="text/css" href="../../css/modern-table-styles.css">
     <link rel="stylesheet" type="text/css" href="styles.css">
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -23,7 +23,7 @@ session_start();
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <!-- Flatpickr para el calendario -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -38,7 +38,7 @@ session_start();
             font-size: 16px !important;
             background-color: #f8fafc;
         }
-        
+
         .modern-container {
             background: white;
             border-radius: 12px;
@@ -86,11 +86,12 @@ session_start();
 
         /* Botones específicos para la barra de filtros (más visibles) */
         .modern-filters .btn-modern.btn-primary {
-            background: #10b981; /* verde agradable */
+            background: #10b981;
+            /* verde agradable */
             border-color: #10b981;
             color: #ffffff;
             padding: 10px 16px;
-            box-shadow: 0 2px 6px rgba(16,185,129,0.12);
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.12);
         }
 
         .modern-filters .btn-modern.btn-primary:hover {
@@ -100,27 +101,34 @@ session_start();
         }
 
         .modern-filters .btn-modern.btn-secondary {
-            background: #6b7280; /* gris */
+            background: #6b7280;
+            /* gris */
             border-color: #6b7280;
             color: #fff;
             padding: 10px 14px;
         }
 
-        .filter-row .btn-modern { display: inline-flex; align-items: center; gap: 8px; }
+        .filter-row .btn-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
 
         /* Aumentar ancho mínimo para inputs en filtros */
-        .filter-group { min-width: 180px; }
+        .filter-group {
+            min-width: 180px;
+        }
 
         /* Estilos para el calendario multi-selección */
         .flatpickr-calendar {
             font-size: 14px;
         }
-        
+
         .flatpickr-day.selected {
             background: #e91e63 !important;
             border-color: #e91e63 !important;
         }
-        
+
         .selected-dates-display {
             background: #f1f5f9;
             border: 1px solid #cbd5e1;
@@ -129,7 +137,7 @@ session_start();
             margin-top: 10px;
             min-height: 40px;
         }
-        
+
         .date-tag {
             display: inline-block;
             background: #e91e63;
@@ -206,7 +214,8 @@ session_start();
             margin-bottom: 5px;
         }
 
-        .modern-input, .modern-select {
+        .modern-input,
+        .modern-select {
             border: 1px solid #d1d5db;
             border-radius: 6px;
             padding: 8px 12px;
@@ -214,7 +223,8 @@ session_start();
             transition: border-color 0.2s;
         }
 
-        .modern-input:focus, .modern-select:focus {
+        .modern-input:focus,
+        .modern-select:focus {
             outline: none;
             border-color: #e91e63;
             box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
@@ -225,14 +235,14 @@ session_start();
             width: 120px !important;
             text-align: center !important;
         }
-        
+
         .action-buttons {
             display: flex;
             gap: 6px;
             justify-content: center;
             align-items: center;
         }
-        
+
         .btn-action {
             border: none;
             border-radius: 4px;
@@ -244,22 +254,22 @@ session_start();
             align-items: center;
             justify-content: center;
         }
-        
+
         .btn-edit {
             background-color: #3b82f6;
             color: white;
         }
-        
+
         .btn-edit:hover {
             background-color: #2563eb;
             transform: translateY(-1px);
         }
-        
+
         .btn-delete {
             background-color: #ef4444;
             color: white;
         }
-        
+
         .btn-delete:hover {
             background-color: #dc2626;
             transform: translateY(-1px);
@@ -270,11 +280,11 @@ session_start();
             .filter-row {
                 flex-direction: column;
             }
-            
+
             .filter-group {
                 min-width: 100%;
             }
-            
+
             .modern-header {
                 flex-direction: column;
                 text-align: center;
@@ -304,17 +314,19 @@ include("../../conexion.php");
 
 // Obtener condiciones
 $condiciones = "SELECT * FROM condiciones_componente";
-$result_condiciones = mysqli_query($mysqli, $condiciones);
-if (!$result_condiciones) {
+$result_condiciones_query = mysqli_query($mysqli, $condiciones);
+if (!$result_condiciones_query) {
     die("Error en la consulta condiciones: " . mysqli_error($mysqli));
 }
+$result_condiciones = mysqli_fetch_all($result_condiciones_query, MYSQLI_ASSOC);
 
 // Obtener metas
 $metas = "SELECT * FROM metas ORDER BY descripcion_meta ASC";
-$result_metas = mysqli_query($mysqli, $metas);
-if (!$result_metas) {
+$result_metas_query = mysqli_query($mysqli, $metas);
+if (!$result_metas_query) {
     die("Error en la consulta metas: " . mysqli_error($mysqli));
 }
+$result_metas = mysqli_fetch_all($result_metas_query, MYSQLI_ASSOC);
 
 // Obtener actividades centro vida
 $actividades_cv = "SELECT id_actividad_centro_vida, descripcion_actividad FROM actividad_centro_vida ORDER BY descripcion_actividad ASC";
@@ -323,6 +335,14 @@ if (!$result_actividades_cv_query) {
     die("Error en consulta actividades centro vida: " . $mysqli->error);
 }
 $result_actividades_cv = $result_actividades_cv_query->fetch_all(MYSQLI_ASSOC);
+
+// Obtener lista de personas para el modal masivo (ordenadas alfabéticamente)
+$personas_sql = "SELECT cedula_persona, CONCAT(nombres_persona, ' ', apellidos_persona) AS nombre_completo FROM personas ORDER BY nombres_persona ASC, apellidos_persona ASC";
+$result_personas_query = $mysqli->query($personas_sql);
+if (!$result_personas_query) {
+    die("Error en consulta personas: " . $mysqli->error);
+}
+$result_personas = $result_personas_query->fetch_all(MYSQLI_ASSOC);
 
 // Procesar filtros
 $where_conditions = [];
@@ -427,6 +447,10 @@ function deleteRegistro($id_registro)
                         <i class="bi bi-plus-circle-fill"></i>
                         Agregar Registro
                     </button>
+                    <button type="button" class="btn-modern btn-warning" data-bs-toggle="modal" data-bs-target="#modalMasivo">
+                        <i class="bi bi-people-fill"></i>
+                        Agregar Masivo
+                    </button>
                     <a href="exportExcelCentroVida.php<?= !empty($_GET) ? '?' . http_build_query($_GET) : '' ?>" class="btn-modern">
                         <i class="bi bi-file-excel"></i>
                         Exportar Excel
@@ -506,6 +530,164 @@ function deleteRegistro($id_registro)
             </div>
         </div>
     </div>
+    <!-- Modal Agregar Masivo -->
+    <div class="modal fade" id="modalMasivo" tabindex="-1" aria-labelledby="modalMasivoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <form id="formMasivo" action="addRegistroCentroVidaMasivo.php" method="POST">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title" id="modalMasivoLabel">
+                            <i class="bi bi-people-fill me-2"></i>Agregar Registros Masivos
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <p class="text-muted">Seleccione múltiples personas de la lista o escriba una cédula para agregarla manualmente. Los registros se agregarán con la misma información que en el formulario individual.</p>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <input type="text" id="searchPersona" class="form-control" placeholder="Buscar por nombre o cédula...">
+                            </div>
+                        </div>
+
+                        <div style="max-height: 300px; overflow:auto; border:1px solid #e5e7eb; padding:8px; border-radius:6px;">
+                            <div id="listaPersonasMasivo">
+                                <?php foreach ($result_personas as $p) { ?>
+                                    <div class="form-check">
+                                        <input class="form-check-input persona-checkbox" type="checkbox" value="<?= htmlspecialchars($p['cedula_persona']) ?>" id="persona_<?= htmlspecialchars($p['cedula_persona']) ?>">
+                                        <label class="form-check-label" for="persona_<?= htmlspecialchars($p['cedula_persona']) ?>"><?= htmlspecialchars($p['nombre_completo']) ?> — <small><?= htmlspecialchars($p['cedula_persona']) ?></small></label>
+                                    </div>
+                                <?php } ?>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Incluir aquí los mismos campos que el formulario individual, pero sin la cédula -->
+                        <div id="camposMasivo">
+                            <!-- Reusar partes del formulario individual -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3 form-floating">
+                                    <select class="form-select" id="id_condicion_masivo" name="id_condicion" required>
+                                        <option value="" selected>Seleccione...</option>
+                                        <?php foreach ($result_condiciones as $condicion) { ?>
+                                            <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
+                                        <?php } ?>
+                                    </select>
+                                    <label for="id_condicion_masivo">Condición</label>
+                                </div>
+                                <div class="col-md-6 mb-3 form-floating">
+                                    <select class="form-select" id="id_meta_masivo" name="id_meta" required>
+                                        <option value="" selected>Seleccione Meta...</option>
+                                        <?php foreach ($result_metas as $meta) { ?>
+                                            <option value="<?= $meta['id_meta']; ?>"><?= $meta['descripcion_meta']; ?></option>
+                                        <?php } ?>
+                                    </select>
+                                    <label for="id_meta_masivo">Meta</label>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3 form-floating">
+                                    <select class="form-select" id="id_actividad_masivo" name="id_actividad" required disabled>
+                                        <option value="" selected>Seleccione Actividad...</option>
+                                    </select>
+                                    <label for="id_actividad_masivo">Actividad</label>
+                                </div>
+                                <div class="col-md-4 mb-3 form-floating">
+                                    <select class="form-select" id="id_accion_masivo" name="id_accion" required disabled>
+                                        <option value="" selected>Seleccione Acción...</option>
+                                    </select>
+                                    <label for="id_accion_masivo">Acción</label>
+                                </div>
+                                <div class="col-md-4 mb-3 form-floating">
+                                    <select class="form-select" id="actividad_centro_vida_masivo" name="id_actividad_centro_vida" required>
+                                        <option value="" selected>Seleccione Actividad...</option>
+                                        <?php foreach ($result_actividades_cv as $actividad) { ?>
+                                            <option value="<?= $actividad['id_actividad_centro_vida']; ?>"><?= $actividad['descripcion_actividad']; ?></option>
+                                        <?php } ?>
+                                    </select>
+                                    <label for="actividad_centro_vida_masivo">Actividad Centro Vida</label>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3 form-floating">
+                                    <select class="form-select" id="departamento_procedencia_masivo" name="departamento_procedencia" required>
+                                        <option value="" selected>Seleccione Departamento...</option>
+                                        <option value="Amazonas">Amazonas</option>
+                                        <option value="Antioquia">Antioquia</option>
+                                        <option value="Arauca">Arauca</option>
+                                        <option value="Atlántico">Atlántico</option>
+                                        <option value="Bolívar">Bolívar</option>
+                                        <option value="Boyacá">Boyacá</option>
+                                        <option value="Caldas">Caldas</option>
+                                        <option value="Caquetá">Caquetá</option>
+                                        <option value="Casanare">Casanare</option>
+                                        <option value="Cauca">Cauca</option>
+                                        <option value="Cesar">Cesar</option>
+                                        <option value="Chocó">Chocó</option>
+                                        <option value="Córdoba">Córdoba</option>
+                                        <option value="Cundinamarca">Cundinamarca</option>
+                                        <option value="Guainía">Guainía</option>
+                                        <option value="Guaviare">Guaviare</option>
+                                        <option value="Huila">Huila</option>
+                                        <option value="La Guajira">La Guajira</option>
+                                        <option value="Magdalena">Magdalena</option>
+                                        <option value="Meta">Meta</option>
+                                        <option value="Nariño">Nariño</option>
+                                        <option value="Norte de Santander">Norte de Santander</option>
+                                        <option value="Putumayo">Putumayo</option>
+                                        <option value="Quindío">Quindío</option>
+                                        <option value="Risaralda">Risaralda</option>
+                                        <option value="San Andrés y Providencia">San Andrés y Providencia</option>
+                                        <option value="Santander">Santander</option>
+                                        <option value="Sucre">Sucre</option>
+                                        <option value="Tolima">Tolima</option>
+                                        <option value="Valle del Cauca">Valle del Cauca</option>
+                                        <option value="Vaupés">Vaupés</option>
+                                        <option value="Vichada">Vichada</option>
+                                        <option value="Bogotá D.C.">Bogotá D.C.</option>
+                                    </select>
+                                    <label for="departamento_procedencia_masivo">Departamento de Procedencia</label>
+                                </div>
+                                <div class="col-md-6 mb-3 form-floating">
+                                    <select class="form-select" id="politica_publica_masivo" name="politica_publica">
+                                        <option value="" selected>Seleccione Política Pública...</option>
+                                    </select>
+                                    <label for="politica_publica_masivo">Política Pública</label>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="fechas_atencion_masivo" class="form-label"><strong>Fechas de Atención</strong></label>
+                                    <input type="text" class="form-control" id="fechas_atencion_masivo" name="fechas_atencion" placeholder="Haga clic para seleccionar múltiples fechas..." readonly required>
+                                    <input type="hidden" id="fechas_seleccionadas_masivo" name="fechas_seleccionadas">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="observacion_masivo" name="observacion" placeholder="Observación" style="height: 100px;"></textarea>
+                                        <label for="observacion_masivo">Observación</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-warning">Agregar Masivo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Modal Agregar Registro -->
     <div class="modal fade" id="modalNewRecord" tabindex="-1" aria-labelledby="modalNewRecordLabel" aria-hidden="true">
@@ -530,7 +712,7 @@ function deleteRegistro($id_registro)
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="id_condicion" name="id_condicion" required>
                                     <option value="" selected>Seleccione...</option>
-                                    <?php while ($condicion = mysqli_fetch_assoc($result_condiciones)) { ?>
+                                    <?php foreach ($result_condiciones as $condicion) { ?>
                                         <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
                                     <?php } ?>
                                 </select>
@@ -543,7 +725,7 @@ function deleteRegistro($id_registro)
                             <div class="col-md-4 mb-3 form-floating">
                                 <select class="form-select" id="id_meta" name="id_meta" required>
                                     <option value="" selected>Seleccione Meta...</option>
-                                    <?php while ($meta = mysqli_fetch_assoc($result_metas)) { ?>
+                                    <?php foreach ($result_metas as $meta) { ?>
                                         <option value="<?= $meta['id_meta']; ?>"><?= $meta['descripcion_meta']; ?></option>
                                     <?php } ?>
                                 </select>
@@ -588,14 +770,16 @@ function deleteRegistro($id_registro)
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label for="fechas_atencion" class="form-label"><strong>Fechas de Atención</strong></label>
-                                <input type="text" class="form-control" id="fechas_atencion" name="fechas_atencion" 
-                                       placeholder="Haga clic para seleccionar múltiples fechas..." readonly required>
+                                <input type="text" class="form-control" id="fechas_atencion" name="fechas_atencion"
+                                    placeholder="Haga clic para seleccionar múltiples fechas..." readonly required>
                                 <input type="hidden" id="fechas_seleccionadas" name="fechas_seleccionadas">
                                 <div class="selected-dates-display" id="selected-dates-display">
                                     <small class="text-muted">Las fechas seleccionadas aparecerán aquí</small>
                                 </div>
                             </div>
                         </div>
+
+
 
                         <!-- Fila 4: Departamento de Procedencia -->
                         <div class="row">
@@ -668,7 +852,7 @@ function deleteRegistro($id_registro)
 
     <script>
         let selectedDates = [];
-        
+
         // Función para confirmar eliminación
         function confirmarEliminacion(id, actividad) {
             Swal.fire({
@@ -692,13 +876,13 @@ function deleteRegistro($id_registro)
             console.log('🚀 jQuery ready ejecutado');
             console.log('📦 jQuery version:', $.fn.jquery);
             console.log('🎯 SweetAlert disponible:', typeof Swal !== 'undefined');
-            
+
             // Verificar si la tabla existe y tiene contenido antes de inicializar DataTables
             if ($('#registrosTable tbody tr').length > 0) {
                 // Verificar que todas las filas tengan el mismo número de columnas
                 var headerCols = $('#registrosTable thead tr th').length;
                 var rowsValid = true;
-                
+
                 $('#registrosTable tbody tr').each(function() {
                     var cellCount = $(this).find('td').length;
                     if (cellCount !== headerCols) {
@@ -713,10 +897,14 @@ function deleteRegistro($id_registro)
                         const table = $('#registrosTable').DataTable({
                             pageLength: 15,
                             responsive: true,
-                            order: [[10, 'desc']], // Ordenar por fecha de registro desc
-                            columnDefs: [
-                                { targets: [11], orderable: false, searchable: false }
-                            ],
+                            order: [
+                                [10, 'desc']
+                            ], // Ordenar por fecha de registro desc
+                            columnDefs: [{
+                                targets: [11],
+                                orderable: false,
+                                searchable: false
+                            }],
                             language: {
                                 "sProcessing": "Procesando...",
                                 "sLengthMenu": "Mostrar _MENU_ registros",
@@ -805,7 +993,7 @@ function deleteRegistro($id_registro)
                 // Limpiar y deshabilitar campo de acciones
                 $('#id_accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
                 $('#politica_publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
-                
+
                 if (idActividad) {
                     $.ajax({
                         url: '../personMovement/getAcciones.php',
@@ -832,23 +1020,25 @@ function deleteRegistro($id_registro)
             $('#id_accion').on('change', function() {
                 const idAccion = $(this).val();
                 console.log('🏛️ Cargando políticas públicas para acción:', idAccion);
-                
+
                 // Limpiar el select de política pública
                 $('#politica_publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
-                
+
                 if (idAccion) {
                     $.ajax({
                         url: '../personMovement/getPoliticaPublica.php',
                         type: 'POST',
-                        data: { id_accion: idAccion },
+                        data: {
+                            id_accion: idAccion
+                        },
                         dataType: 'json',
                         success: function(response) {
                             console.log('📋 Políticas públicas recibidas:', response);
-                            
+
                             if (response && response.politicas && response.politicas.length > 0) {
                                 // Agregar cada política pública como opción
                                 response.politicas.forEach(function(p) {
-                                    $('#politica_publica').append('<option value="' + p.descripcion_politica + '">' + p.descripcion_politica + '</option>');
+                                    $('#politica_publica').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
                                 });
                                 console.log('✅ Se agregaron', response.politicas.length, 'políticas públicas');
                             } else {
@@ -867,15 +1057,15 @@ function deleteRegistro($id_registro)
             // Validación del formulario con AJAX
             $('#modalNewRecord form').on('submit', function(e) {
                 console.log('🚀 Evento submit disparado');
-                
+
                 // Siempre prevenir el submit normal para usar AJAX
                 e.preventDefault();
-                
+
                 // Buscar la cédula dentro del formulario (evita conflicto con filtros)
                 const cedula = $(this).find('#cedula_persona').val() ? $(this).find('#cedula_persona').val().trim() : '';
                 console.log('👤 Cédula ingresada:', cedula);
                 console.log('📅 Fechas seleccionadas:', selectedDates.length);
-                
+
                 // Verificar que la cédula no esté vacía
                 if (!cedula || cedula.length === 0) {
                     console.log('❌ Formulario bloqueado: Cédula vacía');
@@ -901,17 +1091,17 @@ function deleteRegistro($id_registro)
                     $('#fechas_atencion').focus();
                     return false;
                 }
-                
+
                 console.log('✅ Validación pasada, enviando formulario por AJAX...');
-                
+
                 // Preparar datos del formulario
                 let formData = $(this).serialize();
-                
+
                 // Agregar las fechas seleccionadas
                 formData += '&fechas_atencion=' + encodeURIComponent(JSON.stringify(selectedDates));
-                
+
                 console.log('📋 Datos del formulario completos:', formData);
-                
+
                 // Enviar por AJAX (elegir endpoint según modo: add o edit)
                 const endpointUrl = $('#id_registro_centro_vida').val() ? 'editRegistroCentroVida.php' : 'addRegistroCentroVida.php';
                 // Enviar por AJAX
@@ -928,7 +1118,7 @@ function deleteRegistro($id_registro)
                     },
                     success: function(response) {
                         console.log('✅ Respuesta AJAX exitosa:', response);
-                        
+
                         if (response.success) {
                             Swal.fire({
                                 title: '¡Éxito!',
@@ -939,18 +1129,18 @@ function deleteRegistro($id_registro)
                                 toast: true,
                                 showConfirmButton: false
                             });
-                            
+
                             // Cerrar modal y limpiar formulario
                             $('#modalNewRecord').modal('hide');
                             $('#modalNewRecord form')[0].reset();
                             selectedDates = [];
                             $('#fechas_atencion').val('');
-                            
+
                             // Recargar la página para mostrar el nuevo registro
                             setTimeout(() => {
                                 location.reload();
                             }, 1000);
-                            
+
                         } else {
                             Swal.fire({
                                 title: 'Error',
@@ -961,18 +1151,22 @@ function deleteRegistro($id_registro)
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.log('❌ Error AJAX:', {xhr, status, error});
+                        console.log('❌ Error AJAX:', {
+                            xhr,
+                            status,
+                            error
+                        });
                         console.log('📄 Texto de respuesta:', xhr.responseText);
-                        
+
                         let errorMessage = 'No se pudo conectar con el servidor.';
-                        
+
                         try {
                             const errorResponse = JSON.parse(xhr.responseText);
                             errorMessage = errorResponse.message || errorMessage;
                         } catch (e) {
                             // Si no es JSON válido, usar mensaje genérico
                         }
-                        
+
                         Swal.fire({
                             title: 'Error de Conexión',
                             text: errorMessage,
@@ -987,7 +1181,7 @@ function deleteRegistro($id_registro)
                         $submitBtn.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar');
                     }
                 });
-                
+
                 return false;
             });
 
@@ -1020,7 +1214,9 @@ function deleteRegistro($id_registro)
                 $.ajax({
                     url: '../buscar_persona.php',
                     type: 'POST',
-                    data: { cedula: cedula },
+                    data: {
+                        cedula: cedula
+                    },
                     dataType: 'json',
                     success: function(response) {
                         console.log('✅ Respuesta buscar_persona:', response);
@@ -1065,7 +1261,9 @@ function deleteRegistro($id_registro)
                                 $.ajax({
                                     url: '../personMovement/getActividades.php',
                                     type: 'POST',
-                                    data: { id_meta: response.id_meta },
+                                    data: {
+                                        id_meta: response.id_meta
+                                    },
                                     success: function(actividadesResponse) {
                                         $('#id_actividad').empty().append('<option value="">Seleccione Actividad...</option>');
                                         $('#id_actividad').append(actividadesResponse).prop('disabled', false);
@@ -1076,7 +1274,9 @@ function deleteRegistro($id_registro)
                                             $.ajax({
                                                 url: '../personMovement/getAcciones.php',
                                                 type: 'POST',
-                                                data: { id_actividad: response.id_actividad },
+                                                data: {
+                                                    id_actividad: response.id_actividad
+                                                },
                                                 success: function(accionesResponse) {
                                                     $('#id_accion').empty().append('<option value="">Seleccione Acción...</option>');
                                                     $('#id_accion').append(accionesResponse).prop('disabled', false);
@@ -1087,13 +1287,15 @@ function deleteRegistro($id_registro)
                                                         $.ajax({
                                                             url: '../personMovement/getPoliticaPublica.php',
                                                             type: 'POST',
-                                                            data: { id_accion: response.id_accion },
+                                                            data: {
+                                                                id_accion: response.id_accion
+                                                            },
                                                             dataType: 'json',
                                                             success: function(politicasResponse) {
                                                                 $('#politica_publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
                                                                 if (politicasResponse && politicasResponse.politicas && politicasResponse.politicas.length > 0) {
                                                                     politicasResponse.politicas.forEach(function(p) {
-                                                                        $('#politica_publica').append('<option value="' + p.descripcion_politica + '">' + p.descripcion_politica + '</option>');
+                                                                        $('#politica_publica').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
                                                                     });
                                                                     // Seleccionar la opción si existe en personas
                                                                     if (response.id_politica_publica) {
@@ -1157,7 +1359,7 @@ function deleteRegistro($id_registro)
                 cedulaValida = false;
                 // Asegurar que el formulario vuelva a modo 'agregar' limpiando el id de edición
                 $('#id_registro_centro_vida').val('');
-                
+
                 // Limpiar flatpickr
                 if (document.querySelector("#fechas_atencion")._flatpickr) {
                     document.querySelector("#fechas_atencion")._flatpickr.clear();
@@ -1185,7 +1387,7 @@ function deleteRegistro($id_registro)
             });
 
             // Evento para resetear el modal cuando se cierre
-            $('#modalNewRecord').on('hidden.bs.modal', function () {
+            $('#modalNewRecord').on('hidden.bs.modal', function() {
                 console.log('🔄 Modal cerrado - reseteando a modo agregar');
                 resetModalToAddMode();
                 $('#modalNewRecord form')[0].reset();
@@ -1204,10 +1406,194 @@ function deleteRegistro($id_registro)
             });
         });
 
+        // -------------------- JS para Modal Masivo --------------------
+        $(document).ready(function() {
+            // Filtrar la lista de personas
+            $('#searchPersona').on('input', function() {
+                const q = $(this).val().toLowerCase().trim();
+                $('#listaPersonasMasivo .form-check').each(function() {
+                    const txt = $(this).text().toLowerCase();
+                    $(this).toggle(txt.indexOf(q) !== -1);
+                });
+            });
+
+            // (funcionalidad de agregar cédula manual removida)
+
+            // Inicializar flatpickr para masivo
+            flatpickr("#fechas_atencion_masivo", {
+                mode: "multiple",
+                dateFormat: "Y-m-d",
+                locale: "es",
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Guardar como JSON simple de strings (ISO yyyy-mm-dd)
+                    const arr = selectedDates.map(d => {
+                        try { return d.toISOString().slice(0,10); } catch(e) { return null; }
+                    }).filter(x => x);
+                    $('#fechas_seleccionadas_masivo').val(JSON.stringify(arr));
+                }
+            });
+
+            // Cascada Meta -> Actividad -> Acción para masivo
+            $('#id_meta_masivo').on('change', function() {
+                const idMeta = $(this).val();
+                $('#id_actividad_masivo').empty().append('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
+                $('#id_accion_masivo').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+                if (idMeta) {
+                    $.ajax({
+                        url: '../personMovement/getActividades.php',
+                        type: 'POST',
+                        data: {
+                            id_meta: idMeta
+                        },
+                        success: function(resp) {
+                            $('#id_actividad_masivo').append(resp).prop('disabled', false);
+                        }
+                    });
+                }
+            });
+
+            $('#id_actividad_masivo').on('change', function() {
+                const idAct = $(this).val();
+                $('#id_accion_masivo').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+                if (idAct) {
+                    $.ajax({
+                        url: '../personMovement/getAcciones.php',
+                        type: 'POST',
+                        data: {
+                            id_actividad: idAct
+                        },
+                        success: function(resp) {
+                            $('#id_accion_masivo').append(resp).prop('disabled', false);
+                        }
+                    });
+                }
+            });
+
+            // Cargar políticas públicas para modal masivo cuando cambie la acción
+            $('#id_accion_masivo').on('change', function() {
+                const idAccion = $(this).val();
+                $('#politica_publica_masivo').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
+                if (idAccion) {
+                    $.ajax({
+                        url: '../personMovement/getPoliticaPublica.php',
+                        type: 'POST',
+                        data: { id_accion: idAccion },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response && response.politicas && response.politicas.length > 0) {
+                                response.politicas.forEach(function(p) {
+                                    $('#politica_publica_masivo').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
+                                });
+                            } else {
+                                $('#politica_publica_masivo').append('<option value="No asignada">No asignada</option>');
+                            }
+                        },
+                        error: function() {
+                            $('#politica_publica_masivo').append('<option value="Error al consultar">Error al consultar</option>');
+                        }
+                    });
+                }
+            });
+
+            // Enviar formulario masivo por AJAX
+            $('#formMasivo').on('submit', function(e) {
+                e.preventDefault();
+
+                // Recopilar cédulas seleccionadas
+                const cedulas = [];
+                $('#listaPersonasMasivo input.persona-checkbox:checked').each(function() {
+                    cedulas.push($(this).val());
+                });
+
+                if (cedulas.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Sin cédulas',
+                        text: 'Debe seleccionar al menos una cédula.'
+                    });
+                    return;
+                }
+
+                // Validar fechas (parsear JSON guardado por flatpickr)
+                let fechasArr = [];
+                try {
+                    const raw = $('#fechas_seleccionadas_masivo').val();
+                    fechasArr = raw ? JSON.parse(raw) : [];
+                } catch (err) {
+                    fechasArr = [];
+                }
+                if (!Array.isArray(fechasArr) || fechasArr.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Fechas requeridas',
+                        text: 'Seleccione al menos una fecha.'
+                    });
+                    return;
+                }
+
+                // Preparar payload
+                const payload = $(this).serializeArray();
+                payload.push({
+                    name: 'cedulas',
+                    value: JSON.stringify(cedulas)
+                });
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: $.param(payload),
+                    dataType: 'json',
+                    beforeSend: function() {
+                        Swal.fire({
+                            title: 'Procesando',
+                            text: 'Se están agregando los registros...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    },
+                    success: function(resp) {
+                        Swal.close();
+                        if (resp.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Hecho',
+                                text: resp.message
+                            });
+                            $('#modalMasivo').modal('hide');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: resp.message || 'Error al agregar registros.'
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.close();
+                        let msg = 'No se pudo procesar la solicitud.';
+                        try {
+                            const j = JSON.parse(xhr.responseText);
+                            msg = j.message || msg;
+                        } catch (e) {}
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: msg
+                        });
+                    }
+                });
+            });
+        });
+
+        // ---------------------------------------------------------------
+
         function updateSelectedDatesDisplay(dates) {
             selectedDates = dates;
             const display = document.getElementById('selected-dates-display');
-            
+
             if (dates.length === 0) {
                 display.innerHTML = '<small class="text-muted">Las fechas seleccionadas aparecerán aquí</small>';
                 return;
@@ -1223,7 +1609,7 @@ function deleteRegistro($id_registro)
                 });
                 html += `<span class="date-tag">${formattedDate}</span>`;
             });
-            
+
             display.innerHTML = html;
         }
 
@@ -1241,7 +1627,9 @@ function deleteRegistro($id_registro)
             $.ajax({
                 url: 'getRegistroByIdCentroVida.php',
                 type: 'GET',
-                data: { id: id },
+                data: {
+                    id: id
+                },
                 dataType: 'json',
                 success: function(resp) {
                     if (!resp.success) {
@@ -1256,24 +1644,24 @@ function deleteRegistro($id_registro)
                     $('#id_registro_centro_vida').val(d.id_registro_centro_vida || id);
                     $('#cedula_persona').val(d.cedula_persona).addClass('is-valid').prop('readonly', true);
                     $('#id_condicion').val(d.id_condicion);
-                    
+
                     // Cambiar título del modal para modo edición
                     $('#modalNewRecordLabel').html('<i class="bi bi-pencil-fill me-2"></i>Editar Registro Centro Vida');
-                    
+
                     // Manejar cascada Meta -> Actividad -> Acción
                     if (d.id_meta) {
                         $('#id_meta').val(d.id_meta).trigger('change');
-                        
+
                         // Esperar a que se carguen las actividades y luego seleccionar
                         setTimeout(function() {
                             if (d.id_actividad) {
                                 $('#id_actividad').val(d.id_actividad).prop('disabled', false).trigger('change');
-                                
+
                                 // Esperar a que se carguen las acciones y luego seleccionar
                                 setTimeout(function() {
                                     if (d.id_accion) {
                                         $('#id_accion').val(d.id_accion).prop('disabled', false).trigger('change');
-                                        
+
                                         // Esperar a que se carguen las políticas públicas y luego seleccionar
                                         setTimeout(function() {
                                             if (d.politica_publica) {
@@ -1328,4 +1716,5 @@ function deleteRegistro($id_registro)
         };
     </script>
 </body>
+
 </html>

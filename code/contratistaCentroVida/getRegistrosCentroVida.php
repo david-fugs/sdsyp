@@ -10,6 +10,7 @@ $query = "
         p.apellidos_persona,
     acv.descripcion_actividad as actividad_centro_vida,
         rcv.politica_publica,
+        pp.descripcion_politica AS politica_publica_descripcion,
         rcv.departamento_procedencia,
         rcv.observacion,
         rcv.funcionario_registro,
@@ -19,6 +20,7 @@ $query = "
     INNER JOIN personas p ON rcv.cedula_persona = p.cedula_persona
     INNER JOIN actividad_centro_vida acv ON rcv.id_actividad_centro_vida = acv.id_actividad_centro_vida
     LEFT JOIN registro_centro_vida_fechas rcvf ON rcv.id_registro_centro_vida = rcvf.id_registro_centro_vida
+    LEFT JOIN politicas_publicas pp ON rcv.politica_publica = pp.id_politica
 ";
 
 // Aplicar filtros si existen
@@ -83,7 +85,15 @@ if ($result && $result->num_rows > 0) {
               substr($fechas_display, 0, 40) . "..." : 
               $fechas_display) . "</td>";
         
-        echo "<td>" . htmlspecialchars($row['politica_publica']) . "</td>";
+        // Mostrar descripción de política pública si existe, en caso contrario mostrar el id o 'No asignada'
+        $politica_desc = $row['politica_publica_descripcion'] ?? null;
+        if ($politica_desc) {
+            echo "<td>" . htmlspecialchars($politica_desc) . "</td>";
+        } else {
+            // Si no hay descripción, mostrar id si existe, o texto por defecto
+            $politica_id = $row['politica_publica'] ?? '';
+            echo "<td>" . ($politica_id !== '' ? htmlspecialchars($politica_id) : 'No asignada') . "</td>";
+        }
         echo "<td>" . htmlspecialchars($row['departamento_procedencia']) . "</td>";
         echo "<td title='" . htmlspecialchars($row['observacion']) . "'>" . 
              (strlen($row['observacion']) > 25 ? 
