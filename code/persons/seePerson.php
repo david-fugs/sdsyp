@@ -348,6 +348,7 @@ function deleteMember($cedula_persona)
                                     <option value="Tarjeta de Identidad">Tarjeta de Identidad</option>
                                     <option value="Cédula de Extranjería">Cédula de Extranjería</option>
                                     <option value="Pasaporte">Pasaporte</option>
+                                    <option value="Sin identificacion">Sin identificacion</option>
                                     <option value="Otro">Otro</option>
                                 </select>
                                 <label for="tipo_identificacion">Tipo de Identificación</label>
@@ -868,6 +869,7 @@ function deleteMember($cedula_persona)
                                     <option value="Tarjeta de Identidad">Tarjeta de Identidad</option>
                                     <option value="Cédula de Extranjería">Cédula de Extranjería</option>
                                     <option value="Pasaporte">Pasaporte</option>
+                                    <option value="Sin identificacion">Sin identificacion</option>
                                     <option value="Otro">Otro</option>
                                 </select>
                             </div>

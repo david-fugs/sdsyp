@@ -35,6 +35,9 @@ SELECT p.*, p.condicion_componente as condicion_componente,
        GROUP_CONCAT(pr.id_programa ORDER BY pr.nombre_programa ASC) AS ids_programas,
        g.descripcion_grupo,
        pol.descripcion_politica,
+       m.descripcion_meta,
+       a.descripcion_actividad,
+       acc.descripcion_accion,
        (SELECT cc.descripcion_condicion 
         FROM movimiento_persona mp 
         JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
@@ -47,6 +50,9 @@ LEFT JOIN persona_programa pp ON p.cedula_persona = pp.cedula_persona
 LEFT JOIN programas pr ON pp.id_programa = pr.id_programa
 LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
 LEFT JOIN politicas_publicas pol ON p.id_politica_publica = pol.id_politica
+LEFT JOIN metas m ON p.id_meta = m.id_meta
+LEFT JOIN actividades a ON p.id_actividad = a.id_actividad
+LEFT JOIN acciones acc ON p.id_accion = acc.id_accion
 $where
 GROUP BY p.cedula_persona
 ORDER BY p.apellidos_persona ASC
@@ -156,6 +162,24 @@ if ($result && $result->num_rows > 0) {
                         data-ids-programas="' . htmlspecialchars($row['ids_programas'] ?: '') . '"
                         data-id-grupo="' . htmlspecialchars($row['id_grupo'] ?: '') . '"
                         data-id-politica-publica="' . htmlspecialchars($row['id_politica_publica'] ?: '') . '"
+                        data-grupo-sisben="' . (isset($row['grupo_sisben']) ? htmlspecialchars($row['grupo_sisben']) : '') . '"
+                        data-persona-discapacidad="' . (isset($row['persona_discapacidad']) ? htmlspecialchars($row['persona_discapacidad']) : '') . '"
+                        data-cual-discapacidad="' . (isset($row['cual_discapacidad']) ? htmlspecialchars($row['cual_discapacidad']) : '') . '"
+                        data-tipo-identificacion="' . (isset($row['tipo_identificacion']) ? htmlspecialchars($row['tipo_identificacion']) : '') . '"
+                        data-cabeza-hogar="' . (isset($row['cabeza_hogar']) ? htmlspecialchars($row['cabeza_hogar']) : '') . '"
+                        data-lider-comunidad="' . (isset($row['lider_comunidad']) ? htmlspecialchars($row['lider_comunidad']) : '') . '"
+                        data-se-reconoce-como="' . (isset($row['se_reconoce_como']) ? htmlspecialchars($row['se_reconoce_como']) : '') . '"
+                        data-orientacion-sexual="' . (isset($row['orientacion_sexual']) ? htmlspecialchars($row['orientacion_sexual']) : '') . '"
+                        data-experiencia-migratoria="' . (isset($row['experiencia_migratoria']) ? htmlspecialchars($row['experiencia_migratoria']) : '') . '"
+                        data-grupo-etnico="' . (isset($row['grupo_etnico']) ? htmlspecialchars($row['grupo_etnico']) : '') . '"
+                        data-tipo-salud="' . (isset($row['tipo_salud']) ? htmlspecialchars($row['tipo_salud']) : '') . '"
+                        data-nivel-educativo="' . (isset($row['nivel_educativo']) ? htmlspecialchars($row['nivel_educativo']) : '') . '"
+                        data-telefono-referencia="' . (isset($row['telefono_referencia_persona']) ? htmlspecialchars($row['telefono_referencia_persona']) : '') . '"
+                        data-correo="' . (isset($row['correo_persona']) ? htmlspecialchars($row['correo_persona']) : '') . '"
+                        data-direccion="' . (isset($row['direccion_persona']) ? htmlspecialchars($row['direccion_persona']) : '') . '"
+                        data-condicion-ocupacion="' . (isset($row['condicion_ocupacion']) ? htmlspecialchars($row['condicion_ocupacion']) : '') . '"
+                        data-condicion-componente="' . (isset($row['condicion_componente']) ? htmlspecialchars($row['condicion_componente']) : '') . '"
+                        data-activo-desde="' . (isset($row['activo_desde']) ? htmlspecialchars($row['activo_desde']) : '') . '"
                         data-eps="' . htmlspecialchars($row['eps'] ?? '') . '"
                         data-peso="' . htmlspecialchars($row['peso'] ?? '') . '"
                         data-talla="' . htmlspecialchars($row['talla'] ?? '') . '"
@@ -165,7 +189,14 @@ if ($result && $result->num_rows > 0) {
                         data-ingresos-economicos="' . htmlspecialchars($row['ingresos_economicos'] ?? '') . '"
                         data-convivencia-actual="' . htmlspecialchars($row['convivencia_actual'] ?? '') . '"
                         data-resultado-actividad="' . htmlspecialchars($row['resultado_actividad'] ?? '') . '"
-                        data-remision="' . htmlspecialchars($row['remision'] ?? '') . '">
+                        data-remision="' . htmlspecialchars($row['remision'] ?? '') . '"
+                        data-id-barrio-persona="' . (isset($row['id_barrio_persona']) ? htmlspecialchars($row['id_barrio_persona']) : '') . '"
+                        data-id-comuna-persona="' . (isset($row['id_comuna_persona']) ? htmlspecialchars($row['id_comuna_persona']) : '') . '"
+                        data-zona-persona="' . (isset($row['zona_persona']) ? htmlspecialchars($row['zona_persona']) : '') . '"
+                        data-id-meta="' . (isset($row['id_meta']) ? htmlspecialchars($row['id_meta']) : '') . '"
+                        data-id-actividad="' . (isset($row['id_actividad']) ? htmlspecialchars($row['id_actividad']) : '') . '"
+                        data-id-accion="' . (isset($row['id_accion']) ? htmlspecialchars($row['id_accion']) : '') . '"
+                        data-id-politica-publica-nueva="' . (isset($row['id_politica_publica']) ? htmlspecialchars($row['id_politica_publica']) : '') . '">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
                     <a href="?delete=' . htmlspecialchars($row['cedula_persona']) . '" 
