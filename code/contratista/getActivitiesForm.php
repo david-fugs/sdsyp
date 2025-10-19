@@ -1,16 +1,26 @@
 <?php
+session_start();
 include("../../conexion.php");
+require_once('../filtros_grupos.php');
+
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
 
-if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3) {
+// Inicializar variable $where
+$where = '';
+
+// Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
+$where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
+
+// Filtro para usuarios tipo 2 con grupo asignado
+if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3 && !in_array($tipo_usuario, [4, 5])) {
     $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
+
 // Consulta SQL para obtener los datos
 $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
 $filtro_mes = isset($_GET['filtro_mes']) ? intval($_GET['filtro_mes']) : '';
 $filtro_funcionario = isset($_GET['filtro_funcionario']) ? intval($_GET['filtro_funcionario']) : '';
-$where = '';
 if ($filtro_anio) {
     $where .= " AND YEAR(ra.fecha_atencion) = $filtro_anio ";
 }
@@ -24,9 +34,10 @@ if ($filtro_funcionario) {
 $query = "SELECT ra.id_registro, ra.id_meta, ra.id_actividad, ra.id_entregas, ra.id_accion, ra.politica_publica, ra.id_centro_vida,
        ra.fecha_atencion, ra.nombre_lider, ra.telefono_contacto, ra.id_comuna, ra.medio_verificacion,
        ra.cantidad_masculino, ra.cantidad_femenino, ra.tipo_actividad, ra.observacion_actividad,
+       ra.funcionario_responsable, ra.otro_lugar,
        m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica,
        actc.descripcion_actividad AS descripcion_entrega,
-       g.descripcion_grupo AS centro_vida, c.nombre_com AS nombre_comuna, u.nombre AS funcionario_responsable
+       g.descripcion_grupo AS centro_vida, c.nombre_com AS nombre_comuna, u.nombre AS nombre_funcionario
 FROM registro_actividades AS ra
 LEFT JOIN metas m ON ra.id_meta = m.id_meta
 LEFT JOIN actividades a ON ra.id_actividad = a.id_actividad
@@ -34,9 +45,9 @@ LEFT JOIN acciones ac ON ra.id_accion = ac.id_accion
 LEFT JOIN politicas_publicas pp ON ra.politica_publica = pp.id_politica
 LEFT JOIN grupos g ON ra.id_centro_vida = g.id_grupo
 LEFT JOIN comunas c ON ra.id_comuna = c.id_com
-LEFT JOIN usuarios u ON ra.id_usuario = u.id
+LEFT JOIN usuarios u ON CAST(ra.funcionario_responsable AS UNSIGNED) = u.id AND ra.funcionario_responsable REGEXP '^[0-9]+$'
 LEFT JOIN actividad_contratista actc ON ra.id_entregas = actc.id_actividad_contratista
-WHERE 1 $where
+WHERE 1 $where $where_grupos_filtro
 ORDER BY ra.fecha_atencion DESC
 ";
 $result = $mysqli->query($query);
@@ -51,7 +62,11 @@ if ($result->num_rows > 0) {
         echo "<td class='col-actividad' title='" . htmlspecialchars($row['descripcion_actividad'] ?? 'N/A') . "'>" . ($row['descripcion_actividad'] ?? 'N/A') . "</td>";
         echo "<td class='col-accion' title='" . htmlspecialchars($row['descripcion_accion'] ?? 'N/A') . "'>" . ($row['descripcion_accion'] ?? 'N/A') . "</td>";
         echo "<td title='" . htmlspecialchars($row['descripcion_politica'] ?? 'N/A') . "'>" . ($row['descripcion_politica'] ?? 'N/A') . "</td>";
-        echo "<td title='" . htmlspecialchars($row['centro_vida'] ?? 'N/A') . "'>" . ($row['centro_vida'] ?? 'N/A') . "</td>";
+        
+        // Mostrar lugar del evento o "otro lugar"
+        $lugarEvento = $row['otro_lugar'] ? htmlspecialchars($row['otro_lugar']) : ($row['centro_vida'] ?? 'N/A');
+        echo "<td title='" . $lugarEvento . "'>" . $lugarEvento . "</td>";
+        
         echo "<td>" . ($row['fecha_atencion'] ?? 'N/A') . "</td>";
         echo "<td title='" . htmlspecialchars($row['nombre_lider'] ?? 'N/A') . "'>" . ($row['nombre_lider'] ?? 'N/A') . "</td>";
         echo "<td title='" . htmlspecialchars($row['telefono_contacto'] ?? 'N/A') . "'>" . ($row['telefono_contacto'] ?? 'N/A') . "</td>";
@@ -61,7 +76,10 @@ if ($result->num_rows > 0) {
         echo "<td>" . ($row['cantidad_femenino'] ?? '0') . "</td>";
         echo "<td title='" . htmlspecialchars($row['tipo_actividad'] ?? 'N/A') . "'>" . ($row['tipo_actividad'] ?? 'N/A') . "</td>";
         echo "<td title='" . htmlspecialchars($row['observacion_actividad'] ?? '') . "'>" . ($row['observacion_actividad'] ?? '') . "</td>";
-        echo "<td title='" . htmlspecialchars($row['funcionario_responsable'] ?? 'N/A') . "'>" . ($row['funcionario_responsable'] ?? 'N/A') . "</td>";
+        
+        // Mostrar funcionario responsable (nombre de usuario si es ID numérico, o el texto directo)
+        $funcionarioDisplay = $row['nombre_funcionario'] ? htmlspecialchars($row['nombre_funcionario']) : htmlspecialchars($row['funcionario_responsable'] ?? 'N/A');
+        echo "<td title='" . $funcionarioDisplay . "'>" . $funcionarioDisplay . "</td>";
         // Botones de acción modernos
         echo '<td class="col-actions">
                 <div class="action-buttons">
@@ -83,7 +101,9 @@ if ($result->num_rows > 0) {
                         data-cantidad_masculino="' . ($row['cantidad_masculino'] ?? '0') . '"
                         data-cantidad_femenino="' . ($row['cantidad_femenino'] ?? '0') . '"
                         data-tipo_actividad="' . ($row['tipo_actividad'] ?? '') . '"
-                        data-observacion_actividad="' . ($row['observacion_actividad'] ?? '') . '">
+                        data-observacion_actividad="' . ($row['observacion_actividad'] ?? '') . '"
+                        data-funcionario_responsable="' . htmlspecialchars($row['funcionario_responsable'] ?? '') . '"
+                        data-otro_lugar="' . htmlspecialchars($row['otro_lugar'] ?? '') . '">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
                     <a href="?delete=' . $row['id_registro'] . '" 

@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once('../filtros_grupos.php');
 
 ?>
 <!DOCTYPE html>
@@ -135,6 +136,27 @@ session_start();
             font-size: 15px !important;
         }
 
+        /* Scroll sincronizado para tablas grandes: barra superior */
+        .table-scroll-top {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            height: 16px; /* altura del scrollbar */
+            box-sizing: border-box;
+            display: none; /* se mostrará cuando la tabla necesite scroll */
+        }
+
+        .table-scroll {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        /* Hacer que la tabla sea de ancho completo para permitir overflow */
+        .table-scroll .modern-table {
+            width: 100%;
+            min-width: 1200px; /* ajustar según columnas para forzar scroll horizontal cuando sea necesario */
+        }
+
         /* Mensajes de estado */
         .text-muted,
         .text-success,
@@ -163,11 +185,17 @@ $result_usuarios = mysqli_query($mysqli, $usuarios);
 if (!$result_usuarios) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
-$grupos = "SELECT * FROM grupos";
-$result_grupos = mysqli_query($mysqli, $grupos);
-if (!$result_grupos) {
+
+// Aplicar filtro de grupos según tipo de usuario
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
+$grupos = "SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC";
+$result_grupos_query = mysqli_query($mysqli, $grupos);
+if (!$result_grupos_query) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
+// Convertir resultado a array para poder reutilizarlo en múltiples loops
+$result_grupos = mysqli_fetch_all($result_grupos_query, MYSQLI_ASSOC);
 
 $metas = "SELECT * FROM metas ORDER BY descripcion_meta ASC";
 $result_metas = mysqli_query($mysqli, $metas);
@@ -325,7 +353,10 @@ function deleteMember($id_movimiento)
 
             <!-- Tabla moderna -->
             <div class="modern-table-wrapper">
-                <table class="modern-table" id="salesTable">
+                <!-- Contenedor para scroll superior sincronizado -->
+                <div class="table-scroll-top" id="tableScrollTop" aria-hidden="true"></div>
+                <div class="table-scroll" id="tableScroll">
+                    <table class="modern-table" id="salesTable">
                     <thead>
                         <tr>
                             <th class="col-id">ID</th>
@@ -350,7 +381,8 @@ function deleteMember($id_movimiento)
                     <tbody>
                         <?php include "getActivitiesForm.php"; ?>
                     </tbody>
-                </table>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -405,6 +437,10 @@ function deleteMember($id_movimiento)
                                     <?php } ?>
                                 </select>
                                 <label for="edit-centro-vida">Lugar del evento</label>
+                            </div>
+                            <div class="col-md-4 mb-3 form-floating d-none" id="edit-otro-lugar-container">
+                                <input type="text" class="form-control" id="edit-otro_lugar" name="otro_lugar" placeholder="Especifique el lugar">
+                                <label for="edit-otro_lugar">Otro lugar (especificar)</label>
                             </div>
                             <div class="col-md-3 mb-3 form-floating">
                                 <select class="form-select" id="edit-id_entregas" name="id_entregas" required>
@@ -466,6 +502,10 @@ function deleteMember($id_movimiento)
                         </div>
                         <div class="row">
                             <div class="col-md-4 mb-3 form-floating">
+                                <input type="text" class="form-control" id="edit-funcionario_responsable" name="funcionario_responsable" placeholder="Funcionario responsable">
+                                <label for="edit-funcionario_responsable">Funcionario Responsable</label>
+                            </div>
+                            <div class="col-md-4 mb-3 form-floating">
                                 <select name="tipo_actividad" id="edit-tipo_actividad" class="form-select">
                                     <option value="" selected>Seleccione...</option>
                                     <option value="Articulacion">Articulacion</option>
@@ -474,7 +514,7 @@ function deleteMember($id_movimiento)
                                 </select>
                                 <label for="edit-tipo_actividad">Tipo Actividad</label>
                             </div>
-                            <div class="col-md-8 mb-3 form-floating">
+                            <div class="col-md-4 mb-3 form-floating">
                                 <input type="text" class="form-control" id="edit-observacion_actividad" name="observacion_actividad" placeholder="Observación Actividad">
                                 <label for="edit-observacion_actividad">Observación Actividad</label>
                             </div>
@@ -547,6 +587,10 @@ function deleteMember($id_movimiento)
                                 </select>
                                 <label for="centro-vida">Lugar del evento</label>
                             </div>
+                            <div class="col-md-4 mb-3 form-floating d-none" id="otro-lugar-container">
+                                <input type="text" class="form-control" id="otro_lugar" name="otro_lugar" placeholder="Especifique el lugar">
+                                <label for="otro_lugar">Otro lugar (especificar)</label>
+                            </div>
 
                             <!-- Fila 5: Observación -->
                             <div class="row">
@@ -577,12 +621,7 @@ function deleteMember($id_movimiento)
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3 form-floating">
-                                    <select name="funcionario_responsable" id="funcionario_responsable" class="form-select">
-                                        <option value="" selected>Seleccione funcionario...</option>
-                                        <?php foreach ($result_usuarios as $usuario) { ?>
-                                            <option value="<?= $usuario['id']; ?>"><?= $usuario['nombre']; ?></option>
-                                        <?php } ?>
-                                    </select>
+                                    <input type="text" class="form-control" id="funcionario_responsable" name="funcionario_responsable" placeholder="Funcionario responsable">
                                     <label for="funcionario_responsable">Funcionario Responsable</label>
                                 </div>
                                 <div class="col-md-6 mb-3 form-floating">
@@ -703,6 +742,20 @@ function deleteMember($id_movimiento)
             $("#edit-cantidad_femenino").val(button.getAttribute("data-cantidad_femenino") || "");
             $("#edit-tipo_actividad").val(button.getAttribute("data-tipo_actividad") || "");
             $("#edit-observacion_actividad").val(button.getAttribute("data-observacion_actividad") || "");
+            $("#edit-funcionario_responsable").val(button.getAttribute("data-funcionario_responsable") || "");
+            
+            // Manejar el campo otro_lugar
+            const centroVida = button.getAttribute("data-centro_vida") || "";
+            const otroLugar = button.getAttribute("data-otro_lugar") || "";
+            
+            if (otroLugar) {
+                $("#edit-centro-vida").val(""); // Otro seleccionado
+                $("#edit-otro_lugar").val(otroLugar);
+                $("#edit-otro-lugar-container").removeClass("d-none");
+            } else {
+                $("#edit-centro-vida").val(centroVida);
+                $("#edit-otro-lugar-container").addClass("d-none");
+            }
 
             // Cargar actividades y acciones por AJAX
             if (idMeta) {
@@ -774,6 +827,30 @@ function deleteMember($id_movimiento)
         });
     });
     $(document).ready(function() {
+        // Manejar cambio en lugar del evento (modal agregar)
+        $('#centro-vida').on('change', function() {
+            const selectedText = $(this).find('option:selected').text().toUpperCase();
+            if (selectedText.includes('OTRO')) {
+                $('#otro-lugar-container').removeClass('d-none');
+                $('#otro_lugar').prop('required', true);
+            } else {
+                $('#otro-lugar-container').addClass('d-none');
+                $('#otro_lugar').prop('required', false).val('');
+            }
+        });
+
+        // Manejar cambio en lugar del evento (modal edición)
+        $('#edit-centro-vida').on('change', function() {
+            const selectedText = $(this).find('option:selected').text().toUpperCase();
+            if (selectedText.includes('OTRO')) {
+                $('#edit-otro-lugar-container').removeClass('d-none');
+                $('#edit-otro_lugar').prop('required', true);
+            } else {
+                $('#edit-otro-lugar-container').addClass('d-none');
+                $('#edit-otro_lugar').prop('required', false).val('');
+            }
+        });
+
         function buscarPersona() {
             const cedula = $('#cedula_form').val().trim();
             if (cedula === '') return;
@@ -1267,6 +1344,41 @@ function deleteMember($id_movimiento)
     $(document).ready(function() {
         initDataTable();
     });
+
+    // Inicializar sincronización de scroll superior para la tabla
+    (function() {
+        function setupTopScroller() {
+            const topScroller = document.getElementById('tableScrollTop');
+            const tableScroller = document.getElementById('tableScroll');
+            if (!topScroller || !tableScroller) return;
+
+            // crear inner si no existe
+            let inner = topScroller.querySelector('.inner');
+            const table = tableScroller.querySelector('.modern-table');
+            if (!inner) {
+                inner = document.createElement('div');
+                inner.className = 'inner';
+                topScroller.appendChild(inner);
+            }
+            function sync() {
+                if (!table) return;
+                inner.style.width = table.scrollWidth + 'px';
+                // Mostrar top scroller solo si hay overflow
+                topScroller.style.display = (table.scrollWidth > tableScroller.clientWidth) ? 'block' : 'none';
+            }
+            topScroller.addEventListener('scroll', function() { tableScroller.scrollLeft = topScroller.scrollLeft; });
+            tableScroller.addEventListener('scroll', function() { topScroller.scrollLeft = tableScroller.scrollLeft; });
+            window.addEventListener('resize', sync);
+            // ejecutar después de un breve timeout para que datatables haya renderizado
+            setTimeout(sync, 100);
+            // re-ejecutar cuando DataTables dibuje
+            $(document).on('draw.dt init.dt column-visibility.dt column-reorder.dt', function() { setTimeout(sync, 50); });
+        }
+        // ejecutar al cargar
+        document.addEventListener('DOMContentLoaded', setupTopScroller);
+        // también al finalizar inicialización de jQuery
+        $(window).on('load', setupTopScroller);
+    })();
 </script>
 
 </html>

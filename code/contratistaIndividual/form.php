@@ -1,6 +1,7 @@
 
 <?php
 session_start();
+require_once('../filtros_grupos.php');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -13,7 +14,7 @@ session_start();
     <link rel="stylesheet" type="text/css" href="../../css/styles.css">
     <link rel="stylesheet" type="text/css" href="../../css/estilos2024.css">
     <link rel="stylesheet" type="text/css" href="../../css/modern-table-styles.css">
-    <link rel="stylesheet" href="styleSell.css">
+    <link rel="stylesheet" href="../personMovement/styleSell.css">
     <!-- Bootstrap CSS -->
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -179,11 +180,16 @@ if (!$result_condiciones) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
-$grupos = "SELECT * FROM grupos";
-$result_grupos = mysqli_query($mysqli, $grupos);
-if (!$result_grupos) {
+// Aplicar filtro de grupos según tipo de usuario
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
+$grupos = "SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC";
+$result_grupos_query = mysqli_query($mysqli, $grupos);
+if (!$result_grupos_query) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
+// Convertir resultado a array para poder reutilizarlo en múltiples loops
+$result_grupos = mysqli_fetch_all($result_grupos_query, MYSQLI_ASSOC);
 
 $metas = "SELECT * FROM metas ORDER BY descripcion_meta ASC";
 $result_metas = mysqli_query($mysqli, $metas);
@@ -328,13 +334,13 @@ function deleteMember($id_movimiento)
                             </div>
 
                             <div class="col-md-6 mb-3 form-floating mt-1">
-                                <select class="form-select" id="condicion" name="id_condicion" required>
+                                <select class="form-select" id="condicion_modal" name="id_condicion" required>
                                     <option value="" selected>Seleccione...</option>
                                     <?php foreach ($result_condiciones as $condicion) { ?>
                                         <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
                                     <?php } ?>
                                 </select>
-                                <label class="" for="condicion">Condición</label>
+                                <label class="" for="condicion_modal">Condición</label>
                             </div>
                         </div>
                         <!-- Fila 2: Meta, Actividad, Acción -->
@@ -678,6 +684,11 @@ function deleteMember($id_movimiento)
                 },
                 dataType: 'json',
                 success: function(response) {
+                    if (!response) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Respuesta inválida del servidor.' });
+                        return;
+                    }
+
                     if (response.encontrado) {
                         Swal.fire({
                             icon: 'success',
@@ -685,6 +696,94 @@ function deleteMember($id_movimiento)
                             text: 'Nombre: ' + response.nombres + ' ' + response.apellidos,
                             confirmButtonText: 'OK'
                         });
+
+                        // Si el backend devuelve id_meta, id_actividad, id_accion, id_politica_publica
+                        const idMeta = response.id_meta || '';
+                        const idActividad = response.id_actividad || '';
+                        const idAccion = response.id_accion || '';
+                        const idPolitica = response.id_politica_publica || '';
+                        const idCondicion = response.id_condicion || '';
+                        const departamento = response.departamento_procedencia || '';
+
+                        // Aplicar condicion y departamento inmediatamente si vienen
+                        if (idCondicion) {
+                            // Setear la condición en el modal (no en el filtro)
+                            $('#condicion_modal').val(idCondicion).trigger('change');
+                        }
+                        if (departamento) {
+                            $('#departamento_procedencia').val(departamento);
+                        }
+
+                        // Rellenar selects encadenando llamadas
+                        if (idMeta) {
+                            // Cargar actividades para la meta
+                            $.ajax({
+                                url: '../personMovement/getActividades.php',
+                                type: 'POST',
+                                data: { id_meta: idMeta },
+                                success: function(htmlActividades) {
+                                    $('#meta').val(idMeta);
+                                    $('#actividad').empty().append('<option value="">Seleccione Actividad...</option>').append(htmlActividades).prop('disabled', false);
+
+                                    if (idActividad) {
+                                        $('#actividad').val(idActividad);
+
+                                        // Cargar acciones para la actividad
+                                        $.ajax({
+                                            url: '../personMovement/getAcciones.php',
+                                            type: 'POST',
+                                            data: { id_actividad: idActividad },
+                                            success: function(htmlAcciones) {
+                                                $('#accion').empty().append('<option value="">Seleccione Acción...</option>').append(htmlAcciones).prop('disabled', false);
+
+                                                if (idAccion) {
+                                                    $('#accion').val(idAccion);
+
+                                                    // Cargar políticas públicas para la acción (devuelve JSON)
+                                                    $.ajax({
+                                                        url: '../personMovement/getPoliticaPublica.php',
+                                                        type: 'POST',
+                                                        data: { id_accion: idAccion },
+                                                        dataType: 'json',
+                                                        success: function(respPoliticas) {
+                                                            $('#politica-publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
+                                                            if (respPoliticas && respPoliticas.politicas && respPoliticas.politicas.length > 0) {
+                                                                respPoliticas.politicas.forEach(function(p) {
+                                                                    $('#politica-publica').append('<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>');
+                                                                });
+                                                                if (idPolitica) $('#politica-publica').val(idPolitica);
+                                                            } else {
+                                                                $('#politica-publica').append('<option value="">No asignada</option>');
+                                                            }
+                                                        },
+                                                        error: function() {
+                                                            $('#politica-publica').empty().append('<option value="">Error al consultar</option>');
+                                                        }
+                                                    });
+                                                }
+                                            },
+                                            error: function() {
+                                                Swal.fire({ icon: 'error', title: 'Error', text: 'Error al cargar las acciones' });
+                                            }
+                                        });
+                                    } else {
+                                        // Si no hay actividad sugerida, limpiar acciones y politica
+                                        $('#accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+                                        $('#politica-publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
+                                    }
+                                },
+                                error: function() {
+                                    Swal.fire({ icon: 'error', title: 'Error', text: 'Error al cargar las actividades' });
+                                }
+                            });
+                        } else {
+                            // No vino meta sugerida: limpiar dependientes
+                            $('#meta').val('');
+                            $('#actividad').empty().append('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
+                            $('#accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+                            $('#politica-publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
+                        }
+
                     } else {
                         Swal.fire({
                             icon: 'error',
@@ -692,6 +791,11 @@ function deleteMember($id_movimiento)
                             text: 'No se encontró ninguna persona con esa cédula.',
                             confirmButtonText: 'OK'
                         });
+                        // Limpiar campos dependientes
+                        $('#meta').val('');
+                        $('#actividad').empty().append('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
+                        $('#accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+                        $('#politica-publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
                     }
                 },
                 error: function() {
@@ -717,8 +821,8 @@ function deleteMember($id_movimiento)
             buscarPersona();
         });
 
-        // Controlar habilitación del campo grupo según la condición
-        $('#condicion').on('change', function() {
+        // Controlar habilitación del campo grupo según la condición (modal de agregar)
+        $('#condicion_modal').on('change', function() {
             const selectedOption = $(this).find('option:selected');
             const condicionTexto = selectedOption.text().toUpperCase();
 
@@ -727,15 +831,15 @@ function deleteMember($id_movimiento)
                 $('#grupo').parent().removeClass('d-none');
                 $('#grupo').parent().find('label').text('Centro Vida Traslado');
             } else {
-                $('#grupo').prop('disabled', true).prop('required', false);
+                $('#grupo').prop('disabled', true).prop('required',false);
                 $('#grupo').val(''); // Limpiar selección
                 $('#grupo').parent().addClass('d-none');
                 $('#limite-info').remove(); // Remover info del límite
             }
         });
 
-        // Inicializar estado del campo grupo
-        $('#condicion').trigger('change');
+        // Inicializar estado del campo grupo (modal)
+        $('#condicion_modal').trigger('change');
 
         // Manejar selección de Meta para cargar Actividades
         $('#meta').on('change', function() {

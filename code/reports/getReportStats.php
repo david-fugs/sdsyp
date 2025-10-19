@@ -1,4 +1,6 @@
 <?php
+session_start();
+require_once('../filtros_grupos.php');
 include("../../conexion.php");
 
 header('Content-Type: application/json');
@@ -12,13 +14,19 @@ if (!isset($_GET['year']) || empty($_GET['year'])) {
 $year = intval($_GET['year']);
 
 try {
+    // Obtener tipo de usuario y aplicar filtro de grupos
+    $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+    $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
+    
     // Estadísticas generales del año
     $stats = [];
 
     // 1. Personas con movimientos en el año seleccionado
     $query_personas_nuevas = "SELECT COUNT(DISTINCT mp.cedula_persona) as total 
                               FROM movimiento_persona mp 
-                              WHERE YEAR(mp.fecha_movimiento) = ?";
+                              JOIN personas p ON mp.cedula_persona = p.cedula_persona
+                              WHERE YEAR(mp.fecha_movimiento) = ? 
+                              AND p.estado_persona = 1 $where_grupos_filtro";
     $stmt = $mysqli->prepare($query_personas_nuevas);
     $stmt->bind_param("i", $year);
     $stmt->execute();
@@ -27,7 +35,7 @@ try {
 
     // 2. Total de personas activas (sin movimientos de salida)
     $query_personas_activas = "SELECT COUNT(*) as total FROM personas p 
-                              WHERE p.estado_persona = 1";
+                              WHERE p.estado_persona = 1 $where_grupos_filtro";
     $stmt = $mysqli->prepare($query_personas_activas);
     $stmt->execute();
     $result = $stmt->get_result();

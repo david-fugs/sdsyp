@@ -1,5 +1,12 @@
 <?php
+session_start();
 include("../../conexion.php");
+require_once('../filtros_grupos.php');
+
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+
+// Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
+$where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
 
 // Construir la consulta base
 $query = "
@@ -49,6 +56,15 @@ if (isset($_GET['actividad']) && !empty($_GET['actividad'])) {
 
 if (!empty($where_conditions)) {
     $query .= " WHERE " . implode(" AND ", $where_conditions);
+    // Agregar filtro de grupos si existe
+    if (!empty($where_grupos_filtro)) {
+        $query .= $where_grupos_filtro;
+    }
+} else {
+    // Si no hay otras condiciones pero sí filtro de grupos
+    if (!empty($where_grupos_filtro)) {
+        $query .= " WHERE 1=1 " . $where_grupos_filtro;
+    }
 }
 
 $query .= " GROUP BY rcv.id_registro_centro_vida ORDER BY rcv.fecha_registro DESC";

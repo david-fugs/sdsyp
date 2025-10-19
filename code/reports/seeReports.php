@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once('../filtros_grupos.php');
 include("../../conexion.php");
 
 // Verificar sesión
@@ -738,8 +739,8 @@ $endYear = $currentYear + 1;
     <div class="container mt-4">
         <!-- Selector de año y controles -->
         <div class="controls-section">
-            <div class="row align-items-center">
-                <div class="col-md-6">
+            <div class="row align-items-center mb-3">
+                <div class="col-md-4">
                     <div class="year-selector">
                         <label class="form-label fw-bold">
                             <i class="bi bi-calendar3"></i> Seleccionar Año:
@@ -753,11 +754,64 @@ $endYear = $currentYear + 1;
                         </select>
                     </div>
                 </div>
-                <div class="col-md-6 text-end">
-                    <div class="export-buttons">
+                <div class="col-md-4">
+                    <div class="year-selector">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-building"></i> Filtrar por Grupo:
+                        </label>
+                        <select id="filtroGrupo" class="modern-select">
+                            <option value="">Todos los grupos</option>
+                            <?php
+                            // Obtener grupos filtrados según tipo de usuario
+                            $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+                            $where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
+                            $query_grupos = "SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC";
+                            $result_grupos = mysqli_query($mysqli, $query_grupos);
+                            if ($result_grupos) {
+                                while ($grupo = mysqli_fetch_assoc($result_grupos)) {
+                                    echo '<option value="' . $grupo['id_grupo'] . '">' . htmlspecialchars($grupo['descripcion_grupo']) . '</option>';
+                                }
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <label class="form-label fw-bold" style="visibility: hidden;">Acciones</label>
+                    <div class="export-buttons d-flex flex-column gap-2">
                         <button type="button" id="btnExportExcel" class="export-btn">
-                            <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+                            <i class="bi bi-file-earmark-excel"></i> Exportar Informe Anual
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nuevos botones de exportación -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 12px;">
+                        <div class="card-body p-3">
+                            <h5 class="text-white mb-3"><i class="bi bi-download"></i> Exportar Actividades</h5>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <!-- Formulario exportar Contratista -->
+                                <form id="exportContratistaForm" action="exportContratistaFromReports.php" method="get" style="display:inline;">
+                                    <input type="hidden" name="filtro_anio" id="export_contratista_anio">
+                                    <input type="hidden" name="filtro_grupo" id="export_contratista_grupo">
+                                    <button type="submit" class="btn btn-light btn-sm">
+                                        <i class="bi bi-file-earmark-excel-fill"></i> Actividades CONTRATISTA
+                                    </button>
+                                </form>
+
+                                <!-- Formulario exportar Centro Vida Masivo -->
+                                <form id="exportCentroVidaForm" action="exportCentroVidaFromReports.php" method="get" style="display:inline;">
+                                    <input type="hidden" name="filtro_anio" id="export_cv_anio">
+                                    <input type="hidden" name="filtro_grupo" id="export_cv_grupo">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="bi bi-file-earmark-excel-fill"></i> Actividades CENTRO VIDA MASIVO
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -832,10 +886,32 @@ $endYear = $currentYear + 1;
             // Cargar datos iniciales
             loadReportData(currentYear);
 
+            // Sincronizar filtros con formularios de exportación
+            function updateExportForms() {
+                const anio = $('#yearSelect').val();
+                const grupo = $('#filtroGrupo').val();
+                
+                // Actualizar formulario Contratista
+                $('#export_contratista_anio').val(anio);
+                $('#export_contratista_grupo').val(grupo);
+                
+                // Actualizar formulario Centro Vida
+                $('#export_cv_anio').val(anio);
+                $('#export_cv_grupo').val(grupo);
+            }
+
+            // Inicializar valores de formularios
+            updateExportForms();
+
             // Event listeners
             $('#yearSelect').on('change', function() {
                 currentYear = $(this).val();
                 loadReportData(currentYear);
+                updateExportForms();
+            });
+
+            $('#filtroGrupo').on('change', function() {
+                updateExportForms();
             });
 
             $('#btnExportExcel').on('click', exportToExcel);

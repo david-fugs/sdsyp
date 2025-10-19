@@ -1,13 +1,24 @@
 <?php
 session_start();
+require_once('../filtros_grupos.php');
 include("../../conexion.php");
+
 $programas = "SELECT * FROM programas ";
 $result_programas = mysqli_query($mysqli, $programas);
 if (!$result_programas) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
-$grupos = "SELECT * FROM grupos ";
+// Aplicar filtro de grupos según tipo de usuario
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
+$grupos = "SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC";
+$result_grupos_query = mysqli_query($mysqli, $grupos);
+if (!$result_grupos_query) {
+    die("Error en la consulta: " . mysqli_error($mysqli));
+}
+// Convertir resultado a array para poder reutilizarlo en múltiples loops
+$result_grupos = mysqli_fetch_all($result_grupos_query, MYSQLI_ASSOC);
 $result_grupos = mysqli_query($mysqli, $grupos);
 if (!$result_grupos) {
     die("Error en la consulta: " . mysqli_error($mysqli));
@@ -1465,7 +1476,7 @@ function deleteMember($cedula_persona)
                 "ordering": true,
                 "info": true,
                 "paging": true,
-                "pageLength": 15,
+                "pageLength": 25,
                 "language": {
                     "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
                     "infoEmpty": "Mostrando 0 a 0 de 0 registros",
@@ -1492,19 +1503,55 @@ function deleteMember($cedula_persona)
 
         // Función para actualizar solo las filas de la tabla y reinicializar correctamente el DataTable
         function updateTableRows(data) {
-            if ($.fn.DataTable.isDataTable('#salesTable')) {
-                // Limpiar el tbody antes de destruir para evitar errores de parentNode nulo
+            try {
+                // Verificar si DataTable está inicializado
+                if ($.fn.DataTable.isDataTable('#salesTable')) {
+                    // Obtener la instancia de DataTable
+                    const table = $('#salesTable').DataTable();
+                    // Destruir la instancia de forma segura
+                    table.clear();
+                    table.destroy();
+                    // Esperar un momento para que se limpie completamente
+                    $('#salesTable').removeClass('dataTable');
+                }
+                
+                // Limpiar completamente el tbody
                 $('#salesTable tbody').empty();
-                $('#salesTable').DataTable().destroy();
+                
+                // Agregar los nuevos datos
+                $('#salesTable tbody').html(data);
+                
+                // Reinicializar DataTable
+                dataTable = null;
+                
+                // Usar setTimeout para asegurar que el DOM esté completamente actualizado
+                setTimeout(function() {
+                    initializeDataTable();
+                }, 10);
+                
+            } catch (error) {
+                console.error('Error al actualizar tabla:', error);
+                // Si hay un error, recargar la página como fallback
+                location.reload();
             }
-            $('#salesTable tbody').html(data);
-            dataTable = null;
-            initializeDataTable();
         }
 
         // Cargar datos filtrados sin recargar la tabla completa
         function loadTableData(params = {}) {
             const tbody = document.getElementById('table-body');
+            
+            // Destruir DataTable antes de mostrar loading
+            if ($.fn.DataTable.isDataTable('#salesTable')) {
+                try {
+                    const table = $('#salesTable').DataTable();
+                    table.clear();
+                    table.destroy();
+                    $('#salesTable').removeClass('dataTable');
+                } catch (e) {
+                    console.warn('Error al destruir DataTable:', e);
+                }
+            }
+            
             tbody.innerHTML = '<tr><td colspan="8" class="text-center loading">Cargando datos...</td></tr>';
 
             // Construir parámetros de consulta
@@ -1516,13 +1563,25 @@ function deleteMember($cedula_persona)
 
             // Realizar petición AJAX
             fetch(`getPersonsAjax.php?${queryParams.toString()}`)
-                .then(response => response.text())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la respuesta del servidor');
+                    }
+                    return response.text();
+                })
                 .then(data => {
-                    updateTableRows(data);
+                    // Actualizar contenido del tbody
+                    tbody.innerHTML = data;
+                    
+                    // Reinicializar DataTable después de actualizar el contenido
+                    dataTable = null;
+                    setTimeout(function() {
+                        initializeDataTable();
+                    }, 10);
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error al cargar los datos</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Error al cargar los datos. Por favor, recarga la página.</td></tr>';
                 });
         }
 

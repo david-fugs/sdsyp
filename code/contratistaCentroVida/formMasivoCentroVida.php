@@ -1,12 +1,17 @@
 <?php
 session_start();
+require_once('../filtros_grupos.php');
 include("../../conexion.php");
+
+// Aplicar filtro de grupos según tipo de usuario
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
 
 // Cargar listas necesarias
 $metas = $mysqli->query("SELECT * FROM metas ORDER BY descripcion_meta ASC");
 $actividades_cv = $mysqli->query("SELECT id_actividad_centro_vida, descripcion_actividad FROM actividad_centro_vida ORDER BY descripcion_actividad ASC");
 $usuarios = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario = 3 ORDER BY nombre ASC");
-$grupos = $mysqli->query("SELECT * FROM grupos ORDER BY descripcion_grupo ASC");
+$grupos = $mysqli->query("SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC");
 $comunas = $mysqli->query("SELECT * FROM comunas ORDER BY nombre_com ASC");
 
 // Filtros
@@ -42,6 +47,10 @@ if ($filtro_tipo_registro) {
     // filtrar por tipo_registro en la tabla masiva
     $where .= " AND mcv.tipo_registro = '" . $mysqli->real_escape_string($filtro_tipo_registro) . "'";
 }
+
+// Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
+$where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
+$where .= $where_grupos_filtro;
 
 // Consulta principal (nueva tabla masiva_centro_vida). Alias de id para compatibilidad visual
 $query = "SELECT 

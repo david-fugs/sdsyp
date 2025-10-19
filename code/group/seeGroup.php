@@ -204,6 +204,7 @@ function deleteMember($grupo)
                             <th class="col-id">ID</th>
                             <th>Descripción del Grupo</th>
                             <th>Límite de Personas</th>
+                            <th>Fecha Contratación</th>
                             <th class="col-actions">Acciones</th>
                         </tr>
                     </thead>
@@ -235,6 +236,10 @@ function deleteMember($grupo)
                         <div class="mb-3">
                             <label for="limite_personas" class="form-label">Límite de Personas</label>
                             <input type="number" class="form-control" id="limite_personas" name="limite_personas" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fecha_contratacion" class="form-label">Fecha de Contratación</label>
+                            <input type="date" class="form-control" id="fecha_contratacion" name="fecha_contratacion" required>
                         </div>
                     </div>
 
@@ -272,6 +277,38 @@ function deleteMember($grupo)
                             <label for="edit-limite" class="form-label">Límite de Personas</label>
                             <input type="number" class="form-control" id="edit-limite" name="limite_personas" min="1" required>
                         </div>
+                        
+                        <!-- Sección de Historial de Fechas de Contratación -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Historial de Fechas de Contratación</label>
+                            <div id="historial-fechas-container" class="border rounded p-3 mb-3" style="max-height: 300px; overflow-y: auto;">
+                                <!-- Se llenará dinámicamente con AJAX -->
+                                <div class="text-center text-muted">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                    Cargando historial...
+                                </div>
+                            </div>
+                            
+                            <!-- Formulario para agregar nueva fecha -->
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3"><i class="bi bi-plus-circle"></i> Agregar Nueva Fecha</h6>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <input type="date" class="form-control" id="nueva-fecha-contratacion">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-success w-100" id="btn-agregar-fecha">
+                                                <i class="bi bi-plus"></i> Agregar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <input type="hidden" name="id_grupo" id="edit-id_grupo">
                     </div>
 
@@ -323,6 +360,11 @@ function deleteMember($grupo)
                     },
                     {
                         targets: [3],
+                        width: '150px',
+                        className: 'text-center'
+                    },
+                    {
+                        targets: [4],
                         width: '120px',
                         className: 'col-actions',
                         orderable: false
@@ -344,6 +386,215 @@ function deleteMember($grupo)
                 modal.find('#edit-descripcion').val(button.data('descripcion_grupo'));
                 modal.find('#edit-limite').val(button.data('limite_personas'));
                 modal.find('#edit-id_grupo').val(button.data('id_grupo'));
+                
+                // Cargar historial de fechas
+                cargarHistorialFechas(button.data('id_grupo'));
+            });
+            
+            // Función para cargar historial de fechas
+            function cargarHistorialFechas(idGrupo) {
+                $.ajax({
+                    url: 'getHistorialFechas.php',
+                    type: 'GET',
+                    data: { id_grupo: idGrupo },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            mostrarHistorialFechas(response.data, idGrupo);
+                        } else {
+                            $('#historial-fechas-container').html('<p class="text-danger">Error al cargar el historial</p>');
+                        }
+                    },
+                    error: function() {
+                        $('#historial-fechas-container').html('<p class="text-danger">Error al cargar el historial</p>');
+                    }
+                });
+            }
+            
+            // Función para mostrar historial de fechas
+            function mostrarHistorialFechas(fechas, idGrupo) {
+                var html = '';
+                
+                if (fechas.length === 0) {
+                    html = '<p class="text-muted text-center">No hay fechas registradas</p>';
+                } else {
+                    html = '<div class="list-group">';
+                    fechas.forEach(function(fecha) {
+                        var fechaFormato = new Date(fecha.fecha_contratacion + 'T00:00:00').toLocaleDateString('es-CO', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        
+                        html += '<div class="list-group-item d-flex justify-content-between align-items-center">';
+                        html += '<div>';
+                        html += '<i class="bi bi-calendar-check text-primary me-2"></i>';
+                        html += '<strong>' + fechaFormato + '</strong>';
+                        html += '<small class="text-muted ms-2">(' + fecha.created_at + ')</small>';
+                        html += '</div>';
+                        html += '<div>';
+                        html += '<button type="button" class="btn btn-sm btn-outline-primary me-1 btn-editar-fecha" data-id="' + fecha.id_fecha_contratacion + '" data-fecha="' + fecha.fecha_contratacion + '">';
+                        html += '<i class="bi bi-pencil"></i>';
+                        html += '</button>';
+                        html += '<button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-fecha" data-id="' + fecha.id_fecha_contratacion + '">';
+                        html += '<i class="bi bi-trash"></i>';
+                        html += '</button>';
+                        html += '</div>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                }
+                
+                $('#historial-fechas-container').html(html);
+            }
+            
+            // Agregar nueva fecha
+            $('#btn-agregar-fecha').on('click', function() {
+                var idGrupo = $('#edit-id_grupo').val();
+                var nuevaFecha = $('#nueva-fecha-contratacion').val();
+                
+                if (!nuevaFecha) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Atención',
+                        text: 'Debe seleccionar una fecha',
+                        confirmButtonColor: '#007bff'
+                    });
+                    return;
+                }
+                
+                $.ajax({
+                    url: 'addFechaContratacion.php',
+                    type: 'POST',
+                    data: {
+                        id_grupo: idGrupo,
+                        fecha_contratacion: nuevaFecha
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Éxito',
+                                text: 'Fecha agregada correctamente',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            $('#nueva-fecha-contratacion').val('');
+                            cargarHistorialFechas(idGrupo);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message || 'Error al agregar la fecha',
+                                confirmButtonColor: '#007bff'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al procesar la solicitud',
+                            confirmButtonColor: '#007bff'
+                        });
+                    }
+                });
+            });
+            
+            // Editar fecha (delegación de eventos)
+            $(document).on('click', '.btn-editar-fecha', function() {
+                var idFecha = $(this).data('id');
+                var fechaActual = $(this).data('fecha');
+                var idGrupo = $('#edit-id_grupo').val();
+                
+                Swal.fire({
+                    title: 'Editar Fecha',
+                    html: '<input type="date" id="swal-fecha-edit" class="swal2-input" value="' + fechaActual + '">',
+                    showCancelButton: true,
+                    confirmButtonText: 'Guardar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#007bff',
+                    preConfirm: () => {
+                        return document.getElementById('swal-fecha-edit').value;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed && result.value) {
+                        $.ajax({
+                            url: 'editFechaContratacion.php',
+                            type: 'POST',
+                            data: {
+                                id_fecha: idFecha,
+                                fecha_contratacion: result.value
+                            },
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Éxito',
+                                        text: 'Fecha actualizada correctamente',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    cargarHistorialFechas(idGrupo);
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: response.message || 'Error al actualizar la fecha',
+                                        confirmButtonColor: '#007bff'
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Eliminar fecha (delegación de eventos)
+            $(document).on('click', '.btn-eliminar-fecha', function() {
+                var idFecha = $(this).data('id');
+                var idGrupo = $('#edit-id_grupo').val();
+                
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "Esta acción eliminará la fecha de contratación",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: 'deleteFechaContratacion.php',
+                            type: 'POST',
+                            data: { id_fecha: idFecha },
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Eliminado',
+                                        text: 'Fecha eliminada correctamente',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    cargarHistorialFechas(idGrupo);
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: response.message || 'Error al eliminar la fecha',
+                                        confirmButtonColor: '#007bff'
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
             });
         });
 

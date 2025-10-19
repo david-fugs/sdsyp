@@ -18,6 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tipo_actividad = $_POST['tipo_actividad'];
     $observacion_actividad = $_POST['observacion_actividad'];
     $id_entregas = $_POST['id_entregas'];
+    $funcionario_responsable = $_POST['funcionario_responsable'];
+    $otro_lugar = isset($_POST['otro_lugar']) ? $_POST['otro_lugar'] : '';
 
     $query = "UPDATE registro_actividades SET 
         id_meta = '$id_meta',
@@ -34,7 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         cantidad_femenino = '$cantidad_femenino',
         tipo_actividad = '$tipo_actividad',
         observacion_actividad = '$observacion_actividad',
-        id_entregas = '$id_entregas'
+        id_entregas = '$id_entregas',
+        funcionario_responsable = '$funcionario_responsable',
+        otro_lugar = '$otro_lugar'
         WHERE id_registro = '$id_registro'";
 
     if (mysqli_query($mysqli, $query)) {

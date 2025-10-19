@@ -1,5 +1,13 @@
 <?php
+session_start();
 include("../../conexion.php");
+require_once('../filtros_grupos.php');
+
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
+
+// Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
+$where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
 
 // Construir la cláusula WHERE base
 $where = "WHERE p.estado_persona = 1";
@@ -21,6 +29,15 @@ if (!empty($_GET['programa'])) {
     $programa = $mysqli->real_escape_string($_GET['programa']);
     $where .= " AND pp.id_programa = '$programa'";
 }
+
+// Filtrar por id_grupo si el tipo_usuario en la sesión es diferente de 1, 3, 4 y 5
+// (No aplicar este filtro a ADMIN, CONTRATISTA ni a los nuevos TÉCNICOS)
+if ($tipo_usuario != 1 && $id_grupo_session && !in_array($tipo_usuario, [3, 4, 5])) {
+    $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
+}
+
+// Aplicar filtro adicional para usuarios técnicos (tipos 4 y 5)
+$where .= $where_grupos_filtro;
 
 // Preparar filtro por estado (se aplicará después de la consulta principal)
 $filtro_estado = '';

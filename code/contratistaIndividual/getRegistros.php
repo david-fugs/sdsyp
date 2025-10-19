@@ -1,7 +1,13 @@
 <?php
+session_start();
 include("../../conexion.php");
+require_once('../filtros_grupos.php');
+
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
+
+// Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
+$where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
 
 $where = "WHERE p.estado_persona = 1";
 
@@ -25,6 +31,10 @@ if (!empty($_GET['condicion'])) {
 if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3) {
     $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
+
+// Aplicar filtro adicional para usuarios técnicos (tipos 4 y 5)
+$where .= $where_grupos_filtro;
+
 // Consulta SQL para obtener los datos
 $query = " SELECT ri.id_registro_individual,c.id_condicion,p.cedula_persona,p.nombres_persona,p.apellidos_persona,c.descripcion_condicion, 
            ri.fecha_registro,ri.observacion_registro,ri.id_centro_vida_traslado,g.descripcion_grupo as centro_vida_traslado,
@@ -97,10 +107,11 @@ if ($result->num_rows > 0) {
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='10' class='text-center text-muted'>
-            <i class='bi bi-search'></i><br>
-            No se encontraron registros que coincidan con los filtros aplicados.
-          </td></tr>";
+        // El encabezado de la tabla tiene 14 columnas, mantener colspan consistente para DataTables
+        echo "<tr><td colspan='14' class='text-center text-muted'>
+                        <i class='bi bi-search'></i><br>
+                        No se encontraron registros que coincidan con los filtros aplicados.
+                    </td></tr>";
 }
 
 

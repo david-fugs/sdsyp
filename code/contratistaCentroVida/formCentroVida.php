@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once('../filtros_grupos.php');
 ?>
 <!DOCTYPE html>
 <html lang="es">

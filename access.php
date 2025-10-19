@@ -585,7 +585,7 @@ $mysqli->close();
       <div class="menu_content">
         <ul class="menu_items">
           <div class="menu_title menu_dahsboard"></div>
-          <?php if ($tipo_usuario == 2) { ?>
+          <?php if ($tipo_usuario == 2 || $tipo_usuario == 4 || $tipo_usuario == 5) { ?>
             <li class="item">
               <div href="#" class="nav_link submenu_item">
                 <span class="navlink_icon">
@@ -595,8 +595,10 @@ $mysqli->close();
                 <i class="bx bx-chevron-right arrow-left"></i>
               </div>
               <ul class="menu_items submenu">
+                <?php if ($tipo_usuario != 4 && $tipo_usuario != 5) : ?>
                 <a href="code/contratista/seeActivities.php" class="nav_link sublink">Agregar Actividades contratista</a>
                 <a href="code/contratistaCentroVida/seeActivitiesCentroVida.php" class="nav_link sublink">Actividades Centro Vida</a>
+                <?php endif; ?>
                 <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
                 <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades Masivas</a>
                 <a href="code/contratistaIndividual/form.php" class="nav_link sublink">Registro Actividades Individuales</a>

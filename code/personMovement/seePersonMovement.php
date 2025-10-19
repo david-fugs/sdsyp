@@ -1,6 +1,7 @@
 
 <?php
 session_start();
+require_once('../filtros_grupos.php');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -147,11 +148,16 @@ if (!$result_condiciones) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
-$grupos = "SELECT * FROM grupos";
-$result_grupos = mysqli_query($mysqli, $grupos);
-if (!$result_grupos) {
+// Aplicar filtro de grupos según tipo de usuario
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
+$grupos = "SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC";
+$result_grupos_query = mysqli_query($mysqli, $grupos);
+if (!$result_grupos_query) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
+// Convertir resultado a array para poder reutilizarlo en múltiples loops
+$result_grupos = mysqli_fetch_all($result_grupos_query, MYSQLI_ASSOC);
 
 $metas = "SELECT * FROM metas ORDER BY descripcion_meta ASC";
 $result_metas = mysqli_query($mysqli, $metas);

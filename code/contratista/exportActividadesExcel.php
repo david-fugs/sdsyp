@@ -1,4 +1,7 @@
 <?php
+// Iniciar sesión para obtener tipo_usuario
+session_start();
+
 // Eliminar cualquier salida previa
 if (ob_get_length()) {
     header('Content-Type: text/plain; charset=utf-8');
@@ -6,6 +9,7 @@ if (ob_get_length()) {
     exit;
 }
 
+require_once '../filtros_grupos.php';
 require_once '../../conexion.php';
 if (isset($mysqli)) {
     $mysqli->set_charset('utf8mb4');
@@ -25,6 +29,11 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
 $filtro_mes = isset($_GET['filtro_mes']) ? intval($_GET['filtro_mes']) : '';
 $filtro_funcionario = isset($_GET['filtro_funcionario']) ? intval($_GET['filtro_funcionario']) : '';
+
+// Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
+
 $where = '';
 if ($filtro_anio) {
     $where .= " AND YEAR(ra.fecha_atencion) = $filtro_anio ";
@@ -38,7 +47,7 @@ if ($filtro_funcionario) {
 
 
 $query = "SELECT ra.id_registro, m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica,
-       g.descripcion_grupo AS centro_vida, ra.fecha_atencion, ra.nombre_lider, ra.telefono_contacto, c.nombre_com AS nombre_comuna,
+       g.descripcion_grupo AS centro_vida, ra.otro_lugar, ra.fecha_atencion, ra.nombre_lider, ra.telefono_contacto, c.nombre_com AS nombre_comuna,
        ra.medio_verificacion, ra.cantidad_masculino, ra.cantidad_femenino, ra.tipo_actividad, ra.observacion_actividad,
        ra.id_usuario, u1.nombre AS digitado_por, ra.funcionario_responsable, u2.nombre AS funcionario_responsable_nombre
 FROM registro_actividades AS ra
@@ -49,8 +58,8 @@ LEFT JOIN politicas_publicas pp ON ra.politica_publica = pp.id_politica
 LEFT JOIN grupos g ON ra.id_centro_vida = g.id_grupo
 LEFT JOIN comunas c ON ra.id_comuna = c.id_com
 LEFT JOIN usuarios u1 ON ra.id_usuario = u1.id
-LEFT JOIN usuarios u2 ON ra.funcionario_responsable = u2.id
-WHERE 1 $where
+LEFT JOIN usuarios u2 ON CAST(ra.funcionario_responsable AS UNSIGNED) = u2.id AND ra.funcionario_responsable REGEXP '^[0-9]+$'
+WHERE 1 $where $where_grupos_filtro
 ORDER BY ra.fecha_atencion DESC
 ";
 
@@ -63,7 +72,7 @@ $sheet->setTitle('Actividades');
 
 // Cabeceras
 $headers = [
-    'Meta', 'Actividad', 'Acción', 'Política Pública', 'Centro Vida', 'Fecha Atención',
+    'Meta', 'Actividad', 'Acción', 'Política Pública', 'Lugar del Evento', 'Otro Lugar', 'Fecha Atención',
     'Nombre Líder', 'Teléfono Contacto', 'Comuna/Corregimiento', 'Medio de Verificación',
     'Cant. Masculino', 'Cant. Femenino', 'Total personas', 'Tipo Actividad', 'Observación Actividad', 'Digitado por', 'Funcionario Responsable'
 ];
@@ -87,12 +96,16 @@ $sheet->getRowDimension(1)->setRowHeight(40);
 // Datos
 $row_num = 2;
 while ($row = $result->fetch_assoc()) {
+    // Determinar funcionario responsable
+    $funcionarioResp = $row['funcionario_responsable_nombre'] ? $row['funcionario_responsable_nombre'] : ($row['funcionario_responsable'] ?: 'N/A');
+    
     $data = [
         $row['descripcion_meta'],
         $row['descripcion_actividad'],
         $row['descripcion_accion'],
         $row['descripcion_politica'],
-        $row['centro_vida'],
+        $row['centro_vida'] ?: '',  // Columna E: Lugar del Evento (Centro Vida)
+        $row['otro_lugar'] ?: '',    // Columna F: Otro Lugar
         $row['fecha_atencion'],
         $row['nombre_lider'],
         $row['telefono_contacto'],
@@ -104,7 +117,7 @@ while ($row = $result->fetch_assoc()) {
         $row['tipo_actividad'],
         $row['observacion_actividad'],
         $row['digitado_por'],
-        $row['funcionario_responsable_nombre']
+        $funcionarioResp
     ];
     $col = 'A';
     foreach ($data as $value) {

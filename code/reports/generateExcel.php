@@ -1,4 +1,7 @@
 <?php
+// Iniciar sesión para obtener tipo_usuario
+session_start();
+
 // Eliminar cualquier salida previa
 if (ob_get_length()) {
     header('Content-Type: text/plain; charset=utf-8');
@@ -8,6 +11,7 @@ if (ob_get_length()) {
 }
 
 // Forzar codificación UTF-8 en la conexión MySQL
+require_once '../filtros_grupos.php';
 require_once '../../conexion.php';
 if (isset($mysqli)) {
     $mysqli->set_charset('utf8mb4');
@@ -100,7 +104,8 @@ try {
         'ESTADO ACTUAL', 'FECHA ÚLTIMO ESTADO',
         'ÚLTIMA META', 'ÚLTIMA ACTIVIDAD', 'ÚLTIMA ACCIÓN', 'ÚLTIMO DPTO PROCEDENCIA',
         'MOVIMIENTOS AÑO', 'TRASLADOS AÑO', 'ÚLTIMO CENTRO TRASLADO',
-    'ACTIVO DESDE', 'ACTIVO HASTA', 'DÍAS ACTIVOS'
+        'ACTIVO DESDE', 'ACTIVO HASTA', 'DÍAS ACTIVOS',
+        'FECHA ÚLTIMO CONTRATO GRUPO', 'DÍAS ACTIVO DESDE CONTRATO'
     ];
 
     // Escribir cabeceras en la fila 1
@@ -139,6 +144,10 @@ try {
     // Configurar altura de la fila de cabeceras
     $sheet->getRowDimension(1)->setRowHeight(40);
 
+    // Obtener tipo de usuario y aplicar filtro de grupos
+    $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+    $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
+
     // Consulta completa para obtener todos los datos
     $query = "
         SELECT 
@@ -147,6 +156,13 @@ try {
             b.nombre_bar as barrio_nombre,
             c.nombre_com as comuna_nombre,
             u.nombre as nombre_usuario,
+
+            -- Fecha más reciente de contratación del grupo
+            (SELECT hfc.fecha_contratacion
+             FROM historial_fechas_contratacion hfc
+             WHERE hfc.id_grupo = p.id_grupo
+             ORDER BY hfc.fecha_contratacion DESC
+             LIMIT 1) AS fecha_ultimo_contrato_grupo,
 
             -- Descripción de la política pública del último movimiento
             (SELECT pol.descripcion_politica
@@ -300,7 +316,7 @@ try {
         LEFT JOIN barrios b ON p.id_barrio_persona = b.id_bar
         LEFT JOIN comunas c ON p.id_comuna_persona = c.id_com
         LEFT JOIN usuarios u ON p.id_usuario = u.id
-        WHERE p.estado_persona = 1 
+        WHERE p.estado_persona = 1 $where_grupos_filtro
         ORDER BY p.apellidos_persona ASC, p.nombres_persona ASC
     ";
 
@@ -592,6 +608,62 @@ try {
                 }
             }
 
+            // Calcular días activos desde el contrato
+            $dias_activo_desde_contrato = '';
+            $fecha_ultimo_contrato_mostrar = '';
+            
+            if (!empty($row['fecha_ultimo_contrato_grupo'])) {
+                $fecha_ultimo_contrato_mostrar = date('d/m/Y', strtotime($row['fecha_ultimo_contrato_grupo']));
+
+                // Si activo_desde es POSTERIOR a fecha_ultimo_contrato, usar el mismo valor que DÍAS ACTIVOS
+                try {
+                    $usar_dias_activos = false;
+                    
+                    if (!empty($row['activo_desde']) && $row['activo_desde'] != '0000-00-00') {
+                        try {
+                            $fecha_activo_desde = new DateTime($row['activo_desde']);
+                            $fecha_contrato = new DateTime($row['fecha_ultimo_contrato_grupo']);
+                            
+                            // Si activo_desde es POSTERIOR al contrato, usar DÍAS ACTIVOS
+                            if ($fecha_activo_desde > $fecha_contrato) {
+                                $usar_dias_activos = true;
+                            }
+                        } catch (Exception $innerEx) {
+                            // Error al parsear fechas, usar cálculo normal
+                        }
+                    }
+                    
+                    if ($usar_dias_activos) {
+                        // Usar el mismo valor que DÍAS ACTIVOS
+                        $dias_activo_desde_contrato = $dias_activos_val;
+                    } else {
+                        // Calcular desde fecha_ultimo_contrato_grupo
+                        $fecha_inicio_calculo = new DateTime($row['fecha_ultimo_contrato_grupo']);
+                        
+                        // Determinar fecha final para el cálculo
+                        $fecha_final = null;
+                        if ($estado_actual == 'FALLECIDO' || $estado_actual == 'EVADIDO' || $estado_actual == 'RETIRADO VOLUNTARIO') {
+                            // Si hay fecha de último movimiento, usar esa
+                            if (!empty($row['fecha_ultimo_movimiento'])) {
+                                $fecha_final = new DateTime($row['fecha_ultimo_movimiento']);
+                            }
+                        }
+                        
+                        // Si no hay fecha final específica, usar hoy
+                        if ($fecha_final === null) {
+                            $fecha_final = new DateTime();
+                        }
+                        
+                        // Calcular diferencia (sumando +1 para hacer el cálculo inclusivo, igual que DÍAS ACTIVOS)
+                        $interval_contrato = $fecha_inicio_calculo->diff($fecha_final);
+                        $dias_activo_desde_contrato = (isset($interval_contrato->days) ? $interval_contrato->days : 0) + 1;
+                    }
+
+                } catch (Exception $e) {
+                    $dias_activo_desde_contrato = '';
+                }
+            }
+
             // Calcular descripciones finales para última meta/actividad/acción (prioridad: movimiento.descripcion -> movimiento.id -> persona.id -> 'No registrada')
             $ultima_meta_desc = 'No registrada';
             if (!empty($row['ultima_meta'])) {
@@ -677,7 +749,9 @@ try {
                 $row['ultimo_centro_traslado'] ?? 'N/A',
                 $seg['start'] ? date('d/m/Y', strtotime($seg['start'])) : '',
                 $seg['end'] ? date('d/m/Y', strtotime($seg['end'])) : '',
-                $dias_activos_val
+                $dias_activos_val,
+                $fecha_ultimo_contrato_mostrar,
+                $dias_activo_desde_contrato
             ];
 
             // Escribir datos en la fila

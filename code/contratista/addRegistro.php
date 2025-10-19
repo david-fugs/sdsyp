@@ -18,8 +18,9 @@ $cantidad_femenino = isset($_POST['cantidad_femenino']) ? intval($_POST['cantida
 $tipo_actividad = isset($_POST['tipo_actividad']) ? mysqli_real_escape_string($mysqli, $_POST['tipo_actividad']) : '';
 $observacion_actividad = isset($_POST['observacion_actividad']) ? mysqli_real_escape_string($mysqli, $_POST['observacion_actividad']) : '';
 $id_usuario = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
-$funcionario_responsable = isset($_POST['funcionario_responsable']) ? intval($_POST['funcionario_responsable']) : 0;
+$funcionario_responsable = isset($_POST['funcionario_responsable']) ? mysqli_real_escape_string($mysqli, $_POST['funcionario_responsable']) : '';
 $id_entregas = isset($_POST['id_entregas']) ? intval($_POST['id_entregas']) : 0;
+$otro_lugar = isset($_POST['otro_lugar']) ? mysqli_real_escape_string($mysqli, $_POST['otro_lugar']) : '';
 
 // Consulta plana para insertar el registro
 $query = "INSERT INTO registro_actividades (
@@ -39,7 +40,8 @@ $query = "INSERT INTO registro_actividades (
     observacion_actividad,
     id_usuario,
     funcionario_responsable,
-    id_entregas
+    id_entregas,
+    otro_lugar
 ) VALUES (
     $id_meta,
     $id_actividad,
@@ -56,8 +58,9 @@ $query = "INSERT INTO registro_actividades (
     '$tipo_actividad',
     '$observacion_actividad',
     $id_usuario,
-    $funcionario_responsable,
-    $id_entregas
+    '$funcionario_responsable',
+    $id_entregas,
+    '$otro_lugar'
 )";
 
 $result = mysqli_query($mysqli, $query);
