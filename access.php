@@ -591,7 +591,7 @@ $mysqli->close();
                 <span class="navlink_icon">
                   <i class="fa-solid fa-bullseye"></i>
                 </span>
-                <span class="navlink">Registro art masivas </span>
+                <span class="navlink">Registro art masivas</span>
                 <i class="bx bx-chevron-right arrow-left"></i>
               </div>
               <ul class="menu_items submenu">
@@ -599,11 +599,15 @@ $mysqli->close();
                   <a href="code/contratista/seeActivities.php" class="nav_link sublink">Agregar Actividades contratista</a>
                   <a href="code/contratistaCentroVida/seeActivitiesCentroVida.php" class="nav_link sublink">Actividades Centro Vida</a>
                 <?php endif; ?>
+                <?php if ($tipo_usuario != 5 ) : ?>
                 <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
                 <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades Masivas</a>
                 <a href="code/contratistaIndividual/form.php" class="nav_link sublink">Registro Actividades Individuales</a>
+                <?php endif; ?>
+                <?php if ($tipo_usuario != 4 ) : ?>
                 <a href="code/contratistaCentroVida/formCentroVida.php" class="nav_link sublink">Registros indiv Centro Vida</a>
                 <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
+                <?php endif; ?>
                 <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
 
               </ul>
