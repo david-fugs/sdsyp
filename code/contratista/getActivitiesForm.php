@@ -106,12 +106,12 @@ if ($result->num_rows > 0) {
                         data-otro_lugar="' . htmlspecialchars($row['otro_lugar'] ?? '') . '">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
-                    <a href="?delete=' . $row['id_registro'] . '" 
-                       class="btn-action btn-delete" 
+                    <button type="button" 
+                       class="btn-action btn-delete btn-delete-registro" 
                        title="Eliminar registro"
-                       onclick="return confirm(\"¿Estás seguro de que deseas eliminar este registro?\")">
+                       data-id="' . $row['id_registro'] . '">
                         <i class="bi bi-trash-fill"></i>
-                    </a>
+                    </button>
                 </div>
             </td>';
         echo "</tr>";

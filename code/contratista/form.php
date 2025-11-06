@@ -212,29 +212,6 @@ $result_comunas = mysqli_query($mysqli, $comunas);
 if (!$result_comunas) {
     die("Error en la consulta de comunas: " . mysqli_error($mysqli));
 }
-if (isset($_GET['delete'])) {
-    $cedula_persona = $_GET['delete'];
-    deleteMember($cedula_persona);
-}
-
-function deleteMember($id_movimiento)
-{
-    global $mysqli; // Asegurar acceso a la conexión global
-
-    $query = "DELETE FROM registro_actividades WHERE id_registro  = ?";
-    $stmt = $mysqli->prepare($query);
-    $stmt->bind_param("i", $id_registro);
-
-    if ($stmt->execute()) {
-        echo "<script>alert('registro borrado correctamente');
-        window.location = 'seePersonMovement.php';</script>";
-    } else {
-        echo "<script>alert('Error borrando el registro');
-        window.location = 'seePersonMovement.php';</script>";
-    }
-
-    $stmt->close();
-}
 
 ?>
 
@@ -1343,6 +1320,59 @@ function deleteMember($id_movimiento)
     // Inicializar cuando el documento esté listo
     $(document).ready(function() {
         initDataTable();
+    });
+
+    // Manejar eliminación de registros con SweetAlert
+    $(document).on('click', '.btn-delete-registro', function() {
+        const idRegistro = $(this).data('id');
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "No podrás revertir esta acción",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: 'deleteRegistro.php',
+                    type: 'POST',
+                    data: { id_registro: idRegistro },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                title: '¡Eliminado!',
+                                text: response.message,
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Recargar con los mismos filtros
+                                window.location.href = 'form.php?' + urlParams.toString();
+                            });
+                        } else {
+                            Swal.fire(
+                                'Error',
+                                response.message,
+                                'error'
+                            );
+                        }
+                    },
+                    error: function() {
+                        Swal.fire(
+                            'Error',
+                            'Hubo un problema al eliminar el registro',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
     });
 
     // Inicializar sincronización de scroll superior para la tabla
