@@ -16,19 +16,67 @@ include("conexion.php");
 // Obtener estadísticas del sistema
 $stats = array();
 
-// Total de personas
-
-// Contar personas que NO tienen ningún movimiento con id_condicion = 8 (fallecido)
-$query_personas = "
-SELECT COUNT(*) as total FROM personas p
-WHERE NOT EXISTS (
-    SELECT 1 FROM movimiento_persona mp
-    WHERE mp.cedula_persona = p.cedula_persona
-    AND mp.id_condicion = 8
-)
-";
-$result_personas = $mysqli->query($query_personas);
-$stats['personas'] = $result_personas->fetch_assoc()['total'];
+// Estadísticas específicas para Colombia Mayor (tipo 8 y 9)
+if ($tipo_usuario == 8 || $tipo_usuario == 9) {
+    // Total de personas Colombia Mayor
+    $where_usuario = ($tipo_usuario == 9) ? " AND usuario_registro = " . $_SESSION['id'] : "";
+    
+    // Verificar si las tablas existen
+    $tabla_existe = $mysqli->query("SHOW TABLES LIKE 'personas_colombia_mayor'");
+    if ($tabla_existe && $tabla_existe->num_rows > 0) {
+        $query_personas_cm = "SELECT COUNT(*) as total FROM personas_colombia_mayor WHERE 1=1 $where_usuario";
+        $result_personas_cm = $mysqli->query($query_personas_cm);
+        $stats['personas'] = $result_personas_cm ? $result_personas_cm->fetch_assoc()['total'] : 0;
+        
+        // Personas activas
+        $query_activas_cm = "SELECT COUNT(*) as total FROM personas_colombia_mayor WHERE estado_cm = 'ACTIVO' $where_usuario";
+        $result_activas_cm = $mysqli->query($query_activas_cm);
+        $stats['personas_activas'] = $result_activas_cm ? $result_activas_cm->fetch_assoc()['total'] : 0;
+        
+        // Total de movimientos
+        $query_movimientos_cm = "SELECT COUNT(*) as total FROM movimientos_colombia_mayor WHERE 1=1 $where_usuario";
+        $result_movimientos_cm = $mysqli->query($query_movimientos_cm);
+        $stats['movimientos_cm'] = $result_movimientos_cm ? $result_movimientos_cm->fetch_assoc()['total'] : 0;
+        
+        // Total de registros individuales
+        $query_registros_cm = "SELECT COUNT(*) as total FROM registros_individuales_cm WHERE 1=1 $where_usuario";
+        $result_registros_cm = $mysqli->query($query_registros_cm);
+        $stats['registros_cm'] = $result_registros_cm ? $result_registros_cm->fetch_assoc()['total'] : 0;
+        
+        // Total de pagos
+        $query_pagos_cm = "SELECT COUNT(*) as total FROM pagos_colombia_mayor WHERE 1=1 $where_usuario";
+        $result_pagos_cm = $mysqli->query($query_pagos_cm);
+        $stats['pagos_cm'] = $result_pagos_cm ? $result_pagos_cm->fetch_assoc()['total'] : 0;
+        
+        // Movimientos recientes (últimos 30 días)
+        $query_movimientos_recientes = "SELECT COUNT(*) as total FROM movimientos_colombia_mayor 
+                                         WHERE fecha_movimiento_cm >= DATE_SUB(NOW(), INTERVAL 30 DAY) $where_usuario";
+        $result_movimientos_recientes = $mysqli->query($query_movimientos_recientes);
+        $stats['movimientos_recientes'] = $result_movimientos_recientes ? $result_movimientos_recientes->fetch_assoc()['total'] : 0;
+    } else {
+        // Valores por defecto si las tablas no existen aún
+        $stats['personas'] = 0;
+        $stats['personas_activas'] = 0;
+        $stats['movimientos_cm'] = 0;
+        $stats['registros_cm'] = 0;
+        $stats['pagos_cm'] = 0;
+        $stats['movimientos_recientes'] = 0;
+    }
+} else {
+    // Estadísticas normales para otros usuarios
+    // Total de personas
+    // Contar personas que NO tienen ningún movimiento con id_condicion = 8 (fallecido)
+    $query_personas = "
+    SELECT COUNT(*) as total FROM personas p
+    WHERE NOT EXISTS (
+        SELECT 1 FROM movimiento_persona mp
+        WHERE mp.cedula_persona = p.cedula_persona
+        AND mp.id_condicion = 8
+    )
+    ";
+    $result_personas = $mysqli->query($query_personas);
+    $stats['personas'] = $result_personas->fetch_assoc()['total'];
+}
 
 // Total de metas
 $query_metas = "SELECT COUNT(*) as total FROM metas";
@@ -579,6 +627,42 @@ $mysqli->close();
     </div>
 
   <?php } ?>
+
+  <!-- Barra superior para Colombia Mayor -->
+  <?php if ($tipo_usuario == 8 || $tipo_usuario == 9) { ?>
+    <div class="top-sidebar" id="topSidebar">
+      <div class="top-sidebar-content">
+        <div class="quick-nav">
+          <a href="code/colombiaMayor/seePersonaCM.php" class="quick-nav-item" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <i class="bi bi-people-fill"></i>
+            Personas C.M
+          </a>
+          <a href="code/colombiaMayor/seeMovimientosCM.php" class="quick-nav-item" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <i class="bi bi-arrow-left-right"></i>
+            Movimientos
+          </a>
+          <a href="code/colombiaMayor/formIndividualCM.php" class="quick-nav-item" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <i class="bi bi-clipboard-list"></i>
+            Registros
+          </a>
+          <a href="code/colombiaMayor/formPagosCM.php" class="quick-nav-item" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <i class="bi bi-money-bill-wave"></i>
+            Pagos
+          </a>
+          <a href="code/colombiaMayor/consultaPagosCM.php" class="quick-nav-item" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <i class="bi bi-search"></i>
+            Consultar
+          </a>
+        </div>
+
+        <div class="breadcrumb-info" style="color: #6c757d; font-weight: 600;">
+          <i class="bi bi-award-fill"></i>
+          Colombia Mayor - Dashboard
+        </div>
+      </div>
+    </div>
+
+  <?php } ?>
   <!-- sidebar -->
   <?php if ($tipo_usuario != 3) { ?>
     <nav class="sidebar">
@@ -826,6 +910,114 @@ $mysqli->close();
     </nav>
   <?php } ?>
 
+  <!-- Menu para Colombia Mayor (Tipo 8: Técnico, Tipo 9: Contratista) -->
+  <?php if ($tipo_usuario == 8 || $tipo_usuario == 9) { ?>
+    <nav class="sidebar">
+      <div class="menu_content">
+        <ul class="menu_items">
+          <div class="menu_title menu_dahsboard"></div>
+          
+          <!-- Título especial Colombia Mayor -->
+          <li class="item" style="pointer-events: none;">
+            <div class="nav_link" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px; margin: 10px; padding: 15px; text-align: center;">
+              <span style="font-size: 18px; font-weight: 700;">
+                <i class="fas fa-award"></i> COLOMBIA MAYOR
+              </span>
+            </div>
+          </li>
+
+          <!-- Personas Colombia Mayor -->
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-users"></i>
+              </span>
+              <span class="navlink">Personas C.M</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/colombiaMayor/seePersonaCM.php" class="nav_link sublink">Ver Personas</a>
+              <a href="code/colombiaMayor/seeMovimientosCM.php" class="nav_link sublink">Movimientos</a>
+            </ul>
+          </li>
+
+          <!-- Registros de Actividades -->
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-clipboard-list"></i>
+              </span>
+              <span class="navlink">Registros C.M</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/colombiaMayor/formIndividualCM.php" class="nav_link sublink">Registros Individuales</a>
+              <a href="code/colombiaMayor/formRegistroMasivoCM.php" class="nav_link sublink">Registros Masivos</a>
+            </ul>
+          </li>
+
+          <!-- Pagos Colombia Mayor -->
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-money-bill-wave"></i>
+              </span>
+              <span class="navlink">Pagos C.M</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/colombiaMayor/formPagosCM.php" class="nav_link sublink">Registrar Pago Masivo</a>
+              <a href="code/colombiaMayor/consultaPagosCM.php" class="nav_link sublink">Consultar Pagos</a>
+              <a href="code/colombiaMayor/historialPagosCM.php" class="nav_link sublink">Historial de Pagos</a>
+            </ul>
+          </li>
+
+          <!-- Informes Colombia Mayor -->
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-chart-bar"></i>
+              </span>
+              <span class="navlink">Informes C.M</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/colombiaMayor/exportPersonasCM.php" class="nav_link sublink">Exportar Personas</a>
+              <a href="code/colombiaMayor/exportMovimientosCM.php" class="nav_link sublink">Exportar Movimientos</a>
+              <a href="code/colombiaMayor/exportRegistrosCM.php" class="nav_link sublink">Exportar Registros</a>
+              <a href="code/colombiaMayor/exportPagosCM.php" class="nav_link sublink">Exportar Pagos</a>
+            </ul>
+          </li>
+
+          <!-- Mi Cuenta -->
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+              </span>
+              <span class="navlink">Mi Cuenta</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="reset-password.php" class="nav_link sublink">Cambiar Contraseña</a>
+            </ul>
+          </li>
+
+          <div class="bottom_content">
+            <div class="bottom expand_sidebar">
+              <span> Expand</span>
+              <i class='bx bx-log-in'></i>
+            </div>
+            <div class="bottom collapse_sidebar">
+              <span> Collapse</span>
+              <i class='bx bx-log-out'></i>
+            </div>
+          </div>
+        </ul>
+      </div>
+    </nav>
+  <?php } ?>
+
   <!-- Main Content -->
   <div class="main-content" id="mainContent">
     <!-- Page Title -->
@@ -836,52 +1028,144 @@ $mysqli->close();
 
     <!-- Welcome Section -->
     <div class="welcome-section">
-      <h2><i class="bi bi-house-heart me-2"></i>Bienvenido al Sistema SDSYP</h2>
-      <p class="lead mb-3">Sistema de Desarrollo Social y Políticas Públicas - Panel de Control</p>
-      <small>Acceso como: <?php echo $tipo_usuario == 1 ? 'Administrador' : 'Usuario'; ?> | Usuario: <?php echo htmlspecialchars($nombre); ?></small>
+      <?php if ($tipo_usuario == 8 || $tipo_usuario == 9) { ?>
+        <!-- Bienvenida Colombia Mayor -->
+        <h2><i class="fas fa-award me-2"></i>Bienvenido a Colombia Mayor</h2>
+        <p class="lead mb-3">Sistema de Gestión Colombia Mayor - Panel de Control</p>
+        <small>Acceso como: <?php echo $tipo_usuario == 8 ? 'Técnico Colombia Mayor' : 'Contratista Colombia Mayor'; ?> | Usuario: <?php echo htmlspecialchars($nombre); ?></small>
+        
+        <!-- Botón de acceso rápido Colombia Mayor -->
+        <div class="mt-4">
+          <a href="code/colombiaMayor/seePersonaCM.php" class="btn btn-light btn-lg px-4 py-2" style="border-radius: 25px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+            <i class="bi bi-people-fill me-2"></i>
+            Acceder al Módulo de Personas Colombia Mayor
+            <span class="badge bg-light text-primary ms-2"><?php echo $stats['personas']; ?></span>
+          </a>
+        </div>
+      <?php } else { ?>
+        <!-- Bienvenida normal -->
+        <h2><i class="bi bi-house-heart me-2"></i>Bienvenido al Sistema SDSYP</h2>
+        <p class="lead mb-3">Sistema de Desarrollo Social y Políticas Públicas - Panel de Control</p>
+        <small>Acceso como: <?php echo $tipo_usuario == 1 ? 'Administrador' : 'Usuario'; ?> | Usuario: <?php echo htmlspecialchars($nombre); ?></small>
 
-      <!-- Botón de acceso rápido destacado -->
-      <div class="mt-4">
-        <a href="code/persons/seePerson.php" class="btn btn-light btn-lg px-4 py-2" style="border-radius: 25px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-          <i class="bi bi-people-fill me-2"></i>
-          Acceder al Módulo de Personas
-          <span class="badge bg-primary ms-2"><?php echo $stats['personas']; ?></span>
-        </a>
-      </div>
+        <!-- Botón de acceso rápido destacado -->
+        <div class="mt-4">
+          <a href="code/persons/seePerson.php" class="btn btn-light btn-lg px-4 py-2" style="border-radius: 25px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            <i class="bi bi-people-fill me-2"></i>
+            Acceder al Módulo de Personas
+            <span class="badge bg-primary ms-2"><?php echo $stats['personas']; ?></span>
+          </a>
+        </div>
+      <?php } ?>
     </div>
 
     <!-- Statistics Cards -->
     <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-3 col-sm-6">
-          <div class="stats-card text-center">
-            <i class="bi bi-people stats-icon text-primary"></i>
-            <div class="stats-number text-primary"><?php echo number_format($stats['personas']); ?></div>
-            <div class="stats-label">Personas Registradas</div>
+      <?php if ($tipo_usuario == 8 || $tipo_usuario == 9) { ?>
+        <!-- Estadísticas Colombia Mayor -->
+        <div class="row">
+          <div class="col-md-3 col-sm-6">
+            <div class="stats-card text-center">
+              <i class="bi bi-people stats-icon" style="color: #667eea;"></i>
+              <div class="stats-number" style="color: #667eea;"><?php echo number_format($stats['personas']); ?></div>
+              <div class="stats-label">Personas C.M Total</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="stats-card text-center">
+              <i class="bi bi-check-circle stats-icon text-success"></i>
+              <div class="stats-number text-success"><?php echo number_format($stats['personas_activas']); ?></div>
+              <div class="stats-label">Personas Activas</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="stats-card text-center">
+              <i class="bi bi-arrow-left-right stats-icon text-warning"></i>
+              <div class="stats-number text-warning"><?php echo number_format($stats['movimientos_cm']); ?></div>
+              <div class="stats-label">Movimientos</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="stats-card text-center">
+              <i class="bi bi-clipboard-check stats-icon text-info"></i>
+              <div class="stats-number text-info"><?php echo number_format($stats['registros_cm']); ?></div>
+              <div class="stats-label">Registros</div>
+            </div>
           </div>
         </div>
-        <div class="col-md-3 col-sm-6">
-          <div class="stats-card text-center">
-            <i class="bi bi-bullseye stats-icon text-success"></i>
-            <div class="stats-number text-success"><?php echo number_format($stats['metas']); ?></div>
-            <div class="stats-label">Metas Activas</div>
+
+        <!-- Estadísticas secundarias Colombia Mayor -->
+        <div class="row">
+          <div class="col-md-3 col-sm-6">
+            <div class="stats-card text-center">
+              <i class="bi bi-money-bill-wave stats-icon" style="color: #764ba2;"></i>
+              <div class="stats-number" style="color: #764ba2;"><?php echo number_format($stats['pagos_cm']); ?></div>
+              <div class="stats-label">Pagos Registrados</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="stats-card text-center">
+              <i class="bi bi-calendar-event stats-icon text-danger"></i>
+              <div class="stats-number text-danger"><?php echo number_format($stats['movimientos_recientes']); ?></div>
+              <div class="stats-label">Movimientos Recientes (30 días)</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="stats-card text-center">
+              <i class="bi bi-file-earmark-excel stats-icon text-success"></i>
+              <div class="stats-number text-success">
+                <a href="code/colombiaMayor/exportPersonasCM.php" class="text-success text-decoration-none">
+                  <i class="bi bi-download"></i>
+                </a>
+              </div>
+              <div class="stats-label">Exportar Personas</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="stats-card text-center">
+              <i class="bi bi-graph-up stats-icon text-primary"></i>
+              <div class="stats-number text-primary">
+                <a href="code/colombiaMayor/consultaPagosCM.php" class="text-primary text-decoration-none">
+                  <i class="bi bi-search"></i>
+                </a>
+              </div>
+              <div class="stats-label">Consultar Pagos</div>
+            </div>
           </div>
         </div>
-        <div class="col-md-3 col-sm-6">
-          <div class="stats-card text-center">
-            <i class="bi bi-list-task stats-icon text-warning"></i>
-            <div class="stats-number text-warning"><?php echo number_format($stats['actividades']); ?></div>
-            <div class="stats-label">Actividades</div>
+      <?php } else { ?>
+        <!-- Estadísticas normales -->
+        <div class="row">
+          <div class="col-md-3 col-sm-6">
+            <div class="stats-card text-center">
+              <i class="bi bi-people stats-icon text-primary"></i>
+              <div class="stats-number text-primary"><?php echo number_format($stats['personas']); ?></div>
+              <div class="stats-label">Personas Registradas</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="stats-card text-center">
+              <i class="bi bi-bullseye stats-icon text-success"></i>
+              <div class="stats-number text-success"><?php echo number_format($stats['metas']); ?></div>
+              <div class="stats-label">Metas Activas</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="stats-card text-center">
+              <i class="bi bi-list-task stats-icon text-warning"></i>
+              <div class="stats-number text-warning"><?php echo number_format($stats['actividades']); ?></div>
+              <div class="stats-label">Actividades</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <div class="stats-card text-center">
+              <i class="bi bi-lightning stats-icon text-info"></i>
+              <div class="stats-number text-info"><?php echo number_format($stats['acciones']); ?></div>
+              <div class="stats-label">Acciones</div>
+            </div>
           </div>
         </div>
-        <div class="col-md-3 col-sm-6">
-          <div class="stats-card text-center">
-            <i class="bi bi-lightning stats-icon text-info"></i>
-            <div class="stats-number text-info"><?php echo number_format($stats['acciones']); ?></div>
-            <div class="stats-label">Acciones</div>
-          </div>
-        </div>
-      </div>
+      <?php } ?>
 
       <!-- Secondary Statistics -->
       <div class="row">

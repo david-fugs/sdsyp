@@ -1,0 +1,21 @@
+-- ========================================
+-- RESUMEN DE CORRECCIONES REALIZADAS
+-- ========================================
+
+-- 1. SQL ya corregido en sql_agregar_campos_personas_cm.sql
+-- Ejecutar ese archivo para agregar los campos
+
+-- 2. Correcciones en archivos PHP:
+-- - historialPagosCM.php: Corregido para usar cedula_persona_cm y nombres correctos
+-- - exportPagosCM.php: Corregido para usar cedula_persona_cm y nombres correctos  
+-- - exportRegistrosCM.php: Corregido para usar metas y nombres de tablas correctos
+-- - getPoliticaPublica.php: Corregido para usar politicas_publicas
+-- - formIndividualCM.php: Corregido para usar metas y condiciones_colombia_mayor
+
+-- 3. Tablas correctas a utilizar:
+-- metas (id_meta, descripcion_meta)
+-- activities (id_activity, activity_name)
+-- actions (id_action, action_name)
+-- politicas_publicas (id_politica_publica, descripcion_politica)
+-- condiciones_colombia_mayor (id_condicion_cm, descripcion_condicion_cm)
+-- personas_colombia_mayor (cedula_persona_cm como PRIMARY KEY)

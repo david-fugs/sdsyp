@@ -279,6 +279,15 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                             $tipo_usuario_texto = 'SIN ACCESO';
                             $badge_class = 'badge bg-secondary';
                             break;
+                        case 8:
+                            $tipo_usuario_texto = 'TÉCNICO COLOMBIA MAYOR';
+                            $badge_class = 'badge bg-secondary';
+                            break;
+                        case 9:
+                            $tipo_usuario_texto = 'CONTRATISTA COLOMBIA MAYOR';
+                            $badge_class = 'badge bg-secondary';
+                            break;
+
                         default:
                             $tipo_usuario_texto = 'DESCONOCIDO';
                             $badge_class = 'badge bg-warning';
@@ -417,6 +426,8 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
               <option value="2">CPSAM O CENTRO VIDA</option>
               <option value="4">TÉCNICO CPSAM</option>
               <option value="5">TÉCNICO CENTRO VIDA</option>
+              <option value="8">TÉCNICO COLOMBIA MAYOR</option>
+              <option value="9">CONTRATISTA COLOMBIA MAYOR</option>
             </select>
           </div>
           <button type="submit" class="btn btn-primary">Guardar Cambios</button>
