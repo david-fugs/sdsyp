@@ -8,14 +8,15 @@
  * Tipos de Usuario:
  * - 1: ADMIN (acceso completo)
  * - 2: CPSAM/CV (acceso completo)
- * - 3: CONTRATISTA (acceso completo)
+ * - 3: CONTRATISTA CPSAM (solo grupos CPSAM%)
  * - 4: TÉCNICO CPSAM (solo grupos CPSAM%, Otro%, Contratista%)
  * - 5: TÉCNICO CENTRO VIDA (solo grupos CV%, Otro%, Contratista%)
  * - 7: SIN ACCESO (acceso completo)
+ * - 10: CONTRATISTA CENTRO VIDA (solo grupos CV%)
  * 
  * @author Sistema SDSYP
- * @version 1.0
- * @date 2025-10-18
+ * @version 1.1
+ * @date 2025-11-24
  */
 
 /**
@@ -26,12 +27,26 @@
  * @return array Array de IDs de grupos permitidos (vacío = todos permitidos)
  */
 function getGruposPermitidos($conexion, $tipo_usuario) {
-    // Si no hay tipo de usuario o es admin/contratista/etc, permitir todos
-    if (!$tipo_usuario || in_array($tipo_usuario, [1, 2, 3, 7])) {
+    // Si no hay tipo de usuario o es admin/etc, permitir todos
+    if (!$tipo_usuario || in_array($tipo_usuario, [1, 2, 7])) {
         return []; // Array vacío significa "todos los grupos"
     }
     
     $grupos_permitidos = [];
+    
+    // Tipo 3: CONTRATISTA CPSAM
+    if ($tipo_usuario == 3) {
+        $query = "SELECT id_grupo FROM grupos 
+                  WHERE descripcion_grupo LIKE 'CPSAM%'
+                  ORDER BY descripcion_grupo ASC";
+        
+        $result = $conexion->query($query);
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $grupos_permitidos[] = $row['id_grupo'];
+            }
+        }
+    }
     
     // Tipo 4: TÉCNICO CPSAM
     if ($tipo_usuario == 4) {
@@ -61,6 +76,20 @@ function getGruposPermitidos($conexion, $tipo_usuario) {
                      OR descripcion_grupo = 'Otro'
                      OR descripcion_grupo LIKE 'Contratista %'
                      OR descripcion_grupo = 'Contratista'
+                  ORDER BY descripcion_grupo ASC";
+        
+        $result = $conexion->query($query);
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $grupos_permitidos[] = $row['id_grupo'];
+            }
+        }
+    }
+    
+    // Tipo 10: CONTRATISTA CENTRO VIDA
+    if ($tipo_usuario == 10) {
+        $query = "SELECT id_grupo FROM grupos 
+                  WHERE descripcion_grupo LIKE 'CV%'
                   ORDER BY descripcion_grupo ASC";
         
         $result = $conexion->query($query);

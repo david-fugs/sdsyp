@@ -682,6 +682,7 @@ $endYear = $currentYear + 1;
     </div>
 
     <!-- Navegación moderna mejorada -->
+    <?php if ($_SESSION['tipo_usuario'] != 10) { ?>
     <div class="modern-navigation">
         <div class="container-fluid">
             <div class="nav-container">
@@ -734,6 +735,7 @@ $endYear = $currentYear + 1;
             </div>
         </div>
     </div>
+    <?php } ?>
 
     <!-- Contenido principal -->
     <div class="container mt-4">
@@ -793,7 +795,9 @@ $endYear = $currentYear + 1;
                         <div class="card-body p-3">
                             <h5 class="text-white mb-3"><i class="bi bi-download"></i> Exportar Actividades</h5>
                             <div class="d-flex gap-2 flex-wrap">
-                                <!-- Formulario exportar Contratista -->
+                                <?php $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null; ?>
+                                <!-- Mostrar formulario Contratista solo si NO es tipo 10 (CONTRATISTA CENTRO VIDA) -->
+                                <?php if ($tipo_usuario != 10) : ?>
                                 <form id="exportContratistaForm" action="exportContratistaFromReports.php" method="get" style="display:inline;">
                                     <input type="hidden" name="filtro_anio" id="export_contratista_anio">
                                     <input type="hidden" name="filtro_grupo" id="export_contratista_grupo">
@@ -801,8 +805,10 @@ $endYear = $currentYear + 1;
                                         <i class="bi bi-file-earmark-excel-fill"></i> Actividades CONTRATISTA
                                     </button>
                                 </form>
+                                <?php endif; ?>
 
-                                <!-- Formulario exportar Centro Vida Masivo -->
+                                <!-- Mostrar formulario Centro Vida solo si NO es tipo 3 (CONTRATISTA CPSAM) -->
+                                <?php if ($tipo_usuario != 3) : ?>
                                 <form id="exportCentroVidaForm" action="exportCentroVidaFromReports.php" method="get" style="display:inline;">
                                     <input type="hidden" name="filtro_anio" id="export_cv_anio">
                                     <input type="hidden" name="filtro_grupo" id="export_cv_grupo">
@@ -810,6 +816,7 @@ $endYear = $currentYear + 1;
                                         <i class="bi bi-file-earmark-excel-fill"></i> Actividades CENTRO VIDA MASIVO
                                     </button>
                                 </form>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -911,6 +918,7 @@ $endYear = $currentYear + 1;
             });
 
             $('#filtroGrupo').on('change', function() {
+                loadReportData(currentYear);
                 updateExportForms();
             });
 
@@ -971,6 +979,9 @@ $endYear = $currentYear + 1;
         }
 
         function loadReportData(year) {
+            // Obtener filtro de grupo
+            const filtroGrupo = $('#filtroGrupo').val();
+            
             // Mostrar loading
             Swal.fire({
                 title: 'Cargando datos...',
@@ -982,10 +993,14 @@ $endYear = $currentYear + 1;
                 }
             });
 
+            // Preparar parámetros
+            const params = { year: year };
+            if (filtroGrupo) {
+                params.filtro_grupo = filtroGrupo;
+            }
+
             // Cargar estadísticas
-            $.get('getReportStats.php', {
-                    year: year
-                })
+            $.get('getReportStats.php', params)
                 .done(function(response) {
                     console.log('Response getReportStats:', response);
                     if (response && response.success) {
@@ -1003,9 +1018,7 @@ $endYear = $currentYear + 1;
                 });
 
             // Cargar datos detallados
-            $.get('getReportData.php', {
-                    year: year
-                })
+            $.get('getReportData.php', params)
                 .done(function(response, textStatus, jqXHR) {
                     console.log('Response getReportData:', response);
                     console.log('TextStatus:', textStatus);
@@ -1135,8 +1148,17 @@ $endYear = $currentYear + 1;
         }
 
         function exportToExcel() {
+            // Obtener el grupo seleccionado
+            const filtroGrupo = $('#filtroGrupo').val();
+            
+            // Construir URL con parámetros
+            let url = 'generateExcel.php?year=' + currentYear;
+            if (filtroGrupo) {
+                url += '&filtro_grupo=' + filtroGrupo;
+            }
+            
             // Abrir el generador de Excel directamente para descargar
-            window.open('generateExcel.php?year=' + currentYear, '_blank');
+            window.open(url, '_blank');
         }
 
         function exportToPDF() {

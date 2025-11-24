@@ -13,10 +13,18 @@ if (!isset($_GET['year']) || empty($_GET['year'])) {
 
 $year = intval($_GET['year']);
 
+// Obtener filtro de grupo si está presente
+$filtro_grupo = isset($_GET['filtro_grupo']) && !empty($_GET['filtro_grupo']) ? intval($_GET['filtro_grupo']) : null;
+
 try {
     // Obtener tipo de usuario y aplicar filtro de grupos
     $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
     $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
+    
+    // Aplicar filtro por grupo específico si se seleccionó uno
+    if ($filtro_grupo !== null) {
+        $where_grupos_filtro .= " AND p.id_grupo = " . intval($filtro_grupo);
+    }
     
     // Estadísticas generales del año
     $stats = [];

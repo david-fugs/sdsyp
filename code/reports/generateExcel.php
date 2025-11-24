@@ -40,6 +40,9 @@ if (!isset($_GET['year']) || empty($_GET['year'])) {
 
 $year = intval($_GET['year']);
 
+// Obtener filtro de grupo si está presente
+$filtro_grupo = isset($_GET['filtro_grupo']) && !empty($_GET['filtro_grupo']) ? intval($_GET['filtro_grupo']) : null;
+
 try {
 
     // Crear nuevo objeto Spreadsheet
@@ -105,6 +108,7 @@ try {
         'ÚLTIMA META', 'ÚLTIMA ACTIVIDAD', 'ÚLTIMA ACCIÓN', 'ÚLTIMO DPTO PROCEDENCIA',
         'MOVIMIENTOS AÑO', 'TRASLADOS AÑO', 'ÚLTIMO CENTRO TRASLADO',
         'ACTIVO DESDE', 'ACTIVO HASTA', 'DÍAS ACTIVOS',
+        'DÍAS ACTIVOS PRESENTE AÑO',
         'FECHA ÚLTIMO CONTRATO GRUPO', 'DÍAS ACTIVO DESDE CONTRATO'
     ];
 
@@ -147,6 +151,11 @@ try {
     // Obtener tipo de usuario y aplicar filtro de grupos
     $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
     $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
+    
+    // Aplicar filtro adicional por grupo específico si se seleccionó uno
+    if ($filtro_grupo !== null) {
+        $where_grupos_filtro .= " AND p.id_grupo = " . intval($filtro_grupo);
+    }
 
     // Consulta completa para obtener todos los datos
     $query = "
@@ -608,6 +617,62 @@ try {
                 }
             }
 
+            // Calcular DÍAS ACTIVOS PRESENTE AÑO
+            $dias_activos_presente_year = '';
+            
+            if (!$isVisitaFallida && mb_strtolower($estado_actual) !== 'usuario interesado') {
+                try {
+                    $year_inicio = new DateTime($year . '-01-01');
+                    $year_fin = new DateTime($year . '-12-31');
+                    $hoy = new DateTime();
+                    
+                    // Determinar fecha de inicio para el cálculo
+                    $fecha_inicio_calculo = null;
+                    if (!empty($seg['start'])) {
+                        $fecha_activo_desde = new DateTime($seg['start']);
+                        
+                        // Si activo_desde es menor al año actual, usar 1/1 del año
+                        if ($fecha_activo_desde < $year_inicio) {
+                            $fecha_inicio_calculo = $year_inicio;
+                        } else {
+                            $fecha_inicio_calculo = $fecha_activo_desde;
+                        }
+                    }
+                    
+                    // Determinar fecha de fin para el cálculo
+                    $fecha_fin_calculo = null;
+                    if (!empty($seg['end'])) {
+                        $fecha_activo_hasta = new DateTime($seg['end']);
+                        
+                        // Si es el último segmento (activo), usar la fecha menor entre hoy y fin de año
+                        $isLast = ($iSeg === $segCount);
+                        if ($isLast) {
+                            $fecha_fin_calculo = ($hoy < $year_fin) ? $hoy : $year_fin;
+                        } else {
+                            // Para segmentos pasados, usar la fecha de fin del segmento
+                            $fecha_fin_calculo = ($fecha_activo_hasta < $year_fin) ? $fecha_activo_hasta : $year_fin;
+                        }
+                    }
+                    
+                    // Calcular diferencia si ambas fechas están definidas
+                    if ($fecha_inicio_calculo && $fecha_fin_calculo) {
+                        // Solo calcular si el periodo intersecta con el año actual
+                        if ($fecha_inicio_calculo <= $year_fin && $fecha_fin_calculo >= $year_inicio) {
+                            $interval_year = $fecha_inicio_calculo->diff($fecha_fin_calculo);
+                            $dias_activos_presente_year = (isset($interval_year->days) ? $interval_year->days : 0) + 1;
+                        } else {
+                            $dias_activos_presente_year = 0;
+                        }
+                    }
+                } catch (Exception $e) {
+                    $dias_activos_presente_year = '';
+                }
+            } elseif ($isVisitaFallida) {
+                $dias_activos_presente_year = 0;
+            } else {
+                $dias_activos_presente_year = 'N/A';
+            }
+
             // Calcular días activos desde el contrato
             $dias_activo_desde_contrato = '';
             $fecha_ultimo_contrato_mostrar = '';
@@ -750,6 +815,7 @@ try {
                 $seg['start'] ? date('d/m/Y', strtotime($seg['start'])) : '',
                 $seg['end'] ? date('d/m/Y', strtotime($seg['end'])) : '',
                 $dias_activos_val,
+                $dias_activos_presente_year,
                 $fecha_ultimo_contrato_mostrar,
                 $dias_activo_desde_contrato
             ];
