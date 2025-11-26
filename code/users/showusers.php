@@ -291,6 +291,10 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                             $tipo_usuario_texto = 'CONTRATISTA CENTRO VIDA';
                             $badge_class = 'badge bg-info';
                             break;
+                        case 11:
+                            $tipo_usuario_texto = 'INGENIERO CENTRO VIDA';
+                            $badge_class = 'badge bg-dark';
+                            break;
 
                         default:
                             $tipo_usuario_texto = 'DESCONOCIDO';
@@ -433,6 +437,7 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
               <option value="8">TÉCNICO COLOMBIA MAYOR</option>
               <option value="9">CONTRATISTA COLOMBIA MAYOR</option>
               <option value="10">CONTRATISTA CENTRO VIDA</option>
+              <option value="11">INGENIERO CENTRO VIDA</option>
             </select>
           </div>
           <button type="submit" class="btn btn-primary">Guardar Cambios</button>

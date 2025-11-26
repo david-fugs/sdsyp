@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once('../filtros_grupos.php');
+require_once('../filtros_grupo_usuario.php');
 include("../../conexion.php");
 
 // Aplicar filtro de grupos según tipo de usuario
@@ -59,13 +60,21 @@ if ($filtro_fecha) {
     }
 }
 
+// Aplicar filtro por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
+// Para masivas, el filtro se aplica sobre la tabla grupos (g) que está relacionada con id_centro_vida
+$where_grupo_usuario_masivas = '';
+if (debeAplicarFiltroGrupo($tipo_usuario) && isset($_SESSION['id_grupo'])) {
+    $id_grupo = intval($_SESSION['id_grupo']);
+    $where_grupo_usuario_masivas = " AND mcv.id_centro_vida = $id_grupo";
+}
+
 // Consulta para actividades masivas
 $query_masivas = "SELECT 
     SUM(mcv.cantidad_masculino) as total_masculino,
     SUM(mcv.cantidad_femenino) as total_femenino,
     COUNT(*) as num_registros
 FROM masiva_centro_vida mcv
-WHERE 1 $where_masivas";
+WHERE 1 $where_masivas $where_grupo_usuario_masivas";
 
 $result_masivas = $mysqli->query($query_masivas);
 if ($result_masivas && $row = $result_masivas->fetch_assoc()) {
@@ -74,12 +83,17 @@ if ($result_masivas && $row = $result_masivas->fetch_assoc()) {
     $total_masivas = $total_masivas_masculino + $total_masivas_femenino;
 }
 
+// Aplicar filtro por grupo de usuario para individuales
+// Para individuales, el filtro se aplica sobre la tabla personas (p) que está relacionada con cedula_persona
+$where_grupo_usuario_individuales = obtenerCondicionFiltroGrupo('p');
+
 // Consulta para actividades individuales - contar cada fecha individual
 $query_individuales = "SELECT 
     COUNT(*) as total_individuales
 FROM registro_centro_vida rcv
+INNER JOIN personas p ON rcv.cedula_persona = p.cedula_persona
 INNER JOIN registro_centro_vida_fechas rcvf ON rcv.id_registro_centro_vida = rcvf.id_registro_centro_vida
-WHERE 1 $where_individuales";
+WHERE 1 $where_individuales $where_grupo_usuario_individuales";
 
 $result_individuales = $mysqli->query($query_individuales);
 if ($result_individuales && $row = $result_individuales->fetch_assoc()) {
@@ -332,6 +346,9 @@ $total_general = $total_masivas + $total_individuales;
                     sync();
                 });
             </script>
+
+            <!-- Mensaje informativo de filtro por grupo -->
+            <?php echo generarMensajeFiltroGrupo($mysqli); ?>
 
             <div class="modern-filters">
                 <form action="comparadorActividades.php" method="get" class="filter-row">

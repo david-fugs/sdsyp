@@ -2,11 +2,15 @@
 session_start();
 include("../../conexion.php");
 require_once('../filtros_grupos.php');
+require_once('../filtros_grupo_usuario.php');
 
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 
 // Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
 $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
+
+// Aplicar filtro por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
+$where_grupo_usuario_filtro = obtenerCondicionFiltroGrupo('p');
 
 // Construir la consulta base
 $query = "
@@ -60,10 +64,21 @@ if (!empty($where_conditions)) {
     if (!empty($where_grupos_filtro)) {
         $query .= $where_grupos_filtro;
     }
+    // Agregar filtro por grupo de usuario si existe
+    if (!empty($where_grupo_usuario_filtro)) {
+        $query .= $where_grupo_usuario_filtro;
+    }
 } else {
     // Si no hay otras condiciones pero sí filtro de grupos
     if (!empty($where_grupos_filtro)) {
         $query .= " WHERE 1=1 " . $where_grupos_filtro;
+    }
+    // Agregar filtro por grupo de usuario si existe
+    if (!empty($where_grupo_usuario_filtro)) {
+        if (empty($where_grupos_filtro)) {
+            $query .= " WHERE 1=1 ";
+        }
+        $query .= $where_grupo_usuario_filtro;
     }
 }
 

@@ -8,7 +8,10 @@ if (ob_get_length()) {
     exit;
 }
 
+session_start();
 require_once '../../conexion.php';
+require_once '../filtros_grupo_usuario.php';
+
 if (isset($mysqli)) {
     $mysqli->set_charset('utf8mb4');
     $mysqli->query("SET NAMES 'utf8mb4'");
@@ -135,6 +138,16 @@ try {
     if (!empty($where)) {
         $query .= ' WHERE ' . implode(' AND ', $where);
     }
+    
+    // Aplicar filtro por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
+    $where_grupo_usuario = obtenerCondicionFiltroGrupo('p');
+    if (!empty($where_grupo_usuario)) {
+        if (empty($where)) {
+            $query .= ' WHERE 1=1 ';
+        }
+        $query .= $where_grupo_usuario;
+    }
+    
     $query .= ' GROUP BY rcv.id_registro_centro_vida ORDER BY rcv.fecha_registro DESC';
 
     if (!empty($params)) {

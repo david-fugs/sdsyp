@@ -320,6 +320,7 @@ require_once('../filtros_grupos.php');
 
 <?php
 include("../../conexion.php");
+require_once('../filtros_grupo_usuario.php');
 
 // Obtener condiciones
 $condiciones = "SELECT * FROM condiciones_componente";
@@ -346,7 +347,16 @@ if (!$result_actividades_cv_query) {
 $result_actividades_cv = $result_actividades_cv_query->fetch_all(MYSQLI_ASSOC);
 
 // Obtener lista de personas para el modal masivo (ordenadas alfabéticamente)
-$personas_sql = "SELECT cedula_persona, CONCAT(nombres_persona, ' ', apellidos_persona) AS nombre_completo FROM personas ORDER BY nombres_persona ASC, apellidos_persona ASC";
+// Solo personas relacionadas con grupos que inician con "CV"
+$personas_sql = "SELECT p.cedula_persona, CONCAT(p.nombres_persona, ' ', p.apellidos_persona) AS nombre_completo 
+                 FROM personas p
+                 INNER JOIN grupos g ON p.id_grupo = g.id_grupo
+                 WHERE g.descripcion_grupo LIKE 'CV%'";
+
+// Aplicar filtro por grupo de usuario si corresponde (tipo 11: INGENIERO CENTRO VIDA)
+$personas_sql .= obtenerCondicionFiltroGrupo('p');
+$personas_sql .= " ORDER BY p.nombres_persona ASC, p.apellidos_persona ASC";
+
 $result_personas_query = $mysqli->query($personas_sql);
 if (!$result_personas_query) {
     die("Error en consulta personas: " . $mysqli->error);
@@ -467,6 +477,9 @@ function deleteRegistro($id_registro)
                 </div>
             </div>
 
+            <!-- Mensaje informativo de filtro por grupo -->
+            <?php echo generarMensajeFiltroGrupo($mysqli); ?>
+
             <!-- Filtros modernos -->
             <div class="modern-filters">
                 <form action="formCentroVida.php" method="get" class="filter-row">
@@ -569,6 +582,12 @@ function deleteRegistro($id_registro)
                         </div>
 
                         <div style="max-height: 300px; overflow:auto; border:1px solid #e5e7eb; padding:8px; border-radius:6px;">
+                            <div class="form-check mb-2 border-bottom pb-2">
+                                <input class="form-check-input" type="checkbox" id="selectAllPersonas">
+                                <label class="form-check-label fw-bold" for="selectAllPersonas">
+                                    <i class="bi bi-check-square me-1"></i>Seleccionar Todos
+                                </label>
+                            </div>
                             <div id="listaPersonasMasivo">
                                 <?php foreach ($result_personas as $p) { ?>
                                     <div class="form-check">
@@ -1425,6 +1444,19 @@ function deleteRegistro($id_registro)
 
         // -------------------- JS para Modal Masivo --------------------
         $(document).ready(function() {
+            // Seleccionar/deseleccionar todos
+            $('#selectAllPersonas').on('change', function() {
+                const isChecked = $(this).is(':checked');
+                $('#listaPersonasMasivo .persona-checkbox:visible').prop('checked', isChecked);
+            });
+
+            // Actualizar estado del checkbox "Seleccionar todos" cuando se cambian checkboxes individuales
+            $(document).on('change', '#listaPersonasMasivo .persona-checkbox', function() {
+                const totalVisible = $('#listaPersonasMasivo .persona-checkbox:visible').length;
+                const totalChecked = $('#listaPersonasMasivo .persona-checkbox:visible:checked').length;
+                $('#selectAllPersonas').prop('checked', totalVisible > 0 && totalVisible === totalChecked);
+            });
+
             // Filtrar la lista de personas
             $('#searchPersona').on('input', function() {
                 const q = $(this).val().toLowerCase().trim();
@@ -1432,6 +1464,10 @@ function deleteRegistro($id_registro)
                     const txt = $(this).text().toLowerCase();
                     $(this).toggle(txt.indexOf(q) !== -1);
                 });
+                // Actualizar el estado del checkbox "Seleccionar todos" después de filtrar
+                const totalVisible = $('#listaPersonasMasivo .persona-checkbox:visible').length;
+                const totalChecked = $('#listaPersonasMasivo .persona-checkbox:visible:checked').length;
+                $('#selectAllPersonas').prop('checked', totalVisible > 0 && totalVisible === totalChecked);
             });
 
             // (funcionalidad de agregar cédula manual removida)

@@ -1,7 +1,9 @@
 <?php
 // Exportar actividades masivas centro vida
+session_start();
 if (ob_get_length()) { header('Content-Type: text/plain; charset=utf-8'); echo 'Salida previa'; exit; }
 require_once '../../conexion.php';
+require_once '../filtros_grupo_usuario.php';
 $mysqli->set_charset('utf8mb4');
 require_once '../../vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\Spreadsheet;use PhpOffice\PhpSpreadsheet\Writer\Xlsx;use PhpOffice\PhpSpreadsheet\Style\Fill;use PhpOffice\PhpSpreadsheet\Style\Alignment;use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -13,6 +15,12 @@ $where='';
 if($filtro_anio){ $where.=" AND YEAR(mcv.fecha_atencion)=$filtro_anio"; }
 if($filtro_mes){ $where.=" AND MONTH(mcv.fecha_atencion)=$filtro_mes"; }
 if($filtro_funcionario){ $where.=" AND mcv.id_usuario=$filtro_funcionario"; }
+
+// Aplicar filtro por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
+if (debeAplicarFiltroGrupo($_SESSION['tipo_usuario'] ?? null) && isset($_SESSION['id_grupo'])) {
+    $id_grupo = intval($_SESSION['id_grupo']);
+    $where .= " AND mcv.id_centro_vida = $id_grupo";
+}
 
 $sql = "SELECT 
  mcv.id_masiva_centro_vida AS id_registro,

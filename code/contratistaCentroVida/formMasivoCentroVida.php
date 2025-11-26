@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once('../filtros_grupos.php');
+require_once('../filtros_grupo_usuario.php');
 include("../../conexion.php");
 
 // Aplicar filtro de grupos según tipo de usuario
@@ -51,6 +52,10 @@ if ($filtro_tipo_registro) {
 // Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
 $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
 $where .= $where_grupos_filtro;
+
+// Aplicar filtro por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
+$where_grupo_usuario_filtro = obtenerCondicionFiltroGrupo('g');
+$where .= $where_grupo_usuario_filtro;
 
 // Consulta principal (nueva tabla masiva_centro_vida). Alias de id para compatibilidad visual
 $query = "SELECT 
@@ -290,6 +295,9 @@ $result = $mysqli->query($query);
                     sync();
                 });
             </script>
+            <!-- Mensaje informativo de filtro por grupo -->
+            <?php echo generarMensajeFiltroGrupo($mysqli); ?>
+            
             <div class="modern-filters">
                 <form action="formMasivoCentroVida.php" method="get" class="filter-row">
                     <div class="filter-group">

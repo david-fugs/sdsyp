@@ -1,5 +1,6 @@
 <?php
 // Exportar comparador de actividades a Excel con 2 hojas
+session_start();
 if (ob_get_length()) { 
     header('Content-Type: text/plain; charset=utf-8'); 
     echo 'Salida previa'; 
@@ -7,6 +8,7 @@ if (ob_get_length()) {
 }
 
 require_once '../../conexion.php';
+require_once '../filtros_grupo_usuario.php';
 $mysqli->set_charset('utf8mb4');
 require_once '../../vendor/autoload.php';
 
@@ -59,6 +61,15 @@ if ($filtro_fecha) {
     }
 }
 
+// Aplicar filtros por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
+$where_grupo_usuario_masivas = '';
+$where_grupo_usuario_individuales = '';
+if (debeAplicarFiltroGrupo($_SESSION['tipo_usuario'] ?? null) && isset($_SESSION['id_grupo'])) {
+    $id_grupo = intval($_SESSION['id_grupo']);
+    $where_grupo_usuario_masivas = " AND mcv.id_centro_vida = $id_grupo";
+    $where_grupo_usuario_individuales = " AND p.id_grupo = $id_grupo";
+}
+
 // ========================
 // HOJA 1: ACTIVIDADES MASIVAS
 // ========================
@@ -91,7 +102,7 @@ LEFT JOIN grupos g ON mcv.id_centro_vida = g.id_grupo
 LEFT JOIN comunas c ON mcv.id_comuna = c.id_com
 LEFT JOIN usuarios u1 ON mcv.id_usuario = u1.id
 LEFT JOIN usuarios u2 ON mcv.funcionario_responsable = u2.id
-WHERE 1 $where_masivas 
+WHERE 1 $where_masivas $where_grupo_usuario_masivas
 ORDER BY mcv.fecha_atencion DESC";
 
 $res_masivas = $mysqli->query($sql_masivas);
@@ -141,7 +152,7 @@ LEFT JOIN comunas c ON p.id_comuna_persona = c.id_com
 LEFT JOIN metas m ON rcv.id_meta = m.id_meta
 LEFT JOIN actividades a ON rcv.id_actividad = a.id_actividad
 LEFT JOIN acciones ac ON rcv.id_accion = ac.id_accion
-WHERE 1 $where_individuales
+WHERE 1 $where_individuales $where_grupo_usuario_individuales
 GROUP BY rcv.id_registro_centro_vida 
 ORDER BY rcv.fecha_registro DESC";
 
