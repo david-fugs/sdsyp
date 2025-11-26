@@ -18,55 +18,55 @@ $stats = array();
 
 // Estadísticas específicas para Colombia Mayor (tipo 8 y 9)
 if ($tipo_usuario == 8 || $tipo_usuario == 9) {
-    // Total de personas Colombia Mayor
-    $where_usuario = ($tipo_usuario == 9) ? " AND usuario_registro = " . $_SESSION['id'] : "";
-    
-    // Verificar si las tablas existen
-    $tabla_existe = $mysqli->query("SHOW TABLES LIKE 'personas_colombia_mayor'");
-    if ($tabla_existe && $tabla_existe->num_rows > 0) {
-        $query_personas_cm = "SELECT COUNT(*) as total FROM personas_colombia_mayor WHERE 1=1 $where_usuario";
-        $result_personas_cm = $mysqli->query($query_personas_cm);
-        $stats['personas'] = $result_personas_cm ? $result_personas_cm->fetch_assoc()['total'] : 0;
-        
-        // Personas activas
-        $query_activas_cm = "SELECT COUNT(*) as total FROM personas_colombia_mayor WHERE estado_cm = 'ACTIVO' $where_usuario";
-        $result_activas_cm = $mysqli->query($query_activas_cm);
-        $stats['personas_activas'] = $result_activas_cm ? $result_activas_cm->fetch_assoc()['total'] : 0;
-        
-        // Total de movimientos
-        $query_movimientos_cm = "SELECT COUNT(*) as total FROM movimientos_colombia_mayor WHERE 1=1 $where_usuario";
-        $result_movimientos_cm = $mysqli->query($query_movimientos_cm);
-        $stats['movimientos_cm'] = $result_movimientos_cm ? $result_movimientos_cm->fetch_assoc()['total'] : 0;
-        
-        // Total de registros individuales
-        $query_registros_cm = "SELECT COUNT(*) as total FROM registros_individuales_cm WHERE 1=1 $where_usuario";
-        $result_registros_cm = $mysqli->query($query_registros_cm);
-        $stats['registros_cm'] = $result_registros_cm ? $result_registros_cm->fetch_assoc()['total'] : 0;
-        
-        // Total de pagos
-        $query_pagos_cm = "SELECT COUNT(*) as total FROM pagos_colombia_mayor WHERE 1=1 $where_usuario";
-        $result_pagos_cm = $mysqli->query($query_pagos_cm);
-        $stats['pagos_cm'] = $result_pagos_cm ? $result_pagos_cm->fetch_assoc()['total'] : 0;
-        
-        // Movimientos recientes (últimos 30 días)
-        $query_movimientos_recientes = "SELECT COUNT(*) as total FROM movimientos_colombia_mayor 
+  // Total de personas Colombia Mayor
+  $where_usuario = ($tipo_usuario == 9) ? " AND usuario_registro = " . $_SESSION['id'] : "";
+
+  // Verificar si las tablas existen
+  $tabla_existe = $mysqli->query("SHOW TABLES LIKE 'personas_colombia_mayor'");
+  if ($tabla_existe && $tabla_existe->num_rows > 0) {
+    $query_personas_cm = "SELECT COUNT(*) as total FROM personas_colombia_mayor WHERE 1=1 $where_usuario";
+    $result_personas_cm = $mysqli->query($query_personas_cm);
+    $stats['personas'] = $result_personas_cm ? $result_personas_cm->fetch_assoc()['total'] : 0;
+
+    // Personas activas
+    $query_activas_cm = "SELECT COUNT(*) as total FROM personas_colombia_mayor WHERE estado_cm = 'ACTIVO' $where_usuario";
+    $result_activas_cm = $mysqli->query($query_activas_cm);
+    $stats['personas_activas'] = $result_activas_cm ? $result_activas_cm->fetch_assoc()['total'] : 0;
+
+    // Total de movimientos
+    $query_movimientos_cm = "SELECT COUNT(*) as total FROM movimientos_colombia_mayor WHERE 1=1 $where_usuario";
+    $result_movimientos_cm = $mysqli->query($query_movimientos_cm);
+    $stats['movimientos_cm'] = $result_movimientos_cm ? $result_movimientos_cm->fetch_assoc()['total'] : 0;
+
+    // Total de registros individuales
+    $query_registros_cm = "SELECT COUNT(*) as total FROM registros_individuales_cm WHERE 1=1 $where_usuario";
+    $result_registros_cm = $mysqli->query($query_registros_cm);
+    $stats['registros_cm'] = $result_registros_cm ? $result_registros_cm->fetch_assoc()['total'] : 0;
+
+    // Total de pagos
+    $query_pagos_cm = "SELECT COUNT(*) as total FROM pagos_colombia_mayor WHERE 1=1 $where_usuario";
+    $result_pagos_cm = $mysqli->query($query_pagos_cm);
+    $stats['pagos_cm'] = $result_pagos_cm ? $result_pagos_cm->fetch_assoc()['total'] : 0;
+
+    // Movimientos recientes (últimos 30 días)
+    $query_movimientos_recientes = "SELECT COUNT(*) as total FROM movimientos_colombia_mayor 
                                          WHERE fecha_movimiento_cm >= DATE_SUB(NOW(), INTERVAL 30 DAY) $where_usuario";
-        $result_movimientos_recientes = $mysqli->query($query_movimientos_recientes);
-        $stats['movimientos_recientes'] = $result_movimientos_recientes ? $result_movimientos_recientes->fetch_assoc()['total'] : 0;
-    } else {
-        // Valores por defecto si las tablas no existen aún
-        $stats['personas'] = 0;
-        $stats['personas_activas'] = 0;
-        $stats['movimientos_cm'] = 0;
-        $stats['registros_cm'] = 0;
-        $stats['pagos_cm'] = 0;
-        $stats['movimientos_recientes'] = 0;
-    }
+    $result_movimientos_recientes = $mysqli->query($query_movimientos_recientes);
+    $stats['movimientos_recientes'] = $result_movimientos_recientes ? $result_movimientos_recientes->fetch_assoc()['total'] : 0;
+  } else {
+    // Valores por defecto si las tablas no existen aún
+    $stats['personas'] = 0;
+    $stats['personas_activas'] = 0;
+    $stats['movimientos_cm'] = 0;
+    $stats['registros_cm'] = 0;
+    $stats['pagos_cm'] = 0;
+    $stats['movimientos_recientes'] = 0;
+  }
 } else {
-    // Estadísticas normales para otros usuarios
-    // Total de personas
-    // Contar personas que NO tienen ningún movimiento con id_condicion = 8 (fallecido)
-    $query_personas = "
+  // Estadísticas normales para otros usuarios
+  // Total de personas
+  // Contar personas que NO tienen ningún movimiento con id_condicion = 8 (fallecido)
+  $query_personas = "
     SELECT COUNT(*) as total FROM personas p
     WHERE NOT EXISTS (
         SELECT 1 FROM movimiento_persona mp
@@ -74,8 +74,8 @@ if ($tipo_usuario == 8 || $tipo_usuario == 9) {
         AND mp.id_condicion = 8
     )
     ";
-    $result_personas = $mysqli->query($query_personas);
-    $stats['personas'] = $result_personas->fetch_assoc()['total'];
+  $result_personas = $mysqli->query($query_personas);
+  $stats['personas'] = $result_personas->fetch_assoc()['total'];
 }
 
 // Total de metas
@@ -683,18 +683,20 @@ $mysqli->close();
                   <a href="code/contratista/seeActivities.php" class="nav_link sublink">Agregar Actividades contratista</a>
                   <a href="code/contratistaCentroVida/seeActivitiesCentroVida.php" class="nav_link sublink">Actividades Centro Vida</a>
                 <?php endif; ?>
-                <?php if ($tipo_usuario != 5 ) : ?>
-                <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
-                <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades Masivas</a>
-                <a href="code/contratistaIndividual/form.php" class="nav_link sublink">Registro Actividades Individuales</a>
+                <?php if ($tipo_usuario != 5) : ?>
+                  <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
+                  <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades Masivas</a>
+                  <a href="code/contratistaIndividual/form.php" class="nav_link sublink">Registro Actividades Individuales</a>
                 <?php endif; ?>
-                <?php if ($tipo_usuario != 4 ) : ?>
-                <a href="code/contratistaCentroVida/formCentroVida.php" class="nav_link sublink">Registros indiv Centro Vida</a>
-                <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
+                <?php if ($tipo_usuario != 4) : ?>
+                  <a href="code/contratistaCentroVida/formCentroVida.php" class="nav_link sublink">Registros indiv Centro Vida</a>
+                  <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
                 <?php endif; ?>
+                <?php if ($tipo_usuario != 5) : ?>
                 <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
-                <?php if ($tipo_usuario == 5 ) : ?>
-                <a href="code/contratistaCentroVida/comparadorActividades.php" class="nav_link sublink">Comparador Actividades</a>
+                <?php endif; ?>
+                <?php if ($tipo_usuario == 5) : ?>
+                  <a href="code/contratistaCentroVida/comparadorActividades.php" class="nav_link sublink">Comparador Actividades</a>
                 <?php endif; ?>
 
               </ul>
@@ -733,7 +735,7 @@ $mysqli->close();
                 <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
                 <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
                 <a href="code/contratistaCentroVida/comparadorActividades.php" class="nav_link sublink">Comparador Actividades</a>
-                
+
 
               </ul>
             </li>
@@ -792,6 +794,7 @@ $mysqli->close();
             </ul>
           </li>
 
+          <?php if ($tipo_usuario != 5) { ?>
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
@@ -804,6 +807,7 @@ $mysqli->close();
               <a href="code/reports/seeReports.php" class="nav_link sublink">Informes Anuales</a>
             </ul>
           </li>
+          <?php } ?>
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
@@ -940,24 +944,15 @@ $mysqli->close();
               <i class="bx bx-chevron-right arrow-left"></i>
             </div>
             <ul class="menu_items submenu">
-              <a href="code/contratistaCentroVida/seeActivitiesCentroVida.php" class="nav_link sublink">Actividades Centro Vida</a>
+              <!-- Actividades Centro Vida oculto para tipo 10 y 11 -->
               <a href="code/contratistaCentroVida/formCentroVida.php" class="nav_link sublink">Registros indiv Centro Vida</a>
               <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
-              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
+              <!-- Movimientos Personas visible para tipo 10 -->
+              
+              <a href="code/contratistaCentroVida/comparadorActividades.php" class="nav_link sublink">Comparador Actividades</a>
             </ul>
           </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-chart-bar"></i>
-              </span>
-              <span class="navlink">Informes</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/reports/seeReports.php" class="nav_link sublink">Informes Anuales</a>
-            </ul>
-          </li>
+          <!-- Informes oculto para tipo 10 -->
 
           <li class="item">
             <div href="#" class="nav_link submenu_item">
@@ -996,6 +991,19 @@ $mysqli->close();
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
+                <i class="fa-solid fa-user-pen"></i>
+              </span>
+              <span class="navlink">Usuarios Plataforma</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/users/showusers.php" class="nav_link sublink">Permisos</a>
+              <a href="code/users/register.php" class="nav_link sublink">Crear Nuevo</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
                 <i class="fa-solid fa-bullseye"></i>
               </span>
               <span class="navlink">Registro art masivas</span>
@@ -1005,6 +1013,7 @@ $mysqli->close();
               <a href="code/contratistaCentroVida/formCentroVida.php" class="nav_link sublink">Registros indiv Centro Vida</a>
               <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
               <a href="code/contratistaCentroVida/comparadorActividades.php" class="nav_link sublink">Comparador Actividades</a>
+              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
             </ul>
           </li>
 
@@ -1042,7 +1051,7 @@ $mysqli->close();
       <div class="menu_content">
         <ul class="menu_items">
           <div class="menu_title menu_dahsboard"></div>
-          
+
           <!-- Título especial Colombia Mayor -->
           <li class="item" style="pointer-events: none;">
             <div class="nav_link" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px; margin: 10px; padding: 15px; text-align: center;">
@@ -1159,7 +1168,7 @@ $mysqli->close();
         <h2><i class="fas fa-award me-2"></i>Bienvenido a Colombia Mayor</h2>
         <p class="lead mb-3">Sistema de Gestión Colombia Mayor - Panel de Control</p>
         <small>Acceso como: <?php echo $tipo_usuario == 8 ? 'Técnico Colombia Mayor' : 'Contratista Colombia Mayor'; ?> | Usuario: <?php echo htmlspecialchars($nombre); ?></small>
-        
+
         <!-- Botón de acceso rápido Colombia Mayor -->
         <div class="mt-4">
           <a href="code/colombiaMayor/seePersonaCM.php" class="btn btn-light btn-lg px-4 py-2" style="border-radius: 25px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">

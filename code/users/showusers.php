@@ -288,7 +288,7 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                             $badge_class = 'badge bg-secondary';
                             break;
                         case 10:
-                            $tipo_usuario_texto = 'CONTRATISTA CENTRO VIDA';
+                            $tipo_usuario_texto = 'CONTRATISTA CENTRO VIDA PROPIO';
                             $badge_class = 'badge bg-info';
                             break;
                         case 11:
@@ -436,7 +436,7 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
               <option value="5">TÉCNICO CENTRO VIDA</option>
               <option value="8">TÉCNICO COLOMBIA MAYOR</option>
               <option value="9">CONTRATISTA COLOMBIA MAYOR</option>
-              <option value="10">CONTRATISTA CENTRO VIDA</option>
+              <option value="10">CONTRATISTA CENTRO VIDA PROPIO</option>
               <option value="11">INGENIERO CENTRO VIDA</option>
             </select>
           </div>
