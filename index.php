@@ -38,7 +38,7 @@ if ($_POST) {
 
       // Tipos de usuario con acceso:
       // 1: ADMIN, 2: CPSAM/CV, 3: CONTRATISTA, 4: TÉCNICO CPSAM, 5: TÉCNICO CENTRO VIDA
-      if (in_array($row['tipo_usuario'], [1, 2, 3, 4, 5, 8, 9])) {
+      if (in_array($row['tipo_usuario'], [1, 2, 3, 4, 5, 8, 9,10])) {
         header("Location: access.php");
       } elseif ($row['tipo_usuario'] == 7) {
         echo '<script>

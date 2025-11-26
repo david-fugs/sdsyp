@@ -260,7 +260,7 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                             $badge_class = 'badge bg-success';
                             break;
                         case 3:
-                            $tipo_usuario_texto = 'CONTRATISTA';
+                            $tipo_usuario_texto = 'CONTRATISTA CPSAM';
                             $badge_class = 'badge bg-primary';
                             break;
                         case 2:
@@ -286,6 +286,10 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                         case 9:
                             $tipo_usuario_texto = 'CONTRATISTA COLOMBIA MAYOR';
                             $badge_class = 'badge bg-secondary';
+                            break;
+                        case 10:
+                            $tipo_usuario_texto = 'CONTRATISTA CENTRO VIDA';
+                            $badge_class = 'badge bg-info';
                             break;
 
                         default:
@@ -422,12 +426,13 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
             <select class="form-control" id="edit_tipo_usuario" name="tipo_usuario" required>
               <option value="">Seleccione tipo usuario</option>
               <option value="1">ADMINISTRADOR</option>
-              <option value="3">CONTRATISTA</option>
+              <option value="3">CONTRATISTA CPSAM</option>
               <option value="2">CPSAM O CENTRO VIDA</option>
               <option value="4">TÉCNICO CPSAM</option>
               <option value="5">TÉCNICO CENTRO VIDA</option>
               <option value="8">TÉCNICO COLOMBIA MAYOR</option>
               <option value="9">CONTRATISTA COLOMBIA MAYOR</option>
+              <option value="10">CONTRATISTA CENTRO VIDA</option>
             </select>
           </div>
           <button type="submit" class="btn btn-primary">Guardar Cambios</button>

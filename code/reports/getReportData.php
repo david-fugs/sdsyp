@@ -20,6 +20,9 @@ if (!isset($_GET['year']) || empty($_GET['year'])) {
 
 $year = intval($_GET['year']);
 
+// Obtener filtro de grupo si está presente
+$filtro_grupo = isset($_GET['filtro_grupo']) && !empty($_GET['filtro_grupo']) ? intval($_GET['filtro_grupo']) : null;
+
 // Verificar conexión a la base de datos
 if ($mysqli->connect_error) {
     echo json_encode(['error' => 'Error de conexión a la base de datos: ' . $mysqli->connect_error]);
@@ -29,12 +32,17 @@ if ($mysqli->connect_error) {
 try {
     // Consulta mejorada para obtener todos los campos de personas y movimientos (consulta plana)
 $where = "WHERE p.estado_persona = 1";
-if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3) {
+if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3 && $tipo_usuario != 10) {
     $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
 
-// Aplicar filtro adicional para usuarios técnicos (tipos 4 y 5)
+// Aplicar filtro adicional para usuarios técnicos y contratistas (tipos 3, 4, 5 y 10)
 $where .= $where_grupos_filtro;
+
+// Aplicar filtro por grupo específico si se seleccionó uno
+if ($filtro_grupo !== null) {
+    $where .= " AND p.id_grupo = " . intval($filtro_grupo);
+}
 
 $query = "
     SELECT 
