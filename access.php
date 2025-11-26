@@ -693,6 +693,9 @@ $mysqli->close();
                 <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
                 <?php endif; ?>
                 <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
+                <?php if ($tipo_usuario == 5 ) : ?>
+                <a href="code/contratistaCentroVida/comparadorActividades.php" class="nav_link sublink">Comparador Actividades</a>
+                <?php endif; ?>
 
               </ul>
             </li>
