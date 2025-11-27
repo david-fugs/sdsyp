@@ -39,96 +39,102 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
         body {
             font-size: 16px !important;
         }
-        
+
         /* Tabla - aumentar tamaño de fuente */
         .modern-table {
             font-size: 18px !important;
         }
-        
+
         .modern-table th {
             font-size: 20px !important;
             font-weight: 600 !important;
         }
-        
+
         .modern-table td {
             font-size: 18px !important;
             padding: 12px 8px !important;
         }
-        
+
         /* Filtros y inputs - aumentar tamaño */
-        .modern-input, .modern-select {
+        .modern-input,
+        .modern-select {
             font-size: 18px !important;
             padding: 10px 12px !important;
         }
-        
+
         .filter-group label {
             font-size: 18px !important;
             font-weight: 600 !important;
         }
-        
+
         /* Botones - aumentar tamaño */
         .btn-modern {
             font-size: 18px !important;
             padding: 10px 20px !important;
         }
-        
+
         .btn-action {
             padding: 8px 10px !important;
             font-size: 14px !important;
         }
-        
+
         /* Header moderno */
         .modern-header h2 {
             font-size: 26px !important;
         }
-        
+
         /* DataTables controles */
-        .dataTables_info, .dataTables_paginate {
+        .dataTables_info,
+        .dataTables_paginate {
             font-size: 14px !important;
         }
-        
-        .dataTables_length select, .dataTables_length label {
+
+        .dataTables_length select,
+        .dataTables_length label {
             font-size: 14px !important;
         }
-        
+
         .paginate_button {
             font-size: 14px !important;
         }
-        
+
         /* Modales - aumentar tamaño de fuente */
         .modal-title {
             font-size: 20px !important;
         }
-        
+
         .modal-body {
             font-size: 15px !important;
         }
-        
+
         .form-label {
             font-size: 14px !important;
             font-weight: 600 !important;
         }
-        
-        .form-control, .form-select {
+
+        .form-control,
+        .form-select {
             font-size: 15px !important;
         }
-        
+
         /* SweetAlert - aumentar tamaño */
         .swal2-title {
             font-size: 20px !important;
         }
-        
+
         .swal2-content {
             font-size: 16px !important;
         }
-        
+
         /* Enlaces y navegación */
         a {
             font-size: 15px !important;
         }
-        
+
         /* Mensajes de estado */
-        .text-muted, .text-success, .text-danger {
+        .text-muted,
+        .text-success,
+        .text-danger {
             font-size: 13px !important;
         }
 
@@ -186,21 +192,21 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                 <form action="showusers.php" method="get" class="filter-row">
                     <div class="filter-group">
                         <label for="usuario">Usuario</label>
-                        <input type="text" 
-                               id="usuario" 
-                               name="usuario" 
-                               class="modern-input" 
-                               placeholder="Buscar por usuario..."
-                               value="<?= isset($_GET['usuario']) ? htmlspecialchars($_GET['usuario']) : '' ?>">
+                        <input type="text"
+                            id="usuario"
+                            name="usuario"
+                            class="modern-input"
+                            placeholder="Buscar por usuario..."
+                            value="<?= isset($_GET['usuario']) ? htmlspecialchars($_GET['usuario']) : '' ?>">
                     </div>
                     <div class="filter-group">
                         <label for="nombre">Nombre</label>
-                        <input type="text" 
-                               id="nombre" 
-                               name="nombre" 
-                               class="modern-input" 
-                               placeholder="Buscar por nombre..."
-                               value="<?= isset($_GET['nombre']) ? htmlspecialchars($_GET['nombre']) : '' ?>">
+                        <input type="text"
+                            id="nombre"
+                            name="nombre"
+                            class="modern-input"
+                            placeholder="Buscar por nombre..."
+                            value="<?= isset($_GET['nombre']) ? htmlspecialchars($_GET['nombre']) : '' ?>">
                     </div>
                     <div class="filter-group">
                         <button type="submit" class="btn-modern btn-primary">
@@ -214,29 +220,29 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
             <!-- Tabla moderna -->
             <div class="modern-table-wrapper">
 
-        <?php
+                <?php
 
-        date_default_timezone_set("America/Bogota");
-        include("../../conexion.php");
-        require_once("../../zebra.php");
-        @$usuario = ($_GET['usuario']);
-        @$nombre = ($_GET['nombre']);
+                date_default_timezone_set("America/Bogota");
+                include("../../conexion.php");
+                require_once("../../zebra.php");
+                @$usuario = ($_GET['usuario']);
+                @$nombre = ($_GET['nombre']);
 
-        $query = "SELECT * FROM `usuarios` WHERE (usuario LIKE '%" . $usuario . "%') AND (nombre LIKE '%" . $nombre . "%') AND usuarios.estado_usu = 1 ORDER BY usuarios.id ASC";
-        $res = $mysqli->query($query);
-        $num_registros = mysqli_num_rows($res);
-        $resul_x_pagina = 50;
+                $query = "SELECT * FROM `usuarios` WHERE (usuario LIKE '%" . $usuario . "%') AND (nombre LIKE '%" . $nombre . "%') AND usuarios.estado_usu = 1 ORDER BY usuarios.id ASC";
+                $res = $mysqli->query($query);
+                $num_registros = mysqli_num_rows($res);
+                $resul_x_pagina = 50;
 
-        if ($res) {
+                if ($res) {
 
-            $paginacion = new Zebra_Pagination();
-            $paginacion->records($num_registros);
-            $paginacion->records_per_page($resul_x_pagina);
+                    $paginacion = new Zebra_Pagination();
+                    $paginacion->records($num_registros);
+                    $paginacion->records_per_page($resul_x_pagina);
 
-            $consulta = "SELECT * FROM `usuarios` WHERE (usuario LIKE '%" . $usuario . "%') AND (nombre LIKE '%" . $nombre . "%') AND usuarios.estado_usu = 1 ORDER BY usuarios.id ASC LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . "," . $resul_x_pagina;
-            $result = $mysqli->query($consulta);
-            if ($result) {
-                echo '<table class="modern-table" id="usersTable">
+                    $consulta = "SELECT * FROM `usuarios` WHERE (usuario LIKE '%" . $usuario . "%') AND (nombre LIKE '%" . $nombre . "%') AND usuarios.estado_usu = 1 ORDER BY usuarios.id ASC LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . "," . $resul_x_pagina;
+                    $result = $mysqli->query($consulta);
+                    if ($result) {
+                        echo '<table class="modern-table" id="usersTable">
                         <thead>
                             <tr>
                                 <th class="col-id">No.</th>
@@ -249,66 +255,70 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                         </thead>
                         <tbody>';
 
-                $i = 1;
-                while ($row = mysqli_fetch_array($result)) {
-                    // Determinar el tipo de usuario para mostrar
-                    $tipo_usuario_texto = '';
-                    $badge_class = '';
-                    switch($row['tipo_usuario']) {
-                        case 1:
-                            $tipo_usuario_texto = 'ADMINISTRADOR';
-                            $badge_class = 'badge bg-success';
-                            break;
-                        case 3:
-                            $tipo_usuario_texto = 'CONTRATISTA CPSAM';
-                            $badge_class = 'badge bg-primary';
-                            break;
-                        case 2:
-                            $tipo_usuario_texto = 'CPSAM O CENTRO VIDA';
-                            $badge_class = 'badge bg-info';
-                            break;
-                        case 4:
-                            $tipo_usuario_texto = 'TÉCNICO CPSAM';
-                            $badge_class = 'badge bg-warning text-dark';
-                            break;
-                        case 5:
-                            $tipo_usuario_texto = 'TÉCNICO CENTRO VIDA';
-                            $badge_class = 'badge bg-info text-white';
-                            break;
-                        case 7:
-                            $tipo_usuario_texto = 'SIN ACCESO';
-                            $badge_class = 'badge bg-secondary';
-                            break;
-                        case 8:
-                            $tipo_usuario_texto = 'TÉCNICO COLOMBIA MAYOR';
-                            $badge_class = 'badge bg-secondary';
-                            break;
-                        case 9:
-                            $tipo_usuario_texto = 'CONTRATISTA COLOMBIA MAYOR';
-                            $badge_class = 'badge bg-secondary';
-                            break;
-                        case 10:
-                            $tipo_usuario_texto = 'CONTRATISTA CENTRO VIDA PROPIO';
-                            $badge_class = 'badge bg-info';
-                            break;
-                        case 11:
-                            $tipo_usuario_texto = 'INGENIERO CENTRO VIDA';
-                            $badge_class = 'badge bg-dark';
-                            break;
+                        $i = 1;
+                        while ($row = mysqli_fetch_array($result)) {
+                            // Determinar el tipo de usuario para mostrar
+                            $tipo_usuario_texto = '';
+                            $badge_class = '';
+                            switch ($row['tipo_usuario']) {
+                                case 1:
+                                    $tipo_usuario_texto = 'ADMINISTRADOR';
+                                    $badge_class = 'badge bg-success';
+                                    break;
+                                case 3:
+                                    $tipo_usuario_texto = 'CONTRATISTA CPSAM';
+                                    $badge_class = 'badge bg-primary';
+                                    break;
+                                case 2:
+                                    $tipo_usuario_texto = 'CPSAM O CENTRO VIDA';
+                                    $badge_class = 'badge bg-info';
+                                    break;
+                                case 4:
+                                    $tipo_usuario_texto = 'TÉCNICO CPSAM';
+                                    $badge_class = 'badge bg-warning text-dark';
+                                    break;
+                                case 5:
+                                    $tipo_usuario_texto = 'TÉCNICO CENTRO VIDA';
+                                    $badge_class = 'badge bg-info text-white';
+                                    break;
+                                case 7:
+                                    $tipo_usuario_texto = 'SIN ACCESO';
+                                    $badge_class = 'badge bg-secondary';
+                                    break;
+                                case 8:
+                                    $tipo_usuario_texto = 'TÉCNICO COLOMBIA MAYOR';
+                                    $badge_class = 'badge bg-secondary';
+                                    break;
+                                case 9:
+                                    $tipo_usuario_texto = 'CONTRATISTA COLOMBIA MAYOR';
+                                    $badge_class = 'badge bg-secondary';
+                                    break;
+                                case 10:
+                                    $tipo_usuario_texto = 'CONTRATISTA CENTRO VIDA PROPIO';
+                                    $badge_class = 'badge bg-info';
+                                    break;
+                                case 11:
+                                    $tipo_usuario_texto = 'INGENIERO CENTRO VIDA';
+                                    $badge_class = 'badge bg-dark';
+                                    break;
+                                case 12:
+                                    $tipo_usuario_texto = 'CONTRATISTA CENTRO VIDA ALCALDIA';
+                                    $badge_class = 'badge bg-info';
+                                    break;
 
-                        default:
-                            $tipo_usuario_texto = 'DESCONOCIDO';
-                            $badge_class = 'badge bg-warning';
-                    }
-                    // Obtener nombre del centro asociado
-                    $nombre_centro = '';
-                    if (!empty($row['id_grupo'])) {
-                        $q_centro = $mysqli->query("SELECT descripcion_grupo FROM grupos WHERE id_grupo = '" . $row['id_grupo'] . "'");
-                        if ($q_centro && $centro = $q_centro->fetch_assoc()) {
-                            $nombre_centro = $centro['descripcion_grupo'];
-                        }
-                    }
-                    echo '<tr class="fade-in" data-id-grupo="' . $row['id_grupo'] . '">
+                                default:
+                                    $tipo_usuario_texto = 'DESCONOCIDO';
+                                    $badge_class = 'badge bg-warning';
+                            }
+                            // Obtener nombre del centro asociado
+                            $nombre_centro = '';
+                            if (!empty($row['id_grupo'])) {
+                                $q_centro = $mysqli->query("SELECT descripcion_grupo FROM grupos WHERE id_grupo = '" . $row['id_grupo'] . "'");
+                                if ($q_centro && $centro = $q_centro->fetch_assoc()) {
+                                    $nombre_centro = $centro['descripcion_grupo'];
+                                }
+                            }
+                            echo '<tr class="fade-in" data-id-grupo="' . $row['id_grupo'] . '">
                         <td class="col-id">' . ($i + (($paginacion->get_page() - 1) * $resul_x_pagina)) . '</td>
                         <td>' . htmlspecialchars($row['usuario']) . '</td>
                         <td>' . htmlspecialchars(utf8_encode($row['nombre'])) . '</td>
@@ -332,157 +342,170 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                             </div>
                         </td>
                     </tr>';
-                    $i++;
-                }
+                            $i++;
+                        }
 
-                echo '</tbody>
+                        echo '</tbody>
                     </table>
                 </div>
             </div>
         </div>';
-                
-                echo '<br>';
-                $paginacion->render();
-            } else {
-                echo "Error en la consulta: " . $mysqli->error;
-            }
-        } else {
-            echo "Error en la consulta: " . $mysqli->error;
-        }
-        ?>
 
-        <center>
-            <br /><a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="Regresar" /></a>
-        </center>
-
-    <script src="https://www.jose-aguilar.com/scripts/fontawesome/js/all.min.js" data-auto-replace-svg="nest"></script>
-
-    <script>
-        // Inicializar DataTables para la tabla de usuarios
-        let usersTable;
-        
-        function initDataTable() {
-            if ($.fn.DataTable.isDataTable('#usersTable')) {
-                $('#usersTable').DataTable().destroy();
-            }
-            
-            usersTable = $('#usersTable').DataTable({
-                pageLength: 15,
-                lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
-                language: {
-                    url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
-                },
-                columnDefs: [
-                    { orderable: false, targets: [5] }, // Deshabilitar orden en la columna de acciones
-                    { className: "text-center", targets: [0, 5] } // Centrar columna de ID y acciones
-                ],
-                order: [[0, 'asc']], // Ordenar por número ascendente
-                dom: 'frtip', // Solo mostrar filtro, tabla, información y paginación
-                searching: false, // Deshabilitar búsqueda de DataTables (usamos filtros propios)
-                info: true,
-                paging: true,
-                responsive: true
-            });
-        }
-
-        // Inicializar cuando el documento esté listo
-        $(document).ready(function() {
-            initDataTable();
-        });
-    </script>
-
-    <!-- Modal para editar usuario -->
-<div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editUserModalLabel">Editar Usuario</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <form id="editUserForm">
-          <input type="hidden" id="edit_id" name="id">
-          <div class="form-group">
-            <label for="edit_usuario">Usuario</label>
-            <input type="text" class="form-control" id="edit_usuario" name="usuario" required>
-          </div>
-          <div class="form-group">
-            <label for="edit_nombre">Nombre</label>
-            <input type="text" class="form-control" id="edit_nombre" name="nombre" required>
-          </div>
-          <div class="form-group">
-            <label for="edit_id_grupo">Centro Asociado</label>
-            <select class="form-control" id="edit_id_grupo" name="id_grupo" required>
-              <option value="">Seleccione un centro</option>
-              <?php
-                $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos ORDER BY descripcion_grupo ASC";
-                $result_grupos = $mysqli->query($query_grupos);
-                while ($row_grupo = $result_grupos->fetch_assoc()) {
-                  echo '<option value="' . $row_grupo['id_grupo'] . '">' . htmlspecialchars($row_grupo['descripcion_grupo']) . '</option>';
+                        echo '<br>';
+                        $paginacion->render();
+                    } else {
+                        echo "Error en la consulta: " . $mysqli->error;
+                    }
+                } else {
+                    echo "Error en la consulta: " . $mysqli->error;
                 }
-              ?>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="edit_tipo_usuario">Tipo Usuario</label>
-            <select class="form-control" id="edit_tipo_usuario" name="tipo_usuario" required>
-              <option value="">Seleccione tipo usuario</option>
-              <option value="1">ADMINISTRADOR</option>
-              <option value="3">CONTRATISTA CPSAM</option>
-              <option value="2">CPSAM O CENTRO VIDA</option>
-              <option value="4">TÉCNICO CPSAM</option>
-              <option value="5">TÉCNICO CENTRO VIDA</option>
-              <option value="8">TÉCNICO COLOMBIA MAYOR</option>
-              <option value="9">CONTRATISTA COLOMBIA MAYOR</option>
-              <option value="10">CONTRATISTA CENTRO VIDA PROPIO</option>
-              <option value="11">INGENIERO CENTRO VIDA</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
+                ?>
 
-<script>
-// Abrir modal y precargar datos
-$(document).on('click', '.btn-edit', function(e) {
-    e.preventDefault();
-    var row = $(this).closest('tr');
-    var id = $(this).attr('data-id');
-    var usuario = row.find('td').eq(1).text();
-    var nombre = row.find('td').eq(2).text();
-    var id_grupo = row.attr('data-id-grupo');
-    var tipo_usuario = row.find('span').attr('data-tipo-usuario') || row.find('span').text();
-    $('#edit_id').val(id);
-    $('#edit_usuario').val(usuario);
-    $('#edit_nombre').val(nombre);
-    $('#edit_id_grupo').val(id_grupo);
-    $('#edit_tipo_usuario').val(tipo_usuario);
-    $('#editUserModal').modal('show');
-});
+                <center>
+                    <br /><a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="Regresar" /></a>
+                </center>
 
-// Enviar cambios por AJAX
-$('#editUserForm').submit(function(e) {
-    e.preventDefault();
-    $.ajax({
-        url: 'editusers.php',
-        type: 'POST',
-        data: $(this).serialize(),
-        success: function(response) {
-            Swal.fire('Actualizado', 'Usuario actualizado correctamente', 'success');
-            $('#editUserModal').modal('hide');
-            setTimeout(function(){ location.reload(); }, 1000);
-        },
-        error: function() {
-            Swal.fire('Error', 'No se pudo actualizar el usuario', 'error');
-        }
-    });
-});
-</script>
+                <script src="https://www.jose-aguilar.com/scripts/fontawesome/js/all.min.js" data-auto-replace-svg="nest"></script>
+
+                <script>
+                    // Inicializar DataTables para la tabla de usuarios
+                    let usersTable;
+
+                    function initDataTable() {
+                        if ($.fn.DataTable.isDataTable('#usersTable')) {
+                            $('#usersTable').DataTable().destroy();
+                        }
+
+                        usersTable = $('#usersTable').DataTable({
+                            pageLength: 15,
+                            lengthMenu: [
+                                [5, 10, 25, 50, -1],
+                                [5, 10, 25, 50, "Todos"]
+                            ],
+                            language: {
+                                url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
+                            },
+                            columnDefs: [{
+                                    orderable: false,
+                                    targets: [5]
+                                }, // Deshabilitar orden en la columna de acciones
+                                {
+                                    className: "text-center",
+                                    targets: [0, 5]
+                                } // Centrar columna de ID y acciones
+                            ],
+                            order: [
+                                [0, 'asc']
+                            ], // Ordenar por número ascendente
+                            dom: 'frtip', // Solo mostrar filtro, tabla, información y paginación
+                            searching: false, // Deshabilitar búsqueda de DataTables (usamos filtros propios)
+                            info: true,
+                            paging: true,
+                            responsive: true
+                        });
+                    }
+
+                    // Inicializar cuando el documento esté listo
+                    $(document).ready(function() {
+                        initDataTable();
+                    });
+                </script>
+
+                <!-- Modal para editar usuario -->
+                <div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editUserModalLabel">Editar Usuario</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editUserForm">
+                                    <input type="hidden" id="edit_id" name="id">
+                                    <div class="form-group">
+                                        <label for="edit_usuario">Usuario</label>
+                                        <input type="text" class="form-control" id="edit_usuario" name="usuario" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit_nombre">Nombre</label>
+                                        <input type="text" class="form-control" id="edit_nombre" name="nombre" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit_id_grupo">Centro Asociado</label>
+                                        <select class="form-control" id="edit_id_grupo" name="id_grupo" required>
+                                            <option value="">Seleccione un centro</option>
+                                            <?php
+                                            $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos ORDER BY descripcion_grupo ASC";
+                                            $result_grupos = $mysqli->query($query_grupos);
+                                            while ($row_grupo = $result_grupos->fetch_assoc()) {
+                                                echo '<option value="' . $row_grupo['id_grupo'] . '">' . htmlspecialchars($row_grupo['descripcion_grupo']) . '</option>';
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit_tipo_usuario">Tipo Usuario</label>
+                                        <select class="form-control" id="edit_tipo_usuario" name="tipo_usuario" required>
+                                            <option value="">Seleccione tipo usuario</option>
+                                            <option value="1">ADMINISTRADOR</option>
+                                            <option value="3">CONTRATISTA CPSAM</option>
+                                            <option value="2">CPSAM O CENTRO VIDA</option>
+                                            <option value="4">TÉCNICO CPSAM</option>
+                                            <option value="5">TÉCNICO CENTRO VIDA</option>
+                                            <option value="8">TÉCNICO COLOMBIA MAYOR</option>
+                                            <option value="9">CONTRATISTA COLOMBIA MAYOR</option>
+                                            <option value="10">CONTRATISTA CENTRO VIDA PROPIO</option>
+                                            <option value="12">CONTRATISTA CENTRO VIDA ALCALDIA</option>
+                                            <option value="11">INGENIERO CENTRO VIDA</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    // Abrir modal y precargar datos
+                    $(document).on('click', '.btn-edit', function(e) {
+                        e.preventDefault();
+                        var row = $(this).closest('tr');
+                        var id = $(this).attr('data-id');
+                        var usuario = row.find('td').eq(1).text();
+                        var nombre = row.find('td').eq(2).text();
+                        var id_grupo = row.attr('data-id-grupo');
+                        var tipo_usuario = row.find('span').attr('data-tipo-usuario') || row.find('span').text();
+                        $('#edit_id').val(id);
+                        $('#edit_usuario').val(usuario);
+                        $('#edit_nombre').val(nombre);
+                        $('#edit_id_grupo').val(id_grupo);
+                        $('#edit_tipo_usuario').val(tipo_usuario);
+                        $('#editUserModal').modal('show');
+                    });
+
+                    // Enviar cambios por AJAX
+                    $('#editUserForm').submit(function(e) {
+                        e.preventDefault();
+                        $.ajax({
+                            url: 'editusers.php',
+                            type: 'POST',
+                            data: $(this).serialize(),
+                            success: function(response) {
+                                Swal.fire('Actualizado', 'Usuario actualizado correctamente', 'success');
+                                $('#editUserModal').modal('hide');
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 1000);
+                            },
+                            error: function() {
+                                Swal.fire('Error', 'No se pudo actualizar el usuario', 'error');
+                            }
+                        });
+                    });
+                </script>
 
 </body>
 
