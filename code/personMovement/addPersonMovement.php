@@ -67,7 +67,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $sql_get_grupo = "SELECT id_grupo FROM personas WHERE cedula_persona = '$cedula_persona' LIMIT 1";
         $result_grupo = $mysqli->query($sql_get_grupo);
         if ($result_grupo && $row_grupo = $result_grupo->fetch_assoc()) {
-            $grupo_anterior = $row_grupo['id_grupo'];
+            // Asegurar que sea NULL si está vacío o es 0
+            $grupo_anterior = (!empty($row_grupo['id_grupo']) && $row_grupo['id_grupo'] != '0') ? $row_grupo['id_grupo'] : null;
         }
 
         // Actualizar el grupo de la persona si se especificó traslado
@@ -83,8 +84,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         // Si se especificó un traslado, registrar en persona_traslados
         if ($id_centro_vida_traslado) {
             $id_movimiento_insertado = $mysqli->insert_id;
-            $sql_insert_tras = "INSERT INTO persona_traslados (cedula_persona, id_movimiento_persona, fecha_movimiento, id_grupo_anterior, id_grupo_nuevo) VALUES ('" . $mysqli->real_escape_string($cedula_persona) . "', " . ($id_movimiento_insertado ? "'" . $mysqli->real_escape_string($id_movimiento_insertado) . "'" : "NULL") . ", '" . $mysqli->real_escape_string($fecha_movimiento) . "', " . ($grupo_anterior !== null ? "'" . $mysqli->real_escape_string($grupo_anterior) . "'" : "NULL") . ", '" . $mysqli->real_escape_string($id_centro_vida_traslado) . "')";
-            $mysqli->query($sql_insert_tras);
+            // Preparar valor de grupo_anterior: NULL si no existe, o el ID si existe
+            $grupo_ant_value = ($grupo_anterior !== null && $grupo_anterior != '' && $grupo_anterior != '0') 
+                ? "'" . $mysqli->real_escape_string($grupo_anterior) . "'" 
+                : "NULL";
+            
+            $sql_insert_tras = "INSERT INTO persona_traslados (cedula_persona, id_movimiento_persona, fecha_movimiento, id_grupo_anterior, id_grupo_nuevo) 
+                VALUES (
+                    '" . $mysqli->real_escape_string($cedula_persona) . "', 
+                    " . ($id_movimiento_insertado ? "'" . $mysqli->real_escape_string($id_movimiento_insertado) . "'" : "NULL") . ", 
+                    '" . $mysqli->real_escape_string($fecha_movimiento) . "', 
+                    " . $grupo_ant_value . ", 
+                    '" . $mysqli->real_escape_string($id_centro_vida_traslado) . "'
+                )";
+            
+            if (!$mysqli->query($sql_insert_tras)) {
+                // Log del error pero no detener el proceso
+                error_log("Error al insertar traslado: " . $mysqli->error);
+            }
         }
 
         echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";

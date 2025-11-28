@@ -77,6 +77,60 @@ ORDER BY p.apellidos_persona ASC
 
 $result = $mysqli->query($query);
 
+// Si no hay resultados y se buscó por cédula, verificar si existe pero está fuera del alcance
+if ((!$result || $result->num_rows == 0) && !empty($_GET['cedula_persona'])) {
+    $cedula_buscar = $mysqli->real_escape_string($_GET['cedula_persona']);
+    
+    // Buscar sin restricciones de grupo
+    $query_existe = "SELECT p.*, g.descripcion_grupo,
+        (SELECT cc.descripcion_condicion 
+         FROM movimiento_persona mp 
+         JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
+         WHERE mp.cedula_persona = p.cedula_persona 
+         AND cc.descripcion_condicion IN ('CPSAM EVADIDO', 'CPSAM FALLECIDO', 'CPSAM RETIRADO VOLUNTARIO', 'CPSAM TRASLADADO')
+         ORDER BY mp.fecha_movimiento DESC 
+         LIMIT 1) AS estado_movimiento
+        FROM personas p
+        LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
+        WHERE p.cedula_persona = '$cedula_buscar' AND p.estado_persona = 1";
+    
+    $result_existe = $mysqli->query($query_existe);
+    
+    if ($result_existe && $result_existe->num_rows > 0) {
+        $row_persona = $result_existe->fetch_assoc();
+        $nombre_completo = $row_persona['nombres_persona'] . ' ' . $row_persona['apellidos_persona'];
+        $grupo = $row_persona['descripcion_grupo'] ? $row_persona['descripcion_grupo'] : 'No asignado';
+        
+        // Determinar el estado
+        $estado_persona = $row_persona['estado_movimiento'] ? $row_persona['estado_movimiento'] : 'CPSAM ACTIVO';
+        
+        if (isset($row_persona['condicion_componente']) && 
+            mb_strtolower(trim($row_persona['condicion_componente'])) === 'usuario interesado') {
+            $estado_persona = 'USUARIO INTERESADO';
+        }
+        
+        if (isset($row_persona['condicion_componente']) && 
+            mb_strtolower(trim($row_persona['condicion_componente'])) === 'visita psicosocial fallida') {
+            $estado_persona = 'VISITA PSICOSOCIAL FALLIDA';
+        }
+        
+        $estado_mostrar = str_ireplace('CPSAM ', '', $estado_persona);
+        
+        // Devolver JSON indicando que existe pero no tiene acceso
+        header('Content-Type: application/json');
+        echo json_encode([
+            'error' => true,
+            'tipo' => 'sin_acceso',
+            'cedula' => $cedula_buscar,
+            'nombre' => $nombre_completo,
+            'grupo' => $grupo,
+            'estado' => $estado_mostrar
+        ]);
+        $mysqli->close();
+        exit;
+    }
+}
+
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         // Determinar el estado de la persona
