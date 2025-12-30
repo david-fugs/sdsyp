@@ -43,6 +43,12 @@ if ($filtro_grupo) {
     $where .= " AND g.id_grupo = $filtro_grupo ";
 }
 
+// Si es usuario tipo 3 (CONTRATISTA CPSAM), filtrar solo sus actividades
+if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
+    $id_usuario = intval($_SESSION['id']);
+    $where .= " AND ra.id_usuario = $id_usuario ";
+}
+
 $query = "SELECT ra.id_registro, m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica,
        g.descripcion_grupo AS centro_vida, ra.otro_lugar, ra.fecha_atencion, ra.nombre_lider, ra.telefono_contacto, c.nombre_com AS nombre_comuna,
        ra.medio_verificacion, ra.cantidad_masculino, ra.cantidad_femenino, ra.tipo_actividad, ra.observacion_actividad,
