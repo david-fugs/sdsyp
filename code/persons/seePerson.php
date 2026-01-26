@@ -41,14 +41,24 @@ $id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
 
 // Filtrar grupos para el select según tipo_usuario
 $grupos_filtrados = [];
-if ($tipo_usuario == 3 && $id_grupo_session) {
-    foreach ($result_grupos as $grupo) {
-        if ($grupo['id_grupo'] == $id_grupo_session) {
+if ($tipo_usuario == 3) {
+    // Para tipo_usuario 3 (CONTRATISTA CPSAM): mostrar todos los CPSAM y su grupo asignado
+    $query_grupos_tipo3 = "SELECT * FROM grupos WHERE descripcion_grupo LIKE 'CPSAM%'";
+    if ($id_grupo_session) {
+        $query_grupos_tipo3 .= " OR id_grupo = '$id_grupo_session'";
+    }
+    $query_grupos_tipo3 .= " ORDER BY descripcion_grupo ASC";
+    $result_grupos_tipo3 = mysqli_query($mysqli, $query_grupos_tipo3);
+    if ($result_grupos_tipo3) {
+        while ($grupo = mysqli_fetch_assoc($result_grupos_tipo3)) {
             $grupos_filtrados[] = $grupo;
         }
     }
 } else {
-    $grupos_filtrados = $result_grupos;
+    // Para otros usuarios, mostrar todos los grupos filtrados
+    foreach ($result_grupos as $grupo) {
+        $grupos_filtrados[] = $grupo;
+    }
 }
 
 if (isset($_GET['delete'])) {
@@ -1569,9 +1579,42 @@ function deleteMember($cedula_persona)
                     }
                     return response.text();
                 })
-                .then(data => {
-                    // Actualizar contenido del tbody
-                    tbody.innerHTML = data;
+                .then(text => {
+                    // Intentar parsear como JSON
+                    try {
+                        const jsonData = JSON.parse(text);
+                        // Si es JSON y es un error de "sin_acceso"
+                        if (jsonData.error && jsonData.tipo === 'sin_acceso') {
+                            // Mostrar alert de persona existente pero sin acceso
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Persona encontrada - Sin acceso',
+                                html: `
+                                    <div style="text-align: left; padding: 10px;">
+                                        <p><strong>La cédula <span style="color: #856404;">${jsonData.cedula}</span> existe en el sistema.</strong></p>
+                                        <hr>
+                                        <p><strong>Nombre:</strong> ${jsonData.nombre}</p>
+                                        <p><strong>Centro Vida/CPSAM:</strong> ${jsonData.grupo}</p>
+                                        <p><strong>Estado:</strong> <span style="color: #0d6efd; font-weight: bold;">${jsonData.estado}</span></p>
+                                        <hr>
+                                        <p class="text-muted" style="font-size: 0.9em;"><i class="bi bi-info-circle"></i> Esta persona pertenece a un grupo al que no tienes acceso.</p>
+                                    </div>
+                                `,
+                                confirmButtonText: 'Entendido',
+                                confirmButtonColor: '#ffc107',
+                                width: '550px'
+                            });
+                            
+                            // Mostrar mensaje en la tabla
+                            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-warning"><i class="bi bi-shield-lock-fill"></i><br>Persona encontrada pero no tiene acceso a este grupo.</td></tr>';
+                            return;
+                        }
+                    } catch (e) {
+                        // No es JSON, es HTML - continuar normalmente
+                    }
+                    
+                    // Actualizar contenido del tbody con HTML
+                    tbody.innerHTML = text;
                     
                     // Reinicializar DataTable después de actualizar el contenido
                     dataTable = null;
@@ -1729,7 +1772,7 @@ function deleteMember($cedula_persona)
     <!-- Script para SweetAlert en formularios -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Alta persona
+            // Alta persona con manejo de duplicados
             const formAdd = document.querySelector('form[action="addPerson.php"]');
             if (formAdd) {
                 formAdd.addEventListener('submit', function(e) {
@@ -1743,7 +1786,86 @@ function deleteMember($cedula_persona)
                         cancelButtonText: 'Cancelar'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            form.submit();
+                            // Enviar formulario vía AJAX para capturar respuesta JSON
+                            const formData = new FormData(form);
+                            
+                            fetch('addPerson.php', {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => {
+                                return response.text().then(text => {
+                                    // Intentar parsear como JSON
+                                    try {
+                                        const data = JSON.parse(text);
+                                        return { isJson: true, data: data };
+                                    } catch (e) {
+                                        // No es JSON, es HTML
+                                        return { isJson: false, html: text };
+                                    }
+                                });
+                            })
+                            .then(result => {
+                                if (result.isJson && result.data) {
+                                    const data = result.data;
+                                    if (data.error) {
+                                        if (data.tipo === 'duplicado') {
+                                            // Mostrar error de duplicado con información
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Persona ya existe',
+                                                html: `
+                                                    <div style="text-align: left; padding: 10px;">
+                                                        <p><strong>La cédula <span style="color: #d33;">${data.cedula}</span> ya está registrada.</strong></p>
+                                                        <hr>
+                                                        <p><strong>Nombre:</strong> ${data.nombre}</p>
+                                                        <p><strong>Centro Vida/CPSAM:</strong> ${data.grupo}</p>
+                                                        <p><strong>Estado:</strong> <span style="color: #0d6efd; font-weight: bold;">${data.estado}</span></p>
+                                                    </div>
+                                                `,
+                                                confirmButtonText: 'Entendido',
+                                                confirmButtonColor: '#3085d6',
+                                                width: '500px'
+                                            });
+                                        } else if (data.tipo === 'general') {
+                                            // Mostrar error general
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Error al guardar',
+                                                text: data.mensaje || 'Ocurrió un error al procesar la solicitud',
+                                                confirmButtonText: 'OK'
+                                            });
+                                        }
+                                    } else {
+                                        // Éxito pero con JSON (caso raro)
+                                        window.location.href = 'seePerson.php';
+                                    }
+                                } else if (!result.isJson) {
+                                    // Es HTML, buscar si hay redirección
+                                    if (result.html.includes('window.location')) {
+                                        // Extraer y ejecutar la redirección
+                                        window.location.href = 'seePerson.php';
+                                    } else {
+                                        // HTML sin redirección, mostrar error
+                                        console.error('Respuesta HTML inesperada:', result.html);
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error del servidor',
+                                            text: 'Hubo un problema al procesar la solicitud. Revisa la consola para más detalles.',
+                                            confirmButtonText: 'OK'
+                                        });
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Ocurrió un error al procesar la solicitud',
+                                    confirmButtonText: 'OK'
+                                });
+                            });
                         }
                     });
                 });
@@ -2085,43 +2207,9 @@ function deleteMember($cedula_persona)
                 }
             });
 
-            // Validar límite del grupo antes de enviar el formulario
-            $('form[action="addPerson.php"]').on('submit', function(e) {
-                const grupoId = $('#id_grupo').val();
-
-                if (grupoId) {
-                    e.preventDefault();
-
-                    $.ajax({
-                        url: 'checkGroupLimit.php',
-                        type: 'POST',
-                        data: {
-                            id_grupo: grupoId
-                        },
-                        dataType: 'json',
-                        success: function(response) {
-                            if (response.limitReached) {
-                                Swal.fire({
-                                    icon: 'warning',
-                                    title: 'Límite alcanzado',
-                                    text: `El grupo "${response.grupoNombre}" ha alcanzado su límite máximo de ${response.limite} personas.`,
-                                    confirmButtonText: 'OK'
-                                });
-                            } else {
-                                e.target.submit();
-                            }
-                        },
-                        error: function() {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'Error al verificar el límite del grupo',
-                                confirmButtonText: 'OK'
-                            });
-                        }
-                    });
-                }
-            });
+            // Nota: La validación del formulario ahora se maneja en el handler de vanilla JavaScript
+            // para poder interceptar respuestas JSON de errores duplicados
+            // Ver script de SweetAlert más abajo en el código
 
             // Validar límite del grupo en modal de edición
             $('#edit-grupo').on('change', function() {

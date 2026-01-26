@@ -1,4 +1,6 @@
 <?php
+// Suprimir warnings para evitar que interfieran con respuestas JSON
+error_reporting(E_ERROR | E_PARSE);
 include("../../conexion.php");
 session_start();
 
@@ -43,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $grupo_etnico = $_POST['grupo_etnico'] ?? '';
     $tipo_salud = $_POST['tipo_salud'] ?? '';
     $nivel_educativo = $_POST['nivel_educativo'] ?? '';
-    $programa = $_POST['programa'];
+    $programa = $_POST['programa'] ?? [];
     $id_grupo = $_POST['id_grupo'] ?? '';
 
     // Nuevos campos de barrio, comuna y zona (usar solo IDs y zona como texto)
@@ -168,27 +170,89 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     )";
 
 
-    // Ejecutar consulta
-    if ($mysqli->query($sql_insert_persona)) {
-        //insert en persona_programa
-        foreach ($programa as $id_programa) {
-            $sql_insert_persona_programa = "INSERT INTO persona_programa (cedula_persona, id_programa) VALUES ('$cedula_persona', '$id_programa')";
+    // Ejecutar consulta con manejo de excepciones
+    try {
+        if ($mysqli->query($sql_insert_persona)) {
+            //insert en persona_programa (solo si hay programas seleccionados)
+            if (is_array($programa) && count($programa) > 0) {
+                foreach ($programa as $id_programa) {
+                    $sql_insert_persona_programa = "INSERT INTO persona_programa (cedula_persona, id_programa) VALUES ('$cedula_persona', '$id_programa')";
 
-            if ($mysqli->query($sql_insert_persona_programa)) {
-                echo "✅ Programa ID $id_programa insertado correctamente.<br>";
-            } else {
-                echo "❌ Error al insertar programa ID $id_programa: " . $mysqli->error . "<br>";
+                    if ($mysqli->query($sql_insert_persona_programa)) {
+                        echo "✅ Programa ID $id_programa insertado correctamente.<br>";
+                    } else {
+                        echo "❌ Error al insertar programa ID $id_programa: " . $mysqli->error . "<br>";
+                    }
+                }
+            }
+            echo "<script>
+                alert('Insert successful');
+                window.location.href = 'seePerson.php';
+              </script>";
+        }
+    } catch (mysqli_sql_exception $e) {
+        // Capturar excepción de mysqli
+        // Verificar si es un error de cédula duplicada (código 1062)
+        if ($e->getCode() == 1062 && strpos($e->getMessage(), 'cedula_persona') !== false) {
+            // Consultar información de la persona existente
+            $query_persona = "SELECT p.*, g.descripcion_grupo,
+                (SELECT cc.descripcion_condicion 
+                 FROM movimiento_persona mp 
+                 JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
+                 WHERE mp.cedula_persona = p.cedula_persona 
+                 AND cc.descripcion_condicion IN ('CPSAM EVADIDO', 'CPSAM FALLECIDO', 'CPSAM RETIRADO VOLUNTARIO', 'CPSAM TRASLADADO')
+                 ORDER BY mp.fecha_movimiento DESC 
+                 LIMIT 1) AS estado_movimiento
+                FROM personas p
+                LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
+                WHERE p.cedula_persona = '$cedula_persona'";
+            
+            $result_persona = $mysqli->query($query_persona);
+            
+            if ($result_persona && $row_persona = $result_persona->fetch_assoc()) {
+                $nombre_completo = $row_persona['nombres_persona'] . ' ' . $row_persona['apellidos_persona'];
+                $grupo = $row_persona['descripcion_grupo'] ? $row_persona['descripcion_grupo'] : 'No asignado';
+                
+                // Determinar el estado
+                $estado_persona = $row_persona['estado_movimiento'] ? $row_persona['estado_movimiento'] : 'CPSAM ACTIVO';
+                
+                // Verificar si es "Usuario Interesado" según condicion_componente
+                if (isset($row_persona['condicion_componente']) && 
+                    mb_strtolower(trim($row_persona['condicion_componente'])) === 'usuario interesado') {
+                    $estado_persona = 'USUARIO INTERESADO';
+                }
+                
+                // Verificar si es "Visita psicosocial fallida"
+                if (isset($row_persona['condicion_componente']) && 
+                    mb_strtolower(trim($row_persona['condicion_componente'])) === 'visita psicosocial fallida') {
+                    $estado_persona = 'VISITA PSICOSOCIAL FALLIDA';
+                }
+                
+                // Limpiar el prefijo CPSAM para mostrar
+                $estado_mostrar = str_ireplace('CPSAM ', '', $estado_persona);
+                
+                // Enviar respuesta JSON
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'error' => true,
+                    'tipo' => 'duplicado',
+                    'cedula' => $cedula_persona,
+                    'nombre' => $nombre_completo,
+                    'grupo' => $grupo,
+                    'estado' => $estado_mostrar
+                ]);
+                exit;
             }
         }
-        echo "<script>
-            alert('Insert successful');
-            window.location.href = 'seePerson.php';
-          </script>";
-    } else {
-        echo "<script>
-            alert('Error  " . $mysqli->error . "');
-            window.location.href = 'seePerson.php';
-          </script>";
+        
+        // Error genérico para otras excepciones
+        header('Content-Type: application/json');
+        echo json_encode([
+            'error' => true,
+            'tipo' => 'general',
+            'mensaje' => $e->getMessage()
+        ]);
+        exit;
     }
 } else {
     echo "<script>

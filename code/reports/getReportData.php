@@ -36,6 +36,12 @@ if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3 && $tipo_usuar
     $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
 
+// Si es usuario tipo 3 (CONTRATISTA CPSAM), filtrar solo las personas que ha registrado
+if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
+    $id_usuario_session = intval($_SESSION['id']);
+    $where .= " AND p.id_usuario = $id_usuario_session ";
+}
+
 // Aplicar filtro adicional para usuarios técnicos y contratistas (tipos 3, 4, 5 y 10)
 $where .= $where_grupos_filtro;
 

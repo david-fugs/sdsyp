@@ -114,11 +114,41 @@ $res_masivas = $mysqli->query($sql_masivas);
 $sql_individuales = "SELECT DISTINCT
     rcv.id_registro_centro_vida,
     p.cedula_persona,
+    p.tipo_identificacion,
     p.nombres_persona,
     p.apellidos_persona,
     p.fecha_nacimiento,
     p.genero_persona,
     p.telefono_persona,
+    p.referencia_persona,
+    p.grupo_sisben,
+    p.persona_discapacidad,
+    p.cual_discapacidad,
+    p.cabeza_hogar,
+    p.lider_comunidad,
+    p.se_reconoce_como,
+    p.orientacion_sexual,
+    p.experiencia_migratoria,
+    p.grupo_etnico,
+    p.tipo_salud,
+    p.nivel_educativo,
+    p.zona_persona,
+    p.eps,
+    p.peso,
+    p.talla,
+    p.patologias,
+    p.factores_riesgo,
+    p.factores_preventivos,
+    p.ingresos_economicos,
+    p.convivencia_actual,
+    p.resultado_actividad,
+    p.remision,
+    p.correo_persona,
+    p.telefono_referencia_persona,
+    p.direccion_persona,
+    p.condicion_ocupacion,
+    p.condicion_componente,
+    p.activo_desde,
     g.descripcion_grupo as descripcion_grupo,
     b.nombre_bar as nombre_barrio,
     c.nombre_com as nombre_comuna,
@@ -261,10 +291,18 @@ $sheet2 = $spreadsheet->createSheet();
 $sheet2->setTitle('Individuales');
 
 $headers_individuales = [
-    'ID', 'Cédula', 'Nombres', 'Apellidos', 'Fecha Nacimiento', 'Género', 'Teléfono', 
-    'Grupo', 'Barrio', 'Comuna', 'Actividad Centro Vida', 'Política Pública', 
+    'ID', 'Cédula', 'Tipo Identificación', 'Nombres', 'Apellidos', 'Fecha Nacimiento', 'Género', 'Teléfono', 
+    'Referencia Persona', 'Grupo Sisben', 'Persona Discapacidad', 'Cuál Discapacidad',
+    'Cabeza Hogar', 'Líder Comunidad', 'Se Reconoce Como', 'Orientación Sexual', 
+    'Experiencia Migratoria', 'Grupo Étnico', 'Tipo Salud', 'Nivel Educativo',
+    'Grupo', 'Zona Persona', 'Barrio', 'Comuna', 'EPS', 'Peso', 'Talla', 
+    'Patologías', 'Factores Riesgo', 'Factores Preventivos', 'Ingresos Económicos', 
+    'Convivencia Actual', 'Resultado Actividad', 'Remisión', 'Correo Persona', 
+    'Teléfono Referencia', 'Dirección Persona', 'Condición Ocupación', 
+    'Condición Componente', 'Activo Desde',
+    'Meta', 'Actividad Plan', 'Acción', 'Actividad Centro Vida', 'Política Pública', 
     'Departamento Procedencia', 'Observación', 'Funcionario', 'Fecha Registro', 
-    'Fechas Atención', 'Cantidad Fechas', 'Meta', 'Actividad Plan', 'Acción'
+    'Fechas Atención', 'Cantidad Fechas'
 ];
 
 $col = 'A';
@@ -312,28 +350,64 @@ if ($res_individuales && $res_individuales->num_rows > 0) {
             $fechas_display = implode(', ', array_filter($map));
         }
 
+        // Formatear activo_desde
+        $activo_desde = '';
+        if (!empty($row['activo_desde']) && $row['activo_desde'] != '0000-00-00') {
+            $activo_desde = date('d/m/Y', strtotime($row['activo_desde']));
+        }
+
         $data = [
             $row['id_registro_centro_vida'],
             $row['cedula_persona'],
+            $row['tipo_identificacion'] ?? '',
             $row['nombres_persona'],
             $row['apellidos_persona'],
             $fecha_nac,
             $row['genero_persona'],
             $row['telefono_persona'],
-            $row['descripcion_grupo'],
-            $row['nombre_barrio'],
-            $row['nombre_comuna'],
-            $row['actividad_centro_vida'],
-            $row['descripcion_politica'],
-            $row['departamento_procedencia'],
-            $row['observacion'],
-            $row['funcionario_registro'],
+            $row['referencia_persona'] ?? '',
+            $row['grupo_sisben'] ?? '',
+            $row['persona_discapacidad'] ?? '',
+            $row['cual_discapacidad'] ?? '',
+            $row['cabeza_hogar'] ?? '',
+            $row['lider_comunidad'] ?? '',
+            $row['se_reconoce_como'] ?? '',
+            $row['orientacion_sexual'] ?? '',
+            $row['experiencia_migratoria'] ?? '',
+            $row['grupo_etnico'] ?? '',
+            $row['tipo_salud'] ?? '',
+            $row['nivel_educativo'] ?? '',
+            $row['descripcion_grupo'] ?? '',
+            $row['zona_persona'] ?? '',
+            $row['nombre_barrio'] ?? '',
+            $row['nombre_comuna'] ?? '',
+            $row['eps'] ?? '',
+            $row['peso'] ?? '',
+            $row['talla'] ?? '',
+            $row['patologias'] ?? '',
+            $row['factores_riesgo'] ?? '',
+            $row['factores_preventivos'] ?? '',
+            $row['ingresos_economicos'] ?? '',
+            $row['convivencia_actual'] ?? '',
+            $row['resultado_actividad'] ?? '',
+            $row['remision'] ?? '',
+            $row['correo_persona'] ?? '',
+            $row['telefono_referencia_persona'] ?? '',
+            $row['direccion_persona'] ?? '',
+            $row['condicion_ocupacion'] ?? '',
+            $row['condicion_componente'] ?? '',
+            $activo_desde,
+            $row['descripcion_meta'] ?? '',
+            $row['descripcion_actividad_plan'] ?? '',
+            $row['descripcion_accion'] ?? '',
+            $row['actividad_centro_vida'] ?? '',
+            $row['descripcion_politica'] ?? '',
+            $row['departamento_procedencia'] ?? '',
+            $row['observacion'] ?? '',
+            $row['funcionario_registro'] ?? '',
             $fecha_registro,
             $fechas_display,
-            $cantidad_fechas,
-            $row['descripcion_meta'],
-            $row['descripcion_actividad_plan'],
-            $row['descripcion_accion']
+            $cantidad_fechas
         ];
 
         $col = 'A';
@@ -362,8 +436,8 @@ $sheet2->getStyle('A' . $r . ':' . $lastCol2 . $r)->applyFromArray([
 // Ajustar anchos
 for ($i = 1; $i <= count($headers_individuales); $i++) {
     $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i);
-    // La columna de fechas de atención más ancha
-    if ($i === 17) { // Fechas Atención
+    // La columna de fechas de atención más ancha (ahora es la columna 50)
+    if ($i === 50) { // Fechas Atención
         $sheet2->getColumnDimension($colLetter)->setWidth(50);
     } else {
         $sheet2->getColumnDimension($colLetter)->setWidth(20);
