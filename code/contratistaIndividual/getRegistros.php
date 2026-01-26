@@ -32,6 +32,12 @@ if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3) {
     $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
 
+// Filtro para usuarios tipo 3 (CONTRATISTA): solo ver sus propios registros
+if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
+    $id_usuario_session = intval($_SESSION['id']);
+    $where .= " AND ri.id_usuario = $id_usuario_session ";
+}
+
 // Aplicar filtro adicional para usuarios técnicos (tipos 4 y 5)
 $where .= $where_grupos_filtro;
 

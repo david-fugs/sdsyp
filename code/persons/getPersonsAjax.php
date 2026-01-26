@@ -30,6 +30,12 @@ if (!empty($_GET['programa'])) {
     $where .= " AND pp.id_programa = '$programa'";
 }
 
+// Filtro por creado por
+if (!empty($_GET['creado_por'])) {
+    $creado_por = $mysqli->real_escape_string($_GET['creado_por']);
+    $where .= " AND u.nombre LIKE '%$creado_por%'";
+}
+
 // Filtrar por id_grupo si el tipo_usuario en la sesión es diferente de 1, 3, 4 y 5
 // (No aplicar este filtro a ADMIN, CONTRATISTA ni a los nuevos TÉCNICOS)
 if ($tipo_usuario != 1 && $id_grupo_session && !in_array($tipo_usuario, [3, 4, 5])) {
@@ -55,6 +61,7 @@ SELECT p.*, p.condicion_componente as condicion_componente,
        m.descripcion_meta,
        a.descripcion_actividad,
        acc.descripcion_accion,
+       u.nombre AS creado_por,
        (SELECT cc.descripcion_condicion 
         FROM movimiento_persona mp 
         JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
@@ -70,6 +77,7 @@ LEFT JOIN politicas_publicas pol ON p.id_politica_publica = pol.id_politica
 LEFT JOIN metas m ON p.id_meta = m.id_meta
 LEFT JOIN actividades a ON p.id_actividad = a.id_actividad
 LEFT JOIN acciones acc ON p.id_accion = acc.id_accion
+LEFT JOIN usuarios u ON p.id_usuario = u.id
 $where
 GROUP BY p.cedula_persona
 ORDER BY p.apellidos_persona ASC
@@ -202,7 +210,9 @@ if ($result && $result->num_rows > 0) {
         echo "<td>" . htmlspecialchars($row['programas'] ?: 'Sin programa') . "</td>";
         // 6. Centro Vida / CPSAM
         echo "<td>" . htmlspecialchars($row['descripcion_grupo'] ?: 'No asignado') . "</td>";
-        // 7. Estado
+        // 7. Creado por
+        echo "<td>" . htmlspecialchars($row['creado_por'] ?: 'N/A') . "</td>";
+        // 8. Estado
         // Mostrar 'ACTIVO (TRASLADADO)' si el estado es 'CPSAM TRASLADADO', o 'Usuario Interesado' si corresponde (sin importar mayúsculas/minúsculas)
         if ($estado_persona === 'CPSAM TRASLADADO') {
             $estado_mostrar = 'ACTIVO (TRASLADADO)';

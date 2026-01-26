@@ -679,7 +679,7 @@ $mysqli->close();
                 <i class="bx bx-chevron-right arrow-left"></i>
               </div>
               <ul class="menu_items submenu">
-                <?php if ($tipo_usuario != 4 && $tipo_usuario != 5) : ?>
+                <?php if ($tipo_usuario != 4 && $tipo_usuario != 5 && $tipo_usuario != 2) : ?>
                   <a href="code/contratista/seeActivities.php" class="nav_link sublink">Agregar Actividades contratista</a>
                   <a href="code/contratistaCentroVida/seeActivitiesCentroVida.php" class="nav_link sublink">Actividades Centro Vida</a>
                 <?php endif; ?>
@@ -880,10 +880,8 @@ $mysqli->close();
               <i class="bx bx-chevron-right arrow-left"></i>
             </div>
             <ul class="menu_items submenu">
-              <a href="code/contratista/seeActivities.php" class="nav_link sublink">Agregar Actividades contratista</a>
               <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
               <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades</a>
-              <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
 
             </ul>
           </li>

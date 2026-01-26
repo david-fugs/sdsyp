@@ -317,6 +317,10 @@ function deleteMember($cedula_persona)
                         </select>
                     </div>
                     <div class="filter-group">
+                        <label for="filter-creado-por">Creado por</label>
+                        <input type="text" id="filter-creado-por" class="modern-input" placeholder="Buscar por creador...">
+                    </div>
+                    <div class="filter-group">
                         <button type="button" id="btn-filter" class="btn-modern btn-primary">
                             <i class="bi bi-search"></i>
                             Filtrar
@@ -325,7 +329,7 @@ function deleteMember($cedula_persona)
                 </div>
             </div>
 
-            <!-- Tabla moderna -->
+            <!-- Tabla -->
             <div class="modern-table-wrapper" style="background: #fff; border-radius: 18px; box-shadow: 0 4px 24px rgba(65,47,209,0.08); padding: 24px;">
                 <table class="modern-table table table-hover align-middle" id="salesTable" style="border-radius: 12px; overflow: hidden;">
                     <thead class="table-dark">
@@ -335,7 +339,8 @@ function deleteMember($cedula_persona)
                             <th>Género</th>
                             <th>Edad</th>
                             <th>Programas</th>
-                            <th>Centro Vida / CPSAM</th>
+                            <th>Centro Vida / CPSAM / Otro</th>
+                            <th>Creado por</th>
                             <th class="col-status">Estado</th>
                             <th class="col-actions">Acciones</th>
                         </tr>
@@ -1502,8 +1507,8 @@ function deleteMember($cedula_persona)
                 // Ajustar targets para que coincidan con la cantidad de columnas visibles
                 "columnDefs": [{
                         "orderable": false,
-                        "targets": [7]
-                    } // Acciones es la columna 8 (índice 7)
+                        "targets": [8]
+                    } // Acciones es la columna 9 (índice 8)
                 ],
                 "order": [
                     [2, 'asc']
@@ -1562,7 +1567,7 @@ function deleteMember($cedula_persona)
                 }
             }
             
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center loading">Cargando datos...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center loading">Cargando datos...</td></tr>';
 
             // Construir parámetros de consulta
             const queryParams = new URLSearchParams();
@@ -1570,6 +1575,7 @@ function deleteMember($cedula_persona)
             if (params.nombre) queryParams.append('nombre', params.nombre);
             if (params.programa) queryParams.append('programa', params.programa);
             if (params.estado) queryParams.append('estado', params.estado);
+            if (params.creado_por) queryParams.append('creado_por', params.creado_por);
 
             // Realizar petición AJAX
             fetch(`getPersonsAjax.php?${queryParams.toString()}`)
@@ -1606,7 +1612,7 @@ function deleteMember($cedula_persona)
                             });
                             
                             // Mostrar mensaje en la tabla
-                            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-warning"><i class="bi bi-shield-lock-fill"></i><br>Persona encontrada pero no tiene acceso a este grupo.</td></tr>';
+                            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-warning"><i class="bi bi-shield-lock-fill"></i><br>Persona encontrada pero no tiene acceso a este grupo.</td></tr>';
                             return;
                         }
                     } catch (e) {
@@ -1624,7 +1630,7 @@ function deleteMember($cedula_persona)
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Error al cargar los datos. Por favor, recarga la página.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Error al cargar los datos. Por favor, recarga la página.</td></tr>';
                 });
         }
 
@@ -1645,7 +1651,7 @@ function deleteMember($cedula_persona)
         document.addEventListener('DOMContentLoaded', function() {
             initializeDataTable();
             // Configurar filtro automático en tiempo real (500ms debounce)
-            const filterInputs = ['filter-cedula', 'filter-nombre', 'filter-programa', 'filter-estado'];
+            const filterInputs = ['filter-cedula', 'filter-nombre', 'filter-programa', 'filter-estado', 'filter-creado-por'];
             filterInputs.forEach(filterId => {
                 const element = document.getElementById(filterId);
                 if (element) {
@@ -1654,7 +1660,8 @@ function deleteMember($cedula_persona)
                             cedula: document.getElementById('filter-cedula').value,
                             nombre: document.getElementById('filter-nombre').value,
                             programa: document.getElementById('filter-programa').value,
-                            estado: document.getElementById('filter-estado').value
+                            estado: document.getElementById('filter-estado').value,
+                            creado_por: document.getElementById('filter-creado-por').value
                         };
                         loadTableData(params);
                     }, 500));
@@ -1665,7 +1672,8 @@ function deleteMember($cedula_persona)
                                 cedula: document.getElementById('filter-cedula').value,
                                 nombre: document.getElementById('filter-nombre').value,
                                 programa: document.getElementById('filter-programa').value,
-                                estado: document.getElementById('filter-estado').value
+                                estado: document.getElementById('filter-estado').value,
+                                creado_por: document.getElementById('filter-creado-por').value
                             };
                             loadTableData(params);
                         }
@@ -1680,7 +1688,8 @@ function deleteMember($cedula_persona)
                         cedula: document.getElementById('filter-cedula').value,
                         nombre: document.getElementById('filter-nombre').value,
                         programa: document.getElementById('filter-programa').value,
-                        estado: document.getElementById('filter-estado').value
+                        estado: document.getElementById('filter-estado').value,
+                        creado_por: document.getElementById('filter-creado-por').value
                     };
                     loadTableData(params);
                 });

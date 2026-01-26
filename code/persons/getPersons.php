@@ -28,6 +28,12 @@ if (!empty($_GET['programa'])) {
     $where .= " AND pp.id_programa = '$programa'";
 }
 
+// Filtro por creado por
+if (!empty($_GET['creado_por'])) {
+    $creado_por = $mysqli->real_escape_string($_GET['creado_por']);
+    $where .= " AND u.nombre LIKE '%$creado_por%'";
+}
+
 // Filtrar por id_grupo si el tipo_usuario en la sesión es diferente de 1, 3, 4 y 5
 // (No aplicar este filtro a ADMIN, CONTRATISTA ni a los nuevos TÉCNICOS)
 if ($tipo_usuario != 1 && $id_grupo_session && !in_array($tipo_usuario, [3, 4, 5])) {
@@ -53,6 +59,7 @@ SELECT p.*,
        m.descripcion_meta,
        a.descripcion_actividad,
        acc.descripcion_accion,
+       u.nombre AS creado_por,
        (SELECT cc.descripcion_condicion 
         FROM movimiento_persona mp 
         JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
@@ -68,6 +75,7 @@ LEFT JOIN politicas_publicas pol ON p.id_politica_publica = pol.id_politica
 LEFT JOIN metas m ON p.id_meta = m.id_meta
 LEFT JOIN actividades a ON p.id_actividad = a.id_actividad
 LEFT JOIN acciones acc ON p.id_accion = acc.id_accion
+LEFT JOIN usuarios u ON p.id_usuario = u.id
 $where
 GROUP BY p.cedula_persona
 ORDER BY p.apellidos_persona ASC
@@ -162,6 +170,7 @@ if ($result->num_rows > 0) {
         }
         echo "<td>" . htmlspecialchars($row['programas']) . "</td>";
         echo "<td>" . ($row['descripcion_grupo'] ? htmlspecialchars($row['descripcion_grupo']) : 'No asignado') . "</td>";
+        echo "<td>" . ($row['creado_por'] ? htmlspecialchars($row['creado_por']) : 'N/A') . "</td>";
         $estado_sin_cpsam = str_ireplace('CPSAM ', '', $estado_persona);
         if (strtoupper($estado_sin_cpsam) === 'TRASLADADO') {
             $estado_mostrar = 'ACTIVO (TRASLADADO)';
@@ -263,7 +272,7 @@ if ($result->num_rows > 0) {
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='8'>No se encontraron registros.</td></tr>";
+    echo "<tr><td colspan='9'>No se encontraron registros.</td></tr>";
 }
 
 

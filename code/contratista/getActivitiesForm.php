@@ -17,6 +17,12 @@ if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3 && !in_array($
     $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
 
+// Filtro para usuarios tipo 3 (CONTRATISTA): solo ver sus propios registros
+if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
+    $id_usuario_session = intval($_SESSION['id']);
+    $where .= " AND ra.funcionario_responsable = '$id_usuario_session' ";
+}
+
 // Consulta SQL para obtener los datos
 $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
 $filtro_mes = isset($_GET['filtro_mes']) ? intval($_GET['filtro_mes']) : '';

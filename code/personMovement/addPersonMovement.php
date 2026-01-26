@@ -76,8 +76,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $mysqli->query($sql_update_persona);
     }
 
-    $sql_insert_movimiento = "INSERT INTO movimiento_persona (cedula_persona, id_condicion, id_centro_vida_traslado, id_centro_vida_traslado_anterior, fecha_movimiento, observacion_movimiento, id_meta, id_actividad, id_accion, departamento_procedencia, id_politica_publica)
-    VALUES ('$cedula_persona', '$id_condicion', " . ($id_centro_vida_traslado ? "'$id_centro_vida_traslado'" : "0") . ", " . ($grupo_anterior !== null ? "'$grupo_anterior'" : "NULL") . ", '$fecha_movimiento', '$observacion_movimiento', '$id_meta', '$id_actividad', '$id_accion', '$departamento_procedencia','$politica_publica')";
+    $sql_insert_movimiento = "INSERT INTO movimiento_persona (cedula_persona, id_condicion, id_centro_vida_traslado, id_centro_vida_traslado_anterior, fecha_movimiento, observacion_movimiento, id_meta, id_actividad, id_accion, departamento_procedencia, id_politica_publica,id_usuario)
+    VALUES ('$cedula_persona', '$id_condicion', " . ($id_centro_vida_traslado ? "'$id_centro_vida_traslado'" : "0") . ", " . ($grupo_anterior !== null ? "'$grupo_anterior'" : "NULL") . ", '$fecha_movimiento', '$observacion_movimiento', '$id_meta', '$id_actividad', '$id_accion', '$departamento_procedencia','$politica_publica','$id_usuario')";
 
     // Ejecutar consulta
     if ($mysqli->query($sql_insert_movimiento)) {

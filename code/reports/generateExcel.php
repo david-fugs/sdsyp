@@ -156,6 +156,12 @@ try {
     if ($filtro_grupo !== null) {
         $where_grupos_filtro .= " AND p.id_grupo = " . intval($filtro_grupo);
     }
+    
+    // Filtro para usuarios tipo 3 (CONTRATISTA): solo exportar personas que haya registrado
+    if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
+        $id_usuario_session = intval($_SESSION['id']);
+        $where_grupos_filtro .= " AND p.id_usuario = $id_usuario_session ";
+    }
 
     // Consulta completa para obtener todos los datos
     $query = "
