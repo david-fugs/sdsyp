@@ -785,7 +785,7 @@ $mysqli->close();
               <span class="navlink_icon">
                 <i class="fa-solid fa-users"></i>
               </span>
-              <span class="navlink">Caracterizacion</span>
+              <span class="navlink">Personas</span>
               <i class="bx bx-chevron-right arrow-left"></i>
             </div>
             <ul class="menu_items submenu">
