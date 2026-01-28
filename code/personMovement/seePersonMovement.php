@@ -150,6 +150,34 @@ if (!$result_condiciones) {
 
 // Aplicar filtro de grupos según tipo de usuario
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
+
+// Obtener el prefijo del grupo del usuario si es tipo 2
+$grupo_prefix = '';
+if ($tipo_usuario == 2 && $id_grupo_session && $id_grupo_session != 0) {
+    $query_grupo_prefix = "SELECT descripcion_grupo FROM grupos WHERE id_grupo = ?";
+    $stmt_prefix = $mysqli->prepare($query_grupo_prefix);
+    $stmt_prefix->bind_param("i", $id_grupo_session);
+    $stmt_prefix->execute();
+    $result_prefix = $stmt_prefix->get_result();
+    if ($row_prefix = $result_prefix->fetch_assoc()) {
+        $descripcion = $row_prefix['descripcion_grupo'];
+        // Extraer el prefijo (CV, CPSAM, etc.)
+        if (stripos($descripcion, 'CV') === 0) {
+            $grupo_prefix = 'CV';
+        } elseif (stripos($descripcion, 'CPSAM') === 0) {
+            $grupo_prefix = 'CPSAM';
+        } elseif (stripos($descripcion, 'contratista') === 0) {
+            $grupo_prefix = 'contratista';
+        } elseif (stripos($descripcion, 'otros') === 0) {
+            $grupo_prefix = 'otros';
+        } elseif (stripos($descripcion, 'colombia mayor') === 0) {
+            $grupo_prefix = 'colombia mayor';
+        }
+    }
+    $stmt_prefix->close();
+}
+
 $where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
 $grupos = "SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC";
 $result_grupos_query = mysqli_query($mysqli, $grupos);
@@ -562,10 +590,82 @@ function deleteMember($id_movimiento)
     <br /><a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="back" /></a><br>
 </body>
 <script>
+    // Variables PHP pasadas a JavaScript
+    const tipoUsuarioSession = <?php echo json_encode($tipo_usuario); ?>;
+    const idGrupoSession = <?php echo json_encode($id_grupo_session); ?>;
+    const grupoPrefixSession = <?php echo json_encode($grupo_prefix); ?>;
+</script>
+<script>
+    // Función para filtrar opciones de condición según prefijo del grupo
+    function filterCondicionOptions(selectId) {
+        if (tipoUsuarioSession == 2 && idGrupoSession && idGrupoSession != 0 && grupoPrefixSession) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            
+            const options = select.querySelectorAll('option');
+            options.forEach(function(option) {
+                if (option.value === '') {
+                    // Mantener la opción "Seleccione..."
+                    option.style.display = '';
+                    return;
+                }
+                
+                const text = option.textContent.trim();
+                
+                // Lista de condiciones "diferentes" que deben mostrarse a todos
+                const condicionesDiferentes = [
+                    'USUARIO INDIRECTO',
+                    'TRASLADADO',
+                    'USUARIO INTERESADO',
+                    'VISITA PSICOSOCIAL FALLIDA'
+                ];
+                
+                // Verificar si es una condición "diferente"
+                const esDiferente = condicionesDiferentes.some(cond => 
+                    text.toUpperCase().includes(cond)
+                );
+                
+                if (esDiferente) {
+                    // Mostrar las condiciones diferentes a todos los tipo 2
+                    option.style.display = '';
+                } else {
+                    // Para las demás, verificar el prefijo
+                    let prefixToMatch = '';
+                    if (grupoPrefixSession === 'CV') {
+                        prefixToMatch = 'C.V'; // En condiciones se usa "C.V" en lugar de "CV"
+                    } else {
+                        prefixToMatch = grupoPrefixSession;
+                    }
+                    
+                    if (text.toUpperCase().indexOf(prefixToMatch.toUpperCase()) === 0) {
+                        option.style.display = '';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                }
+            });
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
+        // Aplicar filtro de condiciones al cargar la página
+        filterCondicionOptions('condicion1');
+        filterCondicionOptions('edit-condicion');
+        
+        // Aplicar filtro cuando se abren los modales
+        const modalNewPerson = document.getElementById('modalNewPerson');
+        if (modalNewPerson) {
+            modalNewPerson.addEventListener('show.bs.modal', function() {
+                filterCondicionOptions('condicion1');
+            });
+        }
+        
         const modalEdicion = document.getElementById("modalEdicion");
 
         modalEdicion.addEventListener("shown.bs.modal", function(event) {
+            // Aplicar filtro de condiciones al abrir el modal de edición
+            filterCondicionOptions('edit-condicion');
+            
             const button = event.relatedTarget;
         window.lastEditButton = button; // Guardar referencia global para el JS de política pública
             document.getElementById("edit-cedula").value = button.getAttribute("data-cedula");

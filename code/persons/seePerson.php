@@ -39,6 +39,32 @@ if (!$result_metas) {
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
 
+// Obtener el prefijo del grupo del usuario si es tipo 2
+$grupo_prefix = '';
+if ($tipo_usuario == 2 && $id_grupo_session && $id_grupo_session != 0) {
+    $query_grupo_prefix = "SELECT descripcion_grupo FROM grupos WHERE id_grupo = ?";
+    $stmt_prefix = $mysqli->prepare($query_grupo_prefix);
+    $stmt_prefix->bind_param("i", $id_grupo_session);
+    $stmt_prefix->execute();
+    $result_prefix = $stmt_prefix->get_result();
+    if ($row_prefix = $result_prefix->fetch_assoc()) {
+        $descripcion = $row_prefix['descripcion_grupo'];
+        // Extraer el prefijo (CV, CPSAM, etc.)
+        if (stripos($descripcion, 'CV') === 0) {
+            $grupo_prefix = 'CV';
+        } elseif (stripos($descripcion, 'CPSAM') === 0) {
+            $grupo_prefix = 'CPSAM';
+        } elseif (stripos($descripcion, 'contratista') === 0) {
+            $grupo_prefix = 'contratista';
+        } elseif (stripos($descripcion, 'otros') === 0) {
+            $grupo_prefix = 'otros';
+        } elseif (stripos($descripcion, 'colombia mayor') === 0) {
+            $grupo_prefix = 'colombia mayor';
+        }
+    }
+    $stmt_prefix->close();
+}
+
 // Filtrar grupos para el select según tipo_usuario
 $grupos_filtrados = [];
 if ($tipo_usuario == 3) {
@@ -51,6 +77,13 @@ if ($tipo_usuario == 3) {
     $result_grupos_tipo3 = mysqli_query($mysqli, $query_grupos_tipo3);
     if ($result_grupos_tipo3) {
         while ($grupo = mysqli_fetch_assoc($result_grupos_tipo3)) {
+            $grupos_filtrados[] = $grupo;
+        }
+    }
+} elseif ($tipo_usuario == 2 && !empty($grupo_prefix)) {
+    // Para tipo_usuario 2 con grupo asignado: mostrar solo grupos con el mismo prefijo
+    foreach ($result_grupos as $grupo) {
+        if (stripos($grupo['descripcion_grupo'], $grupo_prefix) === 0) {
             $grupos_filtrados[] = $grupo;
         }
     }
@@ -1383,8 +1416,58 @@ function deleteMember($cedula_persona)
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Script para filtros dinámicos -->
     <script>
+        // Variables PHP pasadas a JavaScript
+        const tipoUsuarioSession = <?php echo json_encode($tipo_usuario); ?>;
+        const idGrupoSession = <?php echo json_encode($id_grupo_session); ?>;
+        const grupoPrefixSession = <?php echo json_encode($grupo_prefix); ?>;
+    </script>
+    <script>
+        // Función para filtrar opciones de Centro Vida/CPSAM según prefijo del grupo
+        function filterGrupoOptions(selectId) {
+            if (tipoUsuarioSession == 2 && idGrupoSession && idGrupoSession != 0 && grupoPrefixSession) {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+                
+                const options = select.querySelectorAll('option');
+                options.forEach(function(option) {
+                    if (option.value === '') {
+                        // Mantener la opción "Seleccione..."
+                        option.style.display = '';
+                        return;
+                    }
+                    
+                    const text = option.textContent.trim();
+                    // Verificar si el texto comienza con el prefijo del grupo del usuario
+                    if (text.toUpperCase().indexOf(grupoPrefixSession.toUpperCase()) === 0) {
+                        option.style.display = '';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+            }
+        }
+
         // --- Autocompletado de Barrio, Comuna y Zona (Edición Persona) ---
         document.addEventListener('DOMContentLoaded', function() {
+            // Aplicar filtro de grupos al cargar la página (para ambos modales)
+            filterGrupoOptions('id_grupo');
+            filterGrupoOptions('edit-grupo');
+            
+            // Aplicar filtro cuando se abren los modales
+            const modalNewPerson = document.getElementById('modalNewPerson');
+            if (modalNewPerson) {
+                modalNewPerson.addEventListener('show.bs.modal', function() {
+                    filterGrupoOptions('id_grupo');
+                });
+            }
+            
+            const modalEdicion = document.getElementById('modalEdicion');
+            if (modalEdicion) {
+                modalEdicion.addEventListener('show.bs.modal', function() {
+                    filterGrupoOptions('edit-grupo');
+                });
+            }
+            
             const inputBarrio = document.getElementById('edit-barrio-persona');
             const datalistBarrios = document.getElementById('edit-lista-barrios');
             const inputComuna = document.getElementById('edit-comuna-persona');
