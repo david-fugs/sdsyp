@@ -9,6 +9,30 @@ if (!isset($_SESSION['usuario'])) {
     exit();
 }
 
+// Para usuarios tipo 2, obtener el prefijo del grupo (CV o CPSAM)
+$prefijo_grupo = '';
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+if ($tipo_usuario == 2) {
+    $id_grupo_usuario = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : 0;
+    if ($id_grupo_usuario != 0) {
+        $query_grupo = "SELECT descripcion_grupo FROM grupos WHERE id_grupo = ?";
+        $stmt = $mysqli->prepare($query_grupo);
+        $stmt->bind_param('i', $id_grupo_usuario);
+        $stmt->execute();
+        $result_grupo = $stmt->get_result();
+        if ($row_grupo = $result_grupo->fetch_assoc()) {
+            $descripcion = $row_grupo['descripcion_grupo'];
+            // Determinar si empieza con CV o CPSAM
+            if (stripos($descripcion, 'CV') === 0) {
+                $prefijo_grupo = 'CV';
+            } elseif (stripos($descripcion, 'CPSAM') === 0) {
+                $prefijo_grupo = 'CPSAM';
+            }
+        }
+        $stmt->close();
+    }
+}
+
 // Obtener el año seleccionado (por defecto el año actual)
 $currentYear = date('Y');
 $selectedYear = isset($_GET['year']) ? intval($_GET['year']) : $currentYear;
@@ -795,9 +819,11 @@ $endYear = $currentYear + 1;
                         <div class="card-body p-3">
                             <h5 class="text-white mb-3"><i class="bi bi-download"></i> Exportar Actividades</h5>
                             <div class="d-flex gap-2 flex-wrap">
-                                <?php $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null; ?>
-                                <!-- Mostrar formulario Contratista solo si NO es tipo 10 (CONTRATISTA CENTRO VIDA) -->
-                                <?php if ($tipo_usuario != 10) : ?>
+                                <?php 
+                                // Mostrar formulario Contratista solo si NO es tipo 10 (CONTRATISTA CENTRO VIDA)
+                                // y si es tipo 2, solo si su grupo NO empieza con CV
+                                if ($tipo_usuario != 10 && !($tipo_usuario == 2 && $prefijo_grupo == 'CV')) : 
+                                ?>
                                 <form id="exportContratistaForm" action="exportContratistaFromReports.php" method="get" style="display:inline;">
                                     <input type="hidden" name="filtro_anio" id="export_contratista_anio">
                                     <input type="hidden" name="filtro_grupo" id="export_contratista_grupo">
@@ -807,8 +833,9 @@ $endYear = $currentYear + 1;
                                 </form>
                                 <?php endif; ?>
 
-                                <!-- Mostrar formulario Centro Vida solo si NO es tipo 3 (CONTRATISTA CPSAM) -->
-                                <?php if ($tipo_usuario != 3) : ?>
+                                <!-- Mostrar formulario Centro Vida solo si NO es tipo 3 (CONTRATISTA CPSAM) 
+                                     y si es tipo 2, solo si su grupo NO empieza con CPSAM -->
+                                <?php if ($tipo_usuario != 3 && !($tipo_usuario == 2 && $prefijo_grupo == 'CPSAM')) : ?>
                                 <form id="exportCentroVidaForm" action="exportCentroVidaFromReports.php" method="get" style="display:inline;">
                                     <input type="hidden" name="filtro_anio" id="export_cv_anio">
                                     <input type="hidden" name="filtro_grupo" id="export_cv_grupo">

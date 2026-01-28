@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+var_dump($_SESSION);
 if (!isset($_SESSION['id'])) {
   header("Location: index.php");
 }
@@ -12,6 +12,29 @@ $cod_dane_ie  = $_SESSION['cod_dane_ie'];
 
 // Incluir conexión para obtener datos del dashboard
 include("conexion.php");
+
+// Para usuarios tipo 2, obtener el prefijo del grupo (CV o CPSAM)
+$prefijo_grupo = '';
+if ($tipo_usuario == 2) {
+  $id_grupo_usuario = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : 0;
+  if ($id_grupo_usuario != 0) {
+    $query_grupo = "SELECT descripcion_grupo FROM grupos WHERE id_grupo = ?";
+    $stmt = $mysqli->prepare($query_grupo);
+    $stmt->bind_param('i', $id_grupo_usuario);
+    $stmt->execute();
+    $result_grupo = $stmt->get_result();
+    if ($row_grupo = $result_grupo->fetch_assoc()) {
+      $descripcion = $row_grupo['descripcion_grupo'];
+      // Determinar si empieza con CV o CPSAM
+      if (stripos($descripcion, 'CV') === 0) {
+        $prefijo_grupo = 'CV';
+      } elseif (stripos($descripcion, 'CPSAM') === 0) {
+        $prefijo_grupo = 'CPSAM';
+      }
+    }
+    $stmt->close();
+  }
+}
 
 // Obtener estadísticas del sistema
 $stats = array();
@@ -683,16 +706,18 @@ $mysqli->close();
                   <a href="code/contratista/seeActivities.php" class="nav_link sublink">Agregar Actividades contratista</a>
                   <a href="code/contratistaCentroVida/seeActivitiesCentroVida.php" class="nav_link sublink">Actividades Centro Vida</a>
                 <?php endif; ?>
-                <?php if ($tipo_usuario != 5) : ?>
+                <?php if ($tipo_usuario != 5 && !($tipo_usuario == 2 && $prefijo_grupo == 'CV')) : ?>
                   <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
                   <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades Masivas</a>
                   <a href="code/contratistaIndividual/form.php" class="nav_link sublink">Registro Actividades Individuales</a>
                 <?php endif; ?>
-                <?php if ($tipo_usuario != 4) : ?>
+                <?php if ($tipo_usuario != 4 && !($tipo_usuario == 2 && $prefijo_grupo == 'CPSAM')) : ?>
                   <a href="code/contratistaCentroVida/formCentroVida.php" class="nav_link sublink">Registros indiv Centro Vida</a>
+                  <?php if (!($tipo_usuario == 2 && $prefijo_grupo == 'CPSAM')) : ?>
                   <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
+                  <?php endif; ?>
                 <?php endif; ?>
-                <?php if ($tipo_usuario != 5) : ?>
+                <?php if ($tipo_usuario != 5 || ($tipo_usuario == 2 && ($prefijo_grupo == 'CV' || $prefijo_grupo == 'CPSAM'))) : ?>
                 <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
                 <?php endif; ?>
                 <?php if ($tipo_usuario == 5) : ?>
