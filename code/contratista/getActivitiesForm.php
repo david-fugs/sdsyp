@@ -5,22 +5,22 @@ require_once('../filtros_grupos.php');
 
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
+$id_usuario_session = isset($_SESSION['id']) ? intval($_SESSION['id']) : null;
 
 // Inicializar variable $where
 $where = '';
 
-// Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
+// Aplicar filtro de grupos según tipo de usuario (para la tabla grupos)
 $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
 
-// Filtro para usuarios tipo 2 con grupo asignado
-if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3 && !in_array($tipo_usuario, [4, 5])) {
-    $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
+// Filtro para usuarios tipo 2: solo ver sus propios registros
+if ($tipo_usuario == 2 && $id_usuario_session) {
+    $where .= " AND ra.id_usuario = " . $id_usuario_session;
 }
 
 // Filtro para usuarios tipo 3 (CONTRATISTA): solo ver sus propios registros
-if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
-    $id_usuario_session = intval($_SESSION['id']);
-    $where .= " AND ra.funcionario_responsable = '$id_usuario_session' ";
+if ($tipo_usuario == 3 && $id_usuario_session) {
+    $where .= " AND ra.id_usuario = " . $id_usuario_session;
 }
 
 // Consulta SQL para obtener los datos
@@ -40,7 +40,7 @@ if ($filtro_funcionario) {
 $query = "SELECT ra.id_registro, ra.id_meta, ra.id_actividad, ra.id_entregas, ra.id_accion, ra.politica_publica, ra.id_centro_vida,
        ra.fecha_atencion, ra.nombre_lider, ra.telefono_contacto, ra.id_comuna, ra.medio_verificacion,
        ra.cantidad_masculino, ra.cantidad_femenino, ra.tipo_actividad, ra.observacion_actividad,
-       ra.funcionario_responsable, ra.otro_lugar,
+       ra.funcionario_responsable, ra.otro_lugar, ra.id_usuario,
        m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica,
        actc.descripcion_actividad AS descripcion_entrega,
        g.descripcion_grupo AS centro_vida, c.nombre_com AS nombre_comuna, u.nombre AS nombre_funcionario
@@ -53,10 +53,22 @@ LEFT JOIN grupos g ON ra.id_centro_vida = g.id_grupo
 LEFT JOIN comunas c ON ra.id_comuna = c.id_com
 LEFT JOIN usuarios u ON CAST(ra.funcionario_responsable AS UNSIGNED) = u.id AND ra.funcionario_responsable REGEXP '^[0-9]+$'
 LEFT JOIN actividad_contratista actc ON ra.id_entregas = actc.id_actividad_contratista
-WHERE 1 $where $where_grupos_filtro
+WHERE 1=1 $where 
+" . ($where_grupos_filtro ? " AND ra.id_centro_vida IS NOT NULL AND EXISTS (SELECT 1 FROM grupos g2 WHERE g2.id_grupo = ra.id_centro_vida $where_grupos_filtro)" : "") . "
 ORDER BY ra.fecha_atencion DESC
 ";
+
 $result = $mysqli->query($query);
+
+// Verificar si la consulta falló
+if (!$result) {
+    echo "<tr><td colspan='17' class='text-center text-danger'>
+            <i class='bi bi-exclamation-triangle'></i><br>
+            Error en la consulta: " . htmlspecialchars($mysqli->error) . "
+          </td></tr>";
+    $mysqli->close();
+    exit;
+}
 
 $data = [];
 
@@ -123,7 +135,7 @@ if ($result->num_rows > 0) {
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='10' class='text-center text-muted'>
+    echo "<tr><td colspan='17' class='text-center text-muted'>
             <i class='bi bi-search'></i><br>
             No se encontraron registros que coincidan con los filtros aplicados.
           </td></tr>";
