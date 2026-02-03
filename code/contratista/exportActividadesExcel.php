@@ -32,9 +32,16 @@ $filtro_funcionario = isset($_GET['filtro_funcionario']) ? intval($_GET['filtro_
 
 // Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$id_usuario_session = isset($_SESSION['id']) ? intval($_SESSION['id']) : null;
 $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
 
 $where = '';
+
+// Filtro para usuarios tipo 3 (CONTRATISTA): solo exportar sus propias actividades
+if ($tipo_usuario == 3 && $id_usuario_session) {
+    $where .= " AND ra.id_usuario = " . $id_usuario_session;
+}
+
 if ($filtro_anio) {
     $where .= " AND YEAR(ra.fecha_atencion) = $filtro_anio ";
 }

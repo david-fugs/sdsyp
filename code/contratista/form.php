@@ -308,7 +308,16 @@ if (!$result_comunas) {
                         <select id="filtro_funcionario" name="filtro_funcionario" class="modern-select">
                             <option value="">Todos</option>
                             <?php
-                            $query_funcionarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario = 3 ORDER BY nombre ASC";
+                            // Si es tipo usuario 3, solo mostrar su propio usuario
+                            $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+                            $id_usuario_session = isset($_SESSION['id']) ? intval($_SESSION['id']) : null;
+                            
+                            if ($tipo_usuario == 3 && $id_usuario_session) {
+                                $query_funcionarios = "SELECT id, nombre FROM usuarios WHERE id = $id_usuario_session ORDER BY nombre ASC";
+                            } else {
+                                $query_funcionarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario = 3 ORDER BY nombre ASC";
+                            }
+                            
                             $result_funcionarios = mysqli_query($mysqli, $query_funcionarios);
                             if ($result_funcionarios) {
                                 while ($funcionario = mysqli_fetch_assoc($result_funcionarios)) {

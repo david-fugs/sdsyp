@@ -904,9 +904,22 @@ $endYear = $currentYear + 1;
                                 </form>
                                 <?php endif; ?>
 
-                                <!-- Mostrar formulario Centro Vida solo si NO es tipo 3 (CONTRATISTA CPSAM) 
+                                <!-- Mostrar formulario Actividades Individuales solo si NO es tipo 10 (CONTRATISTA CENTRO VIDA) -->
+                                <?php if ($tipo_usuario != 10 && !($tipo_usuario == 2 && $prefijo_grupo == 'CV')) : ?>
+                                <form id="exportIndividualesForm" action="exportIndividualesFromReports.php" method="get" style="display:inline;">
+                                    <input type="hidden" name="filtro_anio" id="export_individuales_anio">
+                                    <input type="hidden" name="filtro_grupo" id="export_individuales_grupo">
+                                    <input type="hidden" name="filtro_mes" id="export_individuales_mes">
+                                    <input type="hidden" name="filtro_usuario" id="export_individuales_usuario">
+                                    <button type="submit" class="btn btn-warning btn-sm">
+                                        <i class="bi bi-file-earmark-person-fill"></i> Actividades INDIVIDUALES
+                                    </button>
+                                </form>
+                                <?php endif; ?>
+
+                                <!-- Mostrar formulario Centro Vida solo si NO es tipo 3 (CONTRATISTA CPSAM) ni tipo 4 (TÉCNICO)
                                      y si es tipo 2, solo si su grupo NO empieza con CPSAM -->
-                                <?php if ($tipo_usuario != 3 && !($tipo_usuario == 2 && $prefijo_grupo == 'CPSAM')) : ?>
+                                <?php if ($tipo_usuario != 3 && $tipo_usuario != 4 && !($tipo_usuario == 2 && $prefijo_grupo == 'CPSAM')) : ?>
                                 <form id="exportCentroVidaForm" action="exportCentroVidaFromReports.php" method="get" style="display:inline;">
                                     <input type="hidden" name="filtro_anio" id="export_cv_anio">
                                     <input type="hidden" name="filtro_grupo" id="export_cv_grupo">
@@ -942,6 +955,12 @@ $endYear = $currentYear + 1;
                 $('#export_contratista_grupo').val(grupo);
                 $('#export_contratista_mes').val(mes);
                 $('#export_contratista_usuario').val(usuario);
+                
+                // Actualizar formulario Individuales
+                $('#export_individuales_anio').val(anio);
+                $('#export_individuales_grupo').val(grupo);
+                $('#export_individuales_mes').val(mes);
+                $('#export_individuales_usuario').val(usuario);
                 
                 // Actualizar formulario Centro Vida
                 $('#export_cv_anio').val(anio);
