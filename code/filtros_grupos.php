@@ -28,11 +28,55 @@
  */
 function getGruposPermitidos($conexion, $tipo_usuario) {
     // Si no hay tipo de usuario o es admin/etc, permitir todos
-    if (!$tipo_usuario || in_array($tipo_usuario, [1, 2, 7])) {
+    if (!$tipo_usuario || in_array($tipo_usuario, [1, 7])) {
         return []; // Array vacío significa "todos los grupos"
     }
     
     $grupos_permitidos = [];
+    
+    // Tipo 2: CPSAM/CV - Filtrar según el grupo asignado al usuario
+    if ($tipo_usuario == 2) {
+        $id_grupo_usuario = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : 0;
+        if ($id_grupo_usuario != 0) {
+            // Obtener el prefijo del grupo del usuario
+            $query_prefijo = "SELECT descripcion_grupo FROM grupos WHERE id_grupo = ?";
+            $stmt = $conexion->prepare($query_prefijo);
+            $stmt->bind_param('i', $id_grupo_usuario);
+            $stmt->execute();
+            $result_prefijo = $stmt->get_result();
+            if ($row_prefijo = $result_prefijo->fetch_assoc()) {
+                $descripcion = $row_prefijo['descripcion_grupo'];
+                $prefijo = '';
+                
+                // Determinar si empieza con CV o CPSAM
+                if (stripos($descripcion, 'CV') === 0) {
+                    $prefijo = 'CV';
+                } elseif (stripos($descripcion, 'CPSAM') === 0) {
+                    $prefijo = 'CPSAM';
+                }
+                
+                // Obtener solo grupos con el mismo prefijo
+                if ($prefijo != '') {
+                    $query = "SELECT id_grupo FROM grupos 
+                              WHERE descripcion_grupo LIKE ?
+                              ORDER BY descripcion_grupo ASC";
+                    $stmt2 = $conexion->prepare($query);
+                    $prefijo_like = $prefijo . '%';
+                    $stmt2->bind_param('s', $prefijo_like);
+                    $stmt2->execute();
+                    $result = $stmt2->get_result();
+                    while ($row = $result->fetch_assoc()) {
+                        $grupos_permitidos[] = $row['id_grupo'];
+                    }
+                    $stmt2->close();
+                }
+            }
+            $stmt->close();
+        }
+        
+        // Si no se encontró prefijo o no tiene grupo, retornar vacío (sin acceso)
+        return $grupos_permitidos;
+    }
     
     // Tipo 3: CONTRATISTA CPSAM
     if ($tipo_usuario == 3) {
