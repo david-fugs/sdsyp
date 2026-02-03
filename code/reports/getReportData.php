@@ -20,8 +20,10 @@ if (!isset($_GET['year']) || empty($_GET['year'])) {
 
 $year = intval($_GET['year']);
 
-// Obtener filtro de grupo si está presente
+// Obtener filtros
 $filtro_grupo = isset($_GET['filtro_grupo']) && !empty($_GET['filtro_grupo']) ? intval($_GET['filtro_grupo']) : null;
+$filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : null;
+$filtro_usuario = isset($_GET['filtro_usuario']) && !empty($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : null;
 
 // Verificar conexión a la base de datos
 if ($mysqli->connect_error) {
@@ -48,6 +50,22 @@ $where .= $where_grupos_filtro;
 // Aplicar filtro por grupo específico si se seleccionó uno
 if ($filtro_grupo !== null) {
     $where .= " AND p.id_grupo = " . intval($filtro_grupo);
+}
+
+// Aplicar filtro por usuario específico si se seleccionó uno
+if ($filtro_usuario !== null) {
+    $where .= " AND p.id_usuario = " . intval($filtro_usuario);
+}
+
+// Aplicar filtro de mes en movimientos si se seleccionó uno
+// Filtrar personas que tengan al menos un movimiento en el año y mes especificado
+if ($filtro_mes !== null) {
+    $where .= " AND EXISTS (
+        SELECT 1 FROM movimiento_persona mp 
+        WHERE mp.cedula_persona = p.cedula_persona 
+        AND YEAR(mp.fecha_movimiento) = " . intval($year) . "
+        AND MONTH(mp.fecha_movimiento) = " . intval($filtro_mes) . "
+    )";
 }
 
 $query = "
@@ -132,7 +150,8 @@ $query = "
          JOIN condiciones_componente cc2 ON mp2.id_condicion = cc2.id_condicion
          WHERE mp2.cedula_persona = p.cedula_persona
          AND cc2.descripcion_condicion LIKE '%TRASLADADO%'
-         AND YEAR(mp2.fecha_movimiento) = " . intval($year) . ") AS traslados_en_year,
+         AND YEAR(mp2.fecha_movimiento) = " . intval($year) . "
+         " . ($filtro_mes !== null ? "AND MONTH(mp2.fecha_movimiento) = " . intval($filtro_mes) : "") . ") AS traslados_en_year,
         (SELECT g2.descripcion_grupo
          FROM movimiento_persona mp3
          JOIN condiciones_componente cc3 ON mp3.id_condicion = cc3.id_condicion
@@ -144,7 +163,8 @@ $query = "
         (SELECT COUNT(*)
          FROM movimiento_persona mp4
          WHERE mp4.cedula_persona = p.cedula_persona
-         AND YEAR(mp4.fecha_movimiento) = " . intval($year) . ") AS movimientos_en_year,
+         AND YEAR(mp4.fecha_movimiento) = " . intval($year) . "
+         " . ($filtro_mes !== null ? "AND MONTH(mp4.fecha_movimiento) = " . intval($filtro_mes) : "") . ") AS movimientos_en_year,
         CASE 
             WHEN p.fecha_nacimiento IS NOT NULL AND p.fecha_nacimiento != '0000-00-00' 
             THEN TIMESTAMPDIFF(YEAR, p.fecha_nacimiento, CURDATE())

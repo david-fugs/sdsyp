@@ -40,8 +40,10 @@ if (!isset($_GET['year']) || empty($_GET['year'])) {
 
 $year = intval($_GET['year']);
 
-// Obtener filtro de grupo si está presente
+// Obtener filtros
 $filtro_grupo = isset($_GET['filtro_grupo']) && !empty($_GET['filtro_grupo']) ? intval($_GET['filtro_grupo']) : null;
+$filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : null;
+$filtro_usuario = isset($_GET['filtro_usuario']) && !empty($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : null;
 
 try {
 
@@ -157,6 +159,21 @@ try {
         $where_grupos_filtro .= " AND p.id_grupo = " . intval($filtro_grupo);
     }
     
+    // Aplicar filtro por usuario específico si se seleccionó uno
+    if ($filtro_usuario !== null) {
+        $where_grupos_filtro .= " AND p.id_usuario = " . intval($filtro_usuario);
+    }
+    
+    // Aplicar filtro de mes en movimientos si se seleccionó uno
+    if ($filtro_mes !== null) {
+        $where_grupos_filtro .= " AND EXISTS (
+            SELECT 1 FROM movimiento_persona mp 
+            WHERE mp.cedula_persona = p.cedula_persona 
+            AND YEAR(mp.fecha_movimiento) = " . intval($year) . "
+            AND MONTH(mp.fecha_movimiento) = " . intval($filtro_mes) . "
+        )";
+    }
+    
     // Filtro para usuarios tipo 3 (CONTRATISTA): solo exportar personas que haya registrado
     if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
         $id_usuario_session = intval($_SESSION['id']);
@@ -261,7 +278,7 @@ try {
             (SELECT COUNT(*)
              FROM movimiento_persona mp2
              WHERE mp2.cedula_persona = p.cedula_persona
-             AND YEAR(mp2.fecha_movimiento) = ?) AS movimientos_en_year,
+             AND YEAR(mp2.fecha_movimiento) = ?" . ($filtro_mes !== null ? " AND MONTH(mp2.fecha_movimiento) = " . intval($filtro_mes) : "") . ") AS movimientos_en_year,
              
             -- Traslados en el año
             (SELECT COUNT(*)
@@ -269,7 +286,7 @@ try {
              JOIN condiciones_componente cc3 ON mp3.id_condicion = cc3.id_condicion
              WHERE mp3.cedula_persona = p.cedula_persona
              AND cc3.descripcion_condicion LIKE '%TRASLADADO%'
-             AND YEAR(mp3.fecha_movimiento) = ?) AS traslados_en_year,
+             AND YEAR(mp3.fecha_movimiento) = ?" . ($filtro_mes !== null ? " AND MONTH(mp3.fecha_movimiento) = " . intval($filtro_mes) : "") . ") AS traslados_en_year,
 
             -- Último centro de traslado (para compatibilidad)
             (SELECT g2.descripcion_grupo

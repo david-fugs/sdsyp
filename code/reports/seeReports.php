@@ -76,6 +76,7 @@ $endYear = $currentYear + 1;
         .modern-select {
             font-size: 15px !important;
             padding: 10px 12px !important;
+            width: 200px;
         }
 
         .filter-group label {
@@ -644,6 +645,10 @@ if (!isset($_SESSION['usuario'])) {
     exit();
 }
 
+// Obtener variables de sesión
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
+
 // Obtener el año seleccionado (por defecto el año actual)
 $currentYear = date('Y');
 $selectedYear = isset($_GET['year']) ? intval($_GET['year']) : $currentYear;
@@ -778,11 +783,75 @@ $endYear = $currentYear + 1;
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4 text-end">
+                <div class="col-md-4">
+                    <div class="year-selector">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar-month"></i> Filtrar por Mes:
+                        </label>
+                        <select id="filtroMes" class="modern-select">
+                            <option value="">Todos los meses</option>
+                            <option value="01">Enero</option>
+                            <option value="02">Febrero</option>
+                            <option value="03">Marzo</option>
+                            <option value="04">Abril</option>
+                            <option value="05">Mayo</option>
+                            <option value="06">Junio</option>
+                            <option value="07">Julio</option>
+                            <option value="08">Agosto</option>
+                            <option value="09">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center mb-3">
+                <div class="col-md-4">
+                    <div class="year-selector">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-person-badge"></i> Filtrar por Usuario:
+                        </label>
+                        <select id="filtroUsuario" class="modern-select">
+                            <option value="">Todos los usuarios</option>
+                            <?php
+                            // Construir filtro WHERE para usuarios según tipo de usuario de sesión
+                            $where_usuarios = "WHERE 1=1";
+                            
+                            // Si es tipo 3 (CONTRATISTA CPSAM), solo mostrar su propio usuario
+                            if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
+                                $id_usuario_session = intval($_SESSION['id']);
+                                $where_usuarios .= " AND u.id = $id_usuario_session";
+                            }
+                            // Si es tipo 10 (CONTRATISTA CENTRO VIDA), mostrar usuarios del mismo grupo
+                            elseif ($tipo_usuario == 10 && $id_grupo_session) {
+                                $where_usuarios .= " AND u.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
+                            }
+                            // Si es tipo 4 o 5 (Técnico/Supervisor), mostrar usuarios del mismo grupo
+                            elseif (($tipo_usuario == 4 || $tipo_usuario == 5) && $id_grupo_session) {
+                                $where_usuarios .= " AND u.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
+                            }
+                            
+                            $query_usuarios = "SELECT u.id, u.nombre FROM usuarios u $where_usuarios ORDER BY u.nombre ASC";
+                            $result_usuarios = mysqli_query($mysqli, $query_usuarios);
+                            if ($result_usuarios) {
+                                while ($usuario = mysqli_fetch_assoc($result_usuarios)) {
+                                    echo '<option value="' . $usuario['id'] . '">' . htmlspecialchars($usuario['nombre']) . '</option>';
+                                }
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end offset-md-4">
                     <label class="form-label fw-bold" style="visibility: hidden;">Acciones</label>
                     <div class="export-buttons d-flex flex-column gap-2">
                         <button type="button" id="btnExportExcel" class="export-btn">
-                            <i class="bi bi-file-earmark-excel"></i> Exportar Informe Anual
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Exportar Datos Personas
+                        </button>
+                        <button type="button" id="btnExportMovimientos" class="export-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="bi bi-arrow-left-right"></i> Exportar Movimientos
                         </button>
                     </div>
                 </div>
@@ -801,17 +870,21 @@ $endYear = $currentYear + 1;
                                 <form id="exportContratistaForm" action="exportContratistaFromReports.php" method="get" style="display:inline;">
                                     <input type="hidden" name="filtro_anio" id="export_contratista_anio">
                                     <input type="hidden" name="filtro_grupo" id="export_contratista_grupo">
+                                    <input type="hidden" name="filtro_mes" id="export_contratista_mes">
+                                    <input type="hidden" name="filtro_usuario" id="export_contratista_usuario">
                                     <button type="submit" class="btn btn-light btn-sm">
                                         <i class="bi bi-file-earmark-excel-fill"></i> Actividades CONTRATISTA
                                     </button>
                                 </form>
                                 <?php endif; ?>
 
-                                <!-- Mostrar formulario Centro Vida solo si NO es tipo 3 (CONTRATISTA CPSAM) -->
-                                <?php if ($tipo_usuario != 3) : ?>
+                                <!-- Mostrar formulario Centro Vida solo si NO es tipo 3 (CONTRATISTA CPSAM) ni tipo 4 (TÉCNICO) -->
+                                <?php if ($tipo_usuario != 3 && $tipo_usuario != 4) : ?>
                                 <form id="exportCentroVidaForm" action="exportCentroVidaFromReports.php" method="get" style="display:inline;">
                                     <input type="hidden" name="filtro_anio" id="export_cv_anio">
                                     <input type="hidden" name="filtro_grupo" id="export_cv_grupo">
+                                    <input type="hidden" name="filtro_mes" id="export_cv_mes">
+                                    <input type="hidden" name="filtro_usuario" id="export_cv_usuario">
                                     <button type="submit" class="btn btn-success btn-sm">
                                         <i class="bi bi-file-earmark-excel-fill"></i> Actividades CENTRO VIDA MASIVO
                                     </button>
@@ -823,88 +896,31 @@ $endYear = $currentYear + 1;
                 </div>
             </div>
         </div>
-
-        <!-- Estadísticas resumidas -->
-        <div class="stats-summary" id="statsContainer" style="display: none;">
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="stats-item">
-                        <div class="stats-number" id="statsPersonasNuevas">0</div>
-                        <div class="stats-label">Personas con Movimientos</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-item">
-                        <div class="stats-number" id="statsTotalMovimientos">0</div>
-                        <div class="stats-label">Total Movimientos</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-item">
-                        <div class="stats-number" id="statsTotalRegistros">0</div>
-                        <div class="stats-label">Registros en Informe</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabla de informe -->
-        <div class="table-container">
-            <div class="table-responsive">
-                <table id="reportsTable" class="modern-table table table-striped table-hover" style="width: 100%;">
-                    <thead>
-                        <tr>
-                            <th>Cédula</th>
-                            <th>Nombres</th>
-                            <th>Apellidos</th>
-                            <th>Género</th>
-                            <th>Fecha Nac.</th>
-                            <th>Edad</th>
-                            <th>Teléfono</th>
-                            <th>Referencia</th>
-                            <th>Centro de Vida</th>
-                            <th>Programas</th>
-                            <th>Estado Actual</th>
-                            <th>Política Pública</th>
-                            <th>Movimientos</th>
-                            <th>Traslados</th>
-                            <th>Activo Desde</th>
-                            <th>Activo Hasta</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reportsTableBody">
-                        <!-- Los datos se cargan dinámicamente -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
     <script>
         let currentYear = <?php echo $selectedYear; ?>;
-        let currentData = [];
-        let currentStats = {};
-        let dataTable;
 
         $(document).ready(function() {
-            // Inicializar DataTable
-            initializeDataTable();
-
-            // Cargar datos iniciales
-            loadReportData(currentYear);
 
             // Sincronizar filtros con formularios de exportación
             function updateExportForms() {
                 const anio = $('#yearSelect').val();
                 const grupo = $('#filtroGrupo').val();
+                const mes = $('#filtroMes').val();
+                const usuario = $('#filtroUsuario').val();
                 
                 // Actualizar formulario Contratista
                 $('#export_contratista_anio').val(anio);
                 $('#export_contratista_grupo').val(grupo);
+                $('#export_contratista_mes').val(mes);
+                $('#export_contratista_usuario').val(usuario);
                 
                 // Actualizar formulario Centro Vida
                 $('#export_cv_anio').val(anio);
                 $('#export_cv_grupo').val(grupo);
+                $('#export_cv_mes').val(mes);
+                $('#export_cv_usuario').val(usuario);
             }
 
             // Inicializar valores de formularios
@@ -913,260 +929,67 @@ $endYear = $currentYear + 1;
             // Event listeners
             $('#yearSelect').on('change', function() {
                 currentYear = $(this).val();
-                loadReportData(currentYear);
                 updateExportForms();
             });
 
             $('#filtroGrupo').on('change', function() {
-                loadReportData(currentYear);
+                updateExportForms();
+            });
+
+            $('#filtroMes').on('change', function() {
+                updateExportForms();
+            });
+
+            $('#filtroUsuario').on('change', function() {
                 updateExportForms();
             });
 
             $('#btnExportExcel').on('click', exportToExcel);
-            $('#btnExportPDF').on('click', exportToPDF);
-            $('#btnPrint').on('click', printReport);
+            $('#btnExportMovimientos').on('click', exportMovimientos);
         });
 
-        function initializeDataTable() {
-            dataTable = $('#reportsTable').DataTable({
-                pageLength: 15,
-                responsive: true,
-                order: [
-                    [2, 'asc']
-                ], // Ordenar por apellidos
-                language: {
-                    url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
-                },
-                columnDefs: [{
-                        targets: [0],
-                        width: '100px'
-                    }, // Cédula
-                    {
-                        targets: [4, 8],
-                        width: '100px'
-                    }, // Fechas
-                    {
-                        targets: [5],
-                        width: '60px'
-                    }, // Edad
-                    {
-                        targets: [11],
-                        width: '120px'
-                    }, // Estado
-                    {
-                        targets: [13, 14],
-                        width: '80px'
-                    } // Movimientos y traslados
-                ],
-                drawCallback: function() {
-                    // Forzar altura de filas después de cada redibujado
-                    $('#reportsTable tbody tr').css({
-                        'height': '60px',
-                        'min-height': '60px'
-                    });
-                    $('#reportsTable tbody td').css({
-                        'padding': '18px 12px',
-                        'height': '60px',
-                        'vertical-align': 'middle'
-                    });
-                    $('#reportsTable thead th').css({
-                        'padding': '18px 12px',
-                        'height': '65px',
-                        'vertical-align': 'middle'
-                    });
-                }
-            });
-        }
-
-        function loadReportData(year) {
-            // Obtener filtro de grupo
-            const filtroGrupo = $('#filtroGrupo').val();
-            
-            // Mostrar loading
-            Swal.fire({
-                title: 'Cargando datos...',
-                text: 'Generando informe para el año ' + year,
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            // Preparar parámetros
-            const params = { year: year };
-            if (filtroGrupo) {
-                params.filtro_grupo = filtroGrupo;
-            }
-
-            // Cargar estadísticas
-            $.get('getReportStats.php', params)
-                .done(function(response) {
-                    console.log('Response getReportStats:', response);
-                    if (response && response.success) {
-                        currentStats = response.stats;
-                        updateStatsDisplay();
-                    } else {
-                        console.error('Error getReportStats.php:', response ? response.error : 'Respuesta inválida');
-                    }
-                })
-                .fail(function(jqXHR, textStatus, errorThrown) {
-                    console.error('AJAX Error getReportStats:');
-                    console.error('Status:', jqXHR.status);
-                    console.error('Response:', jqXHR.responseText);
-                    console.error('Error:', errorThrown);
-                });
-
-            // Cargar datos detallados
-            $.get('getReportData.php', params)
-                .done(function(response, textStatus, jqXHR) {
-                    console.log('Response getReportData:', response);
-                    console.log('TextStatus:', textStatus);
-                    console.log('Response Type:', typeof response);
-                    
-                    if (response && response.success) {
-                        currentData = response.data;
-                        updateTable();
-                        updateStatsDisplay();
-                        Swal.close();
-
-                        // Mostrar contenedor de estadísticas
-                        $('#statsContainer').show();
-
-                        // Actualizar contador de registros
-                        $('#statsTotalRegistros').text(response.total_registros);
-                    } else {
-                        // Mostrar error detallado en el modal y en la consola
-                        let errorMsg = response && response.error ? response.error : 'Error al cargar datos - Respuesta inválida';
-                        console.error('Error getReportData.php:', errorMsg);
-                        console.error('Full response:', response);
-                        
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error al cargar datos',
-                            html: `
-                                <div style="text-align: left;">
-                                    <strong>Error:</strong> ${errorMsg}<br><br>
-                                    <strong>Para debugging:</strong><br>
-                                    • Revisa la consola del navegador (F12)<br>
-                                    • Verifica el archivo debug_report_error.php<br>
-                                    • Tipo de respuesta: ${typeof response}<br>
-                                    • Estado: ${textStatus}
-                                </div>
-                            `,
-                            width: 600
-                        });
-                    }
-                })
-                .fail(function(jqXHR, textStatus, errorThrown) {
-                    console.error('AJAX Error Details:');
-                    console.error('Status:', jqXHR.status);
-                    console.error('Status Text:', jqXHR.statusText);
-                    console.error('Response Text:', jqXHR.responseText);
-                    console.error('Text Status:', textStatus);
-                    console.error('Error Thrown:', errorThrown);
-                    
-                    let errorDetails = `
-                        <div style="text-align: left; font-family: monospace; font-size: 12px;">
-                            <strong>Detalles del error AJAX:</strong><br>
-                            • Status Code: ${jqXHR.status}<br>
-                            • Status Text: ${jqXHR.statusText}<br>
-                            • Text Status: ${textStatus}<br>
-                            • Error: ${errorThrown}<br><br>
-                            
-                            <strong>Respuesta del servidor:</strong><br>
-                            <div style="max-height: 200px; overflow-y: auto; background: #f5f5f5; padding: 10px; border: 1px solid #ddd;">
-                                ${jqXHR.responseText ? jqXHR.responseText.substring(0, 1000) + (jqXHR.responseText.length > 1000 ? '...' : '') : 'Sin respuesta'}
-                            </div>
-                        </div>
-                    `;
-                    
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error de conexión al cargar datos',
-                        html: errorDetails,
-                        width: 700,
-                        customClass: {
-                            popup: 'swal-wide'
-                        }
-                    });
-                });
-        }
-
-        function updateStatsDisplay() {
-            if (currentStats) {
-                $('#statsPersonasNuevas').text(currentStats.personas_nuevas || 0);
-                $('#statsPersonasActivas').text(currentStats.personas_activas || 0);
-                $('#statsTotalMovimientos').text(currentStats.total_movimientos || 0);
-            }
-        }
-
-        function updateTable() {
-            // Limpiar tabla
-            dataTable.clear();
-
-            // Agregar nuevos datos con el nuevo orden (ACTIVO DESDE y ACTIVO HASTA al final)
-            currentData.forEach(function(persona) {
-                const estadoBadge = getEstadoBadge(persona.estado_actual);
-
-                dataTable.row.add([
-                    persona.cedula_persona,
-                    persona.nombres_persona,
-                    persona.apellidos_persona,
-                    persona.genero_persona,
-                    persona.fecha_nacimiento || 'No registrada',
-                    persona.edad_actual ? persona.edad_actual + ' años' : 'N/A',
-                    persona.telefono_persona || '',
-                    persona.referencia_persona || '',
-                    persona.centro_vida,
-                    persona.programas,
-                    estadoBadge,
-                    persona.descripcion_politica,
-                    '<span class="badge bg-primary">' + persona.movimientos_en_year + '</span>',
-                    '<span class="badge bg-info">' + persona.traslados_en_year + '</span>',
-                    persona.fecha_registro, // "ACTIVO DESDE"
-                    persona.activo_hasta || 'N/A' // "ACTIVO HASTA"
-                ]);
-            });
-
-            // Redibujar tabla
-            dataTable.draw();
-        }
-
-        function getEstadoBadge(estado) {
-            const badgeMap = {
-                    'VISITA FALLIDA': '<span class="status-badge status-warning"><i class="bi bi-exclamation-circle-fill"></i> Visita fallida</span>',
-                'ACTIVO': '<span class="status-badge status-active"><i class="bi bi-check-circle-fill"></i> ACTIVO</span>',
-                'EVADIDO': '<span class="status-badge status-warning"><i class="bi bi-exclamation-triangle-fill"></i> EVADIDO</span>',
-                'FALLECIDO': '<span class="status-badge status-secondary"><i class="bi bi-x-circle-fill"></i> FALLECIDO</span>',
-                'RETIRADO VOLUNTARIO': '<span class="status-badge status-info"><i class="bi bi-arrow-left-circle-fill"></i> RETIRADO</span>',
-                'TRASLADADO': '<span class="status-badge status-info"><i class="bi bi-arrow-right-circle-fill"></i> TRASLADADO</span>',
-                'SUSPENDIDO': '<span class="status-badge status-warning"><i class="bi bi-pause-circle-fill"></i> SUSPENDIDO</span>'
-            };
-
-            return badgeMap[estado] || '<span class="status-badge status-active"><i class="bi bi-question-circle-fill"></i> ' + estado + '</span>';
-        }
-
         function exportToExcel() {
-            // Obtener el grupo seleccionado
+            // Obtener filtros
             const filtroGrupo = $('#filtroGrupo').val();
+            const filtroMes = $('#filtroMes').val();
+            const filtroUsuario = $('#filtroUsuario').val();
             
             // Construir URL con parámetros
             let url = 'generateExcel.php?year=' + currentYear;
             if (filtroGrupo) {
                 url += '&filtro_grupo=' + filtroGrupo;
             }
+            if (filtroMes) {
+                url += '&filtro_mes=' + filtroMes;
+            }
+            if (filtroUsuario) {
+                url += '&filtro_usuario=' + filtroUsuario;
+            }
             
             // Abrir el generador de Excel directamente para descargar
             window.open(url, '_blank');
         }
 
-        function exportToPDF() {
-            window.open('generatePDF.php?year=' + currentYear, '_blank');
-        }
-
-        function printReport() {
-            window.print();
+        function exportMovimientos() {
+            // Obtener filtros
+            const filtroGrupo = $('#filtroGrupo').val();
+            const filtroMes = $('#filtroMes').val();
+            const filtroUsuario = $('#filtroUsuario').val();
+            
+            // Construir URL con parámetros
+            let url = 'exportMovimientos.php?year=' + currentYear;
+            if (filtroGrupo) {
+                url += '&filtro_grupo=' + filtroGrupo;
+            }
+            if (filtroMes) {
+                url += '&filtro_mes=' + filtroMes;
+            }
+            if (filtroUsuario) {
+                url += '&filtro_usuario=' + filtroUsuario;
+            }
+            
+            // Abrir el generador de Excel directamente para descargar
+            window.open(url, '_blank');
         }
     </script>
 

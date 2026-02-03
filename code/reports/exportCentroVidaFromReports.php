@@ -28,6 +28,8 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 // Obtener filtros
 $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
 $filtro_grupo = isset($_GET['filtro_grupo']) ? intval($_GET['filtro_grupo']) : '';
+$filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : '';
+$filtro_usuario = isset($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : '';
 
 // Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
@@ -38,9 +40,19 @@ if ($filtro_anio) {
     $where .= " AND YEAR(mcv.fecha_atencion) = $filtro_anio ";
 }
 
+// Aplicar filtro de mes si se seleccionó
+if ($filtro_mes) {
+    $where .= " AND MONTH(mcv.fecha_atencion) = " . intval($filtro_mes) . " ";
+}
+
 // Si se seleccionó un grupo específico, agregar ese filtro
 if ($filtro_grupo) {
     $where .= " AND g.id_grupo = $filtro_grupo ";
+}
+
+// Aplicar filtro de usuario si se seleccionó
+if ($filtro_usuario) {
+    $where .= " AND mcv.id_usuario = $filtro_usuario ";
 }
 
 $sql = "SELECT 
@@ -182,7 +194,12 @@ if (ob_get_length()) {
 }
 
 $anio_texto = $filtro_anio ? $filtro_anio : 'Todos';
-$filename = 'Actividades_CentroVida_Masivo_' . $anio_texto . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+$mes_texto = '';
+if ($filtro_mes) {
+    $meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    $mes_texto = '_' . $meses[intval($filtro_mes)];
+}
+$filename = 'Actividades_CentroVida_Masivo_' . $anio_texto . $mes_texto . '_' . date('Y-m-d_H-i-s') . '.xlsx';
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment; filename="' . $filename . '"');

@@ -876,13 +876,12 @@ $mysqli->close();
               <span class="navlink_icon">
                 <i class="fa-solid fa-bullseye"></i>
               </span>
-              <span class="navlink">Registro art masivas </span>
+              <span class="navlink">Registro Actividades</span>
               <i class="bx bx-chevron-right arrow-left"></i>
             </div>
             <ul class="menu_items submenu">
-              <!-- <a href="code/movement/seeMovement.php" class="nav_link sublink">Movimientos</a> -->
-              <a href="code/contratista/form.php" class="nav_link sublink">Registro Actividades</a>
-
+              <a href="code/contratistaIndividual/form.php" class="nav_link sublink">Agregar Actividades Individuales</a>
+              <a href="code/contratista/form.php" class="nav_link sublink">Agregar Actividades Masivas</a>
             </ul>
           </li>
           <li class="item">
