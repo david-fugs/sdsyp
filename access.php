@@ -1181,7 +1181,9 @@ $mysqli->close();
             </div>
             <ul class="menu_items submenu">
               <a href="code/colombiaMayor/seePersonaCM.php" class="nav_link sublink">Ver Personas</a>
+              <?php  if( $tipo_usuario == 8) { ?>
               <a href="code/colombiaMayor/seeMovimientosCM.php" class="nav_link sublink">Movimientos</a>
+              <?php } ?>
             </ul>
           </li>
 

@@ -685,7 +685,7 @@ function deleteMember($cedula_persona_cm)
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
                                 <input type="date" class="form-control" id="fecha_ingreso" name="fecha_ingreso_cm" required>
-                                <label for="fecha_ingreso">Fecha de Ingreso al Programa</label>
+                                <label for="fecha_ingreso">Fecha Atencion</label>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="estado" name="estado_cm" required>

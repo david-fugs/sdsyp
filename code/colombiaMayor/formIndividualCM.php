@@ -18,6 +18,7 @@ $nombre_usuario = $_SESSION['usuario'];
 $condiciones_sql = "SELECT id_condicion, descripcion_condicion 
                     FROM condiciones_componente 
                     WHERE descripcion_condicion LIKE 'C.M%' 
+                    AND id_condicion > 35
                     ORDER BY descripcion_condicion";
 $result_condiciones_query = $mysqli->query($condiciones_sql);
 $condiciones_array = [];
@@ -179,9 +180,13 @@ while($row = $result_metas_query->fetch_assoc()) {
                         <i class="bi bi-file-excel-fill"></i>
                         Exportar Excel
                     </button>
-                    <button type="button" class="btn-modern btn-primary" data-bs-toggle="modal" data-bs-target="#modalNewRegistro">
+                    <button type="button" class="btn-modern btn-primary me-2" data-bs-toggle="modal" data-bs-target="#modalNewRegistro">
                         <i class="bi bi-plus-circle-fill"></i>
                         Agregar Registro
+                    </button>
+                    <button type="button" class="btn-modern btn-secondary" onclick="window.location.href='../../access.php'">
+                        <i class="bi bi-arrow-left-circle-fill"></i>
+                        Volver
                     </button>
                 </div>
             </div>
@@ -265,7 +270,7 @@ while($row = $result_metas_query->fetch_assoc()) {
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-                <form id="formNewRegistro" action="addRegistroCM.php" method="POST">
+                <form id="formNewRegistro" action="addRegistroCM.php" method="POST" enctype="multipart/form-data">
                     <div class="modal-body">
                         <!-- Sección: Buscar y Agregar Cédulas -->
                         <div class="buscar-persona-box">
@@ -377,6 +382,21 @@ while($row = $result_metas_query->fetch_assoc()) {
                                           rows="2" 
                                           placeholder="Observaciones adicionales (opcional)"></textarea>
                             </div>
+
+                            <!-- Fotografías -->
+                            <div class="col-md-12">
+                                <label for="fotografias" class="form-label">Fotografías (Máximo 3)</label>
+                                <input type="file" 
+                                       class="form-control" 
+                                       name="fotografias[]" 
+                                       id="fotografias" 
+                                       accept="image/*" 
+                                       capture="environment"
+                                       multiple 
+                                       onchange="validarFotos(this)">
+                                <small class="text-muted">Tamaño máximo por foto: 2MB. Formatos: JPG, PNG, JPEG</small>
+                                <div id="preview_fotos" class="mt-2" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -386,6 +406,139 @@ while($row = $result_metas_query->fetch_assoc()) {
                         </button>
                         <button type="submit" class="btn btn-success btn-lg" id="btn_guardar_registro">
                             <i class="bi bi-save"></i> Guardar Registro
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Registro -->
+    <div class="modal fade" id="modalEditRegistro" tabindex="-1" aria-labelledby="modalEditRegistroLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <h5 class="modal-title" id="modalEditRegistroLabel">
+                        <i class="bi bi-pencil-square me-2"></i>Editar Registro Individual - Colombia Mayor
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form id="formEditRegistro">
+                    <input type="hidden" name="id_registro" id="edit_id_registro">
+                    <input type="hidden" name="cedula_persona_cm" id="edit_cedula_persona">
+                    
+                    <div class="modal-body">
+                        <h6 class="mb-3"><i class="bi bi-person-badge"></i> Información de la Persona</h6>
+                        <div class="alert alert-info">
+                            <strong>Cédula:</strong> <span id="edit_cedula_display"></span><br>
+                            <strong>Nombre:</strong> <span id="edit_nombre_display"></span>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Datos del Registro -->
+                        <h6 class="mb-3"><i class="bi bi-clipboard-data"></i> Información del Registro</h6>
+                        
+                        <div class="row g-3">
+                            <!-- Condición -->
+                            <div class="col-md-6">
+                                <label for="edit_id_condicion" class="form-label">Condición *</label>
+                                <select class="form-select form-select-lg" name="id_condicion" id="edit_id_condicion" required>
+                                    <option value="">Seleccione una condición...</option>
+                                    <?php foreach ($condiciones_array as $condicion): ?>
+                                        <option value="<?= $condicion['id_condicion']; ?>">
+                                            <?= $condicion['descripcion_condicion']; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <!-- Fecha de Registro -->
+                            <div class="col-md-6">
+                                <label for="edit_fecha_registro" class="form-label">Fecha de Registro *</label>
+                                <input type="date" 
+                                       class="form-control form-control-lg" 
+                                       name="fecha_registro_actividad" 
+                                       id="edit_fecha_registro" 
+                                       required>
+                            </div>
+
+                            <!-- Meta -->
+                            <div class="col-md-6">
+                                <label for="edit_id_meta" class="form-label">Meta *</label>
+                                <select class="form-select form-select-lg" name="id_meta" id="edit_id_meta" required>
+                                    <option value="">Seleccione una meta...</option>
+                                    <?php foreach ($metas_array as $meta): ?>
+                                        <option value="<?= $meta['id_meta']; ?>">
+                                            <?= htmlspecialchars($meta['descripcion_meta']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <!-- Actividad -->
+                            <div class="col-md-6">
+                                <label for="edit_id_actividad" class="form-label">Actividad *</label>
+                                <select class="form-select form-select-lg" name="id_actividad" id="edit_id_actividad" required>
+                                    <option value="">Primero seleccione una meta...</option>
+                                </select>
+                            </div>
+
+                            <!-- Acción -->
+                            <div class="col-md-6">
+                                <label for="edit_id_accion" class="form-label">Acción *</label>
+                                <select class="form-select form-select-lg" name="id_accion" id="edit_id_accion" required>
+                                    <option value="">Primero seleccione una actividad...</option>
+                                </select>
+                            </div>
+
+                            <!-- Política Pública -->
+                            <div class="col-md-6">
+                                <label for="edit_id_politica_publica" class="form-label">Política Pública *</label>
+                                <select class="form-select form-select-lg" name="id_politica_publica" id="edit_id_politica_publica" required>
+                                    <option value="">Primero seleccione una acción...</option>
+                                </select>
+                            </div>
+
+                            <!-- Observaciones -->
+                            <div class="col-md-12">
+                                <label for="edit_observaciones" class="form-label">Observaciones</label>
+                                <textarea class="form-control" 
+                                          name="observaciones" 
+                                          id="edit_observaciones" 
+                                          rows="2" 
+                                          placeholder="Observaciones adicionales (opcional)"></textarea>
+                            </div>
+
+                            <!-- Fotografías Existentes -->
+                            <div class="col-md-12">
+                                <label class="form-label">Fotografías Actuales</label>
+                                <div id="fotos_existentes" class="d-flex gap-2 flex-wrap mb-3"></div>
+                            </div>
+
+                            <!-- Agregar Nuevas Fotografías -->
+                            <div class="col-md-12">
+                                <label for="edit_fotografias" class="form-label">Agregar Fotografías</label>
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="edit_fotografias" 
+                                       accept="image/*" 
+                                       capture="environment"
+                                       multiple 
+                                       onchange="validarFotosEdicion(this)">
+                                <small class="text-muted">Tamaño máximo por foto: 2MB. Formatos: JPG, PNG, JPEG. Máximo 3 fotos en total.</small>
+                                <div id="edit_preview_fotos" class="mt-2" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-save"></i> Actualizar Registro
                         </button>
                     </div>
                 </form>
@@ -641,7 +794,479 @@ while($row = $result_metas_query->fetch_assoc()) {
             $('#id_actividad').prop('disabled', true).html('<option value="">Primero seleccione una meta...</option>');
             $('#id_accion').prop('disabled', true).html('<option value="">Primero seleccione una actividad...</option>');
             $('#id_politica_publica').prop('disabled', true).html('<option value="">Primero seleccione una acción...</option>');
+            $('#preview_fotos').html('');
         });
+
+        // Función para validar fotografías
+        function validarFotos(input) {
+            const maxFiles = 3;
+            const maxSize = 2 * 1024 * 1024; // 2MB en bytes
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            const files = input.files;
+            const previewContainer = document.getElementById('preview_fotos');
+            
+            // Limpiar preview
+            previewContainer.innerHTML = '';
+            
+            // Validar cantidad de archivos
+            if (files.length > maxFiles) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Demasiadas fotos',
+                    text: `Solo puedes subir máximo ${maxFiles} fotografías`
+                });
+                input.value = '';
+                return false;
+            }
+            
+            // Validar cada archivo
+            let valid = true;
+            Array.from(files).forEach((file, index) => {
+                // Validar tipo
+                if (!allowedTypes.includes(file.type)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Formato no permitido',
+                        text: `El archivo ${file.name} no es una imagen válida (JPG, PNG, JPEG)`
+                    });
+                    valid = false;
+                    return;
+                }
+                
+                // Validar tamaño
+                if (file.size > maxSize) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Archivo muy grande',
+                        text: `El archivo ${file.name} supera los 2MB`
+                    });
+                    valid = false;
+                    return;
+                }
+                
+                // Crear preview
+                if (valid) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const div = document.createElement('div');
+                        div.style.position = 'relative';
+                        div.innerHTML = `
+                            <img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;">
+                            <small style="display: block; text-align: center; margin-top: 5px;">${file.name}</small>
+                        `;
+                        previewContainer.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            if (!valid) {
+                input.value = '';
+                previewContainer.innerHTML = '';
+                return false;
+            }
+            
+            return true;
+        }
+
+        // ===== FUNCIONES DE EDICIÓN =====
+        
+        let registroEditando = null;
+        
+        // Función para abrir modal de edición
+        function editarRegistro(id) {
+            $.ajax({
+                url: 'obtenerRegistroCM.php',
+                type: 'POST',
+                data: { id: id },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        const data = response.data;
+                        registroEditando = id;
+                        
+                        // Llenar campos del modal
+                        $('#edit_id_registro').val(id);
+                        $('#edit_cedula_persona').val(data.cedula_persona_cm);
+                        $('#edit_cedula_display').text(data.cedula_persona_cm);
+                        $('#edit_nombre_display').text(data.nombre_completo);
+                        $('#edit_id_condicion').val(data.id_condicion);
+                        $('#edit_fecha_registro').val(data.fecha_registro_actividad);
+                        $('#edit_observaciones').val(data.observaciones);
+                        
+                        // Cargar Meta y cascada
+                        $('#edit_id_meta').val(data.id_meta);
+                        cargarActividadesEdicion(data.id_meta, data.id_actividad, data.id_accion, data.id_politica_publica);
+                        
+                        // Cargar fotos existentes
+                        cargarFotosExistentes(id);
+                        
+                        // Abrir modal
+                        $('#modalEditRegistro').modal('show');
+                    } else {
+                        Swal.fire('Error', response.message || 'No se pudo cargar el registro', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error', 'Error al cargar el registro', 'error');
+                }
+            });
+        }
+        
+        // Cargar actividades en modo edición
+        function cargarActividadesEdicion(idMeta, idActividad, idAccion, idPolitica) {
+            $.ajax({
+                url: 'getActividades.php',
+                type: 'POST',
+                data: { id_meta: idMeta },
+                success: function(response) {
+                    $('#edit_id_actividad').prop('disabled', false)
+                        .html('<option value="">Seleccione una actividad...</option>' + response);
+                    $('#edit_id_actividad').val(idActividad);
+                    
+                    cargarAccionesEdicion(idActividad, idAccion, idPolitica);
+                }
+            });
+        }
+        
+        // Cargar acciones en modo edición
+        function cargarAccionesEdicion(idActividad, idAccion, idPolitica) {
+            $.ajax({
+                url: 'getAcciones.php',
+                type: 'POST',
+                data: { id_actividad: idActividad },
+                success: function(response) {
+                    $('#edit_id_accion').prop('disabled', false)
+                        .html('<option value="">Seleccione una acción...</option>' + response);
+                    $('#edit_id_accion').val(idAccion);
+                    
+                    cargarPoliticasEdicion(idAccion, idPolitica);
+                }
+            });
+        }
+        
+        // Cargar políticas en modo edición
+        function cargarPoliticasEdicion(idAccion, idPolitica) {
+            $.ajax({
+                url: 'getPoliticaPublica.php',
+                type: 'POST',
+                data: { id_accion: idAccion },
+                dataType: 'json',
+                success: function(response) {
+                    let options = '<option value="">Seleccione una política pública...</option>';
+                    if (response && response.politicas && response.politicas.length > 0) {
+                        response.politicas.forEach(function(politica) {
+                            options += `<option value="${politica.id_politica}">${politica.descripcion_politica}</option>`;
+                        });
+                    }
+                    $('#edit_id_politica_publica').prop('disabled', false).html(options);
+                    $('#edit_id_politica_publica').val(idPolitica);
+                }
+            });
+        }
+        
+        // Cascadas para modo edición
+        $('#edit_id_meta').change(function() {
+            const metaId = $(this).val();
+            $('#edit_id_actividad').html('<option value="">Primero seleccione una meta...</option>').prop('disabled', true);
+            $('#edit_id_accion').html('<option value="">Primero seleccione una actividad...</option>').prop('disabled', true);
+            $('#edit_id_politica_publica').html('<option value="">Primero seleccione una acción...</option>').prop('disabled', true);
+            
+            if (metaId) {
+                $.ajax({
+                    url: 'getActividades.php',
+                    type: 'POST',
+                    data: { id_meta: metaId },
+                    success: function(response) {
+                        $('#edit_id_actividad').prop('disabled', false)
+                            .html('<option value="">Seleccione una actividad...</option>' + response);
+                    }
+                });
+            }
+        });
+        
+        $('#edit_id_actividad').change(function() {
+            const actividadId = $(this).val();
+            $('#edit_id_accion').html('<option value="">Primero seleccione una actividad...</option>').prop('disabled', true);
+            $('#edit_id_politica_publica').html('<option value="">Primero seleccione una acción...</option>').prop('disabled', true);
+            
+            if (actividadId) {
+                $.ajax({
+                    url: 'getAcciones.php',
+                    type: 'POST',
+                    data: { id_actividad: actividadId },
+                    success: function(response) {
+                        $('#edit_id_accion').prop('disabled', false)
+                            .html('<option value="">Seleccione una acción...</option>' + response);
+                    }
+                });
+            }
+        });
+        
+        $('#edit_id_accion').change(function() {
+            const accionId = $(this).val();
+            $('#edit_id_politica_publica').html('<option value="">Primero seleccione una acción...</option>').prop('disabled', true);
+            
+            if (accionId) {
+                $.ajax({
+                    url: 'getPoliticaPublica.php',
+                    type: 'POST',
+                    data: { id_accion: accionId },
+                    dataType: 'json',
+                    success: function(response) {
+                        let options = '<option value="">Seleccione una política pública...</option>';
+                        if (response && response.politicas && response.politicas.length > 0) {
+                            response.politicas.forEach(function(politica) {
+                                options += `<option value="${politica.id_politica}">${politica.descripcion_politica}</option>`;
+                            });
+                        }
+                        $('#edit_id_politica_publica').prop('disabled', false).html(options);
+                    }
+                });
+            }
+        });
+        
+        // Cargar fotos existentes
+        function cargarFotosExistentes(idRegistro) {
+            $.ajax({
+                url: 'obtenerFotos.php',
+                type: 'GET',
+                data: { id_registro: idRegistro, tipo: 'individual' },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success && response.fotos) {
+                        const container = $('#fotos_existentes');
+                        container.html('');
+                        
+                        if (response.fotos.length === 0) {
+                            container.html('<p class="text-muted">No hay fotografías</p>');
+                        } else {
+                            response.fotos.forEach(function(foto) {
+                                const fotoHtml = `
+                                    <div style="position: relative; display: inline-block;">
+                                        <img src="../../${foto.ruta}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;">
+                                        <button type="button" class="btn btn-danger btn-sm" 
+                                                style="position: absolute; top: -10px; right: -10px; border-radius: 50%; width: 30px; height: 30px; padding: 0;"
+                                                onclick="eliminarFoto(${foto.id_foto}, this)">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                `;
+                                container.append(fotoHtml);
+                            });
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Eliminar foto
+        function eliminarFoto(idFoto, btn) {
+            Swal.fire({
+                title: '¿Eliminar fotografía?',
+                text: 'Esta acción no se puede deshacer',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: 'eliminarFoto.php',
+                        type: 'POST',
+                        data: { id_foto: idFoto },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                $(btn).parent().remove();
+                                Swal.fire('Eliminada', 'Fotografía eliminada correctamente', 'success');
+                                
+                                // Actualizar vista si no quedan fotos
+                                if ($('#fotos_existentes').children().length === 0) {
+                                    $('#fotos_existentes').html('<p class="text-muted">No hay fotografías</p>');
+                                }
+                            } else {
+                                Swal.fire('Error', response.message, 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Error', 'Error al eliminar la fotografía', 'error');
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Validar fotos en edición
+        function validarFotosEdicion(input) {
+            const maxFiles = 3;
+            const maxSize = 2 * 1024 * 1024;
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            const files = input.files;
+            const previewContainer = document.getElementById('edit_preview_fotos');
+            
+            previewContainer.innerHTML = '';
+            
+            // Contar fotos existentes
+            const fotosExistentes = $('#fotos_existentes').children('div').length;
+            
+            if ((fotosExistentes + files.length) > maxFiles) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Límite excedido',
+                    text: `Ya tienes ${fotosExistentes} foto(s). Solo puedes agregar ${maxFiles - fotosExistentes} más.`
+                });
+                input.value = '';
+                return false;
+            }
+            
+            let valid = true;
+            Array.from(files).forEach((file) => {
+                if (!allowedTypes.includes(file.type)) {
+                    Swal.fire('Error', `${file.name} no es una imagen válida`, 'error');
+                    valid = false;
+                    return;
+                }
+                
+                if (file.size > maxSize) {
+                    Swal.fire('Error', `${file.name} supera los 2MB`, 'error');
+                    valid = false;
+                    return;
+                }
+                
+                if (valid) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const div = document.createElement('div');
+                        div.style.position = 'relative';
+                        div.innerHTML = `
+                            <img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;">
+                            <small style="display: block; text-align: center; margin-top: 5px;">${file.name}</small>
+                        `;
+                        previewContainer.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            if (!valid) {
+                input.value = '';
+                previewContainer.innerHTML = '';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Enviar formulario de edición
+        $('#formEditRegistro').submit(function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const fotosInput = $('#edit_fotografias')[0];
+            
+            if (fotosInput.files.length > 0) {
+                // Primero actualizar datos del registro
+                $.ajax({
+                    url: 'actualizarRegistroCM.php',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            // Luego subir nuevas fotos si las hay
+                            const formDataFotos = new FormData();
+                            formDataFotos.append('id_registro', registroEditando);
+                            formDataFotos.append('tipo', 'individual');
+                            
+                            for (let i = 0; i < fotosInput.files.length; i++) {
+                                formDataFotos.append('fotografias[]', fotosInput.files[i]);
+                            }
+                            
+                            $.ajax({
+                                url: 'agregarFotos.php',
+                                type: 'POST',
+                                data: formDataFotos,
+                                processData: false,
+                                contentType: false,
+                                dataType: 'json',
+                                success: function(fotoResponse) {
+                                    $('#modalEditRegistro').modal('hide');
+                                    Swal.fire('Actualizado', 'Registro actualizado correctamente', 'success')
+                                        .then(() => location.reload());
+                                },
+                                error: function() {
+                                    $('#modalEditRegistro').modal('hide');
+                                    Swal.fire('Parcial', 'Registro actualizado pero error al subir fotos', 'warning')
+                                        .then(() => location.reload());
+                                }
+                            });
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'Error al actualizar el registro', 'error');
+                    }
+                });
+            } else {
+                // Solo actualizar datos del registro
+                $.ajax({
+                    url: 'actualizarRegistroCM.php',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#modalEditRegistro').modal('hide');
+                            Swal.fire('Actualizado', 'Registro actualizado correctamente', 'success')
+                                .then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'Error al actualizar el registro', 'error');
+                    }
+                });
+            }
+        });
+        
+        // Función para eliminar registro
+        function eliminarRegistro(id) {
+            Swal.fire({
+                title: '¿Eliminar registro?',
+                text: 'Esta acción no se puede deshacer',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: 'deleteRegistroCM.php',
+                        type: 'POST',
+                        data: { id: id },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire('Eliminado', 'Registro eliminado correctamente', 'success')
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire('Error', response.message, 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Error', 'Error al eliminar el registro', 'error');
+                        }
+                    });
+                }
+            });
+        }
     </script>
 </body>
 </html>

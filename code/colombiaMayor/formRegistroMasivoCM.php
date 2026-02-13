@@ -160,7 +160,7 @@ if ($result_count) {
 
             <!-- Formulario de Registro Masivo -->
             <div class="modern-filters" style="background: #fff; padding: 30px; border-radius: 18px; margin-bottom: 30px;">
-                <form action="addRegistroMasivoCM.php" method="POST" id="formRegistroMasivo">
+                <form action="addRegistroMasivoCM.php" method="POST" id="formRegistroMasivo" enctype="multipart/form-data">
                     <div class="row g-3">
                         <!-- Fecha del Registro -->
                         <div class="col-md-4">
@@ -238,6 +238,21 @@ if ($result_count) {
                         <div class="col-md-12">
                             <label for="observaciones" class="form-label fw-bold">Observaciones</label>
                             <textarea class="form-control modern-input" id="observaciones" name="observaciones" rows="3" placeholder="Ingrese observaciones adicionales..."></textarea>
+                        </div>
+
+                        <!-- Fotografías -->
+                        <div class="col-md-12">
+                            <label for="fotografias" class="form-label fw-bold">Fotografías (Máximo 3)</label>
+                            <input type="file" 
+                                   class="form-control modern-input" 
+                                   name="fotografias[]" 
+                                   id="fotografias" 
+                                   accept="image/*" 
+                                   capture="environment"
+                                   multiple 
+                                   onchange="validarFotos(this)">
+                            <small class="text-muted">Tamaño máximo por foto: 2MB. Formatos: JPG, PNG, JPEG</small>
+                            <div id="preview_fotos" class="mt-3" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
                         </div>
 
                         <!-- Botón de envío -->
@@ -480,6 +495,78 @@ if ($result_count) {
                     return false;
                 }
             });
+
+            // Función para validar fotografías
+            window.validarFotos = function(input) {
+                const maxFiles = 3;
+                const maxSize = 2 * 1024 * 1024; // 2MB en bytes
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                const files = input.files;
+                const previewContainer = document.getElementById('preview_fotos');
+                
+                // Limpiar preview
+                previewContainer.innerHTML = '';
+                
+                // Validar cantidad de archivos
+                if (files.length > maxFiles) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Demasiadas fotos',
+                        text: `Solo puedes subir máximo ${maxFiles} fotografías`
+                    });
+                    input.value = '';
+                    return false;
+                }
+                
+                // Validar cada archivo
+                let valid = true;
+                Array.from(files).forEach((file, index) => {
+                    // Validar tipo
+                    if (!allowedTypes.includes(file.type)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Formato no permitido',
+                            text: `El archivo ${file.name} no es una imagen válida (JPG, PNG, JPEG)`
+                        });
+                        valid = false;
+                        return;
+                    }
+                    
+                    // Validar tamaño
+                    if (file.size > maxSize) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Archivo muy grande',
+                            text: `El archivo ${file.name} supera los 2MB`
+                        });
+                        valid = false;
+                        return;
+                    }
+                    
+                    // Crear preview
+                    if (valid) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const div = document.createElement('div');
+                            div.style.position = 'relative';
+                            div.innerHTML = `
+                                <img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;">
+                                <small style="display: block; text-align: center; margin-top: 5px;">${file.name}</small>
+                            `;
+                            previewContainer.appendChild(div);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+                
+                if (!valid) {
+                    input.value = '';
+                    previewContainer.innerHTML = '';
+                    return false;
+                }
+                
+                return true;
+            };
         });
     </script>
 </body>

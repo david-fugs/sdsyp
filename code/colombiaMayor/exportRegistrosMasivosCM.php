@@ -1,13 +1,17 @@
 <?php
+error_reporting(0);
+ini_set('display_errors', 0);
 session_start();
 
 if (!isset($_SESSION['usuario']) || ($_SESSION['tipo_usuario'] != 8 && $_SESSION['tipo_usuario'] != 9)) {
     exit('Acceso denegado');
 }
 
-if (ob_get_length()) {
-    ob_clean();
+// Limpiar cualquier salida previa
+while (ob_get_level()) {
+    ob_end_clean();
 }
+ob_start();
 
 require_once '../../conexion.php';
 require_once '../../vendor/autoload.php';
@@ -38,18 +42,21 @@ $sql = "SELECT r.id_registro_masivo_cm,
         r.cantidad_femenino,
         r.total_personas,
         r.observaciones,
-        u.nombre as registrado_por,
-        r.fecha_creacion
+        u.nombre as registrado_por
         FROM registros_masivos_cm r
         LEFT JOIN metas m ON r.id_meta = m.id_meta
         LEFT JOIN actividades a ON r.id_actividad = a.id_actividad
         LEFT JOIN acciones ac ON r.id_accion = ac.id_accion
-        LEFT JOIN politicas_publicas pp ON r.id_politica_publica = pp.id_politica_publica
+        LEFT JOIN politicas_publicas pp ON r.id_politica_publica = pp.id_politica
         LEFT JOIN usuarios u ON r.usuario_registro = u.id
         WHERE $where
-        ORDER BY r.fecha_registro DESC, r.fecha_creacion DESC";
+        ORDER BY r.fecha_registro DESC, r.id_registro_masivo_cm DESC";
 
 $result = $mysqli->query($sql);
+
+if (!$result) {
+    die('Error en consulta: ' . $mysqli->error);
+}
 
 // Crear Excel
 $spreadsheet = new Spreadsheet();
@@ -57,7 +64,7 @@ $sheet = $spreadsheet->getActiveSheet();
 $sheet->setTitle('Registros Masivos CM');
 
 // Encabezados
-$headers = ['ID', 'Fecha Registro', 'Meta', 'Actividad', 'Acción', 'Política Pública', 'Masculino', 'Femenino', 'Total', 'Observaciones', 'Registrado por', 'Fecha Creación'];
+$headers = ['ID', 'Fecha Registro', 'Meta', 'Actividad', 'Acción', 'Política Pública', 'Masculino', 'Femenino', 'Total', 'Observaciones', 'Registrado por'];
 $col = 'A';
 foreach($headers as $header) {
     $sheet->setCellValue($col.'1', $header);
@@ -65,12 +72,12 @@ foreach($headers as $header) {
 }
 
 // Estilo encabezados - Bonito y amplio
-$sheet->getStyle('A1:L1')->getFont()->setBold(true)->setSize(12);
-$sheet->getStyle('A1:L1')->getFill()
+$sheet->getStyle('A1:K1')->getFont()->setBold(true)->setSize(12);
+$sheet->getStyle('A1:K1')->getFill()
     ->setFillType(Fill::FILL_SOLID)
     ->getStartColor()->setRGB('2E75B6');
-$sheet->getStyle('A1:L1')->getFont()->getColor()->setRGB('FFFFFF');
-$sheet->getStyle('A1:L1')->getAlignment()
+$sheet->getStyle('A1:K1')->getFont()->getColor()->setRGB('FFFFFF');
+$sheet->getStyle('A1:K1')->getAlignment()
     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
     ->setVertical(Alignment::VERTICAL_CENTER);
 $sheet->getRowDimension(1)->setRowHeight(25);
@@ -81,22 +88,21 @@ $sheet->freezePane('A2');
 // Datos
 $fila = 2;
 while($row = $result->fetch_assoc()) {
-    $sheet->setCellValue('A'.$fila, $row['id_registro_masivo_cm']);
-    $sheet->setCellValue('B'.$fila, date('d/m/Y', strtotime($row['fecha_registro'])));
+    $sheet->setCellValue('A'.$fila, $row['id_registro_masivo_cm'] ?? '');
+    $sheet->setCellValue('B'.$fila, !empty($row['fecha_registro']) ? date('d/m/Y', strtotime($row['fecha_registro'])) : '');
     $sheet->setCellValue('C'.$fila, $row['descripcion_meta'] ?? 'N/A');
     $sheet->setCellValue('D'.$fila, $row['descripcion_actividad'] ?? 'N/A');
     $sheet->setCellValue('E'.$fila, $row['descripcion_accion'] ?? 'N/A');
     $sheet->setCellValue('F'.$fila, $row['descripcion_politica'] ?? 'N/A');
-    $sheet->setCellValue('G'.$fila, $row['cantidad_masculino']);
-    $sheet->setCellValue('H'.$fila, $row['cantidad_femenino']);
-    $sheet->setCellValue('I'.$fila, $row['total_personas']);
+    $sheet->setCellValue('G'.$fila, $row['cantidad_masculino'] ?? 0);
+    $sheet->setCellValue('H'.$fila, $row['cantidad_femenino'] ?? 0);
+    $sheet->setCellValue('I'.$fila, $row['total_personas'] ?? 0);
     $sheet->setCellValue('J'.$fila, $row['observaciones'] ?? '');
     $sheet->setCellValue('K'.$fila, $row['registrado_por'] ?? 'N/A');
-    $sheet->setCellValue('L'.$fila, date('d/m/Y H:i', strtotime($row['fecha_creacion'])));
     
     // Filas alternadas con color
     if ($fila % 2 == 0) {
-        $sheet->getStyle('A'.$fila.':L'.$fila)->getFill()
+        $sheet->getStyle('A'.$fila.':K'.$fila)->getFill()
             ->setFillType(Fill::FILL_SOLID)
             ->getStartColor()->setRGB('E7F0FF');
     }
@@ -118,8 +124,7 @@ $columnWidths = [
     'H' => 12,  // Femenino
     'I' => 10,  // Total
     'J' => 40,  // Observaciones
-    'K' => 20,  // Registrado por
-    'L' => 18   // Fecha Creación
+    'K' => 20   // Registrado por
 ];
 foreach($columnWidths as $col => $width) {
     $sheet->getColumnDimension($col)->setWidth($width);
@@ -138,15 +143,17 @@ $styleArray = [
         ]
     ],
 ];
-$sheet->getStyle('A1:L'.($fila-1))->applyFromArray($styleArray);
+$sheet->getStyle('A1:K'.($fila-1))->applyFromArray($styleArray);
 
 // Alineación vertical centrada para todos los datos
-$sheet->getStyle('A2:L'.($fila-1))->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+$sheet->getStyle('A2:K'.($fila-1))->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
 
 // Alineación centrada para columnas numéricas
 $sheet->getStyle('G2:I'.($fila-1))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
 $mysqli->close();
+
+ob_end_clean();
 
 // Descargar
 $filename = 'RegistrosMasivosCM_'.date('Y-m-d_His').'.xlsx';
