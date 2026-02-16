@@ -43,7 +43,8 @@ $query = "SELECT ra.id_registro, ra.id_meta, ra.id_actividad, ra.id_entregas, ra
        ra.funcionario_responsable, ra.otro_lugar, ra.id_usuario,
        m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica,
        actc.descripcion_actividad AS descripcion_entrega,
-       g.descripcion_grupo AS centro_vida, c.nombre_com AS nombre_comuna, u.nombre AS nombre_funcionario
+       g.descripcion_grupo AS centro_vida, c.nombre_com AS nombre_comuna, u.nombre AS nombre_funcionario,
+       u_creador.nombre AS realizado_por
 FROM registro_actividades AS ra
 LEFT JOIN metas m ON ra.id_meta = m.id_meta
 LEFT JOIN actividades a ON ra.id_actividad = a.id_actividad
@@ -52,9 +53,10 @@ LEFT JOIN politicas_publicas pp ON ra.politica_publica = pp.id_politica
 LEFT JOIN grupos g ON ra.id_centro_vida = g.id_grupo
 LEFT JOIN comunas c ON ra.id_comuna = c.id_com
 LEFT JOIN usuarios u ON CAST(ra.funcionario_responsable AS UNSIGNED) = u.id AND ra.funcionario_responsable REGEXP '^[0-9]+$'
+LEFT JOIN usuarios u_creador ON ra.id_usuario = u_creador.id
 LEFT JOIN actividad_contratista actc ON ra.id_entregas = actc.id_actividad_contratista
 WHERE 1=1 $where 
-" . ($where_grupos_filtro ? " AND ra.id_centro_vida IS NOT NULL AND EXISTS (SELECT 1 FROM grupos g2 WHERE g2.id_grupo = ra.id_centro_vida $where_grupos_filtro)" : "") . "
+" . ($where_grupos_filtro ? " AND (ra.id_centro_vida = 0 OR (ra.id_centro_vida IS NOT NULL AND EXISTS (SELECT 1 FROM grupos g2 WHERE g2.id_grupo = ra.id_centro_vida $where_grupos_filtro)))" : "") . "
 ORDER BY ra.fecha_atencion DESC
 ";
 
@@ -98,6 +100,10 @@ if ($result->num_rows > 0) {
         // Mostrar funcionario responsable (nombre de usuario si es ID numérico, o el texto directo)
         $funcionarioDisplay = $row['nombre_funcionario'] ? htmlspecialchars($row['nombre_funcionario']) : htmlspecialchars($row['funcionario_responsable'] ?? 'N/A');
         echo "<td title='" . $funcionarioDisplay . "'>" . $funcionarioDisplay . "</td>";
+        
+        // Mostrar realizado por (usuario creador)
+        $realizadoPor = htmlspecialchars($row['realizado_por'] ?? 'N/A');
+        echo "<td title='" . $realizadoPor . "'>" . $realizadoPor . "</td>";
         // Botones de acción modernos
         echo '<td class="col-actions">
                 <div class="action-buttons">
@@ -135,7 +141,7 @@ if ($result->num_rows > 0) {
         echo "</tr>";
     }
 } else {
-    echo "<tr><td colspan='17' class='text-center text-muted'>
+    echo "<tr><td colspan='18' class='text-center text-muted'>
             <i class='bi bi-search'></i><br>
             No se encontraron registros que coincidan con los filtros aplicados.
           </td></tr>";

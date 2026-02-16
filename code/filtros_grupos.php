@@ -82,6 +82,8 @@ function getGruposPermitidos($conexion, $tipo_usuario) {
     if ($tipo_usuario == 3) {
         $query = "SELECT id_grupo FROM grupos 
                   WHERE descripcion_grupo LIKE 'CPSAM%'
+                     OR descripcion_grupo LIKE 'Contratista %'
+                     OR descripcion_grupo = 'Contratista'
                   ORDER BY descripcion_grupo ASC";
         
         $result = $conexion->query($query);
@@ -222,8 +224,8 @@ function getGruposParaSelect($conexion, $tipo_usuario) {
  * @return bool True si tiene acceso, False si no
  */
 function tieneAccesoGrupo($conexion, $tipo_usuario, $id_grupo) {
-    // Admin y otros tipos tienen acceso completo
-    if (!$tipo_usuario || in_array($tipo_usuario, [1, 2, 3, 7])) {
+    // Admin y otros tipos tienen acceso completo (excepto tipo 3 que tiene restricciones)
+    if (!$tipo_usuario || in_array($tipo_usuario, [1, 2, 7])) {
         return true;
     }
     

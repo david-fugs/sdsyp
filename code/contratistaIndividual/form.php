@@ -174,14 +174,22 @@ if (!$result_programas) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
-$condiciones = "SELECT * FROM condiciones_componente";
+// Obtener tipo de usuario para filtrar condiciones
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+
+// Filtrar condiciones según tipo de usuario
+if ($tipo_usuario == 3) {
+    // Para tipo usuario 3 (CONTRATISTA CPSAM): Excluir condiciones que contengan "C.V." o "C.M."
+    $condiciones = "SELECT * FROM condiciones_componente WHERE descripcion_condicion NOT LIKE '%C.V.%' AND descripcion_condicion NOT LIKE '%C.M.%'";
+} else {
+    $condiciones = "SELECT * FROM condiciones_componente";
+}
 $result_condiciones = mysqli_query($mysqli, $condiciones);
 if (!$result_condiciones) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
 // Aplicar filtro de grupos según tipo de usuario
-$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
 $grupos = "SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC";
 $result_grupos_query = mysqli_query($mysqli, $grupos);
@@ -326,13 +334,131 @@ function deleteMember($id_movimiento)
                     </div>
 
                     <div class="modal-body">
-                        <!-- Fila 1 -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3 form-floating">
-                                <input type="text" class="form-control" id="cedula_form" name="cedula_persona" placeholder="Cédula" required autocomplete="off" autofocus>
-                                <label class="" for="cedula_persona">Cédula</label>
+                        <!-- Sección: Buscar y Agregar Cédulas -->
+                        <div class="buscar-persona-box mb-4" style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 0.375rem;">
+                            <h6 class="mb-3 text-primary"><i class="bi bi-person-plus-fill"></i> Buscar y Agregar Personas</h6>
+                            
+                            <!-- Tabs para alternar entre búsqueda manual y por grupo -->
+                            <ul class="nav nav-tabs mb-3" id="busquedaTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="tab-manual-individual" data-bs-toggle="tab" data-bs-target="#busqueda-manual-individual" type="button" role="tab">
+                                        <i class="bi bi-search"></i> Búsqueda Manual
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="tab-grupo-individual" data-bs-toggle="tab" data-bs-target="#busqueda-grupo-individual" type="button" role="tab">
+                                        <i class="bi bi-people"></i> Selección por Grupo
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content" id="busquedaTabsContent">
+                                <!-- Tab 1: Búsqueda Manual por Cédula -->
+                                <div class="tab-pane fade show active" id="busqueda-manual-individual" role="tabpanel">
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="bi bi-credit-card-2-front"></i></span>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="buscar_cedula_input_individual" 
+                                                       placeholder="Ingrese número de cédula..."
+                                                       autocomplete="off">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-primary w-100" onclick="buscarYAgregarPersonaIndividual()">
+                                                <i class="bi bi-search"></i> Buscar y Agregar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tab 2: Selección por Grupo -->
+                                <div class="tab-pane fade" id="busqueda-grupo-individual" role="tabpanel">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-8">
+                                            <select class="form-select" id="filtro_grupo_personas_individual">
+                                                <option value="">Seleccione un grupo...</option>
+                                                <?php foreach ($result_grupos as $grupo) { 
+                                                    $desc = $grupo['descripcion_grupo'];
+                                                    // Mostrar solo grupos CPSAM y Contratista
+                                                    if (stripos($desc, 'CPSAM') === 0 || stripos($desc, 'Contratista') === 0) {
+                                                ?>
+                                                    <option value="<?= $grupo['id_grupo']; ?>"><?= $desc; ?></option>
+                                                <?php 
+                                                    }
+                                                } ?>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-info w-100" onclick="cargarPersonasGrupoIndividual()">
+                                                <i class="bi bi-arrow-clockwise"></i> Cargar Personas
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Área de resultados con checkboxes -->
+                                    <div id="area_personas_grupo_individual" style="display:none;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0">Personas encontradas: <span id="total_personas_grupo_individual" class="badge bg-info">0</span></h6>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-success" onclick="seleccionarTodasPersonasIndividual()">
+                                                    <i class="bi bi-check-all"></i> Seleccionar Todas
+                                                </button>
+                                                <button type="button" class="btn btn-warning" onclick="deseleccionarTodasPersonasIndividual()">
+                                                    <i class="bi bi-x"></i> Deseleccionar Todas
+                                                </button>
+                                                <button type="button" class="btn btn-primary" onclick="agregarPersonasSeleccionadasIndividual()">
+                                                    <i class="bi bi-plus-circle"></i> Agregar Seleccionadas
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="table-responsive" style="max-height: 350px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px;">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-light sticky-top">
+                                                    <tr>
+                                                        <th style="width: 50px;">
+                                                            <input type="checkbox" class="form-check-input" id="check_all_personas_individual" onclick="toggleTodosCheckboxesIndividual(this)">
+                                                        </th>
+                                                        <th>Cédula</th>
+                                                        <th>Nombres</th>
+                                                        <th>Apellidos</th>
+                                                        <th>Género</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbody_personas_grupo_individual">
+                                                    <!-- Se llena dinámicamente -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
+                            <!-- Lista de Cédulas Agregadas con Validación -->
+                            <div id="cedulas_container_individual" style="display:none;">
+                                <hr class="my-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-people-fill"></i> 
+                                        Personas Agregadas: 
+                                        <span id="contador_cedulas_individual" class="badge bg-secondary">0</span>
+                                    </h6>
+                                    <div id="validacion_cantidad_individual" style="display:none;"></div>
+                                </div>
+                                <div id="lista_cedulas_individual" class="list-group mb-3"></div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden input para enviar las cédulas -->
+                        <input type="hidden" name="cedulas_json" id="cedulas_hidden_individual">
+
+                        <hr class="my-4">
+                        <h6 class="mb-3"><i class="bi bi-clipboard-data"></i> Información del Registro</h6>
+
+                        <!-- Condición -->
+                        <div class="row">
                             <div class="col-md-6 mb-3 form-floating mt-1">
                                 <select class="form-select" id="condicion_modal" name="id_condicion" required>
                                     <option value="" selected>Seleccione...</option>
@@ -1215,6 +1341,350 @@ function deleteMember($id_movimiento)
                     }
                 });
             }
+        });
+    });
+
+    // ==================== GESTIÓN DE MÚLTIPLES CÉDULAS ====================
+    $(document).ready(function() {
+        let cedulasAgregadasIndividual = [];
+
+        // Función para buscar y agregar persona al registro individual
+        window.buscarYAgregarPersonaIndividual = function() {
+            const cedula = $('#buscar_cedula_input_individual').val().trim();
+
+            if (!cedula) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Cédula vacía',
+                    text: 'Por favor ingrese un número de cédula'
+                });
+                return;
+            }
+
+            // Verificar si ya está agregada
+            if (cedulasAgregadasIndividual.some(item => item.cedula === cedula)) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Persona ya agregada',
+                    text: 'Esta cédula ya está en la lista'
+                });
+                return;
+            }
+
+            // Buscar en la base de datos
+            $.ajax({
+                url: '../buscar_persona.php',
+                type: 'POST',
+                data: { cedula: cedula },
+                dataType: 'json',
+                success: function(response) {
+                    if (!response || !response.encontrado) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Persona no encontrada',
+                            text: 'La cédula no está registrada o no tiene acceso a grupos CPSAM/Contratista'
+                        });
+                    } else {
+                        // Agregar a la lista
+                        cedulasAgregadasIndividual.push({
+                            cedula: cedula,
+                            nombre_completo: response.nombres + ' ' + response.apellidos,
+                            genero: response.genero || 'N/A'
+                        });
+
+                        actualizarListaCedulasIndividual();
+                        $('#buscar_cedula_input_individual').val('').focus();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Persona agregada',
+                            text: response.nombres + ' ' + response.apellidos,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al buscar la persona'
+                    });
+                }
+            });
+        };
+
+        // Actualizar lista visual de cédulas con validación
+        function actualizarListaCedulasIndividual() {
+            const lista = $('#lista_cedulas_individual');
+            const container = $('#cedulas_container_individual');
+            const totalAgregado = cedulasAgregadasIndividual.length;
+            
+            if (totalAgregado === 0) {
+                container.hide();
+                lista.html('');
+                $('#contador_cedulas_individual').text('0').removeClass('bg-success bg-warning bg-danger bg-info').addClass('bg-secondary');
+                $('#cedulas_hidden_individual').val('');
+                $('#validacion_cantidad_individual').hide();
+                return;
+            }
+
+            container.show();
+            
+            // Actualizar contador con colores
+            const contadorBadge = $('#contador_cedulas_individual');
+            contadorBadge.text(totalAgregado);
+            contadorBadge.removeClass('bg-success bg-warning bg-danger bg-secondary').addClass('bg-info');
+            
+            // Mostrar simple confirmación de que hay personas
+            const validacionDiv = $('#validacion_cantidad_individual');
+            validacionDiv.show().html(`<span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> ${totalAgregado} persona(s)</span>`);
+
+            let html = '';
+            cedulasAgregadasIndividual.forEach((item, index) => {
+                const iconoGenero = item.genero === 'Masculino' ? 'bi-gender-male text-primary' : 
+                                    item.genero === 'Femenino' ? 'bi-gender-female text-danger' : 
+                                    'bi-person text-secondary';
+                html += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi ${iconoGenero}"></i>
+                            <strong>${item.cedula}</strong> - ${item.nombre_completo}
+                        </div>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removerCedulaIndividual(${index})">
+                            <i class="bi bi-trash"></i> Quitar
+                        </button>
+                    </div>
+                `;
+            });
+
+            lista.html(html);
+
+            // Actualizar hidden input con las cédulas en formato JSON
+            $('#cedulas_hidden_individual').val(JSON.stringify(cedulasAgregadasIndividual.map(item => item.cedula)));
+        }
+
+        // Función para remover una cédula de la lista
+        window.removerCedulaIndividual = function(index) {
+            cedulasAgregadasIndividual.splice(index, 1);
+            actualizarListaCedulasIndividual();
+        };
+
+        // ==================== FUNCIONES PARA SELECCIÓN POR GRUPO ====================
+
+        // Cargar personas de un grupo seleccionado
+        window.cargarPersonasGrupoIndividual = function() {
+            const idGrupo = $('#filtro_grupo_personas_individual').val();
+            
+            if (!idGrupo) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Grupo no seleccionado',
+                    text: 'Por favor seleccione un grupo primero'
+                });
+                return;
+            }
+
+            // Mostrar loading
+            Swal.fire({
+                title: 'Cargando personas...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: 'obtenerPersonasPorGrupo.php',
+                type: 'POST',
+                data: { id_grupo: idGrupo },
+                dataType: 'json',
+                success: function(response) {
+                    Swal.close();
+                    
+                    if (response.success && response.personas) {
+                        mostrarPersonasEnTablaIndividual(response.personas);
+                        $('#total_personas_grupo_individual').text(response.total);
+                        $('#area_personas_grupo_individual').show();
+                        
+                        if (response.total === 0) {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Sin resultados',
+                                text: 'No se encontraron personas activas en este grupo'
+                            });
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message || 'No se pudieron cargar las personas'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al conectar con el servidor'
+                    });
+                }
+            });
+        };
+
+        // Mostrar personas en la tabla con checkboxes
+        function mostrarPersonasEnTablaIndividual(personas) {
+            const tbody = $('#tbody_personas_grupo_individual');
+            tbody.empty();
+            $('#check_all_personas_individual').prop('checked', false);
+
+            if (personas.length === 0) {
+                tbody.html('<tr><td colspan="5" class="text-center text-muted">No hay personas disponibles</td></tr>');
+                return;
+            }
+
+            personas.forEach((persona, index) => {
+                const iconoGenero = persona.genero === 'Masculino' ? 'bi-gender-male text-primary' : 
+                                   persona.genero === 'Femenino' ? 'bi-gender-female text-danger' : 
+                                   'bi-person text-secondary';
+                
+                const row = `
+                    <tr>
+                        <td class="text-center">
+                            <input type="checkbox" 
+                                   class="form-check-input persona-checkbox-individual" 
+                                   data-cedula="${persona.cedula}"
+                                   data-nombres="${persona.nombres}"
+                                   data-apellidos="${persona.apellidos}"
+                                   data-genero="${persona.genero}">
+                        </td>
+                        <td><strong>${persona.cedula}</strong></td>
+                        <td>${persona.nombres}</td>
+                        <td>${persona.apellidos}</td>
+                        <td><i class="bi ${iconoGenero}"></i> ${persona.genero}</td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        // Toggle todos los checkboxes con el checkbox principal
+        window.toggleTodosCheckboxesIndividual = function(checkbox) {
+            $('.persona-checkbox-individual').prop('checked', checkbox.checked);
+        };
+
+        // Botón para seleccionar todas
+        window.seleccionarTodasPersonasIndividual = function() {
+            $('.persona-checkbox-individual').prop('checked', true);
+            $('#check_all_personas_individual').prop('checked', true);
+        };
+
+        // Botón para deseleccionar todas
+        window.deseleccionarTodasPersonasIndividual = function() {
+            $('.persona-checkbox-individual').prop('checked', false);
+            $('#check_all_personas_individual').prop('checked', false);
+        };
+
+        // Agregar personas seleccionadas a la lista final
+        window.agregarPersonasSeleccionadasIndividual = function() {
+            const checkboxesSeleccionados = $('.persona-checkbox-individual:checked');
+            
+            if (checkboxesSeleccionados.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Sin selección',
+                    text: 'Por favor seleccione al menos una persona'
+                });
+                return;
+            }
+
+            let personasAgregadas = 0;
+            let personasDuplicadas = 0;
+
+            checkboxesSeleccionados.each(function() {
+                const cedula = $(this).data('cedula');
+                const nombres = $(this).data('nombres');
+                const apellidos = $(this).data('apellidos');
+                const genero = $(this).data('genero');
+
+                // Verificar si ya está agregada
+                if (cedulasAgregadasIndividual.some(item => item.cedula === cedula)) {
+                    personasDuplicadas++;
+                    return; // continue al siguiente
+                }
+
+                // Agregar a la lista
+                cedulasAgregadasIndividual.push({
+                    cedula: cedula,
+                    nombre_completo: nombres + ' ' + apellidos,
+                    genero: genero
+                });
+                personasAgregadas++;
+            });
+
+            actualizarListaCedulasIndividual();
+
+            // Deseleccionar checkboxes después de agregar
+            deseleccionarTodasPersonasIndividual();
+
+            // Mostrar resultado
+            let mensaje = `${personasAgregadas} persona(s) agregada(s) correctamente`;
+            if (personasDuplicadas > 0) {
+                mensaje += `<br><small>${personasDuplicadas} persona(s) ya estaban en la lista</small>`;
+            }
+
+            // Debug: Mostrar estado del array
+            console.log('Personas agregadas al array (Individual):', cedulasAgregadasIndividual);
+            console.log('Total en array:', cedulasAgregadasIndividual.length);
+            console.log('Hidden input value:', $('#cedulas_hidden_individual').val());
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Personas agregadas',
+                html: mensaje,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        };
+
+        // ==================== FIN FUNCIONES SELECCIÓN POR GRUPO ====================
+
+        // Permitir agregar con Enter
+        $('#buscar_cedula_input_individual').keypress(function(e) {
+            if (e.which == 13) {
+                e.preventDefault();
+                buscarYAgregarPersonaIndividual();
+            }
+        });
+
+        // Validar formulario antes de enviar - debe haber al menos una cédula
+        $('#modalNewPerson form').submit(function(e) {
+            // Debug: Mostrar estado al enviar
+            console.log('=== VALIDACIÓN DE ENVÍO (Individual) ===');
+            console.log('Array cedulasAgregadasIndividual:', cedulasAgregadasIndividual);
+            console.log('Cantidad en array:', cedulasAgregadasIndividual.length);
+            console.log('Hidden input value:', $('#cedulas_hidden_individual').val());
+            
+            if (cedulasAgregadasIndividual.length === 0) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Sin personas agregadas',
+                    text: 'Debe agregar al menos una persona para crear el registro',
+                    confirmButtonText: 'Entendido'
+                });
+                return false;
+            }
+            
+            console.log('✓ Validación pasada, formulario se enviará');
+        });
+
+        // Limpiar lista al cerrar el modal
+        $('#modalNewPerson').on('hidden.bs.modal', function () {
+            cedulasAgregadasIndividual = [];
+            actualizarListaCedulasIndividual();
+            $('#buscar_cedula_input_individual').val('');
         });
     });
 

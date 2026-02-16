@@ -68,8 +68,8 @@ if ($tipo_usuario == 2 && $id_grupo_session && $id_grupo_session != 0) {
 // Filtrar grupos para el select según tipo_usuario
 $grupos_filtrados = [];
 if ($tipo_usuario == 3) {
-    // Para tipo_usuario 3 (CONTRATISTA CPSAM): mostrar todos los CPSAM y su grupo asignado
-    $query_grupos_tipo3 = "SELECT * FROM grupos WHERE descripcion_grupo LIKE 'CPSAM%'";
+    // Para tipo_usuario 3 (CONTRATISTA CPSAM): mostrar todos los CPSAM, Contratista y su grupo asignado
+    $query_grupos_tipo3 = "SELECT * FROM grupos WHERE descripcion_grupo LIKE 'CPSAM%' OR descripcion_grupo LIKE 'Contratista%' OR descripcion_grupo = 'Contratista'";
     if ($id_grupo_session) {
         $query_grupos_tipo3 .= " OR id_grupo = '$id_grupo_session'";
     }
@@ -347,6 +347,8 @@ function deleteMember($cedula_persona)
                             <option value="FALLECIDO">Fallecido</option>
                             <option value="RETIRADO_VOLUNTARIO">Retirado Voluntario</option>
                             <option value="TRASLADADO">Trasladado</option>
+                            <option value="USUARIO_INTERESADO">Usuario Interesado</option>
+                            <option value="USUARIO_INDIRECTO">Usuario Indirecto</option>
                         </select>
                     </div>
                     <div class="filter-group">

@@ -6,7 +6,7 @@ include("../../conexion.php");
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
 
-// Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
+// Aplicar filtro de grupos según tipo de usuario (tipos 3, 4, 5 y 10)
 $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
 
 header('Content-Type: application/json');

@@ -6,7 +6,7 @@ require_once('../filtros_grupos.php');
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
 
-// Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
+// Aplicar filtro de grupos según tipo de usuario (tipos 3, 4, 5 y 10)
 $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
 
 $where = "WHERE p.estado_persona = 1";
@@ -28,7 +28,7 @@ if (!empty($_GET['condicion'])) {
     $condicion = $mysqli->real_escape_string($_GET['condicion']);
     $where .= " AND c.id_condicion = '$condicion'";
 }
-if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3) {
+if ($tipo_usuario != 1 && $id_grupo_session && !in_array($tipo_usuario, [3, 4, 5, 10])) {
     $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
 
@@ -38,7 +38,7 @@ if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
     $where .= " AND ri.id_usuario = $id_usuario_session ";
 }
 
-// Aplicar filtro adicional para usuarios técnicos (tipos 4 y 5)
+// Aplicar filtro adicional para usuarios con restricciones de grupos (tipos 4, 5 y 10)
 $where .= $where_grupos_filtro;
 
 // Consulta SQL para obtener los datos

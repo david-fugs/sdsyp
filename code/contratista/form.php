@@ -202,7 +202,20 @@ $result_metas = mysqli_query($mysqli, $metas);
 if (!$result_metas) {
     die("Error en la consulta de metas: " . mysqli_error($mysqli));
 }
-$actividades = "SELECT * FROM actividad_contratista ORDER BY descripcion_actividad ASC";
+$actividades = "SELECT * FROM actividad_contratista 
+    WHERE descripcion_actividad NOT LIKE '%2.1.1%' 
+    AND descripcion_actividad NOT LIKE '%2.1.10%' 
+    AND descripcion_actividad NOT LIKE '%2.1.11%' 
+    AND descripcion_actividad NOT LIKE '%2.1.12%' 
+    AND descripcion_actividad NOT LIKE '%2.1.3%' 
+    AND descripcion_actividad NOT LIKE '%2.1.4%' 
+    AND descripcion_actividad NOT LIKE '%2.1.5%' 
+    AND descripcion_actividad NOT LIKE '%2.1.6%' 
+    AND descripcion_actividad NOT LIKE '%2.18%' 
+    AND descripcion_actividad NOT LIKE '%actividad fisioterapia%' 
+    AND descripcion_actividad NOT LIKE '%actividad gerontologo%' 
+    AND descripcion_actividad NOT LIKE '%actividad recreativa - manualidades%' 
+    ORDER BY descripcion_actividad ASC";
 $result_actividades = mysqli_query($mysqli, $actividades);
 if (!$result_actividades) {
     die("Error en la consulta de actividades: " . mysqli_error($mysqli));
@@ -308,15 +321,11 @@ if (!$result_comunas) {
                         <select id="filtro_funcionario" name="filtro_funcionario" class="modern-select">
                             <option value="">Todos</option>
                             <?php
-                            // Si es tipo usuario 3, solo mostrar su propio usuario
+                            // Tipo usuario 3 puede ver todos los contratistas (tipo 3)
                             $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
                             $id_usuario_session = isset($_SESSION['id']) ? intval($_SESSION['id']) : null;
                             
-                            if ($tipo_usuario == 3 && $id_usuario_session) {
-                                $query_funcionarios = "SELECT id, nombre FROM usuarios WHERE id = $id_usuario_session ORDER BY nombre ASC";
-                            } else {
-                                $query_funcionarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario = 3 ORDER BY nombre ASC";
-                            }
+                            $query_funcionarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario = 3 ORDER BY nombre ASC";
                             
                             $result_funcionarios = mysqli_query($mysqli, $query_funcionarios);
                             if ($result_funcionarios) {
@@ -361,6 +370,7 @@ if (!$result_comunas) {
                             <th>Tipo Actividad</th>
                             <th>Observación Actividad</th>
                             <th>Funcionario Responsable</th>
+                            <th>Realizado por</th>
                             <th class="col-actions">Acciones</th>
                         </tr>
                     </thead>
@@ -420,6 +430,9 @@ if (!$result_comunas) {
                                     <option value="" selected>Seleccione...</option>
                                     <?php foreach ($result_grupos as $grupo) { ?>
                                         <option value="<?= $grupo['id_grupo']; ?>" data-limite="<?= $grupo['limite_personas']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
+                                    <?php } ?>
+                                    <?php if ($tipo_usuario == 3) { ?>
+                                        <option value="OTRO">Otro</option>
                                     <?php } ?>
                                 </select>
                                 <label for="edit-centro-vida">Lugar del evento</label>
@@ -570,6 +583,9 @@ if (!$result_comunas) {
                                     <?php foreach ($result_grupos as $grupo) { ?>
                                         <option value="<?= $grupo['id_grupo']; ?>" data-limite="<?= $grupo['limite_personas']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
                                     <?php } ?>
+                                    <?php if ($tipo_usuario == 3) { ?>
+                                        <option value="OTRO">Otro</option>
+                                    <?php } ?>
                                 </select>
                                 <label for="centro-vida">Lugar del evento</label>
                             </div>
@@ -663,6 +679,44 @@ if (!$result_comunas) {
                                     <label for="observacion_actividad">Observacion Actividad</label>
                                 </div>
                             </div>
+
+                            <!-- Sección Personas (visible solo si Tipo Actividad = Registro de Actividad) -->
+                            <div id="seccion-personas" class="d-none">
+                                <hr class="my-4">
+                                <h6 class="mb-3 text-primary"><i class="bi bi-people-fill"></i> Agregar Personas por Cédula 
+                                    <small class="text-muted">(Requerido para Registro de Actividad)</small>
+                                </h6>
+                                <div class="alert alert-warning mb-3">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> 
+                                    <strong>Importante:</strong> Debe agregar exactamente la misma cantidad de cédulas que indicó en "Cantidad Masculino" + "Cantidad Femenino".
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-credit-card-2-front"></i></span>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   id="buscar_cedula_input" 
+                                                   placeholder="Ingrese número de cédula..."
+                                                   autocomplete="off">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-primary w-100" onclick="buscarYAgregarPersona()">
+                                            <i class="bi bi-search"></i> Buscar y Agregar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Lista de Cédulas Agregadas -->
+                                <div id="cedulas_container" style="display:none;">
+                                    <h6 class="mb-2">Personas Agregadas (<span id="contador_cedulas">0</span>)</h6>
+                                    <div id="lista_cedulas" class="list-group mb-3"></div>
+                                </div>
+
+                                <!-- Campo hidden con las cédulas en JSON -->
+                                <input type="hidden" id="cedulas_hidden" name="cedulas_json" value="">
+                            </div>
                         </div>
 
 
@@ -735,12 +789,16 @@ if (!$result_comunas) {
             const otroLugar = button.getAttribute("data-otro_lugar") || "";
             
             if (otroLugar) {
-                $("#edit-centro-vida").val(""); // Otro seleccionado
+                // Si hay otro_lugar guardado, seleccionar "OTRO" y mostrar el campo
+                $("#edit-centro-vida").val("OTRO");
                 $("#edit-otro_lugar").val(otroLugar);
                 $("#edit-otro-lugar-container").removeClass("d-none");
+                $("#edit-otro_lugar").prop('required', true);
             } else {
+                // Si no hay otro_lugar, seleccionar el centro_vida y ocultar el campo
                 $("#edit-centro-vida").val(centroVida);
                 $("#edit-otro-lugar-container").addClass("d-none");
+                $("#edit-otro_lugar").prop('required', false);
             }
 
             // Cargar actividades y acciones por AJAX
@@ -813,10 +871,16 @@ if (!$result_comunas) {
         });
     });
     $(document).ready(function() {
+        // Variable con el tipo de usuario desde PHP
+        const tipoUsuario = <?= isset($_SESSION['tipo_usuario']) ? intval($_SESSION['tipo_usuario']) : 0 ?>;
+        
         // Manejar cambio en lugar del evento (modal agregar)
         $('#centro-vida').on('change', function() {
+            const selectedValue = $(this).val();
             const selectedText = $(this).find('option:selected').text().toUpperCase();
-            if (selectedText.includes('OTRO')) {
+            
+            // Mostrar campo "Otro lugar" si selecciona "OTRO" o si el texto contiene "OTRO"
+            if (selectedValue === 'OTRO' || selectedText.includes('OTRO')) {
                 $('#otro-lugar-container').removeClass('d-none');
                 $('#otro_lugar').prop('required', true);
             } else {
@@ -827,8 +891,11 @@ if (!$result_comunas) {
 
         // Manejar cambio en lugar del evento (modal edición)
         $('#edit-centro-vida').on('change', function() {
+            const selectedValue = $(this).val();
             const selectedText = $(this).find('option:selected').text().toUpperCase();
-            if (selectedText.includes('OTRO')) {
+            
+            // Mostrar campo "Otro lugar" si selecciona "OTRO" o si el texto contiene "OTRO"
+            if (selectedValue === 'OTRO' || selectedText.includes('OTRO')) {
                 $('#edit-otro-lugar-container').removeClass('d-none');
                 $('#edit-otro_lugar').prop('required', true);
             } else {
@@ -1381,6 +1448,167 @@ if (!$result_comunas) {
                     }
                 });
             }
+        });
+    });
+
+    // ==================== GESTIÓN DE PERSONAS PARA REGISTRO DE ACTIVIDAD ====================
+    $(document).ready(function() {
+        let cedulasAgregadas = [];
+
+        // Mostrar/ocultar sección de personas según tipo de actividad
+        $('#tipo_actividad').on('change', function() {
+            const tipoSeleccionado = $(this).val();
+            if (tipoSeleccionado === 'Registro de Actividad') {
+                $('#seccion-personas').removeClass('d-none');
+            } else {
+                $('#seccion-personas').addClass('d-none');
+                // Limpiar cédulas si cambia de tipo
+                cedulasAgregadas = [];
+                actualizarListaCedulas();
+            }
+        });
+
+        // Función para buscar y agregar persona
+        window.buscarYAgregarPersona = function() {
+            const cedula = $('#buscar_cedula_input').val().trim();
+
+            if (!cedula) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Cédula vacía',
+                    text: 'Por favor ingrese un número de cédula'
+                });
+                return;
+            }
+
+            // Verificar si ya está agregada
+            if (cedulasAgregadas.some(item => item.cedula === cedula)) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Persona ya agregada',
+                    text: 'Esta cédula ya está en la lista'
+                });
+                return;
+            }
+
+            // Buscar en la base de datos
+            $.ajax({
+                url: 'buscarPersona.php',
+                type: 'POST',
+                data: { cedula: cedula },
+                dataType: 'json',
+                success: function(response) {
+                    if (!response.encontrada) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Persona no encontrada',
+                            html: response.mensaje || 'La cédula no está registrada o no pertenece a grupos CPSAM/Contratista'
+                        });
+                    } else {
+                        // Agregar a la lista
+                        cedulasAgregadas.push({
+                            cedula: cedula,
+                            nombre_completo: response.nombre_completo,
+                            genero: response.genero
+                        });
+
+                        actualizarListaCedulas();
+                        $('#buscar_cedula_input').val('').focus();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Persona agregada',
+                            text: response.nombre_completo,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al buscar la persona'
+                    });
+                }
+            });
+        };
+
+        // Actualizar lista visual de cédulas
+        function actualizarListaCedulas() {
+            const lista = $('#lista_cedulas');
+            const container = $('#cedulas_container');
+            
+            if (cedulasAgregadas.length === 0) {
+                container.hide();
+                lista.html('');
+                $('#contador_cedulas').text('0');
+                $('#cedulas_hidden').val('');
+                return;
+            }
+
+            container.show();
+            $('#contador_cedulas').text(cedulasAgregadas.length);
+
+            let html = '';
+            cedulasAgregadas.forEach((item, index) => {
+                const iconoGenero = item.genero === 'Masculino' ? 'bi-gender-male text-primary' : 'bi-gender-female text-danger';
+                html += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi ${iconoGenero}"></i>
+                            <strong>${item.cedula}</strong> - ${item.nombre_completo}
+                        </div>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removerCedula(${index})">
+                            <i class="bi bi-trash"></i> Quitar
+                        </button>
+                    </div>
+                `;
+            });
+
+            lista.html(html);
+
+            // Actualizar hidden input con las cédulas en formato JSON
+            $('#cedulas_hidden').val(JSON.stringify(cedulasAgregadas.map(item => item.cedula)));
+        }
+
+        // Función para remover una cédula de la lista
+        window.removerCedula = function(index) {
+            cedulasAgregadas.splice(index, 1);
+            actualizarListaCedulas();
+        };
+
+        // Permitir agregar con Enter
+        $('#buscar_cedula_input').keypress(function(e) {
+            if (e.which == 13) {
+                e.preventDefault();
+                buscarYAgregarPersona();
+            }
+        });
+
+        // Validar formulario antes de enviar
+        $('#modalNewPerson form').submit(function(e) {
+            const tipoActividad = $('#tipo_actividad').val();
+            
+            if (tipoActividad === 'Registro de Actividad') {
+                const cantidadMasculino = parseInt($('#cantidad_masculino').val()) || 0;
+                const cantidadFemenino = parseInt($('#cantidad_femenino').val()) || 0;
+                const totalEsperado = cantidadMasculino + cantidadFemenino;
+                const totalAgregado = cedulasAgregadas.length;
+
+                if (totalAgregado !== totalEsperado) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Cantidad de personas incorrecta',
+                        html: `<p>Debe agregar exactamente <strong>${totalEsperado} personas</strong> (${cantidadMasculino} masculino + ${cantidadFemenino} femenino).</p>
+                               <p>Actualmente tiene <strong>${totalAgregado} personas</strong> agregadas.</p>`,
+                        confirmButtonText: 'Entendido'
+                    });
+                    return false;
+                }
+            }
+            // Si pasa la validación, el formulario se enviará normalmente
         });
     });
 

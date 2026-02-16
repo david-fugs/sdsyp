@@ -7,7 +7,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_actividad = $_POST['id_actividad'];
     $id_accion = $_POST['id_accion'];
     $politica_publica = $_POST['politica_publica'];
-    $id_centro_vida = $_POST['id_centro_vida'];
+    // Si id_centro_vida es "OTRO", convertirlo a NULL (0)
+    $id_centro_vida_raw = isset($_POST['id_centro_vida']) ? $_POST['id_centro_vida'] : '';
+    $id_centro_vida = ($id_centro_vida_raw === 'OTRO' || $id_centro_vida_raw === '') ? 0 : intval($id_centro_vida_raw);
     $fecha_atencion = $_POST['fecha_atencion'];
     $nombre_lider = $_POST['nombre_lider'];
     $telefono_contacto = $_POST['telefono_contacto'];

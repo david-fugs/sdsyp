@@ -30,7 +30,7 @@ $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
 $filtro_mes = isset($_GET['filtro_mes']) ? intval($_GET['filtro_mes']) : '';
 $filtro_funcionario = isset($_GET['filtro_funcionario']) ? intval($_GET['filtro_funcionario']) : '';
 
-// Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
+// Aplicar filtro de grupos según tipo de usuario (tipos 3, 4, 5 y 10)
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $id_usuario_session = isset($_SESSION['id']) ? intval($_SESSION['id']) : null;
 $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
@@ -66,7 +66,7 @@ LEFT JOIN grupos g ON ra.id_centro_vida = g.id_grupo
 LEFT JOIN comunas c ON ra.id_comuna = c.id_com
 LEFT JOIN usuarios u1 ON ra.id_usuario = u1.id
 LEFT JOIN usuarios u2 ON CAST(ra.funcionario_responsable AS UNSIGNED) = u2.id AND ra.funcionario_responsable REGEXP '^[0-9]+$'
-WHERE 1 $where $where_grupos_filtro
+WHERE 1 $where " . ($where_grupos_filtro ? " AND (ra.id_centro_vida = 0 OR " . str_replace("AND ", "", $where_grupos_filtro) . ")" : "") . "
 ORDER BY ra.fecha_atencion DESC
 ";
 

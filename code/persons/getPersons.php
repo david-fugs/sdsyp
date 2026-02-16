@@ -6,7 +6,7 @@ require_once('../filtros_grupos.php');
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
 
-// Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
+// Aplicar filtro de grupos según tipo de usuario (tipos 3, 4 y 5)
 $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
 
 $where = "WHERE p.estado_persona = 1";
@@ -36,11 +36,12 @@ if (!empty($_GET['creado_por'])) {
 
 // Filtrar por id_grupo si el tipo_usuario en la sesión es diferente de 1, 3, 4 y 5
 // (No aplicar este filtro a ADMIN, CONTRATISTA ni a los nuevos TÉCNICOS)
+// Para estos tipos de usuario, se aplicará el filtro de grupos permitidos después
 if ($tipo_usuario != 1 && $id_grupo_session && !in_array($tipo_usuario, [3, 4, 5])) {
     $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
 
-// Aplicar filtro adicional para usuarios técnicos (tipos 4 y 5)
+// Aplicar filtro adicional para usuarios con restricciones de grupos (tipos 3, 4 y 5)
 $where .= $where_grupos_filtro;
 
 // Preparar filtro por estado (se aplicará después de la consulta principal)
@@ -92,6 +93,10 @@ if ($result->num_rows > 0) {
         if (isset($row['estado_movimiento']) && trim(mb_strtolower($row['estado_movimiento'])) === 'usuario interesado') {
             $estado_persona = 'USUARIO INTERESADO';
         }
+        // Permitir también el estado 'Usuario Indirecto'
+        if (isset($row['estado_movimiento']) && trim(mb_strtolower($row['estado_movimiento'])) === 'usuario indirecto') {
+            $estado_persona = 'USUARIO INDIRECTO';
+        }
 
         // Aplicar filtro por estado si está seleccionado
         if (!empty($filtro_estado)) {
@@ -101,7 +106,8 @@ if ($result->num_rows > 0) {
             'FALLECIDO' => 'CPSAM FALLECIDO',
             'RETIRADO_VOLUNTARIO' => 'CPSAM RETIRADO VOLUNTARIO',
             'TRASLADADO' => 'CPSAM TRASLADADO',
-            'USUARIO_INTERESADO' => 'USUARIO INTERESADO'
+            'USUARIO_INTERESADO' => 'USUARIO INTERESADO',
+            'USUARIO_INDIRECTO' => 'USUARIO INDIRECTO'
         ];
 
             if (isset($estado_filtro_map[$filtro_estado]) && $estado_persona !== $estado_filtro_map[$filtro_estado]) {
@@ -130,6 +136,9 @@ if ($result->num_rows > 0) {
             case 'USUARIO INTERESADO':
                 $badge_class = 'status-badge status-interesado';
                 break;
+            case 'USUARIO INDIRECTO':
+                $badge_class = 'status-badge status-indirecto';
+                break;
         }
 
         // Determinar icono del estado
@@ -152,6 +161,9 @@ if ($result->num_rows > 0) {
                 break;
             case 'USUARIO INTERESADO':
                 $estado_icon = '<i class="bi bi-person-lines-fill"></i>';
+                break;
+            case 'USUARIO INDIRECTO':
+                $estado_icon = '<i class="bi bi-people-fill"></i>';
                 break;
         }
         // Agregar datos al array
@@ -176,6 +188,10 @@ if ($result->num_rows > 0) {
             $estado_mostrar = 'ACTIVO (TRASLADADO)';
         } elseif ($estado_persona == 'Usuario interesado') {
             $estado_mostrar = 'Usuario Interesado';
+        } elseif ($estado_persona == 'USUARIO INTERESADO') {
+            $estado_mostrar = 'Usuario Interesado';
+        } elseif ($estado_persona == 'USUARIO INDIRECTO') {
+            $estado_mostrar = 'Usuario Indirecto';
         } else {
             $estado_mostrar = $estado_sin_cpsam;
         }
@@ -190,6 +206,9 @@ if ($result->num_rows > 0) {
 
         if (isset($row['condicion_componente']) && $row['condicion_componente'] == 'Usuario interesado') {
             $estado_mostrar = 'Usuario Interesado';
+        }
+        if (isset($row['condicion_componente']) && $row['condicion_componente'] == 'Usuario indirecto') {
+            $estado_mostrar = 'Usuario Indirecto';
         }
         echo "<td class='col-status'><span class='$badge_class'>$estado_icon $estado_mostrar</span></td>";
 
