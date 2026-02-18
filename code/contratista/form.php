@@ -174,7 +174,46 @@ if (!$result_programas) {
     die("Error en la consulta: " . mysqli_error($mysqli));
 }
 
-$condiciones = "SELECT * FROM condiciones_componente";
+// Obtener tipo de usuario y grupo para filtros
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$id_grupo_usuario = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : 0;
+
+// Filtrar condiciones según tipo de usuario y su grupo asociado
+if ($tipo_usuario == 3) {
+    // Para tipo usuario 3 (CONTRATISTA CPSAM): Excluir condiciones que contengan "C.V." o "C.M."
+    $condiciones = "SELECT * FROM condiciones_componente WHERE descripcion_condicion NOT LIKE '%C.V.%' AND descripcion_condicion NOT LIKE '%C.M.%'";
+} elseif ($tipo_usuario == 4) {
+    // Para tipo usuario 4 (TÉCNICO): Excluir condiciones que empiecen con "C.V." o "C.M."
+    $condiciones = "SELECT * FROM condiciones_componente WHERE descripcion_condicion NOT LIKE 'C.V.%' AND descripcion_condicion NOT LIKE 'C.M%'";
+} elseif ($tipo_usuario == 2 && $id_grupo_usuario != 0) {
+    // Para tipo usuario 2, verificar a qué tipo de centro está asociado
+    $query_grupo = "SELECT descripcion_grupo FROM grupos WHERE id_grupo = ?";
+    $stmt_grupo = $mysqli->prepare($query_grupo);
+    $stmt_grupo->bind_param('i', $id_grupo_usuario);
+    $stmt_grupo->execute();
+    $result_grupo = $stmt_grupo->get_result();
+    
+    if ($row_grupo = $result_grupo->fetch_assoc()) {
+        $descripcion_grupo = $row_grupo['descripcion_grupo'];
+        
+        // Si está asociado a un centro CPSAM: excluir C.M y C.V.
+        if (stripos($descripcion_grupo, 'CPSAM') === 0) {
+            $condiciones = "SELECT * FROM condiciones_componente WHERE descripcion_condicion NOT LIKE 'C.M%' AND descripcion_condicion NOT LIKE 'C.V.%'";
+        }
+        // Si está asociado a un C.V: excluir C.M y CPSAM
+        elseif (stripos($descripcion_grupo, 'C.V') === 0 || stripos($descripcion_grupo, 'CV') === 0) {
+            $condiciones = "SELECT * FROM condiciones_componente WHERE descripcion_condicion NOT LIKE 'C.M%' AND descripcion_condicion NOT LIKE 'CPSAM%'";
+        }
+        else {
+            $condiciones = "SELECT * FROM condiciones_componente";
+        }
+    } else {
+        $condiciones = "SELECT * FROM condiciones_componente";
+    }
+    $stmt_grupo->close();
+} else {
+    $condiciones = "SELECT * FROM condiciones_componente";
+}
 $result_condiciones = mysqli_query($mysqli, $condiciones);
 if (!$result_condiciones) {
     die("Error en la consulta: " . mysqli_error($mysqli));
@@ -187,7 +226,6 @@ if (!$result_usuarios) {
 }
 
 // Aplicar filtro de grupos según tipo de usuario
-$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
 $grupos = "SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC";
 $result_grupos_query = mysqli_query($mysqli, $grupos);
@@ -683,35 +721,125 @@ if (!$result_comunas) {
                             <!-- Sección Personas (visible solo si Tipo Actividad = Registro de Actividad) -->
                             <div id="seccion-personas" class="d-none">
                                 <hr class="my-4">
-                                <h6 class="mb-3 text-primary"><i class="bi bi-people-fill"></i> Agregar Personas por Cédula 
-                                    <small class="text-muted">(Requerido para Registro de Actividad)</small>
-                                </h6>
-                                <div class="alert alert-warning mb-3">
-                                    <i class="bi bi-exclamation-triangle-fill"></i> 
-                                    <strong>Importante:</strong> Debe agregar exactamente la misma cantidad de cédulas que indicó en "Cantidad Masculino" + "Cantidad Femenino".
-                                </div>
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-8">
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-credit-card-2-front"></i></span>
-                                            <input type="text" 
-                                                   class="form-control" 
-                                                   id="buscar_cedula_input" 
-                                                   placeholder="Ingrese número de cédula..."
-                                                   autocomplete="off">
+                                <div class="buscar-persona-box mb-4" style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 0.375rem;">
+                                    <h6 class="mb-3 text-primary"><i class="bi bi-people-fill"></i> Buscar y Agregar Personas 
+                                        <small class="text-muted">(Requerido para Registro de Actividad)</small>
+                                    </h6>
+                                    <div class="alert alert-warning mb-3">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> 
+                                        <strong>Importante:</strong> Debe agregar exactamente la misma cantidad de cédulas que indicó en "Cantidad Masculino" + "Cantidad Femenino".
+                                    </div>
+                                    
+                                    <!-- Tabs para alternar entre búsqueda manual y por grupo -->
+                                    <ul class="nav nav-tabs mb-3" id="busquedaTabsContratista" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="tab-manual-contratista" data-bs-toggle="tab" data-bs-target="#busqueda-manual-contratista" type="button" role="tab">
+                                                <i class="bi bi-search"></i> Búsqueda Manual
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="tab-grupo-contratista" data-bs-toggle="tab" data-bs-target="#busqueda-grupo-contratista" type="button" role="tab">
+                                                <i class="bi bi-people"></i> Selección por Grupo
+                                            </button>
+                                        </li>
+                                    </ul>
+
+                                    <div class="tab-content" id="busquedaTabsContentContratista">
+                                        <!-- Tab 1: Búsqueda Manual por Cédula -->
+                                        <div class="tab-pane fade show active" id="busqueda-manual-contratista" role="tabpanel">
+                                            <div class="row g-3">
+                                                <div class="col-md-8">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="bi bi-credit-card-2-front"></i></span>
+                                                        <input type="text" 
+                                                               class="form-control" 
+                                                               id="buscar_cedula_input" 
+                                                               placeholder="Ingrese número de cédula..."
+                                                               autocomplete="off">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <button type="button" class="btn btn-primary w-100" onclick="buscarYAgregarPersona()">
+                                                        <i class="bi bi-search"></i> Buscar y Agregar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Tab 2: Selección por Grupo -->
+                                        <div class="tab-pane fade" id="busqueda-grupo-contratista" role="tabpanel">
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-8">
+                                                    <select class="form-select" id="filtro_grupo_personas_contratista">
+                                                        <option value="">Seleccione un grupo...</option>
+                                                        <?php foreach ($result_grupos as $grupo) { 
+                                                            $desc = $grupo['descripcion_grupo'];
+                                                            // Mostrar solo grupos CPSAM y Contratista
+                                                            if (stripos($desc, 'CPSAM') === 0 || stripos($desc, 'Contratista') === 0) {
+                                                        ?>
+                                                            <option value="<?= $grupo['id_grupo']; ?>"><?= $desc; ?></option>
+                                                        <?php 
+                                                            }
+                                                        } ?>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <button type="button" class="btn btn-info w-100" onclick="cargarPersonasGrupoContratista()">
+                                                        <i class="bi bi-arrow-clockwise"></i> Cargar Personas
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Área de resultados con checkboxes -->
+                                            <div id="area_personas_grupo_contratista" style="display:none;">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <h6 class="mb-0">Personas encontradas: <span id="total_personas_grupo_contratista" class="badge bg-info">0</span></h6>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button type="button" class="btn btn-success" onclick="seleccionarTodasPersonasContratista()">
+                                                            <i class="bi bi-check-all"></i> Seleccionar Todas
+                                                        </button>
+                                                        <button type="button" class="btn btn-warning" onclick="deseleccionarTodasPersonasContratista()">
+                                                            <i class="bi bi-x"></i> Deseleccionar Todas
+                                                        </button>
+                                                        <button type="button" class="btn btn-primary" onclick="agregarPersonasSeleccionadasContratista()">
+                                                            <i class="bi bi-plus-circle"></i> Agregar Seleccionadas
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="table-responsive" style="max-height: 350px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px;">
+                                                    <table class="table table-sm table-hover mb-0">
+                                                        <thead class="table-light sticky-top">
+                                                            <tr>
+                                                                <th style="width: 50px;">
+                                                                    <input type="checkbox" class="form-check-input" id="check_all_personas_contratista" onclick="toggleTodosCheckboxesContratista(this)">
+                                                                </th>
+                                                                <th>Cédula</th>
+                                                                <th>Nombres</th>
+                                                                <th>Apellidos</th>
+                                                                <th>Género</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="tbody_personas_grupo_contratista">
+                                                            <!-- Se llena dinámicamente -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <button type="button" class="btn btn-primary w-100" onclick="buscarYAgregarPersona()">
-                                            <i class="bi bi-search"></i> Buscar y Agregar
-                                        </button>
-                                    </div>
-                                </div>
 
-                                <!-- Lista de Cédulas Agregadas -->
-                                <div id="cedulas_container" style="display:none;">
-                                    <h6 class="mb-2">Personas Agregadas (<span id="contador_cedulas">0</span>)</h6>
-                                    <div id="lista_cedulas" class="list-group mb-3"></div>
+                                    <!-- Lista de Cédulas Agregadas -->
+                                    <div id="cedulas_container" style="display:none;">
+                                        <hr class="my-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0">
+                                                <i class="bi bi-people-fill"></i> 
+                                                Personas Agregadas: 
+                                                <span id="contador_cedulas" class="badge bg-secondary">0</span>
+                                            </h6>
+                                        </div>
+                                        <div id="lista_cedulas" class="list-group mb-3"></div>
+                                    </div>
                                 </div>
 
                                 <!-- Campo hidden con las cédulas en JSON -->
@@ -1577,6 +1705,181 @@ if (!$result_comunas) {
             cedulasAgregadas.splice(index, 1);
             actualizarListaCedulas();
         };
+
+        // ==================== FUNCIONES PARA SELECCIÓN POR GRUPO ====================
+
+        // Cargar personas de un grupo seleccionado
+        window.cargarPersonasGrupoContratista = function() {
+            const idGrupo = $('#filtro_grupo_personas_contratista').val();
+            
+            if (!idGrupo) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Grupo no seleccionado',
+                    text: 'Por favor seleccione un grupo primero'
+                });
+                return;
+            }
+
+            // Mostrar loading
+            Swal.fire({
+                title: 'Cargando personas...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: 'obtenerPersonasPorGrupo.php',
+                type: 'POST',
+                data: { id_grupo: idGrupo },
+                dataType: 'json',
+                success: function(response) {
+                    Swal.close();
+                    
+                    if (response.success && response.personas) {
+                        mostrarPersonasEnTablaContratista(response.personas);
+                        $('#total_personas_grupo_contratista').text(response.total);
+                        $('#area_personas_grupo_contratista').show();
+                        
+                        if (response.total === 0) {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Sin resultados',
+                                text: 'No se encontraron personas activas en este grupo'
+                            });
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message || 'No se pudieron cargar las personas'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al conectar con el servidor'
+                    });
+                }
+            });
+        };
+
+        // Mostrar personas en la tabla con checkboxes
+        function mostrarPersonasEnTablaContratista(personas) {
+            const tbody = $('#tbody_personas_grupo_contratista');
+            tbody.empty();
+            $('#check_all_personas_contratista').prop('checked', false);
+
+            if (personas.length === 0) {
+                tbody.html('<tr><td colspan="5" class="text-center text-muted">No hay personas disponibles</td></tr>');
+                return;
+            }
+
+            personas.forEach((persona, index) => {
+                const iconoGenero = persona.genero === 'Masculino' ? 'bi-gender-male text-primary' : 
+                                   persona.genero === 'Femenino' ? 'bi-gender-female text-danger' : 
+                                   'bi-person text-secondary';
+                
+                const row = `
+                    <tr>
+                        <td class="text-center">
+                            <input type="checkbox" 
+                                   class="form-check-input persona-checkbox-contratista" 
+                                   data-cedula="${persona.cedula}"
+                                   data-nombres="${persona.nombres}"
+                                   data-apellidos="${persona.apellidos}"
+                                   data-genero="${persona.genero}">
+                        </td>
+                        <td><strong>${persona.cedula}</strong></td>
+                        <td>${persona.nombres}</td>
+                        <td>${persona.apellidos}</td>
+                        <td><i class="bi ${iconoGenero}"></i> ${persona.genero}</td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        // Toggle todos los checkboxes con el checkbox principal
+        window.toggleTodosCheckboxesContratista = function(checkbox) {
+            $('.persona-checkbox-contratista').prop('checked', checkbox.checked);
+        };
+
+        // Botón para seleccionar todas
+        window.seleccionarTodasPersonasContratista = function() {
+            $('.persona-checkbox-contratista').prop('checked', true);
+            $('#check_all_personas_contratista').prop('checked', true);
+        };
+
+        // Botón para deseleccionar todas
+        window.deseleccionarTodasPersonasContratista = function() {
+            $('.persona-checkbox-contratista').prop('checked', false);
+            $('#check_all_personas_contratista').prop('checked', false);
+        };
+
+        // Agregar personas seleccionadas a la lista final
+        window.agregarPersonasSeleccionadasContratista = function() {
+            const checkboxesSeleccionados = $('.persona-checkbox-contratista:checked');
+            
+            if (checkboxesSeleccionados.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Sin selección',
+                    text: 'Por favor seleccione al menos una persona'
+                });
+                return;
+            }
+
+            let personasAgregadas = 0;
+            let personasDuplicadas = 0;
+
+            checkboxesSeleccionados.each(function() {
+                const cedula = $(this).data('cedula');
+                const nombres = $(this).data('nombres');
+                const apellidos = $(this).data('apellidos');
+                const genero = $(this).data('genero');
+
+                // Verificar si ya está agregada
+                if (cedulasAgregadas.some(item => item.cedula === cedula)) {
+                    personasDuplicadas++;
+                    return; // continue al siguiente
+                }
+
+                // Agregar a la lista
+                cedulasAgregadas.push({
+                    cedula: cedula,
+                    nombre_completo: nombres + ' ' + apellidos,
+                    genero: genero
+                });
+                personasAgregadas++;
+            });
+
+            actualizarListaCedulas();
+
+            // Deseleccionar checkboxes después de agregar
+            deseleccionarTodasPersonasContratista();
+
+            // Mostrar resultado
+            let mensaje = `${personasAgregadas} persona(s) agregada(s) correctamente`;
+            if (personasDuplicadas > 0) {
+                mensaje += `<br><small>${personasDuplicadas} persona(s) ya estaban en la lista</small>`;
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Personas agregadas',
+                html: mensaje,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        };
+
+        // ==================== FIN FUNCIONES SELECCIÓN POR GRUPO ====================
 
         // Permitir agregar con Enter
         $('#buscar_cedula_input').keypress(function(e) {

@@ -176,11 +176,41 @@ if (!$result_programas) {
 
 // Obtener tipo de usuario para filtrar condiciones
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$id_grupo_usuario = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : 0;
 
-// Filtrar condiciones según tipo de usuario
+// Filtrar condiciones según tipo de usuario y su grupo asociado
 if ($tipo_usuario == 3) {
     // Para tipo usuario 3 (CONTRATISTA CPSAM): Excluir condiciones que contengan "C.V." o "C.M."
     $condiciones = "SELECT * FROM condiciones_componente WHERE descripcion_condicion NOT LIKE '%C.V.%' AND descripcion_condicion NOT LIKE '%C.M.%'";
+} elseif ($tipo_usuario == 4) {
+    // Para tipo usuario 4 (TÉCNICO): Excluir condiciones que empiecen con "C.V." o "C.M."
+    $condiciones = "SELECT * FROM condiciones_componente WHERE descripcion_condicion NOT LIKE 'C.V.%' AND descripcion_condicion NOT LIKE 'C.M%'";
+} elseif ($tipo_usuario == 2 && $id_grupo_usuario != 0) {
+    // Para tipo usuario 2, verificar a qué tipo de centro está asociado
+    $query_grupo = "SELECT descripcion_grupo FROM grupos WHERE id_grupo = ?";
+    $stmt_grupo = $mysqli->prepare($query_grupo);
+    $stmt_grupo->bind_param('i', $id_grupo_usuario);
+    $stmt_grupo->execute();
+    $result_grupo = $stmt_grupo->get_result();
+    
+    if ($row_grupo = $result_grupo->fetch_assoc()) {
+        $descripcion_grupo = $row_grupo['descripcion_grupo'];
+        
+        // Si está asociado a un centro CPSAM: excluir C.M y C.V.
+        if (stripos($descripcion_grupo, 'CPSAM') === 0) {
+            $condiciones = "SELECT * FROM condiciones_componente WHERE descripcion_condicion NOT LIKE 'C.M%' AND descripcion_condicion NOT LIKE 'C.V.%'";
+        }
+        // Si está asociado a un C.V: excluir C.M y CPSAM
+        elseif (stripos($descripcion_grupo, 'C.V') === 0 || stripos($descripcion_grupo, 'CV') === 0) {
+            $condiciones = "SELECT * FROM condiciones_componente WHERE descripcion_condicion NOT LIKE 'C.M%' AND descripcion_condicion NOT LIKE 'CPSAM%'";
+        }
+        else {
+            $condiciones = "SELECT * FROM condiciones_componente";
+        }
+    } else {
+        $condiciones = "SELECT * FROM condiciones_componente";
+    }
+    $stmt_grupo->close();
 } else {
     $condiciones = "SELECT * FROM condiciones_componente";
 }
@@ -328,7 +358,7 @@ function deleteMember($id_movimiento)
                 <form action="addRegistro.php" method="POST">
                     <div class="modal-header bg-success text-white">
                         <h5 class="modal-title" id="modalNewPersonLabel">
-                            <i class="bi bi-person-plus-fill me-2"></i>Agregar Movimiento
+                            <i class="bi bi-person-plus-fill me-2"></i>Agregar Actividad individual
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>

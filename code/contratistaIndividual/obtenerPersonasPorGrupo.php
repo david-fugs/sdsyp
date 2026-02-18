@@ -18,6 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
     
     // Consultar personas activas del grupo seleccionado
+    // Excluir personas en grupos con estado: Trasladado, Fallecido, Evadido
     $query = "SELECT 
                 p.cedula_persona,
                 p.nombres_persona,
@@ -28,6 +29,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
               LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
               WHERE p.id_grupo = $id_grupo 
               AND p.estado_persona = 1
+              AND g.descripcion_grupo NOT LIKE '%Trasladado%'
+              AND g.descripcion_grupo NOT LIKE '%Fallecido%'
+              AND g.descripcion_grupo NOT LIKE '%Evadido%'
               $where_grupos
               ORDER BY p.nombres_persona, p.apellidos_persona ASC";
     

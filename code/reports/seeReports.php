@@ -871,12 +871,18 @@ $endYear = $currentYear + 1;
                 <div class="col-md-4 text-end offset-md-4">
                     <label class="form-label fw-bold" style="visibility: hidden;">Acciones</label>
                     <div class="export-buttons d-flex flex-column gap-2">
+                        <!-- quitar este boton para los usuarios cpsam o centro vida que es el 2 -->
+                         <?php if ($tipo_usuario != 2) : ?>
                         <button type="button" id="btnExportExcel" class="export-btn">
                             <i class="bi bi-file-earmark-spreadsheet"></i> Exportar Datos Personas
                         </button>
+                        <?php endif; ?>
+                        <!-- que no le aparezca el boton a el usuario cotnratista cpsam que es el 3 -->
+                        <?php if ($tipo_usuario != 3) : ?>
                         <button type="button" id="btnExportMovimientos" class="export-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                             <i class="bi bi-arrow-left-right"></i> Exportar Movimientos
                         </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -899,7 +905,7 @@ $endYear = $currentYear + 1;
                                     <input type="hidden" name="filtro_mes" id="export_contratista_mes">
                                     <input type="hidden" name="filtro_usuario" id="export_contratista_usuario">
                                     <button type="submit" class="btn btn-light btn-sm">
-                                        <i class="bi bi-file-earmark-excel-fill"></i> Actividades CONTRATISTA
+                                        <i class="bi bi-file-earmark-excel-fill"></i> Actividades Masivas CONTRATISTA
                                     </button>
                                 </form>
                                 <?php endif; ?>
@@ -913,6 +919,19 @@ $endYear = $currentYear + 1;
                                     <input type="hidden" name="filtro_usuario" id="export_individuales_usuario">
                                     <button type="submit" class="btn btn-warning btn-sm">
                                         <i class="bi bi-file-earmark-person-fill"></i> Actividades INDIVIDUALES
+                                    </button>
+                                </form>
+                                <?php endif; ?>
+
+                                <!-- Mostrar formulario Combinado (Masivas e Individuales) solo si NO es tipo 10 (CONTRATISTA CENTRO VIDA) -->
+                                <?php if ($tipo_usuario != 10 && !($tipo_usuario == 2 && $prefijo_grupo == 'CV')) : ?>
+                                <form id="exportContratistaCombinadoForm" action="exportContratistaCombinadoFromReports.php" method="get" style="display:inline;">
+                                    <input type="hidden" name="filtro_anio" id="export_combinado_anio">
+                                    <input type="hidden" name="filtro_grupo" id="export_combinado_grupo">
+                                    <input type="hidden" name="filtro_mes" id="export_combinado_mes">
+                                    <input type="hidden" name="filtro_usuario" id="export_combinado_usuario">
+                                    <button type="submit" class="btn btn-info btn-sm">
+                                        <i class="bi bi-file-earmark-spreadsheet-fill"></i> Masivas e Individuales CONTRATISTA
                                     </button>
                                 </form>
                                 <?php endif; ?>
@@ -961,6 +980,12 @@ $endYear = $currentYear + 1;
                 $('#export_individuales_grupo').val(grupo);
                 $('#export_individuales_mes').val(mes);
                 $('#export_individuales_usuario').val(usuario);
+                
+                // Actualizar formulario Combinado (Masivas e Individuales)
+                $('#export_combinado_anio').val(anio);
+                $('#export_combinado_grupo').val(grupo);
+                $('#export_combinado_mes').val(mes);
+                $('#export_combinado_usuario').val(usuario);
                 
                 // Actualizar formulario Centro Vida
                 $('#export_cv_anio').val(anio);

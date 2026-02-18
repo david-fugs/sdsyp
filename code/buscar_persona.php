@@ -25,6 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     // Preparar consulta para evitar inyecciones SQL - incluir los nuevos campos
+    // Excluir grupos con estado: Trasladado, Fallecido, Evadido
     $stmt = $mysqli->prepare("
         SELECT p.nombres_persona, p.apellidos_persona, p.id_meta, p.id_actividad, p.id_accion, p.id_politica_publica,
                m.descripcion_meta, a.descripcion_actividad, acc.descripcion_accion, pol.descripcion_politica
@@ -33,7 +34,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         LEFT JOIN actividades a ON p.id_actividad = a.id_actividad
         LEFT JOIN acciones acc ON p.id_accion = acc.id_accion
         LEFT JOIN politicas_publicas pol ON p.id_politica_publica = pol.id_politica
+        LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
         WHERE p.cedula_persona = ? $where_grupo
+        AND (g.descripcion_grupo NOT LIKE '%Trasladado%' OR g.descripcion_grupo IS NULL)
+        AND (g.descripcion_grupo NOT LIKE '%Fallecido%' OR g.descripcion_grupo IS NULL)
+        AND (g.descripcion_grupo NOT LIKE '%Evadido%' OR g.descripcion_grupo IS NULL)
     ");
     $stmt->bind_param("s", $cedula);
     $stmt->execute();

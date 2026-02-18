@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
     
     // Buscar persona habilitada en grupos CPSAM/Contratista
+    // Excluir grupos con estado: Trasladado, Fallecido, Evadido
     $query = "SELECT 
         p.cedula_persona, 
         p.nombres_persona, 
@@ -28,6 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
     WHERE p.cedula_persona = '$cedula'
     AND p.estado_persona = 1
+    AND g.descripcion_grupo NOT LIKE '%Trasladado%'
+    AND g.descripcion_grupo NOT LIKE '%Fallecido%'
+    AND g.descripcion_grupo NOT LIKE '%Evadido%'
     $where_grupos_filtro";
     
     $result = $mysqli->query($query);
