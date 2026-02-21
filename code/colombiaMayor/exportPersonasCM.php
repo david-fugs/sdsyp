@@ -27,7 +27,7 @@ $usuario_id = $_SESSION['id'];
 // Filtro por usuario
 $where = "1=1";
 if($tipo_usuario == 9) {
-    $where .= " AND p.usuario_registro = '$usuario_id'";
+    $where .= " AND p.usuario_registro = '$usuario_id'"; 
 }
 
 // Consulta con todos los campos del formulario

@@ -410,13 +410,42 @@ function deleteMember($id_movimiento)
                                         <div class="col-md-8">
                                             <select class="form-select" id="filtro_grupo_personas_individual">
                                                 <option value="">Seleccione un grupo...</option>
-                                                <?php foreach ($result_grupos as $grupo) { 
+                                                <?php 
+                                                // Lógica para usuarios tipo 2 con centro asociado
+                                                $mostrar_grupos_filtrados = false;
+                                                $grupo_usuario_desc = '';
+                                                
+                                                if ($tipo_usuario == 2 && $id_grupo_usuario != 0) {
+                                                    // Obtener descripción del grupo del usuario
+                                                    foreach ($result_grupos as $g) {
+                                                        if ($g['id_grupo'] == $id_grupo_usuario) {
+                                                            $grupo_usuario_desc = $g['descripcion_grupo'];
+                                                            break;
+                                                        }
+                                                    }
+                                                    // Si el grupo no es CONTRATISTA, solo mostrar su grupo + CONTRATISTA
+                                                    if (stripos($grupo_usuario_desc, 'Contratista') !== 0) {
+                                                        $mostrar_grupos_filtrados = true;
+                                                    }
+                                                }
+                                                
+                                                foreach ($result_grupos as $grupo) { 
                                                     $desc = $grupo['descripcion_grupo'];
-                                                    // Mostrar solo grupos CPSAM y Contratista
-                                                    if (stripos($desc, 'CPSAM') === 0 || stripos($desc, 'Contratista') === 0) {
+                                                    
+                                                    if ($mostrar_grupos_filtrados) {
+                                                        // Solo mostrar el grupo del usuario + CONTRATISTA
+                                                        if ($grupo['id_grupo'] == $id_grupo_usuario || stripos($desc, 'Contratista') === 0) {
                                                 ?>
                                                     <option value="<?= $grupo['id_grupo']; ?>"><?= $desc; ?></option>
                                                 <?php 
+                                                        }
+                                                    } else {
+                                                        // Mostrar solo grupos CPSAM y Contratista (comportamiento original)
+                                                        if (stripos($desc, 'CPSAM') === 0 || stripos($desc, 'Contratista') === 0) {
+                                                ?>
+                                                    <option value="<?= $grupo['id_grupo']; ?>"><?= $desc; ?></option>
+                                                <?php 
+                                                        }
                                                     }
                                                 } ?>
                                             </select>

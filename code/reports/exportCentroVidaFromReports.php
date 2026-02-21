@@ -55,6 +55,30 @@ if ($filtro_usuario) {
     $where .= " AND mcv.id_usuario = $filtro_usuario ";
 }
 
+// Si es usuario tipo 2 (INGENIERO), filtrar solo actividades de su grupo y usuarios de su grupo
+if ($tipo_usuario == 2 && isset($_SESSION['id_grupo'])) {
+    $id_grupo_session = intval($_SESSION['id_grupo']);
+    $where .= " AND g.id_grupo = $id_grupo_session ";
+    // Si se especificó usuario, verificar que sea del mismo grupo
+    if ($filtro_usuario) {
+        $query_check = "SELECT id FROM usuarios WHERE id = $filtro_usuario AND id_grupo = $id_grupo_session";
+        $result_check = $mysqli->query($query_check);
+        if (!$result_check || $result_check->num_rows == 0) {
+            die("Acceso denegado: No puede exportar datos de usuarios de otros grupos.");
+        }
+    }
+}
+// Si es usuario tipo 3 (CONTRATISTA CPSAM), filtrar solo sus actividades
+elseif ($tipo_usuario == 3 && isset($_SESSION['id'])) {
+    $id_usuario = intval($_SESSION['id']);
+    $where .= " AND mcv.id_usuario = $id_usuario ";
+}
+// Si es usuario tipo 5 o 10, filtrar por su grupo
+elseif (($tipo_usuario == 5 || $tipo_usuario == 10) && isset($_SESSION['id_grupo'])) {
+    $id_grupo_session = intval($_SESSION['id_grupo']);
+    $where .= " AND g.id_grupo = $id_grupo_session ";
+}
+
 $sql = "SELECT 
  mcv.id_masiva_centro_vida AS id_registro,
  m.descripcion_meta,

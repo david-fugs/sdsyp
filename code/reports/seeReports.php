@@ -795,8 +795,17 @@ $endYear = $currentYear + 1;
                             <?php
                             // Obtener grupos filtrados según tipo de usuario
                             $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
-                            $where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
-                            $query_grupos = "SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC";
+                            $id_grupo_usuario_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : 0;
+                            
+                            // Si es tipo usuario 2, solo mostrar su grupo asociado
+                            if ($tipo_usuario == 2 && $id_grupo_usuario_session != 0) {
+                                $query_grupos = "SELECT g.* FROM grupos g WHERE g.id_grupo = $id_grupo_usuario_session ORDER BY g.descripcion_grupo ASC";
+                            } else {
+                                // Otros usuarios: usar filtro normal
+                                $where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
+                                $query_grupos = "SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC";
+                            }
+                            
                             $result_grupos = mysqli_query($mysqli, $query_grupos);
                             if ($result_grupos) {
                                 while ($grupo = mysqli_fetch_assoc($result_grupos)) {
@@ -843,8 +852,12 @@ $endYear = $currentYear + 1;
                             // Construir filtro WHERE para usuarios según tipo de usuario de sesión
                             $where_usuarios = "WHERE 1=1";
                             
+                            // Si es tipo 2 (INGENIERO), solo mostrar usuarios del mismo grupo
+                            if ($tipo_usuario == 2 && $id_grupo_session) {
+                                $where_usuarios .= " AND u.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
+                            }
                             // Si es tipo 3 (CONTRATISTA CPSAM), solo mostrar su propio usuario
-                            if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
+                            elseif ($tipo_usuario == 3 && isset($_SESSION['id'])) {
                                 $id_usuario_session = intval($_SESSION['id']);
                                 $where_usuarios .= " AND u.id = $id_usuario_session";
                             }

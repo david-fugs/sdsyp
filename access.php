@@ -88,13 +88,18 @@ if ($tipo_usuario == 8 || $tipo_usuario == 9) {
 } else {
   // Estadísticas normales para otros usuarios
   // Total de personas
-  // Contar personas que NO tienen ningún movimiento con id_condicion = 8 (fallecido)
+  // Contar personas que NO tienen ningún movimiento con condiciones de exclusión (fallecido, retirado, evadido)
   $query_personas = "
     SELECT COUNT(*) as total FROM personas p
     WHERE NOT EXISTS (
         SELECT 1 FROM movimiento_persona mp
+        INNER JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
         WHERE mp.cedula_persona = p.cedula_persona
-        AND mp.id_condicion = 8
+        AND (
+            UPPER(cc.descripcion_condicion) LIKE '%FALLECIDO%'
+            OR UPPER(cc.descripcion_condicion) LIKE '%RETIRADO VOLUNTARIO%'
+            OR UPPER(cc.descripcion_condicion) LIKE '%EVADIDO%'
+        )
     )
     ";
   $result_personas = $mysqli->query($query_personas);
@@ -147,8 +152,13 @@ FROM grupos g
 LEFT JOIN personas p ON g.id_grupo = p.id_grupo
     AND NOT EXISTS (
         SELECT 1 FROM movimiento_persona mp
+        INNER JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
         WHERE mp.cedula_persona = p.cedula_persona
-        AND mp.id_condicion = 8
+        AND (
+            UPPER(cc.descripcion_condicion) LIKE '%FALLECIDO%'
+            OR UPPER(cc.descripcion_condicion) LIKE '%RETIRADO%'
+            OR UPPER(cc.descripcion_condicion) LIKE '%EVADIDO%'
+        )
     )
 GROUP BY g.id_grupo, g.descripcion_grupo, g.limite_personas
 ORDER BY g.descripcion_grupo ASC
@@ -1446,6 +1456,7 @@ $mysqli->close();
       </div>
 
       <!-- Estadísticas por Grupos y Acciones Rápidas -->
+      <?php if ($tipo_usuario != 3 && $tipo_usuario != 2) : ?>
       <div class="row">
         <div class="col-lg-8">
           <div class="chart-container">
@@ -1512,6 +1523,7 @@ $mysqli->close();
           </div>
         </div>
       </div>
+      <?php endif ?>
     </div>
   </div>
 
