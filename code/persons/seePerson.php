@@ -310,10 +310,16 @@ function deleteMember($cedula_persona)
             <!-- Header moderno -->
             <div class="modern-header">
                 <h2><i class="bi bi-people-fill"></i> Personas Registradas</h2>
-                <button type="button" class="btn-modern btn-success" data-bs-toggle="modal" data-bs-target="#modalNewPerson">
-                    <i class="bi bi-person-plus-fill"></i>
-                    Agregar Persona
-                </button>
+                <div class="d-flex gap-2">
+                    <button type="button" id="btn-export-excel" class="btn-modern btn-info">
+                        <i class="bi bi-file-earmark-excel-fill"></i>
+                        Exportar a Excel
+                    </button>
+                    <button type="button" class="btn-modern btn-success" data-bs-toggle="modal" data-bs-target="#modalNewPerson">
+                        <i class="bi bi-person-plus-fill"></i>
+                        Agregar Persona
+                    </button>
+                </div>
             </div>
 
             <!-- Filtros modernos -->
@@ -1777,6 +1783,30 @@ function deleteMember($cedula_persona)
                         creado_por: document.getElementById('filter-creado-por').value
                     };
                     loadTableData(params);
+                });
+            }
+
+            // Botón de exportar a Excel
+            const btnExport = document.getElementById('btn-export-excel');
+            if (btnExport) {
+                btnExport.addEventListener('click', function() {
+                    // Construir URL con los filtros actuales
+                    const params = new URLSearchParams();
+
+                    const cedula = document.getElementById('filter-cedula').value;
+                    const nombre = document.getElementById('filter-nombre').value;
+                    const programa = document.getElementById('filter-programa').value;
+                    const estado = document.getElementById('filter-estado').value;
+                    const creado_por = document.getElementById('filter-creado-por').value;
+
+                    if (cedula) params.append('cedula_persona', cedula);
+                    if (nombre) params.append('nombre', nombre);
+                    if (programa) params.append('programa', programa);
+                    if (estado) params.append('estado', estado);
+                    if (creado_por) params.append('creado_por', creado_por);
+
+                    // Redirigir a la página de exportación
+                    window.location.href = 'exportPersons.php?' + params.toString();
                 });
             }
         });
