@@ -189,7 +189,8 @@ $headers = [
     'Actividad',
     'Acción',
     'Estado',
-    'Creado por'
+    'Creado por',
+    'Con Convenio'
 ];
 
 $col = 'A';
@@ -199,7 +200,7 @@ foreach($headers as $header) {
 }
 
 // Estilo encabezados
-$lastCol = 'AU'; // Columna 47
+$lastCol = 'AV'; // Columna 48
 $sheet->getStyle('A1:'.$lastCol.'1')->getFont()->setBold(true)->setSize(12);
 $sheet->getStyle('A1:'.$lastCol.'1')->getFill()
     ->setFillType(Fill::FILL_SOLID)
@@ -379,6 +380,10 @@ while($row = $result->fetch_assoc()) {
     // Creado por
     $sheet->setCellValue($col++.$fila, $row['creado_por'] ?? 'N/A');
     
+    // Con Convenio (Si sin_convenio = 1, mostrar "NO", si no mostrar "SÍ")
+    $con_convenio = (isset($row['sin_convenio']) && $row['sin_convenio'] == 1) ? 'NO' : 'SÍ';
+    $sheet->setCellValue($col++.$fila, $con_convenio);
+    
     // Filas alternadas con color
     if ($fila % 2 == 0) {
         $sheet->getStyle('A'.$fila.':'.$lastCol.$fila)->getFill()
@@ -443,7 +448,8 @@ $columnWidths = [
     'AN' => 25, // Programas
     'AO' => 30, // Centro Vida / CPSAM / Otro
     'AP' => 25, // Política Pública
-    'AQ' => 30, // Meta
+    'AQ' => 30, // Creado por
+    'AV' => 15, // Con Convenio
     'AR' => 30, // Actividad
     'AS' => 30, // Acción
     'AT' => 25, // Estado

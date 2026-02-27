@@ -284,7 +284,7 @@ if (!$result_comunas) {
                         <i class="bi bi-plus-circle-fill"></i>
                         Agregar actividad
                     </button>
-                    <form id="exportExcelForm" action="exportActividadesExcel.php" method="get" style="display:inline;">
+                    <!-- <form id="exportExcelForm" action="exportActividadesExcel.php" method="get" style="display:inline;">
                         <input type="hidden" name="filtro_anio" id="export_filtro_anio">
                         <input type="hidden" name="filtro_mes" id="export_filtro_mes">
                         <input type="hidden" name="filtro_funcionario" id="export_filtro_funcionario">
@@ -292,7 +292,7 @@ if (!$result_comunas) {
                             <i class="bi bi-file-earmark-excel"></i>
                             Exportar Excel
                         </button>
-                    </form>
+                    </form> -->
                 </div>
             </div>
 

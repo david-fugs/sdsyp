@@ -900,6 +900,18 @@ function deleteMember($cedula_persona)
                             </div>
                         </div>
 
+                        <!-- Checkbox Sin Convenio -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="sin_convenio" id="sin_convenio" value="1">
+                                    <label class="form-check-label" for="sin_convenio">
+                                        <strong>Sin Convenio</strong>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="modal-footer justify-content-between">
@@ -1398,6 +1410,18 @@ function deleteMember($cedula_persona)
                                 <select class="form-select" id="edit-politica-publica" name="id_politica_publica" required>
                                     <option value="" selected>Seleccione Política Pública...</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <!-- Checkbox Sin Convenio (Edición) -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="sin_convenio" id="edit-sin-convenio" value="1">
+                                    <label class="form-check-label" for="edit-sin-convenio">
+                                        <strong>Sin Convenio</strong>
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -2267,6 +2291,13 @@ function deleteMember($cedula_persona)
                         programasChecks.forEach(cb => {
                             cb.checked = idsArray.includes(cb.value);
                         });
+
+                        // Cargar checkbox Sin Convenio
+                        const sinConvenio = button.getAttribute('data-sin-convenio') || '0';
+                        const checkboxSinConvenio = document.getElementById('edit-sin-convenio');
+                        if (checkboxSinConvenio) {
+                            checkboxSinConvenio.checked = (sinConvenio === '1');
+                        }
 
                     });
                 }

@@ -60,6 +60,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id_accion = $_POST['id_accion'] ?? null;
     $id_politica_publica = $_POST['id_politica_publica'] ?? null;
 
+    // Nuevo campo: Sin convenio
+    $sin_convenio = isset($_POST['sin_convenio']) ? 1 : 0;
+
     // Normalizar cadenas vacías a NULL para columnas FK y opcionales
     if ($id_meta === '' ) $id_meta = null;
     if ($id_actividad === '' ) $id_actividad = null;
@@ -119,7 +122,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         id_meta,
         id_actividad,
         id_accion,
-        id_politica_publica
+        id_politica_publica,
+        sin_convenio
     ) VALUES (
         '$cedula_persona',
         '$tipo_identificacion',
@@ -166,7 +170,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         " . ($id_meta !== null ? "'$id_meta'" : 'NULL') . ",
         " . ($id_actividad !== null ? "'$id_actividad'" : 'NULL') . ",
         " . ($id_accion !== null ? "'$id_accion'" : 'NULL') . ",
-        " . ($id_politica_publica !== null ? "'$id_politica_publica'" : 'NULL') . "
+        " . ($id_politica_publica !== null ? "'$id_politica_publica'" : 'NULL') . ",
+        '$sin_convenio'
     )";
 
 

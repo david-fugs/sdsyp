@@ -243,7 +243,8 @@ $query_individuales = "SELECT
     pp.descripcion_politica,
     ri.departamento_procedencia,
     u.nombre as nombre_usuario,
-    p_grupo.descripcion_grupo as grupo_persona
+    p_grupo.descripcion_grupo as grupo_persona,
+    p.sin_convenio
 FROM registro_individual as ri
 JOIN personas as p ON ri.cedula_persona = p.cedula_persona
 JOIN condiciones_componente as c ON ri.id_condicion = c.id_condicion
@@ -276,7 +277,8 @@ $headers_individuales = [
     'Centro Traslado',
     'Dpto. Procedencia',
     'Observaciones',
-    'Usuario Registro'
+    'Usuario Registro',
+    'Con Convenio'
 ];
 
 $col = 'A';
@@ -312,6 +314,8 @@ $sheet2->getRowDimension(1)->setRowHeight(32);
 $row = 2;
 if ($result_individuales && $result_individuales->num_rows > 0) {
     while ($data = $result_individuales->fetch_assoc()) {
+        $con_convenio = (isset($data['sin_convenio']) && $data['sin_convenio'] == 1) ? 'NO' : 'SÍ';
+        
         $rowData = [
             $data['id_registro_individual'],
             $data['cedula_persona'],
@@ -327,7 +331,8 @@ if ($result_individuales && $result_individuales->num_rows > 0) {
             $data['centro_vida_traslado'] ?? '',
             $data['departamento_procedencia'] ?? '',
             $data['observacion_registro'] ?? '',
-            $data['nombre_usuario'] ?? ''
+            $data['nombre_usuario'] ?? '',
+            $con_convenio
         ];
         
         $col = 'A';

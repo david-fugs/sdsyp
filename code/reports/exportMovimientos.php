@@ -95,7 +95,8 @@ $query = "SELECT
     pp.descripcion_politica,
     mp.departamento_procedencia,
     p_grupo.descripcion_grupo as grupo_persona,
-    u.nombre as usuario_registro
+    u.nombre as usuario_registro,
+    p.sin_convenio
 FROM movimiento_persona as mp
 JOIN personas as p ON mp.cedula_persona = p.cedula_persona
 JOIN condiciones_componente as c ON mp.id_condicion = c.id_condicion
@@ -134,7 +135,8 @@ $headers = [
     'Centro Traslado Nuevo',
     'Dpto. Procedencia',
     'Observaciones',
-    'Usuario Registro'
+    'Usuario Registro',
+    'Con Convenio'
 ];
 
 $col = 'A';
@@ -178,6 +180,8 @@ if ($result && $result->num_rows > 0) {
             $traslado_info = $data['centro_vida_traslado'];
         }
         
+        $con_convenio = (isset($data['sin_convenio']) && $data['sin_convenio'] == 1) ? 'NO' : 'SÍ';
+        
         $rowData = [
             $data['id_movimiento_persona'],
             $data['cedula_persona'],
@@ -194,7 +198,8 @@ if ($result && $result->num_rows > 0) {
             $data['centro_vida_traslado'] ?? '',
             $data['departamento_procedencia'] ?? '',
             $data['observacion_movimiento'] ?? '',
-            $data['usuario_registro'] ?? ''
+            $data['usuario_registro'] ?? '',
+            $con_convenio
         ];
         
         $col = 'A';

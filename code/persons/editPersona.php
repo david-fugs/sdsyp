@@ -56,6 +56,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id_accion = $_POST['id_accion'] ?? null;
     $id_politica_publica = $_POST['id_politica_publica'] ?? null;
 
+    // Nuevo campo: Sin convenio
+    $sin_convenio = isset($_POST['sin_convenio']) ? 1 : 0;
+
     // Actualizar persona
     $sql_update_persona = "UPDATE personas SET
         cedula_persona='$cedula_persona',
@@ -100,7 +103,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         ingresos_economicos='$ingresos_economicos',
         convivencia_actual='$convivencia_actual',
         resultado_actividad='$resultado_actividad',
-        remision='$remision'
+        remision='$remision',
+        sin_convenio='$sin_convenio'
         WHERE cedula_persona='$cedula_original'";
     // Ejecutar consulta
     if ($mysqli->query($sql_update_persona)) {

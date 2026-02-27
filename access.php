@@ -147,7 +147,8 @@ SELECT
     g.id_grupo,
     g.descripcion_grupo,
     g.limite_personas,
-    COUNT(p.id_persona) as total_personas
+    COUNT(p.id_persona) as total_personas,
+    SUM(CASE WHEN p.sin_convenio = 1 THEN 1 ELSE 0 END) as sin_convenio
 FROM grupos g
 LEFT JOIN personas p ON g.id_grupo = p.id_grupo
     AND NOT EXISTS (
@@ -619,32 +620,26 @@ $mysqli->close();
           <a href="code/persons/seePerson.php" class="quick-nav-item">
             <i class="bi bi-people-fill"></i>
             Personas
-            <span class="badge"><?php echo $stats['personas']; ?></span>
           </a>
           <a href="code/goals/seeGoals.php" class="quick-nav-item">
             <i class="bi bi-bullseye"></i>
             Metas
-            <span class="badge"><?php echo $stats['metas']; ?></span>
           </a>
           <a href="code/activities/seeActivity.php" class="quick-nav-item">
             <i class="bi bi-list-task"></i>
             Actividades
-            <span class="badge"><?php echo $stats['actividades']; ?></span>
           </a>
           <a href="code/action/seeActions.php" class="quick-nav-item">
             <i class="bi bi-lightning"></i>
             Acciones
-            <span class="badge"><?php echo $stats['acciones']; ?></span>
           </a>
           <a href="code/publicPolicies/seePublicPolicies.php" class="quick-nav-item">
             <i class="bi bi-clipboard-check"></i>
             Políticas
-            <span class="badge"><?php echo $stats['politicas']; ?></span>
           </a>
           <a href="code/group/seeGroup.php" class="quick-nav-item">
             <i class="bi bi-collection"></i>
             Grupos
-            <span class="badge"><?php echo $stats['grupos']; ?></span>
           </a>
           <a href="code/reports/seeReports.php" class="quick-nav-item">
             <i class="bi bi-file-earmark-bar-graph"></i>
@@ -1295,7 +1290,6 @@ $mysqli->close();
           <a href="code/colombiaMayor/seePersonaCM.php" class="btn btn-light btn-lg px-4 py-2" style="border-radius: 25px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
             <i class="bi bi-people-fill me-2"></i>
             Acceder al Módulo de Personas Colombia Mayor
-            <span class="badge bg-light text-primary ms-2"><?php echo $stats['personas']; ?></span>
           </a>
         </div>
       <?php } else { ?>
@@ -1309,148 +1303,47 @@ $mysqli->close();
           <a href="code/persons/seePerson.php" class="btn btn-light btn-lg px-4 py-2" style="border-radius: 25px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
             <i class="bi bi-people-fill me-2"></i>
             Acceder al Módulo de Personas
-            <span class="badge bg-primary ms-2"><?php echo $stats['personas']; ?></span>
           </a>
         </div>
       <?php } ?>
     </div>
 
-    <!-- Statistics Cards -->
+    <!-- Sección Informativa Decorativa -->
     <div class="container-fluid">
-      <?php if ($tipo_usuario == 8 || $tipo_usuario == 9) { ?>
-        <!-- Estadísticas Colombia Mayor -->
-        <div class="row">
-          <div class="col-md-3 col-sm-6">
-            <div class="stats-card text-center">
-              <i class="bi bi-people stats-icon" style="color: #667eea;"></i>
-              <div class="stats-number" style="color: #667eea;"><?php echo number_format($stats['personas']); ?></div>
-              <div class="stats-label">Personas C.M Total</div>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-6">
-            <div class="stats-card text-center">
-              <i class="bi bi-check-circle stats-icon text-success"></i>
-              <div class="stats-number text-success"><?php echo number_format($stats['personas_activas']); ?></div>
-              <div class="stats-label">Personas Activas</div>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-6">
-            <div class="stats-card text-center">
-              <i class="bi bi-arrow-left-right stats-icon text-warning"></i>
-              <div class="stats-number text-warning"><?php echo number_format($stats['movimientos_cm']); ?></div>
-              <div class="stats-label">Movimientos</div>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-6">
-            <div class="stats-card text-center">
-              <i class="bi bi-clipboard-check stats-icon text-info"></i>
-              <div class="stats-number text-info"><?php echo number_format($stats['registros_cm']); ?></div>
-              <div class="stats-label">Registros</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Estadísticas secundarias Colombia Mayor -->
-        <div class="row">
-          <div class="col-md-3 col-sm-6">
-            <div class="stats-card text-center">
-              <i class="bi bi-money-bill-wave stats-icon" style="color: #764ba2;"></i>
-              <div class="stats-number" style="color: #764ba2;"><?php echo number_format($stats['pagos_cm']); ?></div>
-              <div class="stats-label">Pagos Registrados</div>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-6">
-            <div class="stats-card text-center">
-              <i class="bi bi-calendar-event stats-icon text-danger"></i>
-              <div class="stats-number text-danger"><?php echo number_format($stats['movimientos_recientes']); ?></div>
-              <div class="stats-label">Movimientos Recientes (30 días)</div>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-6">
-            <div class="stats-card text-center">
-              <i class="bi bi-file-earmark-excel stats-icon text-success"></i>
-              <div class="stats-number text-success">
-                <a href="code/colombiaMayor/exportPersonasCM.php" class="text-success text-decoration-none">
-                  <i class="bi bi-download"></i>
-                </a>
+      <div class="row mb-4">
+        <div class="col-12">
+          <div style="background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 3rem; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);">
+            <div class="row text-center">
+              <div class="col-md-4 mb-4">
+                <div class="info-icon-container" style="margin-bottom: 1.5rem;">
+                  <i class="bi bi-shield-check" style="font-size: 4rem; color: #667eea;"></i>
+                </div>
+                <h4 style="color: #667eea; font-weight: 700; margin-bottom: 1rem;">Sistema Seguro</h4>
+                <p style="color: #6c757d; font-size: 1.1rem; line-height: 1.6;">
+                  Plataforma de gestión integral con acceso controlado y protección de datos
+                </p>
               </div>
-              <div class="stats-label">Exportar Personas</div>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-6">
-            <div class="stats-card text-center">
-              <i class="bi bi-graph-up stats-icon text-primary"></i>
-              <div class="stats-number text-primary">
-                <a href="code/colombiaMayor/consultaPagosCM.php" class="text-primary text-decoration-none">
-                  <i class="bi bi-search"></i>
-                </a>
+              
+              <div class="col-md-4 mb-4">
+                <div class="info-icon-container" style="margin-bottom: 1.5rem;">
+                  <i class="bi bi-people-fill" style="font-size: 4rem; color: #764ba2;"></i>
+                </div>
+                <h4 style="color: #764ba2; font-weight: 700; margin-bottom: 1rem;">Gestión Completa</h4>
+                <p style="color: #6c757d; font-size: 1.1rem; line-height: 1.6;">
+                  Administra personas, actividades, metas y políticas públicas de forma eficiente
+                </p>
               </div>
-              <div class="stats-label">Consultar Pagos</div>
+              
+              <div class="col-md-4 mb-4">
+                <div class="info-icon-container" style="margin-bottom: 1.5rem;">
+                  <i class="bi bi-graph-up-arrow" style="font-size: 4rem; color: #28a745;"></i>
+                </div>
+                <h4 style="color: #28a745; font-weight: 700; margin-bottom: 1rem;">Informes y Reportes</h4>
+                <p style="color: #6c757d; font-size: 1.1rem; line-height: 1.6;">
+                  Genera reportes detallados y exporta información en múltiples formatos
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
-      <?php } else { ?>
-        <!-- Estadísticas normales -->
-        <div class="row">
-          <div class="col-md-3 col-sm-6">
-            <div class="stats-card text-center">
-              <i class="bi bi-people stats-icon text-primary"></i>
-              <div class="stats-number text-primary"><?php echo number_format($stats['personas']); ?></div>
-              <div class="stats-label">Personas Registradas</div>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-6">
-            <div class="stats-card text-center">
-              <i class="bi bi-bullseye stats-icon text-success"></i>
-              <div class="stats-number text-success"><?php echo number_format($stats['metas']); ?></div>
-              <div class="stats-label">Metas Activas</div>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-6">
-            <div class="stats-card text-center">
-              <i class="bi bi-list-task stats-icon text-warning"></i>
-              <div class="stats-number text-warning"><?php echo number_format($stats['actividades']); ?></div>
-              <div class="stats-label">Actividades</div>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-6">
-            <div class="stats-card text-center">
-              <i class="bi bi-lightning stats-icon text-info"></i>
-              <div class="stats-number text-info"><?php echo number_format($stats['acciones']); ?></div>
-              <div class="stats-label">Acciones</div>
-            </div>
-          </div>
-        </div>
-      <?php } ?>
-
-      <!-- Secondary Statistics -->
-      <div class="row">
-        <div class="col-md-3 col-sm-6">
-          <div class="stats-card text-center">
-            <i class="bi bi-clipboard-check stats-icon text-purple"></i>
-            <div class="stats-number" style="color: #6f42c1;"><?php echo number_format($stats['politicas']); ?></div>
-            <div class="stats-label">Políticas Públicas</div>
-          </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-          <div class="stats-card text-center">
-            <i class="bi bi-collection stats-icon text-dark"></i>
-            <div class="stats-number text-dark"><?php echo number_format($stats['grupos']); ?></div>
-            <div class="stats-label">Grupos/CPSAM</div>
-          </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-          <div class="stats-card text-center">
-            <i class="bi bi-building stats-icon text-secondary"></i>
-            <div class="stats-number text-secondary"><?php echo number_format($stats['centros']); ?></div>
-            <div class="stats-label">Centros de Vida</div>
-          </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-          <div class="stats-card text-center">
-            <i class="bi bi-arrow-repeat stats-icon text-danger"></i>
-            <div class="stats-number text-danger"><?php echo number_format($stats['movimientos_recientes']); ?></div>
-            <div class="stats-label">Movimientos (30 días)</div>
           </div>
         </div>
       </div>
@@ -1470,6 +1363,7 @@ $mysqli->close();
                     <th class="text-center">Límite</th>
                     <th class="text-center">Disponibles</th>
                     <th class="text-center">% Ocupación</th>
+                    <th class="text-center">Sin Convenio</th>
                     <th class="text-center">Estado</th>
                   </tr>
                 </thead>
@@ -1511,6 +1405,9 @@ $mysqli->close();
                       </td>
                       <td class="text-center">
                         <?php echo $porcentaje; ?>%
+                      </td>
+                      <td class="text-center">
+                        <span class="badge bg-warning fs-6"><?php echo $grupo['sin_convenio'] ?? 0; ?></span>
                       </td>
                       <td class="text-center">
                         <span class="badge <?php echo $badge_class; ?>"><?php echo $estado; ?></span>
