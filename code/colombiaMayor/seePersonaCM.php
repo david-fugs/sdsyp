@@ -11,6 +11,48 @@ if (!isset($_SESSION['tipo_usuario']) || !in_array($_SESSION['tipo_usuario'], [8
 $tipo_usuario = $_SESSION['tipo_usuario'];
 $id_usuario = $_SESSION['id'];
 
+// Construir query base para personas
+$where = "WHERE 1=1";
+
+// Si es contratista (tipo 9), solo ver sus propios registros
+if ($tipo_usuario == 9) {
+    $where .= " AND usuario_registro = '$id_usuario'";
+}
+
+// Filtro por cédula (búsqueda parcial)
+if (!empty($_GET['cedula'])) {
+    $cedula = $mysqli->real_escape_string($_GET['cedula']);
+    $where .= " AND cedula_persona_cm LIKE '%$cedula%'";
+}
+
+// Filtro por nombre
+if (!empty($_GET['nombre'])) {
+    $nombre = $mysqli->real_escape_string($_GET['nombre']);
+    $where .= " AND (nombres_persona_cm LIKE '%$nombre%' OR apellidos_persona_cm LIKE '%$nombre%')";
+}
+
+// Filtro por estado
+if (!empty($_GET['estado'])) {
+    $estado = $mysqli->real_escape_string($_GET['estado']);
+    $where .= " AND estado_cm LIKE '%$estado%'";
+}
+
+// Consulta de personas con filtros
+$query_personas = "
+    SELECT 
+        p.*,
+        u.nombre AS nombre_contratista
+    FROM personas_colombia_mayor p
+    LEFT JOIN usuarios u ON p.usuario_registro = u.id
+    $where
+    ORDER BY p.apellidos_persona_cm ASC, p.nombres_persona_cm ASC
+";
+
+$result_personas = $mysqli->query($query_personas);
+if (!$result_personas) {
+    die("Error en la consulta de personas: " . $mysqli->error);
+}
+
 // Consultas para selectores
 $metas = "SELECT * FROM metas ORDER BY descripcion_meta ASC";
 $result_metas = $mysqli->query($metas);
@@ -29,6 +71,12 @@ $condiciones_cm = "SELECT id_condicion, descripcion_condicion FROM condiciones_c
 $result_condiciones_cm = $mysqli->query($condiciones_cm);
 if (!$result_condiciones_cm) {
     die("Error en la consulta de condiciones: " . $mysqli->error);
+}
+
+// Guardar opciones en array para reutilizar
+$opciones_estado_cm = [];
+while ($row = $result_condiciones_cm->fetch_assoc()) {
+    $opciones_estado_cm[] = $row['descripcion_condicion'];
 }
 
 if (isset($_GET['delete'])) {
@@ -167,36 +215,42 @@ function deleteMember($cedula_persona_cm)
 
             <!-- Filtros modernos -->
             <div class="modern-filters">
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label for="filter-cedula">Cédula</label>
-                        <input type="text" id="filter-cedula" class="modern-input" placeholder="Buscar por cédula...">
+                <form method="GET" action="" id="form-filtros">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="cedula">Cédula</label>
+                            <input type="text" id="cedula" name="cedula" class="modern-input" 
+                                   placeholder="Buscar por cédula..." 
+                                   value="<?php echo htmlspecialchars($_GET['cedula'] ?? ''); ?>">
+                        </div>
+                        <div class="filter-group">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" id="nombre" name="nombre" class="modern-input" 
+                                   placeholder="Buscar por nombre..." 
+                                   value="<?php echo htmlspecialchars($_GET['nombre'] ?? ''); ?>">
+                        </div>
+                        <div class="filter-group">
+                            <label for="estado">Estado</label>
+                            <select id="estado" name="estado" class="modern-select">
+                                <option value="">Todos los estados</option>
+                                <option value="ACTIVO" <?php echo (($_GET['estado'] ?? '') == 'ACTIVO') ? 'selected' : ''; ?>>ACTIVO</option>
+                                <option value="SUSPENDIDO" <?php echo (($_GET['estado'] ?? '') == 'SUSPENDIDO') ? 'selected' : ''; ?>>SUSPENDIDO</option>
+                                <option value="FALLECIDO" <?php echo (($_GET['estado'] ?? '') == 'FALLECIDO') ? 'selected' : ''; ?>>FALLECIDO</option>
+                                <option value="RETIRO_VOLUNTARIO" <?php echo (($_GET['estado'] ?? '') == 'RETIRO_VOLUNTARIO') ? 'selected' : ''; ?>>RETIRO VOLUNTARIO</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <button type="submit" class="btn-modern btn-primary">
+                                <i class="bi bi-search"></i>
+                                Filtrar
+                            </button>
+                            <a href="seePersonaCM.php" class="btn-modern btn-secondary">
+                                <i class="bi bi-x-circle"></i>
+                                Limpiar
+                            </a>
+                        </div>
                     </div>
-                    <div class="filter-group">
-                        <label for="filter-nombre">Nombre</label>
-                        <input type="text" id="filter-nombre" class="modern-input" placeholder="Buscar por nombre...">
-                    </div>
-                    <div class="filter-group">
-                        <label for="filter-estado">Estado</label>
-                        <select id="filter-estado" class="modern-select">
-                            <option value="">Todos los estados</option>
-                            <?php
-                            // Recargar el resultado para usarlo en filtros
-                            $result_condiciones_cm->data_seek(0);
-                            while ($row = $result_condiciones_cm->fetch_assoc()): ?>
-                                <option value="<?php echo htmlspecialchars($row['descripcion_condicion']); ?>">
-                                    <?php echo htmlspecialchars($row['descripcion_condicion']); ?>
-                                </option>
-                            <?php endwhile; ?>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <button type="button" id="btn-filter" class="btn-modern btn-primary">
-                            <i class="bi bi-search"></i>
-                            Filtrar
-                        </button>
-                    </div>
-                </div>
+                </form>
             </div>
 
             <!-- Tabla moderna -->
@@ -214,8 +268,138 @@ function deleteMember($cedula_persona_cm)
                             <th class="col-actions">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body">
-                        <!-- Contenido cargado dinámicamente -->
+                    <tbody>
+                        <?php
+                        if ($result_personas && $result_personas->num_rows > 0) {
+                            while ($row = $result_personas->fetch_assoc()) {
+                                // Calcular edad si tiene fecha de nacimiento
+                                $edad_texto = 'N/A';
+                                if ($row['fecha_nacimiento_cm'] && $row['fecha_nacimiento_cm'] != '0000-00-00') {
+                                    $hoy = new DateTime();
+                                    $nacimiento = new DateTime($row['fecha_nacimiento_cm']);
+                                    $edad = $hoy->diff($nacimiento)->y;
+                                    $edad_texto = $edad . ' años';
+                                } elseif ($row['edad_cm']) {
+                                    $edad_texto = $row['edad_cm'] . ' años';
+                                }
+
+                                // Determinar badge de estado
+                                $badge_class = 'status-badge status-secondary';
+                                $estado_icon = '<i class="bi bi-circle-fill"></i>';
+                                $estado_value = strtoupper($row['estado_cm'] ?? '');
+                                
+                                // Detectar estado por palabras clave
+                                if ($estado_value === 'ACTIVO' || stripos($estado_value, 'ACTIVO') !== false) {
+                                    $badge_class = 'status-badge status-active';
+                                    $estado_icon = '<i class="bi bi-check-circle-fill"></i>';
+                                } elseif (stripos($estado_value, 'FALLECIDO') !== false || stripos($estado_value, 'FALLECIDA') !== false) {
+                                    $badge_class = 'status-badge status-secondary';
+                                    $estado_icon = '<i class="bi bi-x-circle-fill"></i>';
+                                } elseif (stripos($estado_value, 'RETIRO') !== false || stripos($estado_value, 'RETIRADO') !== false) {
+                                    $badge_class = 'status-badge status-info';
+                                    $estado_icon = '<i class="bi bi-arrow-left-circle-fill"></i>';
+                                } elseif (stripos($estado_value, 'SUSPENDIDO') !== false || stripos($estado_value, 'SUSPENDIDA') !== false) {
+                                    $badge_class = 'status-badge status-warning';
+                                    $estado_icon = '<i class="bi bi-pause-circle-fill"></i>';
+                                } elseif (stripos($estado_value, 'ESPERA') !== false || stripos($estado_value, 'LISTA') !== false) {
+                                    $badge_class = 'status-badge status-warning';
+                                    $estado_icon = '<i class="bi bi-clock-fill"></i>';
+                                } elseif (stripos($estado_value, 'BDUA') !== false || stripos($estado_value, 'BLOQUEO') !== false || stripos($estado_value, 'DUPLICIDAD') !== false) {
+                                    $badge_class = 'status-badge status-danger';
+                                    $estado_icon = '<i class="bi bi-exclamation-triangle-fill"></i>';
+                                }
+
+                                // Formatear fecha de ingreso
+                                $fecha_ingreso = 'N/A';
+                                if ($row['fecha_ingreso_cm'] && $row['fecha_ingreso_cm'] != '0000-00-00') {
+                                    $fecha_ingreso = date('d/m/Y', strtotime($row['fecha_ingreso_cm']));
+                                }
+
+                                echo "<tr class='fade-in'>";
+                                echo "<td><strong>" . htmlspecialchars($row['cedula_persona_cm']) . "</strong></td>";
+                                echo "<td>";
+                                echo "<b>" . htmlspecialchars($row['nombres_persona_cm'] . ' ' . $row['apellidos_persona_cm']) . "</b><br>";
+                                echo "<span class='cm-badge'><i class='bi bi-award-fill'></i> Colombia Mayor</span>";
+                                echo "</td>";
+                                echo "<td>" . htmlspecialchars($row['genero_persona_cm'] ?? 'N/A') . "</td>";
+                                echo "<td><span class='badge bg-primary'>" . $edad_texto . "</span></td>";
+                                echo "<td>" . htmlspecialchars($row['telefono_persona_cm'] ?? 'N/A') . "</td>";
+                                echo "<td>" . $fecha_ingreso . "</td>";
+                                echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('_', ' ', $row['estado_cm']) . "</span></td>";
+
+                                // Botones de acción
+                                echo '<td class="col-actions">
+                                        <div class="action-buttons">
+                                            <button type="button" class="btn-action btn-edit" 
+                                                title="Editar persona"
+                                                data-bs-toggle="modal" data-bs-target="#modalEdicion"
+                                                data-cedula="' . htmlspecialchars($row['cedula_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-tipo-identificacion="' . htmlspecialchars($row['tipo_identificacion_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-nombres="' . htmlspecialchars($row['nombres_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-apellidos="' . htmlspecialchars($row['apellidos_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-genero="' . htmlspecialchars($row['genero_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-telefono="' . htmlspecialchars($row['telefono_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-telefono-referencia="' . htmlspecialchars($row['telefono_referencia_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-referencia="' . htmlspecialchars($row['referencia_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-correo="' . htmlspecialchars($row['correo_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-fecha-nacimiento="' . htmlspecialchars($row['fecha_nacimiento_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-edad="' . htmlspecialchars($row['edad_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-grupo-sisben="' . htmlspecialchars($row['grupo_sisben'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-direccion="' . htmlspecialchars($row['direccion_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-barrio="' . htmlspecialchars($row['barrio_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-comuna="' . htmlspecialchars($row['comuna_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-zona="' . htmlspecialchars($row['zona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-departamento="' . htmlspecialchars($row['departamento_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-municipio="' . htmlspecialchars($row['municipio_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-eps="' . htmlspecialchars($row['eps'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-peso="' . htmlspecialchars($row['peso'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-talla="' . htmlspecialchars($row['talla'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-patologias="' . htmlspecialchars($row['patologias'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-factores-riesgo="' . htmlspecialchars($row['factores_riesgo'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-factores-preventivos="' . htmlspecialchars($row['factores_preventivos'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-ingresos-economicos="' . htmlspecialchars($row['ingresos_economicos'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-convivencia-actual="' . htmlspecialchars($row['convivencia_actual'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-resultado-actividad="' . htmlspecialchars($row['resultado_actividad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-remision="' . htmlspecialchars($row['remision'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-persona-discapacidad="' . htmlspecialchars($row['persona_discapacidad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-cual-discapacidad="' . htmlspecialchars($row['cual_discapacidad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-cabeza-hogar="' . htmlspecialchars($row['cabeza_hogar'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-lider-comunidad="' . htmlspecialchars($row['lider_comunidad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-se-reconoce-como="' . htmlspecialchars($row['se_reconoce_como'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-orientacion-sexual="' . htmlspecialchars($row['orientacion_sexual'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-experiencia-migratoria="' . htmlspecialchars($row['experiencia_migratoria'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-grupo-etnico="' . htmlspecialchars($row['grupo_etnico'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-tipo-salud="' . htmlspecialchars($row['tipo_salud'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-nivel-educativo="' . htmlspecialchars($row['nivel_educativo'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-condicion-ocupacion="' . htmlspecialchars($row['condicion_ocupacion'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-condicion-componente="' . htmlspecialchars($row['condicion_componente'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-fecha-ingreso="' . htmlspecialchars($row['fecha_ingreso_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-estado="' . htmlspecialchars($row['estado_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-id-meta="' . htmlspecialchars($row['id_meta'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-id-actividad="' . htmlspecialchars($row['id_actividad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-id-accion="' . htmlspecialchars($row['id_accion'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-id-politica-publica="' . htmlspecialchars($row['id_politica_publica'] ?? '', ENT_QUOTES, 'UTF-8') . '"
+                                                data-observaciones="' . htmlspecialchars($row['observaciones_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <button type="button" class="btn-action btn-delete" 
+                                                title="Eliminar persona"
+                                                data-cedula="' . htmlspecialchars($row['cedula_persona_cm']) . '">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                            <a href="exportPersonaCM.php?cedula=' . htmlspecialchars($row['cedula_persona_cm']) . '" 
+                                               class="btn-action btn-info" 
+                                               title="Exportar a Excel">
+                                                <i class="bi bi-file-earmark-excel"></i>
+                                            </a>
+                                        </div>
+                                      </td>';
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='8' class='text-center'>No se encontraron registros</td></tr>";
+                        }
+                        ?>
                     </tbody>
                 </table>
             </div>
@@ -690,14 +874,12 @@ function deleteMember($cedula_persona_cm)
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="estado" name="estado_cm" required>
                                     <option value="">Seleccione un estado...</option>
-                                    <?php
-                                    // Recargar el resultado para usarlo en modal agregar
-                                    $result_condiciones_cm->data_seek(0);
-                                    while ($row = $result_condiciones_cm->fetch_assoc()): ?>
-                                        <option value="<?php echo htmlspecialchars($row['descripcion_condicion']); ?>">
-                                            <?php echo htmlspecialchars($row['descripcion_condicion']); ?>
+                                    <option value="ACTIVO">ACTIVO</option>
+                                    <?php foreach ($opciones_estado_cm as $opcion): ?>
+                                        <option value="<?php echo htmlspecialchars($opcion); ?>">
+                                            <?php echo htmlspecialchars($opcion); ?>
                                         </option>
-                                    <?php endwhile; ?>
+                                    <?php endforeach; ?>
                                 </select>
                                 <label for="estado">Estado</label>
                             </div>
@@ -1211,14 +1393,12 @@ function deleteMember($cedula_persona_cm)
                             <div class="col-md-6 mb-3">
                                 <label for="edit-estado" class="form-label">Estado</label>
                                 <select class="form-select" id="edit-estado" name="estado_cm" required>
-                                    <?php
-                                    // Recargar el resultado para usarlo en modal editar
-                                    $result_condiciones_cm->data_seek(0);
-                                    while ($row = $result_condiciones_cm->fetch_assoc()): ?>
-                                        <option value="<?php echo htmlspecialchars($row['descripcion_condicion']); ?>">
-                                            <?php echo htmlspecialchars($row['descripcion_condicion']); ?>
+                                    <option value="ACTIVO">ACTIVO</option>
+                                    <?php foreach ($opciones_estado_cm as $opcion): ?>
+                                        <option value="<?php echo htmlspecialchars($opcion); ?>">
+                                            <?php echo htmlspecialchars($opcion); ?>
                                         </option>
-                                    <?php endwhile; ?>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
@@ -1282,49 +1462,16 @@ function deleteMember($cedula_persona_cm)
 
     <script>
         $(document).ready(function() {
-            // Función para cargar datos
-            function loadTableData() {
-                $.ajax({
-                    url: 'getPersonasCM.php',
-                    type: 'GET',
-                    data: {
-                        cedula: $('#filter-cedula').val(),
-                        nombre: $('#filter-nombre').val(),
-                        estado: $('#filter-estado').val()
-                    },
-                    success: function(data) {
-                        $('#table-body').html(data);
-                        
-                        // Destruir DataTable si ya existe
-                        if ($.fn.DataTable.isDataTable('#salesTable')) {
-                            $('#salesTable').DataTable().destroy();
-                        }
-
-                        // Inicializar DataTable
-                        $('#salesTable').DataTable({
-                            "language": {
-                                "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
-                            },
-                            "pageLength": 25,
-                            "order": [[1, "asc"]],
-                            "columnDefs": [
-                                { "orderable": false, "targets": 7 } // Columna de acciones no ordenable
-                            ]
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error al cargar datos:', error);
-                        $('#table-body').html('<tr><td colspan="8" class="text-center text-danger">Error al cargar datos</td></tr>');
-                    }
-                });
-            }
-
-            // Cargar datos inicialmente
-            loadTableData();
-
-            // Botón de filtrar
-            $('#btn-filter').on('click', function() {
-                loadTableData();
+            // Inicializar DataTable con datos ya cargados
+            $('#salesTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
+                },
+                "pageLength": 25,
+                "order": [[1, "asc"]],
+                "columnDefs": [
+                    { "orderable": false, "targets": 7 } // Columna de acciones no ordenable
+                ]
             });
 
             // Calcular edad automáticamente
@@ -1344,19 +1491,123 @@ function deleteMember($cedula_persona_cm)
                 var button = $(event.relatedTarget);
                 var modal = $(this);
                 
+                console.log('=== ABRIENDO MODAL EDICIÓN ===');
+                console.log('Cédula recibida:', button.data('cedula'));
+                console.log('Estado recibido:', button.data('estado'));
+                
+                // Datos básicos
                 modal.find('#edit-cedula-original').val(button.data('cedula'));
                 modal.find('#edit-cedula').val(button.data('cedula'));
+                
+                console.log('Cedula original asignada:', modal.find('#edit-cedula-original').val());
+                console.log('Cedula asignada:', modal.find('#edit-cedula').val());
                 modal.find('#edit-tipo-identificacion').val(button.data('tipo-identificacion'));
                 modal.find('#edit-nombres').val(button.data('nombres'));
                 modal.find('#edit-apellidos').val(button.data('apellidos'));
                 modal.find('#edit-genero').val(button.data('genero'));
                 modal.find('#edit-telefono').val(button.data('telefono'));
+                modal.find('#edit-telefono-referencia').val(button.data('telefono-referencia'));
+                modal.find('#edit-referencia').val(button.data('referencia'));
+                modal.find('#edit-correo').val(button.data('correo'));
                 modal.find('#edit-fecha-nacimiento').val(button.data('fecha-nacimiento'));
-                modal.find('#edit-estado').val(button.data('estado'));
+                modal.find('#edit-edad').val(button.data('edad'));
+                modal.find('#edit-grupo-sisben').val(button.data('grupo-sisben'));
+                
+                // Ubicación
                 modal.find('#edit-direccion').val(button.data('direccion'));
                 modal.find('#edit-barrio').val(button.data('barrio'));
                 modal.find('#edit-comuna').val(button.data('comuna'));
+                modal.find('#edit-zona').val(button.data('zona'));
+                modal.find('#edit-departamento').val(button.data('departamento'));
+                modal.find('#edit-municipio').val(button.data('municipio'));
+                
+                // Salud
+                modal.find('#edit-eps').val(button.data('eps'));
+                modal.find('#edit-peso').val(button.data('peso'));
+                modal.find('#edit-talla').val(button.data('talla'));
+                modal.find('#edit-patologias').val(button.data('patologias'));
+                modal.find('#edit-factores-riesgo').val(button.data('factores-riesgo'));
+                modal.find('#edit-factores-preventivos').val(button.data('factores-preventivos'));
+                modal.find('#edit-ingresos-economicos').val(button.data('ingresos-economicos'));
+                modal.find('#edit-convivencia-actual').val(button.data('convivencia-actual'));
+                modal.find('#edit-resultado-actividad').val(button.data('resultado-actividad'));
+                modal.find('#edit-remision').val(button.data('remision'));
+                
+                // Caracterización
+                modal.find('#edit-persona-discapacidad').val(button.data('persona-discapacidad'));
+                modal.find('#edit-cual-discapacidad').val(button.data('cual-discapacidad'));
+                modal.find('#edit-cabeza-hogar').val(button.data('cabeza-hogar'));
+                modal.find('#edit-lider-comunidad').val(button.data('lider-comunidad'));
+                modal.find('#edit-se-reconoce-como').val(button.data('se-reconoce-como'));
+                modal.find('#edit-orientacion-sexual').val(button.data('orientacion-sexual'));
+                modal.find('#edit-experiencia-migratoria').val(button.data('experiencia-migratoria'));
+                modal.find('#edit-grupo-etnico').val(button.data('grupo-etnico'));
+                modal.find('#edit-tipo-salud').val(button.data('tipo-salud'));
+                modal.find('#edit-nivel-educativo').val(button.data('nivel-educativo'));
+                modal.find('#edit-condicion-ocupacion').val(button.data('condicion-ocupacion'));
+                modal.find('#edit-condicion-componente').val(button.data('condicion-componente'));
+                
+                // Estado y fecha de ingreso
+                modal.find('#edit-fecha-ingreso').val(button.data('fecha-ingreso'));
+                var estadoValue = button.data('estado');
+                console.log('Cargando estado:', estadoValue);
+                modal.find('#edit-estado').val(estadoValue);
+                
+                // Verificar si se seleccionó correctamente
+                if (modal.find('#edit-estado').val() !== estadoValue) {
+                    console.warn('El estado "' + estadoValue + '" no coincide con ninguna opción del select');
+                    console.log('Opciones disponibles:', $('#edit-estado option').map(function() { return $(this).val(); }).get());
+                }
+                
+                // Meta, actividad, acción y política pública
+                modal.find('#edit-id-meta').val(button.data('id-meta'));
+                modal.find('#edit-id-actividad').val(button.data('id-actividad'));
+                modal.find('#edit-id-accion').val(button.data('id-accion'));
+                modal.find('#edit-id-politica-publica').val(button.data('id-politica-publica'));
+                
+                // Observaciones
                 modal.find('#edit-observaciones').val(button.data('observaciones'));
+                
+                // Manejar el campo de discapacidad
+                if (button.data('persona-discapacidad') === 'Si') {
+                    modal.find('#edit-div-cual-discapacidad').show();
+                } else {
+                    modal.find('#edit-div-cual-discapacidad').hide();
+                }
+                
+                // Trigger para disparar cambios en metas/actividades si es necesario
+                modal.find('#edit-id-meta').trigger('change');
+            });
+            
+            // Debug: Mostrar valor del select de estado cuando cambie
+            $('#edit-estado').on('change', function() {
+                console.log('Estado seleccionado:', $(this).val());
+            });
+            
+            // Debug: Interceptar submit del formulario de edición
+            $('#modalEdicion form').on('submit', function(e) {
+                var cedulaOriginal = $('#edit-cedula-original').val();
+                var estadoSeleccionado = $('#edit-estado').val();
+                
+                console.log('=== ENVIANDO FORMULARIO DE EDICIÓN ===');
+                console.log('Cédula original:', cedulaOriginal);
+                console.log('Estado seleccionado:', estadoSeleccionado);
+                console.log('Nombres:', $('#edit-nombres').val());
+                
+                if (!cedulaOriginal) {
+                    e.preventDefault();
+                    alert('ERROR: No se ha cargado la cédula original. No se puede actualizar.');
+                    return false;
+                }
+                
+                if (!estadoSeleccionado) {
+                    e.preventDefault();
+                    alert('ERROR: Debe seleccionar un estado.');
+                    return false;
+                }
+                
+                console.log('Formulario válido, enviando...');
+                // Permitir que el formulario se envíe normalmente
             });
 
             // Confirmar eliminación (usando delegación de eventos)

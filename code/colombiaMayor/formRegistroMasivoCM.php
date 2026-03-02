@@ -120,6 +120,44 @@ if ($result_count) {
             margin: 5px 0 0 0;
             font-size: 18px;
         }
+
+        /* Estilos para lista de cédulas seleccionadas */
+        .selected-persons-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .person-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .person-item strong {
+            color: #667eea;
+        }
+
+        .btn-remove-person {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-remove-person:hover {
+            background: #c82333;
+        }
     </style>
 </head>
 
@@ -145,8 +183,12 @@ if ($result_count) {
 
             <!-- Header moderno -->
             <div class="modern-header">
-                <h2><i class="bi bi-clipboard-data-fill"></i> Registrar Actividad Masiva</h2>
+                <h2><i class="bi bi-clipboard-data-fill"></i> Historial de Registros Masivos</h2>
                 <div>
+                    <button type="button" class="btn-modern btn-primary me-2" data-bs-toggle="modal" data-bs-target="#modalRegistroMasivo">
+                        <i class="bi bi-plus-circle-fill"></i>
+                        Registrar Actividad Masiva
+                    </button>
                     <button type="button" class="btn-modern btn-success me-2" onclick="window.location.href='exportRegistrosMasivosCM.php'">
                         <i class="bi bi-file-excel-fill"></i>
                         Exportar Excel
@@ -158,116 +200,9 @@ if ($result_count) {
                 </div>
             </div>
 
-            <!-- Formulario de Registro Masivo -->
-            <div class="modern-filters" style="background: #fff; padding: 30px; border-radius: 18px; margin-bottom: 30px;">
-                <form action="addRegistroMasivoCM.php" method="POST" id="formRegistroMasivo" enctype="multipart/form-data">
-                    <div class="row g-3">
-                        <!-- Fecha del Registro -->
-                        <div class="col-md-4">
-                            <label for="fecha_registro" class="form-label fw-bold">Fecha del Registro *</label>
-                            <input type="date" class="form-control modern-input" id="fecha_registro" name="fecha_registro" required value="<?= date('Y-m-d') ?>">
-                        </div>
-
-                        <!-- Meta -->
-                        <div class="col-md-4">
-                            <label for="meta" class="form-label fw-bold">Meta *</label>
-                            <select class="form-select modern-select" id="meta" name="id_meta" required>
-                                <option value="">Seleccione Meta...</option>
-                                <?php 
-                                $result_metas->data_seek(0);
-                                while ($meta = $result_metas->fetch_assoc()) { ?>
-                                    <option value="<?= $meta['id_meta']; ?>"><?= $meta['descripcion_meta']; ?></option>
-                                <?php } ?>
-                            </select>
-                        </div>
-
-                        <!-- Actividad -->
-                        <div class="col-md-4">
-                            <label for="actividad" class="form-label fw-bold">Actividad *</label>
-                            <select class="form-select modern-select" id="actividad" name="id_actividad" required disabled>
-                                <option value="">Primero seleccione una meta</option>
-                            </select>
-                        </div>
-
-                        <!-- Acción -->
-                        <div class="col-md-6">
-                            <label for="accion" class="form-label fw-bold">Acción *</label>
-                            <select class="form-select modern-select" id="accion" name="id_accion" required disabled>
-                                <option value="">Primero seleccione una actividad</option>
-                            </select>
-                        </div>
-
-                        <!-- Política Pública -->
-                        <div class="col-md-6">
-                            <label for="politica-publica" class="form-label fw-bold">Política Pública *</label>
-                            <select class="form-select modern-select" id="politica-publica" name="id_politica_publica" required>
-                                <option value="">Seleccione Política Pública...</option>
-                            </select>
-                        </div>
-
-                        <!-- Cantidad Masculino -->
-                        <div class="col-md-4">
-                            <label for="cantidad_masculino" class="form-label fw-bold">Cantidad Masculino *</label>
-                            <input type="number" class="form-control modern-input" id="cantidad_masculino" name="cantidad_masculino" min="0" value="0" required>
-                        </div>
-
-                        <!-- Cantidad Femenino -->
-                        <div class="col-md-4">
-                            <label for="cantidad_femenino" class="form-label fw-bold">Cantidad Femenino *</label>
-                            <input type="number" class="form-control modern-input" id="cantidad_femenino" name="cantidad_femenino" min="0" value="0" required>
-                        </div>
-
-                        <!-- Total de Personas (calculado automáticamente) -->
-                        <div class="col-md-4">
-                            <label for="total_registro" class="form-label fw-bold">Total Registrados</label>
-                            <input type="number" class="form-control modern-input" id="total_registro" name="total_personas" readonly style="background-color: #e9ecef; font-weight: bold; font-size: 18px; color: #0d6efd;" value="0">
-                        </div>
-
-                        <!-- Info: Total de Personas Activas -->
-                        <div class="col-md-12">
-                            <div class="alert alert-info d-flex align-items-center" role="alert">
-                                <i class="bi bi-info-circle-fill me-2" style="font-size: 24px;"></i>
-                                <div>
-                                    <strong>Información:</strong> Hay <strong><?= $total_personas ?></strong> personas activas en Colombia Mayor. 
-                                    Los campos de cantidad son independientes y debes ingresarlos manualmente.
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Observaciones -->
-                        <div class="col-md-12">
-                            <label for="observaciones" class="form-label fw-bold">Observaciones</label>
-                            <textarea class="form-control modern-input" id="observaciones" name="observaciones" rows="3" placeholder="Ingrese observaciones adicionales..."></textarea>
-                        </div>
-
-                        <!-- Fotografías -->
-                        <div class="col-md-12">
-                            <label for="fotografias" class="form-label fw-bold">Fotografías (Máximo 3)</label>
-                            <input type="file" 
-                                   class="form-control modern-input" 
-                                   name="fotografias[]" 
-                                   id="fotografias" 
-                                   accept="image/*" 
-                                   capture="environment"
-                                   multiple 
-                                   onchange="validarFotos(this)">
-                            <small class="text-muted">Tamaño máximo por foto: 2MB. Formatos: JPG, PNG, JPEG</small>
-                            <div id="preview_fotos" class="mt-3" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
-                        </div>
-
-                        <!-- Botón de envío -->
-                        <div class="col-md-12 text-center mt-4">
-                            <button type="submit" class="btn-modern btn-success btn-lg">
-                                <i class="bi bi-save-fill"></i> Registrar Actividad Masiva
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Tabla de Registros -->
+            <!-- Filtros de Tabla -->
             <div class="modern-filters">
-                <h3 class="mb-3"><i class="bi bi-table"></i> Historial de Registros Masivos</h3>
+                <h3 class="mb-3"><i class="bi bi-filter"></i> Filtrar Registros</h3>
                 <div class="filter-row mb-3">
                     <div class="filter-group">
                         <label for="filter-fecha-desde">Desde</label>
@@ -316,6 +251,195 @@ if ($result_count) {
                         </tr>
                     </tfoot>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Registro Masivo -->
+    <div class="modal fade" id="modalRegistroMasivo" tabindex="-1" aria-labelledby="modalRegistroMasivoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="modal-title" id="modalRegistroMasivoLabel">
+                        <i class="bi bi-clipboard-data-fill me-2"></i>Registrar Actividad Masiva - Colombia Mayor
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form action="addRegistroMasivoCM.php" method="POST" id="formRegistroMasivo" enctype="multipart/form-data">
+                    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                        <div class="row g-3">
+                            <!-- Fecha del Registro -->
+                            <div class="col-md-4">
+                                <label for="fecha_registro" class="form-label fw-bold">Fecha del Registro *</label>
+                                <input type="date" class="form-control" id="fecha_registro" name="fecha_registro" required value="<?= date('Y-m-d') ?>">
+                            </div>
+
+                            <!-- Tipo Actividad -->
+                            <div class="col-md-4">
+                                <label for="tipo_actividad" class="form-label fw-bold">Tipo Actividad *</label>
+                                <select class="form-select" id="tipo_actividad" name="tipo_actividad" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Articulacion">Articulación</option>
+                                    <option value="Masiva">Masiva</option>
+                                    <option value="Registro de Actividad">Registro de Actividad</option>
+                                </select>
+                            </div>
+
+                            <!-- Espacio -->
+                            <div class="col-md-4"></div>
+
+                            <!-- Meta -->
+                            <div class="col-md-4">
+                                <label for="meta" class="form-label fw-bold">Meta *</label>
+                                <select class="form-select" id="meta" name="id_meta" required>
+                                    <option value="">Seleccione Meta...</option>
+                                    <?php 
+                                    $result_metas->data_seek(0);
+                                    while ($meta = $result_metas->fetch_assoc()) { ?>
+                                        <option value="<?= $meta['id_meta']; ?>"><?= $meta['descripcion_meta']; ?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+
+                            <!-- Actividad -->
+                            <div class="col-md-4">
+                                <label for="actividad" class="form-label fw-bold">Actividad *</label>
+                                <select class="form-select" id="actividad" name="id_actividad" required disabled>
+                                    <option value="">Primero seleccione una meta</option>
+                                </select>
+                            </div>
+
+                            <!-- Acción -->
+                            <div class="col-md-4">
+                                <label for="accion" class="form-label fw-bold">Acción *</label>
+                                <select class="form-select" id="accion" name="id_accion" required disabled>
+                                    <option value="">Primero seleccione una actividad</option>
+                                </select>
+                            </div>
+
+                            <!-- Política Pública -->
+                            <div class="col-md-12">
+                                <label for="politica-publica" class="form-label fw-bold">Política Pública *</label>
+                                <select class="form-select" id="politica-publica" name="id_politica_publica" required>
+                                    <option value="">Seleccione Política Pública...</option>
+                                </select>
+                            </div>
+
+                            <!-- Cantidad Masculino -->
+                            <div class="col-md-4">
+                                <label for="cantidad_masculino" class="form-label fw-bold">Cantidad Masculino *</label>
+                                <input type="number" class="form-control" id="cantidad_masculino" name="cantidad_masculino" min="0" value="0" required>
+                            </div>
+
+                            <!-- Cantidad Femenino -->
+                            <div class="col-md-4">
+                                <label for="cantidad_femenino" class="form-label fw-bold">Cantidad Femenino *</label>
+                                <input type="number" class="form-control" id="cantidad_femenino" name="cantidad_femenino" min="0" value="0" required>
+                            </div>
+
+                            <!-- Total de Personas -->
+                            <div class="col-md-4">
+                                <label for="total_registro" class="form-label fw-bold">Total Registrados</label>
+                                <input type="number" class="form-control" id="total_registro" name="total_personas" readonly style="background-color: #e9ecef; font-weight: bold; color: #0d6efd;" value="0">
+                            </div>
+
+                            <!-- Sección Personas (visible solo si Tipo Actividad = Registro de Actividad) -->
+                            <div id="seccion-personas" class="col-md-12 d-none">
+                                <hr class="my-4">
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> 
+                                    <strong>Importante:</strong> Debe seleccionar exactamente la misma cantidad de personas que indicó en "Cantidad Masculino" + "Cantidad Femenino". 
+                                    <span id="contador-seleccionadas" class="badge bg-primary ms-2">0 seleccionadas</span>
+                                </div>
+                                
+                                <h6 class="mb-3 text-primary">
+                                    <i class="bi bi-people-fill"></i> Seleccionar Personas de Colombia Mayor
+                                    <small class="text-muted">(Requerido para Registro de Actividad)</small>
+                                </h6>
+
+                                <!-- Filtro de búsqueda rápida -->
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="filtro_cedula_personas" 
+                                               placeholder="Filtrar por cédula...">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="filtro_nombre_personas" 
+                                               placeholder="Filtrar por nombre...">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-secondary w-100" id="btn-limpiar-seleccion">
+                                            <i class="bi bi-x-circle"></i> Limpiar Selección
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Tabla de personas de Colombia Mayor -->
+                                <div style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px;">
+                                    <table class="table table-sm table-hover mb-0" id="tabla-personas-cm">
+                                        <thead class="table-dark sticky-top">
+                                            <tr>
+                                                <th style="width: 50px;">
+                                                    <input type="checkbox" id="seleccionar-todas" class="form-check-input">
+                                                </th>
+                                                <th>Cédula</th>
+                                                <th>Nombre Completo</th>
+                                                <th>Género</th>
+                                                <th>Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-personas-cm">
+                                            <tr>
+                                                <td colspan="5" class="text-center">
+                                                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                                    Cargando personas...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Campo hidden para enviar las cédulas -->
+                                <input type="hidden" name="cedulas_json" id="cedulas_json" value="[]">
+                            </div>
+
+                            <!-- Observaciones -->
+                            <div class="col-md-12">
+                                <label for="observaciones" class="form-label fw-bold">Observaciones</label>
+                                <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Ingrese observaciones adicionales..."></textarea>
+                            </div>
+
+                            <!-- Fotografías -->
+                            <div class="col-md-12">
+                                <label for="fotografias" class="form-label fw-bold">Fotografías (Máximo 3)</label>
+                                <input type="file" 
+                                       class="form-control" 
+                                       name="fotografias[]" 
+                                       id="fotografias" 
+                                       accept="image/*" 
+                                       capture="environment"
+                                       multiple 
+                                       onchange="validarFotos(this)">
+                                <small class="text-muted">Tamaño máximo por foto: 2MB. Formatos: JPG, PNG, JPEG</small>
+                                <div id="preview_fotos" class="mt-3" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-save-fill"></i> Registrar Actividad Masiva
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -494,6 +618,188 @@ if ($result_count) {
                     });
                     return false;
                 }
+
+                // Validar si es "Registro de Actividad"
+                const tipoActividad = $('#tipo_actividad').val();
+                if (tipoActividad === 'Registro de Actividad') {
+                    const totalEsperado = totalRegistro;
+                    
+                    if (personasSeleccionadas.length !== totalEsperado) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Cantidad incorrecta',
+                            text: `Debe seleccionar exactamente ${totalEsperado} personas. Actualmente tiene ${personasSeleccionadas.length} seleccionadas.`,
+                            confirmButtonText: 'Entendido'
+                        });
+                        return false;
+                    }
+                }
+            });
+
+            // Mostrar/ocultar sección de personas según el tipo de actividad
+            $('#tipo_actividad').on('change', function() {
+                const tipoSeleccionado = $(this).val();
+                if (tipoSeleccionado === 'Registro de Actividad') {
+                    $('#seccion-personas').removeClass('d-none');
+                    cargarPersonasColombiaMayor();
+                } else {
+                    $('#seccion-personas').addClass('d-none');
+                    // Limpiar personas seleccionadas
+                    personasSeleccionadas = [];
+                    $('#cedulas_json').val('[]');
+                    actualizarContadorSeleccionadas();
+                }
+            });
+
+            // Array para almacenar personas seleccionadas
+            let personasSeleccionadas = [];
+            let todasLasPersonas = [];
+
+            // Función para cargar todas las personas de Colombia Mayor
+            function cargarPersonasColombiaMayor() {
+                $.ajax({
+                    url: 'getPersonasCMParaSeleccion.php',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && response.personas) {
+                            todasLasPersonas = response.personas;
+                            renderizarTablaPersonas(todasLasPersonas);
+                        } else {
+                            $('#tbody-personas-cm').html('<tr><td colspan="5" class="text-center text-danger">Error al cargar personas</td></tr>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error al cargar personas:', error);
+                        $('#tbody-personas-cm').html('<tr><td colspan="5" class="text-center text-danger">Error al cargar personas</td></tr>');
+                    }
+                });
+            }
+
+            // Función para renderizar la tabla de personas
+            function renderizarTablaPersonas(personas) {
+                const tbody = $('#tbody-personas-cm');
+                tbody.empty();
+
+                if (personas.length === 0) {
+                    tbody.html('<tr><td colspan="5" class="text-center text-muted">No hay personas disponibles</td></tr>');
+                    return;
+                }
+
+                personas.forEach(function(persona) {
+                    const isSelected = personasSeleccionadas.includes(persona.cedula);
+                    const row = `
+                        <tr>
+                            <td>
+                                <input type="checkbox" 
+                                       class="form-check-input checkbox-persona" 
+                                       data-cedula="${persona.cedula}"
+                                       data-nombre="${persona.nombre_completo}"
+                                       ${isSelected ? 'checked' : ''}>
+                            </td>
+                            <td>${persona.cedula}</td>
+                            <td>${persona.nombre_completo}</td>
+                            <td>${persona.genero || 'N/A'}</td>
+                            <td><span class="badge bg-success">ACTIVO</span></td>
+                        </tr>
+                    `;
+                    tbody.append(row);
+                });
+
+                // Actualizar checkbox "seleccionar todas"
+                actualizarCheckboxSelectAll();
+            }
+
+            // Manejar selección individual de personas
+            $(document).on('change', '.checkbox-persona', function() {
+                const cedula = $(this).data('cedula');
+                
+                if ($(this).is(':checked')) {
+                    if (!personasSeleccionadas.includes(cedula)) {
+                        personasSeleccionadas.push(cedula);
+                    }
+                } else {
+                    personasSeleccionadas = personasSeleccionadas.filter(c => c !== cedula);
+                }
+
+                actualizarContadorSeleccionadas();
+                actualizarCheckboxSelectAll();
+                $('#cedulas_json').val(JSON.stringify(personasSeleccionadas));
+            });
+
+            // Seleccionar/deseleccionar todas
+            $('#seleccionar-todas').on('change', function() {
+                const isChecked = $(this).is(':checked');
+                
+                $('.checkbox-persona:visible').each(function() {
+                    const cedula = $(this).data('cedula');
+                    $(this).prop('checked', isChecked);
+                    
+                    if (isChecked) {
+                        if (!personasSeleccionadas.includes(cedula)) {
+                            personasSeleccionadas.push(cedula);
+                        }
+                    } else {
+                        personasSeleccionadas = personasSeleccionadas.filter(c => c !== cedula);
+                    }
+                });
+
+                actualizarContadorSeleccionadas();
+                $('#cedulas_json').val(JSON.stringify(personasSeleccionadas));
+            });
+
+            // Actualizar estado del checkbox "seleccionar todas"
+            function actualizarCheckboxSelectAll() {
+                const totalVisible = $('.checkbox-persona:visible').length;
+                const totalChecked = $('.checkbox-persona:visible:checked').length;
+                $('#seleccionar-todas').prop('checked', totalVisible > 0 && totalVisible === totalChecked);
+            }
+
+            // Actualizar contador de personas seleccionadas
+            function actualizarContadorSeleccionadas() {
+                $('#contador-seleccionadas').text(personasSeleccionadas.length + ' seleccionadas');
+            }
+
+            // Limpiar selección
+            $('#btn-limpiar-seleccion').on('click', function() {
+                personasSeleccionadas = [];
+                $('.checkbox-persona').prop('checked', false);
+                $('#seleccionar-todas').prop('checked', false);
+                actualizarContadorSeleccionadas();
+                $('#cedulas_json').val('[]');
+            });
+
+            // Filtros de búsqueda en la tabla
+            $('#filtro_cedula_personas, #filtro_nombre_personas').on('input', function() {
+                const filtroCedula = $('#filtro_cedula_personas').val().toLowerCase();
+                const filtroNombre = $('#filtro_nombre_personas').val().toLowerCase();
+
+                const personasFiltradas = todasLasPersonas.filter(function(persona) {
+                    const coincideCedula = !filtroCedula || persona.cedula.toLowerCase().includes(filtroCedula);
+                    const coincideNombre = !filtroNombre || persona.nombre_completo.toLowerCase().includes(filtroNombre);
+                    return coincideCedula && coincideNombre;
+                });
+
+                renderizarTablaPersonas(personasFiltradas);
+            });
+
+            // Resetear modal al cerrar
+            $('#modalRegistroMasivo').on('hidden.bs.modal', function () {
+                $('#formRegistroMasivo')[0].reset();
+                personasSeleccionadas = [];
+                todasLasPersonas = [];
+                $('#cedulas_json').val('[]');
+                $('#seccion-personas').addClass('d-none');
+                $('#tbody-personas-cm').html('<tr><td colspan="5" class="text-center text-muted">No hay personas cargadas</td></tr>');
+                $('#filtro_cedula_personas').val('');
+                $('#filtro_nombre_personas').val('');
+                $('#seleccionar-todas').prop('checked', false);
+                actualizarContadorSeleccionadas();
+                $('#actividad').prop('disabled', true).html('<option value="">Primero seleccione una meta</option>');
+                $('#accion').prop('disabled', true).html('<option value="">Primero seleccione una actividad</option>');
+                $('#politica-publica').html('<option value="">Seleccione Política Pública...</option>');
+                $('#preview_fotos').html('');
             });
 
             // Función para validar fotografías

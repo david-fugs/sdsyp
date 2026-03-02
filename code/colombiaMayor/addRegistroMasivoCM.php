@@ -11,6 +11,7 @@ include("../../conexion.php");
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fecha_registro = $_POST['fecha_registro'];
+    $tipo_actividad = $_POST['tipo_actividad'] ?? 'Masiva';
     $id_meta = intval($_POST['id_meta']);
     $id_actividad = intval($_POST['id_actividad']);
     $id_accion = intval($_POST['id_accion']);
@@ -21,6 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $observaciones = $_POST['observaciones'] ?? '';
     $usuario_registro = $_SESSION['id'];
     
+    // Decodificar cédulas si es Registro de Actividad
+    $cedulas = [];
+    if ($tipo_actividad === 'Registro de Actividad' && !empty($_POST['cedulas_json'])) {
+        $cedulas = json_decode($_POST['cedulas_json'], true);
+        if (!is_array($cedulas)) {
+            $cedulas = [];
+        }
+    }
+    
     // Validar que el total sea mayor a 0
     if ($total_personas == 0) {
         echo "<script>
@@ -28,6 +38,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             window.location.href = 'formRegistroMasivoCM.php';
         </script>";
         exit();
+    }
+    
+    // Validar cédulas para Registro de Actividad
+    if ($tipo_actividad === 'Registro de Actividad') {
+        if (count($cedulas) !== $total_personas) {
+            echo "<script>
+                alert('Error: Debe agregar exactamente {$total_personas} personas. Actualmente tiene " . count($cedulas) . ".');
+                window.history.back();
+            </script>";
+            exit();
+        }
     }
     
     // Procesar fotografías
@@ -96,13 +117,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $mysqli->begin_transaction();
     
     try {
-        // Insertar registro masivo con campos de género
+        // Insertar registro masivo con campos de género y tipo de actividad
         $sql = "INSERT INTO registros_masivos_cm 
-                (fecha_registro, id_meta, id_actividad, id_accion, id_politica_publica, cantidad_masculino, cantidad_femenino, total_personas, observaciones, usuario_registro) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                (fecha_registro, tipo_actividad, id_meta, id_actividad, id_accion, id_politica_publica, cantidad_masculino, cantidad_femenino, total_personas, observaciones, usuario_registro) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $mysqli->prepare($sql);
-        $stmt->bind_param("siiiiiissi", $fecha_registro, $id_meta, $id_actividad, $id_accion, $id_politica_publica, $cantidad_masculino, $cantidad_femenino, $total_personas, $observaciones, $usuario_registro);
+        $stmt->bind_param("ssiiiiiissi", $fecha_registro, $tipo_actividad, $id_meta, $id_actividad, $id_accion, $id_politica_publica, $cantidad_masculino, $cantidad_femenino, $total_personas, $observaciones, $usuario_registro);
         
         if ($stmt->execute()) {
             $id_registro = $stmt->insert_id;
@@ -118,11 +139,74 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $stmt_foto->close();
                 }
             }
+
+            // Si es "Registro de Actividad", crear registros individuales
+            if ($tipo_actividad === 'Registro de Actividad' && !empty($cedulas)) {
+                $registros_exitosos = 0;
+                $registros_fallidos = 0;
+                
+                // Obtener condición para Colombia Mayor (usar la primera disponible)
+                $sql_condicion = "SELECT id_condicion FROM condiciones_componente WHERE descripcion_condicion LIKE 'C.M%' LIMIT 1";
+                $result_condicion = $mysqli->query($sql_condicion);
+                $id_condicion = 36; // Valor por defecto
+                if ($result_condicion && $result_condicion->num_rows > 0) {
+                    $row_condicion = $result_condicion->fetch_assoc();
+                    $id_condicion = $row_condicion['id_condicion'];
+                }
+                
+                foreach ($cedulas as $cedula) {
+                    // Insertar registro individual
+                    $sql_individual = "INSERT INTO registros_individuales_cm (
+                        cedula_persona_cm,
+                        id_condicion,
+                        id_meta,
+                        id_actividad,
+                        id_accion,
+                        id_politica_publica,
+                        fecha_registro_actividad,
+                        observaciones,
+                        usuario_registro,
+                        fecha_registro,
+                        id_registro_masivo
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)";
+                    
+                    $stmt_individual = $mysqli->prepare($sql_individual);
+                    $stmt_individual->bind_param(
+                        "siiiiissii",
+                        $cedula,
+                        $id_condicion,
+                        $id_meta,
+                        $id_actividad,
+                        $id_accion,
+                        $id_politica_publica,
+                        $fecha_registro,
+                        $observaciones,
+                        $usuario_registro,
+                        $id_registro
+                    );
+                    
+                    if ($stmt_individual->execute()) {
+                        $registros_exitosos++;
+                    } else {
+                        $registros_fallidos++;
+                        error_log("Error al crear registro individual para cédula $cedula: " . $stmt_individual->error);
+                    }
+                    $stmt_individual->close();
+                }
+            }
             
             // Confirmar transacción
             $mysqli->commit();
             
-            $mensaje = "Registro masivo guardado correctamente. Total: $total_personas personas (M: $cantidad_masculino, F: $cantidad_femenino)";
+            $mensaje = "Registro masivo guardado correctamente.\\nTipo: $tipo_actividad\\nTotal: $total_personas personas (M: $cantidad_masculino, F: $cantidad_femenino)";
+            
+            if ($tipo_actividad === 'Registro de Actividad' && !empty($cedulas)) {
+                $mensaje .= "\\n\\nRegistros individuales creados: $registros_exitosos";
+                if ($registros_fallidos > 0) {
+                    $mensaje .= "\\nRegistros fallidos: $registros_fallidos";
+                }
+            }
+            
             if (!empty($fotos_guardadas)) {
                 $mensaje .= "\\nFotografías subidas: " . count($fotos_guardadas);
             }

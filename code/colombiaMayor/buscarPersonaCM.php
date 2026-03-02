@@ -1,12 +1,30 @@
 <?php
+session_start();
 include("../../conexion.php");
+
+// Verificar que el usuario tenga acceso (tipo 8 o 9)
+if (!isset($_SESSION['tipo_usuario']) || !in_array($_SESSION['tipo_usuario'], [8, 9])) {
+    echo json_encode(['success' => false, 'encontrada' => false, 'message' => 'Acceso denegado']);
+    exit();
+}
+
+header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $cedula = $mysqli->real_escape_string($_POST['cedula']);
     
-    $query = "SELECT cedula_persona_cm, nombres_persona_cm, apellidos_persona_cm, estado_cm 
+    // Buscar persona activa en Colombia Mayor
+    $query = "SELECT 
+                cedula_persona_cm, 
+                nombres_persona_cm, 
+                apellidos_persona_cm, 
+                genero_persona_cm,
+                estado_cm 
               FROM personas_colombia_mayor 
-              WHERE cedula_persona_cm = '$cedula'";
+              WHERE cedula_persona_cm = '$cedula'
+              AND estado_cm = 'ACTIVO'
+              AND (condicion_componente IS NULL 
+                   OR condicion_componente NOT IN ('C.M Fallecido', 'C.M Fallecido sin Certificado', 'C.M Retiro Definitivo'))";
     
     $result = $mysqli->query($query);
     
@@ -14,15 +32,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $persona = $result->fetch_assoc();
         $nombre_completo = $persona['nombres_persona_cm'] . ' ' . $persona['apellidos_persona_cm'];
         echo json_encode([
+            'success' => true,
             'encontrada' => true,
             'nombres' => $persona['nombres_persona_cm'],
             'apellidos' => $persona['apellidos_persona_cm'],
             'nombre_completo' => $nombre_completo,
-            'estado' => $persona['estado_cm']
+            'estado' => $persona['estado_cm'],
+            'persona' => [
+                'cedula' => $cedula,
+                'nombre_completo' => $nombre_completo,
+                'nombres' => $persona['nombres_persona_cm'],
+                'apellidos' => $persona['apellidos_persona_cm'],
+                'genero' => $persona['genero_persona_cm'] ?? 'N/A',
+                'estado' => $persona['estado_cm']
+            ]
         ]);
     } else {
         echo json_encode([
-            'encontrada' => false
+            'success' => false,
+            'encontrada' => false,
+            'message' => 'No se encontró una persona activa en Colombia Mayor con esa cédula'
         ]);
     }
 }

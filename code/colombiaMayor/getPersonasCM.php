@@ -12,6 +12,11 @@ if (!isset($_SESSION['tipo_usuario']) || !in_array($_SESSION['tipo_usuario'], [8
 $tipo_usuario = $_SESSION['tipo_usuario'];
 $id_usuario = $_SESSION['id'];
 
+// DEBUG: Registrar los parámetros recibidos
+error_log("Filtros recibidos - Cedula: " . ($_GET['cedula'] ?? 'vacío') . 
+          ", Nombre: " . ($_GET['nombre'] ?? 'vacío') . 
+          ", Estado: " . ($_GET['estado'] ?? 'vacío'));
+
 // Construir query base
 $where = "WHERE 1=1";
 
@@ -20,10 +25,10 @@ if ($tipo_usuario == 9) {
     $where .= " AND usuario_registro = '$id_usuario'";
 }
 
-// Filtro por cédula
+// Filtro por cédula (búsqueda parcial)
 if (!empty($_GET['cedula'])) {
     $cedula = $mysqli->real_escape_string($_GET['cedula']);
-    $where .= " AND cedula_persona_cm = '$cedula'";
+    $where .= " AND cedula_persona_cm LIKE '%$cedula%'";
 }
 
 // Filtro por nombre
@@ -35,7 +40,7 @@ if (!empty($_GET['nombre'])) {
 // Filtro por estado
 if (!empty($_GET['estado'])) {
     $estado = $mysqli->real_escape_string($_GET['estado']);
-    $where .= " AND estado_cm = '$estado'";
+    $where .= " AND estado_cm LIKE '%$estado%'";
 }
 
 // Consulta SQL
@@ -48,6 +53,9 @@ $query = "
     $where
     ORDER BY p.apellidos_persona_cm ASC, p.nombres_persona_cm ASC
 ";
+
+// DEBUG: Registrar la consulta generada
+error_log("Query generada: " . $query);
 
 $result = $mysqli->query($query);
 
