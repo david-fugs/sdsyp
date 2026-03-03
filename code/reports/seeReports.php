@@ -896,6 +896,12 @@ $endYear = $currentYear + 1;
                             <i class="bi bi-arrow-left-right"></i> Exportar Movimientos
                         </button>
                         <?php endif; ?>
+                        <!-- Botón exclusivo para usuario tipo 3 (CONTRATISTA CPSAM) -->
+                        <?php if ($tipo_usuario == 3) : ?>
+                        <button type="button" id="btnExportMovimientosTipo3" class="export-btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="bi bi-arrow-left-right"></i> Exportar Actividades de Movimientos
+                        </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -1030,6 +1036,7 @@ $endYear = $currentYear + 1;
 
             $('#btnExportExcel').on('click', exportToExcel);
             $('#btnExportMovimientos').on('click', exportMovimientos);
+            $('#btnExportMovimientosTipo3').on('click', exportMovimientosTipo3);
         });
 
         function exportToExcel() {
@@ -1070,6 +1077,20 @@ $endYear = $currentYear + 1;
             }
             if (filtroUsuario) {
                 url += '&filtro_usuario=' + filtroUsuario;
+            }
+            
+            // Abrir el generador de Excel directamente para descargar
+            window.open(url, '_blank');
+        }
+
+        function exportMovimientosTipo3() {
+            // Obtener filtros (solo año y mes, el usuario siempre es el de sesión)
+            const filtroMes = $('#filtroMes').val();
+            
+            // Construir URL con parámetros
+            let url = 'exportMovimientosTipo3.php?filtro_anio=' + currentYear;
+            if (filtroMes) {
+                url += '&filtro_mes=' + filtroMes;
             }
             
             // Abrir el generador de Excel directamente para descargar

@@ -28,7 +28,11 @@ if (!empty($_GET['condicion'])) {
     $condicion = $mysqli->real_escape_string($_GET['condicion']);
     $where .= " AND c.id_condicion = '$condicion'";
 }
-if ($tipo_usuario != 1 && $id_grupo_session && $tipo_usuario != 3) {
+// Si es usuario tipo 3 (CONTRATISTA CPSAM), solo mostrar movimientos creados por ese usuario
+if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
+    $id_usuario_session = intval($_SESSION['id']);
+    $where .= " AND mp.id_usuario = $id_usuario_session";
+} elseif ($tipo_usuario != 1 && $id_grupo_session) {
     $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
 
