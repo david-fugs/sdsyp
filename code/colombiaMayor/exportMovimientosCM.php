@@ -5,9 +5,11 @@ if (!isset($_SESSION['usuario']) || ($_SESSION['tipo_usuario'] != 8 && $_SESSION
     exit('Acceso denegado');
 }
 
-if (ob_get_length()) {
-    ob_clean();
+// Limpiar cualquier salida previa
+while (ob_get_level()) {
+    ob_end_clean();
 }
+ob_start();
 
 require_once '../../conexion.php';
 require_once '../../vendor/autoload.php';
@@ -42,6 +44,10 @@ $sql = "SELECT m.id_movimiento_cm,
         ORDER BY m.fecha_movimiento_cm DESC";
 
 $result = $mysqli->query($sql);
+
+if (!$result) {
+    die("Error en la consulta: " . $mysqli->error);
+}
 
 // Crear Excel
 $spreadsheet = new Spreadsheet();
@@ -125,13 +131,21 @@ $sheet->getStyle('A2:F'.($fila-1))->getAlignment()->setVertical(Alignment::VERTI
 
 $mysqli->close();
 
+// Limpiar el buffer de salida antes de enviar los headers
+ob_end_clean();
+
 // Descargar
 $filename = 'MovimientosCM_'.date('Y-m-d_His').'.xlsx';
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="'.$filename.'"');
 header('Cache-Control: max-age=0');
+header('Cache-Control: max-age=1');
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
+header('Cache-Control: cache, must-revalidate');
+header('Pragma: public');
 
 $writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
 exit;
-?>
+
