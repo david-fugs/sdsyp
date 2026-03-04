@@ -14,6 +14,27 @@ $usuario_id = $_SESSION['id'];
 $tipo_usuario = $_SESSION['tipo_usuario'];
 $nombre_usuario = $_SESSION['usuario'];
 
+// Obtener lista de usuarios según permisos
+$usuarios_filtro = [];
+if ($tipo_usuario == 1) {
+    // Tipo 1 (Admin) puede ver todos
+    $query_usuarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (8, 9) ORDER BY nombre ASC";
+} elseif ($tipo_usuario == 8) {
+    // Tipo 8 puede filtrar por usuarios tipo 8 y 9
+    $query_usuarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (8, 9) ORDER BY nombre ASC";
+} elseif ($tipo_usuario == 9) {
+    // Tipo 9 solo ve sus propios registros (no necesita filtro de usuario)
+    $query_usuarios = "SELECT id, nombre FROM usuarios WHERE id = $usuario_id";
+} else {
+    $query_usuarios = "SELECT id, nombre FROM usuarios WHERE id = $usuario_id";
+}
+$result_usuarios_filtro = $mysqli->query($query_usuarios);
+if ($result_usuarios_filtro) {
+    while($u = $result_usuarios_filtro->fetch_assoc()) {
+        $usuarios_filtro[] = $u;
+    }
+}
+
 // Consulta para condiciones (filtrar solo las de Colombia Mayor)
 $condiciones_sql = "SELECT id_condicion, descripcion_condicion 
                     FROM condiciones_componente 
@@ -176,7 +197,7 @@ while($row = $result_metas_query->fetch_assoc()) {
             <div class="modern-header">
                 <h2><i class="bi bi-clipboard-data"></i> Registros Individuales</h2>
                 <div>
-                    <button type="button" class="btn-modern btn-success me-2" onclick="window.location.href='exportRegistrosCM.php'">
+                    <button type="button" class="btn-modern btn-success me-2" data-bs-toggle="modal" data-bs-target="#modalExportarExcel">
                         <i class="bi bi-file-excel-fill"></i>
                         Exportar Excel
                     </button>
@@ -1268,5 +1289,53 @@ while($row = $result_metas_query->fetch_assoc()) {
             });
         }
     </script>
+
+    <!-- Modal de Filtros de Exportación -->
+    <div class="modal fade" id="modalExportarExcel" tabindex="-1" aria-labelledby="modalExportarExcelLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="modalExportarExcelLabel">
+                        <i class="bi bi-file-excel-fill"></i> Filtros de Exportación
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formFiltrosExportar" method="GET" action="exportRegistrosCM.php">
+                    <div class="modal-body">
+                        <!-- Fecha de inicio -->
+                        <div class="mb-3">
+                            <label for="filtro_fecha_inicio" class="form-label">Fecha de Inicio</label>
+                            <input type="date" class="form-control" id="filtro_fecha_inicio" name="filtro_fecha_inicio">
+                        </div>
+                        
+                        <!-- Fecha de fin -->
+                        <div class="mb-3">
+                            <label for="filtro_fecha_fin" class="form-label">Fecha de Fin</label>
+                            <input type="date" class="form-control" id="filtro_fecha_fin" name="filtro_fecha_fin">
+                        </div>
+                        
+                        <?php if ($tipo_usuario == 1 || $tipo_usuario == 8): ?>
+                        <!-- Filtro de usuario (solo para tipo 1 y 8) -->
+                        <div class="mb-3">
+                            <label for="filtro_usuario" class="form-label">Usuario</label>
+                            <select class="form-select" id="filtro_usuario" name="filtro_usuario">
+                                <option value="">-- Todos --</option>
+                                <?php foreach ($usuarios_filtro as $usuario): ?>
+                                    <option value="<?= $usuario['id'] ?>"><?= htmlspecialchars($usuario['nombre']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-file-excel-fill"></i> Exportar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

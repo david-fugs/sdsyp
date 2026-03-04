@@ -5,12 +5,20 @@ require_once('../filtros_grupos.php');
 require_once('../filtros_grupo_usuario.php');
 
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$id_usuario = isset($_SESSION['id']) ? $_SESSION['id'] : null;
 
 // Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
 $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
 
 // Aplicar filtro por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
 $where_grupo_usuario_filtro = obtenerCondicionFiltroGrupo('p');
+
+// Filtro para tipo usuario 10 y 12: solo ver sus propios registros
+$where_usuario_filtro = '';
+if (($tipo_usuario == 10 || $tipo_usuario == 12) && $id_usuario) {
+    $where_usuario_filtro = " AND rcv.funcionario_registro = " . intval($id_usuario);
+}
+// Tipo usuario 5 puede ver todo (no se agrega filtro adicional)
 
 // Construir la consulta base
 $query = "
@@ -68,6 +76,10 @@ if (!empty($where_conditions)) {
     if (!empty($where_grupo_usuario_filtro)) {
         $query .= $where_grupo_usuario_filtro;
     }
+    // Agregar filtro por usuario si existe (tipo 10 y 12)
+    if (!empty($where_usuario_filtro)) {
+        $query .= $where_usuario_filtro;
+    }
 } else {
     // Si no hay otras condiciones pero sí filtro de grupos
     if (!empty($where_grupos_filtro)) {
@@ -79,6 +91,13 @@ if (!empty($where_conditions)) {
             $query .= " WHERE 1=1 ";
         }
         $query .= $where_grupo_usuario_filtro;
+    }
+    // Agregar filtro por usuario si existe (tipo 10 y 12)
+    if (!empty($where_usuario_filtro)) {
+        if (empty($where_grupos_filtro) && empty($where_grupo_usuario_filtro)) {
+            $query .= " WHERE 1=1 ";
+        }
+        $query .= $where_usuario_filtro;
     }
 }
 

@@ -607,7 +607,13 @@ function deleteRegistro($id_registro)
                                 <div class="col-md-6 mb-3 form-floating">
                                     <select class="form-select" id="id_condicion_masivo" name="id_condicion" required>
                                         <option value="" selected>Seleccione...</option>
-                                        <?php foreach ($result_condiciones as $condicion) { ?>
+                                        <?php foreach ($result_condiciones as $condicion) { 
+                                            // Filtrar opciones que empiecen con CPSAM o C.M.
+                                            $descripcion = $condicion['descripcion_condicion'];
+                                            if (substr($descripcion, 0, 5) === 'CPSAM' || substr($descripcion, 0, 4) === 'C.M.' || substr($descripcion, 0, 4) === 'C.M ') {
+                                                continue;
+                                            }
+                                        ?>
                                             <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
                                         <?php } ?>
                                     </select>
@@ -748,7 +754,13 @@ function deleteRegistro($id_registro)
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="id_condicion" name="id_condicion" required>
                                     <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_condiciones as $condicion) { ?>
+                                    <?php foreach ($result_condiciones as $condicion) { 
+                                        // Filtrar opciones que empiecen con CPSAM o C.M.
+                                        $descripcion = $condicion['descripcion_condicion'];
+                                        if (substr($descripcion, 0, 5) === 'CPSAM' || substr($descripcion, 0, 4) === 'C.M.' || substr($descripcion, 0, 4) === 'C.M ') {
+                                            continue;
+                                        }
+                                    ?>
                                         <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
                                     <?php } ?>
                                 </select>

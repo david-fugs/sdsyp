@@ -2,12 +2,16 @@
 session_start();
 include("../../conexion.php");
 require_once('../filtros_grupos.php');
+require_once('../filtros_grupo_usuario.php');
 
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $id_grupo_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : null;
 
 // Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
 $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
+
+// Aplicar filtro por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
+$where_grupo_usuario_filtro = obtenerCondicionFiltroGrupo('p');
 
 $where = "WHERE p.estado_persona = 1";
 
@@ -38,6 +42,9 @@ if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
 
 // Aplicar filtro adicional para usuarios técnicos (tipos 4 y 5)
 $where .= $where_grupos_filtro;
+
+// Aplicar filtro por grupo de usuario si existe (tipo 11)
+$where .= $where_grupo_usuario_filtro;
 
 // Consulta SQL para obtener los datos
 $query = " SELECT mp.id_movimiento_persona,c.id_condicion,p.cedula_persona,p.nombres_persona,p.apellidos_persona,c.descripcion_condicion, 

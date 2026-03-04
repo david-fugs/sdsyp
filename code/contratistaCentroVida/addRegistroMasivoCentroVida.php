@@ -24,12 +24,15 @@ $observacion_actividad = $mysqli->real_escape_string($_POST['observacion_activid
 $id_usuario = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
 $funcionario_responsable = intval($_POST['funcionario_responsable'] ?? 0);
 $tipo_registro = $mysqli->real_escape_string($_POST['tipo_registro'] ?? '');
+// Procesar jornada (array de checkboxes)
+$jornada_array = isset($_POST['jornada']) && is_array($_POST['jornada']) ? $_POST['jornada'] : [];
+$jornada = $mysqli->real_escape_string(implode(', ', $jornada_array));
 
 // Insertar (sin tipo_actividad: siempre 'Masiva')
 $tipo_actividad = 'Masiva';
 
 // Construir consulta SQL plana (escapando valores de texto y casteando enteros)
-$cols = "id_meta,id_actividad,id_accion,politica_publica,id_centro_vida,fecha_atencion,nombre_lider,telefono_contacto,id_comuna,medio_verificacion,cantidad_masculino,cantidad_femenino,tipo_actividad,observacion_actividad,id_usuario,funcionario_responsable,id_actividad_centro_vida,tipo_registro";
+$cols = "id_meta,id_actividad,id_accion,politica_publica,id_centro_vida,fecha_atencion,nombre_lider,telefono_contacto,id_comuna,medio_verificacion,cantidad_masculino,cantidad_femenino,tipo_actividad,observacion_actividad,id_usuario,funcionario_responsable,id_actividad_centro_vida,tipo_registro,jornada";
 
 // Escapar y formatear valores
 $vals = [
@@ -50,7 +53,8 @@ $vals = [
     intval($id_usuario),
     intval($funcionario_responsable),
     intval($id_actividad_centro_vida),
-    "'" . $mysqli->real_escape_string($tipo_registro) . "'"
+    "'" . $mysqli->real_escape_string($tipo_registro) . "'",
+    "'" . $mysqli->real_escape_string($jornada) . "'"
 ];
 
 $sql = "INSERT INTO masiva_centro_vida (" . $cols . ") VALUES (" . implode(',', $vals) . ")";

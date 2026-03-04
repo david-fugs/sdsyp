@@ -228,7 +228,14 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                 @$usuario = ($_GET['usuario']);
                 @$nombre = ($_GET['nombre']);
 
-                $query = "SELECT * FROM `usuarios` WHERE (usuario LIKE '%" . $usuario . "%') AND (nombre LIKE '%" . $nombre . "%') AND usuarios.estado_usu = 1 ORDER BY usuarios.id ASC";
+                // Filtrar usuarios por centro asociado si es tipo usuario 11
+                $where_tipo_11 = '';
+                if ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                    $id_grupo_session = intval($_SESSION['id_grupo']);
+                    $where_tipo_11 = " AND usuarios.id_grupo = $id_grupo_session";
+                }
+
+                $query = "SELECT * FROM `usuarios` WHERE (usuario LIKE '%" . $usuario . "%') AND (nombre LIKE '%" . $nombre . "%') AND usuarios.estado_usu = 1 $where_tipo_11 ORDER BY usuarios.id ASC";
                 $res = $mysqli->query($query);
                 $num_registros = mysqli_num_rows($res);
                 $resul_x_pagina = 50;
@@ -239,7 +246,7 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                     $paginacion->records($num_registros);
                     $paginacion->records_per_page($resul_x_pagina);
 
-                    $consulta = "SELECT * FROM `usuarios` WHERE (usuario LIKE '%" . $usuario . "%') AND (nombre LIKE '%" . $nombre . "%') AND usuarios.estado_usu = 1 ORDER BY usuarios.id ASC LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . "," . $resul_x_pagina;
+                    $consulta = "SELECT * FROM `usuarios` WHERE (usuario LIKE '%" . $usuario . "%') AND (nombre LIKE '%" . $nombre . "%') AND usuarios.estado_usu = 1 $where_tipo_11 ORDER BY usuarios.id ASC LIMIT " . (($paginacion->get_page() - 1) * $resul_x_pagina) . "," . $resul_x_pagina;
                     $result = $mysqli->query($consulta);
                     if ($result) {
                         echo '<table class="modern-table" id="usersTable">
@@ -437,7 +444,13 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                                         <select class="form-control" id="edit_id_grupo" name="id_grupo" required>
                                             <option value="">Seleccione un centro</option>
                                             <?php
-                                            $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos ORDER BY descripcion_grupo ASC";
+                                            // Si es tipo usuario 11, solo mostrar su centro asociado
+                                            if ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                                                $id_grupo_filtro = intval($_SESSION['id_grupo']);
+                                                $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos WHERE id_grupo = $id_grupo_filtro ORDER BY descripcion_grupo ASC";
+                                            } else {
+                                                $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos ORDER BY descripcion_grupo ASC";
+                                            }
                                             $result_grupos = $mysqli->query($query_grupos);
                                             while ($row_grupo = $result_grupos->fetch_assoc()) {
                                                 echo '<option value="' . $row_grupo['id_grupo'] . '">' . htmlspecialchars($row_grupo['descripcion_grupo']) . '</option>';
@@ -449,6 +462,13 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                                         <label for="edit_tipo_usuario">Tipo Usuario</label>
                                         <select class="form-control" id="edit_tipo_usuario" name="tipo_usuario" required>
                                             <option value="">Seleccione tipo usuario</option>
+                                            <?php if ($tipo_usuario == 11) { // Solo mostrar tipos relacionados con CENTRO VIDA ?>
+                                            <option value="2">CPSAM O CENTRO VIDA</option>
+                                            <option value="5">TÉCNICO CENTRO VIDA</option>
+                                            <option value="10">CONTRATISTA CENTRO VIDA PROPIO</option>
+                                            <option value="12">CONTRATISTA CENTRO VIDA ALCALDIA</option>
+                                            <option value="11">INGENIERO CENTRO VIDA</option>
+                                            <?php } else { // Usuarios no tipo 11 pueden ver todos los tipos ?>
                                             <option value="1">ADMINISTRADOR</option>
                                             <option value="3">CONTRATISTA CPSAM</option>
                                             <option value="2">CPSAM O CENTRO VIDA</option>
@@ -459,6 +479,7 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                                             <option value="10">CONTRATISTA CENTRO VIDA PROPIO</option>
                                             <option value="12">CONTRATISTA CENTRO VIDA ALCALDIA</option>
                                             <option value="11">INGENIERO CENTRO VIDA</option>
+                                            <?php } ?>
                                         </select>
                                     </div>
                                     <button type="submit" class="btn btn-primary">Guardar Cambios</button>

@@ -13,7 +13,7 @@ header('Content-Type: application/json');
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $cedula = $mysqli->real_escape_string($_POST['cedula']);
     
-    // Buscar persona activa en Colombia Mayor
+    // Buscar persona en Colombia Mayor (excluir solo fallecidos y retiros definitivos)
     $query = "SELECT 
                 cedula_persona_cm, 
                 nombres_persona_cm, 
@@ -22,9 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 estado_cm 
               FROM personas_colombia_mayor 
               WHERE cedula_persona_cm = '$cedula'
-              AND estado_cm = 'ACTIVO'
               AND (condicion_componente IS NULL 
-                   OR condicion_componente NOT IN ('C.M Fallecido', 'C.M Fallecido sin Certificado', 'C.M Retiro Definitivo'))";
+                   OR condicion_componente NOT LIKE '%Fallecido%' 
+                   AND condicion_componente NOT LIKE '%Retiro Definitivo%')";
     
     $result = $mysqli->query($query);
     
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         echo json_encode([
             'success' => false,
             'encontrada' => false,
-            'message' => 'No se encontró una persona activa en Colombia Mayor con esa cédula'
+            'message' => 'No se encontró una persona con esa cédula en Colombia Mayor'
         ]);
     }
 }

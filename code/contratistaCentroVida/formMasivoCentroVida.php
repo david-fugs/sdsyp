@@ -6,12 +6,13 @@ include("../../conexion.php");
 
 // Aplicar filtro de grupos según tipo de usuario
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$id_usuario = isset($_SESSION['id']) ? $_SESSION['id'] : null;
 $where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
 
 // Cargar listas necesarias
 $metas = $mysqli->query("SELECT * FROM metas ORDER BY descripcion_meta ASC");
 $actividades_cv = $mysqli->query("SELECT id_actividad_centro_vida, descripcion_actividad FROM actividad_centro_vida ORDER BY descripcion_actividad ASC");
-$usuarios = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario = 3 ORDER BY nombre ASC");
+$usuarios = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11) ORDER BY nombre ASC");
 $grupos = $mysqli->query("SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC");
 $comunas = $mysqli->query("SELECT * FROM comunas ORDER BY nombre_com ASC");
 
@@ -54,8 +55,17 @@ $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
 $where .= $where_grupos_filtro;
 
 // Aplicar filtro por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
-$where_grupo_usuario_filtro = obtenerCondicionFiltroGrupo('g');
-$where .= $where_grupo_usuario_filtro;
+// Tipo 11 solo ve actividades de su centro asociado
+if ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+    $id_grupo_session = intval($_SESSION['id_grupo']);
+    $where .= " AND mcv.id_centro_vida = $id_grupo_session";
+}
+
+// Filtro para tipo usuario 10 y 12: solo ver sus propios registros
+if (($tipo_usuario == 10 || $tipo_usuario == 12) && $id_usuario) {
+    $where .= " AND mcv.id_usuario = " . intval($id_usuario);
+}
+// Tipo usuario 5 puede ver todo (no se agrega filtro adicional)
 
 // Consulta principal (nueva tabla masiva_centro_vida). Alias de id para compatibilidad visual
 $query = "SELECT 
@@ -340,6 +350,7 @@ $result = $mysqli->query($query);
                             <option value="">Todos</option>
                             <option value="Registro Actividad" <?= $filtro_tipo_registro === 'Registro Actividad' ? 'selected' : '' ?>>Registro Actividad</option>
                             <option value="Masivas" <?= $filtro_tipo_registro === 'Masivas' ? 'selected' : '' ?>>Masivas</option>
+                            <option value="Articulacion" <?= $filtro_tipo_registro === 'Articulacion' ? 'selected' : '' ?>>Articulación</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -481,6 +492,7 @@ $result = $mysqli->query($query);
                                     <option value=""></option>
                                     <option value="Registro Actividad">Registro Actividad</option>
                                     <option value="Masivas">Masivas</option>
+                                    <option value="Articulacion">Articulación</option>
                                 </select>
                                 <label for="tipo_registro">Tipo de Registro</label>
                             </div>
@@ -528,8 +540,9 @@ $result = $mysqli->query($query);
                                     <option value="" selected>Seleccione...</option>
                                     <option value="Acta">Acta</option>
                                     <option value="Acta y registro fotografico">Acta y registro fotografico</option>
+                                    <option value="Registro fotografico">Registro fotográfico</option>
                                     <option value="Registro campo">Registro Campo</option>
-                                    <option value="Historio/ expediente">Historio/ expediente</option>
+                                    <option value="Historio/ expediente">Historico/ expediente</option>
                                     <option value="Captura pantalla digital">Captura pantalla digital</option>
                                     <option value="SPP">SPP</option>
                                     <option value="SPP - Registro fotografico">SPP - Registro fotografico</option>
@@ -549,9 +562,16 @@ $result = $mysqli->query($query);
                             <div class="col-md-4 mb-3 form-floating">
                                 <select class="form-select" id="centro_vida" name="id_centro_vida">
                                     <option value="" selected>Seleccione...</option>
-                                    <?php if ($grupos) {
+                                    <?php 
+                                    if ($grupos) {
+                                        mysqli_data_seek($grupos, 0); // Resetear cursor
                                         while ($g = $grupos->fetch_assoc()) {
-                                            echo "<option value='{$g['id_grupo']}'>" . htmlspecialchars($g['descripcion_grupo']) . "</option>";
+                                            // Filtrar opciones que empiecen con CPSAM
+                                            $descripcion = $g['descripcion_grupo'];
+                                            if (substr($descripcion, 0, 5) === 'CPSAM') {
+                                                continue;
+                                            }
+                                            echo "<option value='{$g['id_grupo']}'>" . htmlspecialchars($descripcion) . "</option>";
                                         }
                                     } ?>
                                 </select>
@@ -559,6 +579,25 @@ $result = $mysqli->query($query);
                             </div>
 
 
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-bold"><i class="bi bi-clock-fill"></i> Jornada</label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="jornada_manana" name="jornada[]" value="Mañana">
+                                        <label class="form-check-label" for="jornada_manana">
+                                            <i class="bi bi-sunrise"></i> Mañana
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="jornada_noche" name="jornada[]" value="Noche">
+                                        <label class="form-check-label" for="jornada_noche">
+                                            <i class="bi bi-moon-stars"></i> Noche
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12 mb-3 form-floating">
@@ -730,6 +769,14 @@ $result = $mysqli->query($query);
                 $('#actividad_centro_vida').val(data.id_actividad_centro_vida || '');
                 // tipo_registro preload
                 $('#tipo_registro').val(data.tipo_registro || '');
+                // jornada preload (puede ser string con valores separados por coma)
+                $('#jornada_manana').prop('checked', false);
+                $('#jornada_noche').prop('checked', false);
+                if (data.jornada) {
+                    const jornadas = data.jornada.split(',').map(j => j.trim());
+                    if (jornadas.includes('Mañana')) $('#jornada_manana').prop('checked', true);
+                    if (jornadas.includes('Noche')) $('#jornada_noche').prop('checked', true);
+                }
                 // cargar conteos solo si tipo_registro es 'Registro Actividad' y fecha+actividad están presentes
                 if (data.tipo_registro === 'Registro Actividad' && data.id_actividad_centro_vida && data.fecha_atencion) {
                     $.post('countRegistrosByActivityDate.php', {
@@ -805,8 +852,8 @@ $result = $mysqli->query($query);
                 $title.text('Agregar Actividad Masiva Centro Vida');
                 $('#btnSubmit').html('<i class=\"bi bi-save\"></i> Guardar');
                 $idHidden.val('');
-                $form[0].reset();
-                resetActividad();
+                $form[0].reset();                $('#jornada_manana').prop('checked', false);
+                $('#jornada_noche').prop('checked', false);                resetActividad();
             });
 
             // Eliminar

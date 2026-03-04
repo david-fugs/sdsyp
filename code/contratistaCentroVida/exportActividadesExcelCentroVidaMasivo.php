@@ -37,6 +37,7 @@ $sql = "SELECT
  mcv.medio_verificacion,
  mcv.cantidad_masculino,
  mcv.cantidad_femenino,
+ mcv.jornada,
  mcv.observacion_actividad,
  mcv.tipo_actividad,
  u1.nombre AS digitado_por,
@@ -56,7 +57,7 @@ $res=$mysqli->query($sql);
 
 $spreadsheet = new Spreadsheet();
 $sheet=$spreadsheet->getActiveSheet();$sheet->setTitle('Masivo Centro Vida');
-$headers=['ID','Meta','Actividad Plan','Acción','Actividad Centro Vida','Política Pública','Centro Vida','Fecha Atención','Nombre Líder','Teléfono','Comuna','Medio Verificación','Masculino','Femenino','Total','Tipo Actividad','Observación','Digitado por','Funcionario Responsable'];
+$headers=['ID','Meta','Actividad Plan','Acción','Actividad Centro Vida','Política Pública','Centro Vida','Fecha Atención','Nombre Líder','Teléfono','Comuna','Medio Verificación','Masculino','Femenino','Total','Jornada','Tipo Actividad','Observación','Digitado por','Funcionario Responsable'];
 $col='A';foreach($headers as $h){$sheet->setCellValue($col.'1',$h);$col++;}
 $lastCol=\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers));
 $sheet->getStyle('A1:'.$lastCol.'1')->applyFromArray([
@@ -67,7 +68,7 @@ $sheet->getRowDimension(1)->setRowHeight(32);
 $r=2; if($res){ while($row=$res->fetch_assoc()){ $data=[
  $row['id_registro'], $row['descripcion_meta'],$row['descripcion_actividad'],$row['descripcion_accion'],$row['actividad_centro_vida'],$row['descripcion_politica'],
  $row['centro_vida'],$row['fecha_atencion'],$row['nombre_lider'],$row['telefono_contacto'],$row['nombre_comuna'],$row['medio_verificacion'],
- $row['cantidad_masculino'],$row['cantidad_femenino'],($row['cantidad_masculino']+$row['cantidad_femenino']),$row['tipo_actividad'],$row['observacion_actividad'],$row['digitado_por'],$row['funcionario_responsable_nombre']];
+ $row['cantidad_masculino'],$row['cantidad_femenino'],($row['cantidad_masculino']+$row['cantidad_femenino']),$row['jornada'],$row['tipo_actividad'],$row['observacion_actividad'],$row['digitado_por'],$row['funcionario_responsable_nombre']];
  $col='A'; foreach($data as $val){ $sheet->setCellValue($col.$r,$val); $col++; }
  $sheet->getStyle('A'.$r.':'.$lastCol.$r)->applyFromArray(['borders'=>['allBorders'=>['borderStyle'=>Border::BORDER_THIN,'color'=>['rgb'=>'ECEFF1']]],'alignment'=>['vertical'=>Alignment::VERTICAL_CENTER,'wrapText'=>true]]);
  $r++; }}

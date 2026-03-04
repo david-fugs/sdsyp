@@ -1223,7 +1223,7 @@ $mysqli->close();
             </ul>
           </li>
 
-          <!-- Informes Colombia Mayor -->
+          <!-- Informes Colombia Mayor
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
@@ -1238,7 +1238,7 @@ $mysqli->close();
               <a href="code/colombiaMayor/exportRegistrosCM.php" class="nav_link sublink">Exportar Registros</a>
               <a href="code/colombiaMayor/exportPagosCM.php" class="nav_link sublink">Exportar Pagos</a>
             </ul>
-          </li>
+          </li> -->
 
           <!-- Mi Cuenta -->
           <li class="item">
@@ -1349,7 +1349,7 @@ $mysqli->close();
       </div>
 
       <!-- Estadísticas por Grupos y Acciones Rápidas -->
-      <?php if ($tipo_usuario != 3 && $tipo_usuario != 2) : ?>
+      <?php if ($tipo_usuario != 3 && $tipo_usuario != 2 && $tipo_usuario != 8) : ?>
       <div class="row">
         <div class="col-lg-8">
           <div class="chart-container">

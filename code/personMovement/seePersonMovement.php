@@ -179,6 +179,12 @@ if ($tipo_usuario == 2 && $id_grupo_session && $id_grupo_session != 0) {
 }
 
 $where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
+
+// Si es tipo usuario 11, solo mostrar su centro asociado
+if ($tipo_usuario == 11 && $id_grupo_session) {
+    $where_grupos .= " AND g.id_grupo = " . intval($id_grupo_session);
+}
+
 $grupos = "SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC";
 $result_grupos_query = mysqli_query($mysqli, $grupos);
 if (!$result_grupos_query) {

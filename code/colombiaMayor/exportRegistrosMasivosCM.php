@@ -25,10 +25,33 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 $tipo_usuario = $_SESSION['tipo_usuario'];
 $usuario_id = $_SESSION['id'];
 
-// Filtro por usuario
+// Obtener filtros de GET
+$filtro_fecha_inicio = isset($_GET['filtro_fecha_inicio']) && !empty($_GET['filtro_fecha_inicio']) ? $_GET['filtro_fecha_inicio'] : null;
+$filtro_fecha_fin = isset($_GET['filtro_fecha_fin']) && !empty($_GET['filtro_fecha_fin']) ? $_GET['filtro_fecha_fin'] : null;
+$filtro_usuario = isset($_GET['filtro_usuario']) && !empty($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : null;
+
+// Filtro por usuario según permisos
 $where = "1=1";
+
+// Tipo 9 solo ve sus propios registros (sin importar el filtro)
 if($tipo_usuario == 9) {
     $where .= " AND r.usuario_registro = '$usuario_id'";
+}
+// Tipo 8 puede filtrar por usuarios 8 y 9 si se pasa el filtro
+elseif($tipo_usuario == 8 && $filtro_usuario) {
+    $where .= " AND r.usuario_registro = " . $filtro_usuario;
+}
+// Tipo 1 (Admin) puede filtrar por usuario si se pasa
+elseif($tipo_usuario == 1 && $filtro_usuario) {
+    $where .= " AND r.usuario_registro = " . $filtro_usuario;
+}
+
+// Aplicar filtros de fecha
+if ($filtro_fecha_inicio) {
+    $where .= " AND r.fecha_registro >= '" . $mysqli->real_escape_string($filtro_fecha_inicio) . "'";
+}
+if ($filtro_fecha_fin) {
+    $where .= " AND r.fecha_registro <= '" . $mysqli->real_escape_string($filtro_fecha_fin) . "'";
 }
 
 // Consulta
