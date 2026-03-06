@@ -29,6 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
               LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
               WHERE p.id_grupo = $id_grupo 
               AND p.estado_persona = 1
+              AND (p.sin_convenio IS NULL OR p.sin_convenio = 0)
               AND NOT EXISTS (
                   SELECT 1 FROM movimiento_persona mp
                   INNER JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
