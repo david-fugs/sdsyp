@@ -224,7 +224,14 @@ if ($result && $result->num_rows > 0) {
         if ($row['condicion_componente'] == 'Usuario interesado') {
             $estado_mostrar = 'Usuario Interesado';
         }
-        echo "<td class='col-status'><span class='$badge_class'>$estado_icon $estado_mostrar</span></td>";
+        
+        // Agregar indicador SIN CONVENIO si está activo
+        $sin_convenio_badge = '';
+        if (isset($row['sin_convenio']) && $row['sin_convenio'] == 1) {
+            $sin_convenio_badge = ' <span class="badge bg-warning text-dark" style="font-size: 10px;">SIN CONVENIO</span>';
+        }
+        
+        echo "<td class='col-status'><span class='$badge_class'>$estado_icon $estado_mostrar</span>$sin_convenio_badge</td>";
         // 8. Política Pública
         // 9. Acciones
         echo '<td class="col-actions">
@@ -277,7 +284,8 @@ if ($result && $result->num_rows > 0) {
                         data-id-meta="' . (isset($row['id_meta']) ? htmlspecialchars($row['id_meta']) : '') . '"
                         data-id-actividad="' . (isset($row['id_actividad']) ? htmlspecialchars($row['id_actividad']) : '') . '"
                         data-id-accion="' . (isset($row['id_accion']) ? htmlspecialchars($row['id_accion']) : '') . '"
-                        data-id-politica-publica-nueva="' . (isset($row['id_politica_publica']) ? htmlspecialchars($row['id_politica_publica']) : '') . '">
+                        data-id-politica-publica-nueva="' . (isset($row['id_politica_publica']) ? htmlspecialchars($row['id_politica_publica']) : '') . '"
+                        data-sin-convenio="' . (isset($row['sin_convenio']) ? htmlspecialchars($row['sin_convenio']) : '0') . '">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
                     <a href="?delete=' . htmlspecialchars($row['cedula_persona']) . '" 
