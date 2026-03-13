@@ -745,6 +745,7 @@ $mysqli->close();
               <ul class="menu_items submenu">
                 <a href="code/users/showusers.php" class="nav_link sublink">Permisos</a>
                 <a href="code/users/register.php" class="nav_link sublink">Crear Nuevo</a>
+                <a href="code/users/exportUsersExcel.php" class="nav_link sublink"><i class="bi bi-file-earmark-excel-fill" style="color:#1D6F42;"></i> Descargar Informe</a>
               </ul>
             </li>
             <li class="item">
@@ -1052,6 +1053,7 @@ $mysqli->close();
             <ul class="menu_items submenu">
               <a href="code/users/showusers.php" class="nav_link sublink">Permisos</a>
               <a href="code/users/register.php" class="nav_link sublink">Crear Nuevo</a>
+              <a href="code/users/exportUsersExcel.php" class="nav_link sublink"><i class="bi bi-file-earmark-excel-fill" style="color:#1D6F42;"></i> Descargar Informe</a>
             </ul>
           </li>
           <li class="item">

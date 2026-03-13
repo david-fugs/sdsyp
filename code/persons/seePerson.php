@@ -849,7 +849,7 @@ function deleteMember($cedula_persona)
                                 <?php } ?>
                             </div>
                             <div class="col-md-6 mb-3 form-floating mt-1">
-                                <select class="form-select" id="id_grupo" name="id_grupo">
+                                <select class="form-select" id="id_grupo" name="id_grupo" required >
                                     <option value="" selected>Seleccione...</option>
                                     <?php foreach ($grupos_filtrados as $grupo) { ?>
                                         <option value="<?= $grupo['id_grupo']; ?>"><?= $grupo['descripcion_grupo']; ?></option>

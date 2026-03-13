@@ -181,10 +181,16 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
             <!-- Header moderno -->
             <div class="modern-header">
                 <h2><i class="bi bi-person-gear"></i> Administración de Usuarios</h2>
-                <a href="register.php" class="btn-modern btn-success">
-                    <i class="bi bi-person-plus-fill"></i>
-                    Agregar Usuario
-                </a>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <a href="register.php" class="btn-modern btn-success">
+                        <i class="bi bi-person-plus-fill"></i>
+                        Agregar Usuario
+                    </a>
+                    <a href="exportUsersExcel.php" class="btn-modern" style="background:#1D6F42;color:#fff;">
+                        <i class="bi bi-file-earmark-excel-fill"></i>
+                        Descargar Informe Usuarios
+                    </a>
+                </div>
             </div>
 
             <!-- Filtros modernos -->
