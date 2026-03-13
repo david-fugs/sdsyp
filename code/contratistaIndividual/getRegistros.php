@@ -28,12 +28,12 @@ if (!empty($_GET['condicion'])) {
     $condicion = $mysqli->real_escape_string($_GET['condicion']);
     $where .= " AND c.id_condicion = '$condicion'";
 }
-if ($tipo_usuario != 1 && $id_grupo_session && !in_array($tipo_usuario, [3, 4, 5, 10])) {
+if ($tipo_usuario != 1 && $id_grupo_session && !in_array($tipo_usuario, [2, 3, 4, 5, 10])) {
     $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
 
-// Filtro para usuarios tipo 3 (CONTRATISTA): solo ver sus propios registros
-if ($tipo_usuario == 3 && isset($_SESSION['id'])) {
+// Filtro para usuarios tipo 2 y 3 (CONTRATISTA): solo ver sus propios registros
+if (in_array($tipo_usuario, [2, 3]) && isset($_SESSION['id'])) {
     $id_usuario_session = intval($_SESSION['id']);
     $where .= " AND ri.id_usuario = $id_usuario_session ";
 }
