@@ -27,9 +27,38 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 
 // Obtener filtros
 $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
-$filtro_grupo = isset($_GET['filtro_grupo']) ? intval($_GET['filtro_grupo']) : '';
+$filtro_grupo = isset($_GET['filtro_grupo']) ? $_GET['filtro_grupo'] : '';
 $filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : '';
 $filtro_usuario = isset($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : '';
+
+// Detectar si se seleccionó "Todos CPSAM" o "Todos Centros Vida"
+$filtro_todos_grupos = false;
+$prefijo_grupo = '';
+$grupos_a_exportar = [];
+
+if ($filtro_grupo === 'TODOS_CPSAM') {
+    $filtro_todos_grupos = true;
+    $prefijo_grupo = 'CPSAM';
+    // Obtener todos los grupos que empiezan con CPSAM
+    $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CPSAM%' ORDER BY descripcion_grupo ASC";
+    $result_grupos_query = $mysqli->query($query_grupos);
+    if ($result_grupos_query) {
+        while ($grupo_row = $result_grupos_query->fetch_assoc()) {
+            $grupos_a_exportar[] = $grupo_row;
+        }
+    }
+} elseif ($filtro_grupo === 'TODOS_CV') {
+    $filtro_todos_grupos = true;
+    $prefijo_grupo = 'CV';
+    // Obtener todos los grupos que empiezan con CV
+    $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC";
+    $result_grupos_query = $mysqli->query($query_grupos);
+    if ($result_grupos_query) {
+        while ($grupo_row = $result_grupos_query->fetch_assoc()) {
+            $grupos_a_exportar[] = $grupo_row;
+        }
+    }
+}
 
 // Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
@@ -46,8 +75,13 @@ if ($filtro_mes) {
 }
 
 // Si se seleccionó un grupo específico, agregar ese filtro
-if ($filtro_grupo) {
-    $where .= " AND g.id_grupo = $filtro_grupo ";
+if ($filtro_grupo && !$filtro_todos_grupos) {
+    $filtro_grupo_int = intval($filtro_grupo);
+    $where .= " AND g.id_grupo = $filtro_grupo_int ";
+} elseif ($filtro_todos_grupos && !empty($grupos_a_exportar)) {
+    // Si es "Todos CPSAM" o "Todos CV", filtrar por todos esos grupos
+    $ids_grupos = array_map(function($g) { return intval($g['id_grupo']); }, $grupos_a_exportar);
+    $where .= " AND g.id_grupo IN (" . implode(',', $ids_grupos) . ") ";
 }
 
 // Aplicar filtro de usuario si se seleccionó
@@ -109,7 +143,7 @@ LEFT JOIN comunas c ON mcv.id_comuna=c.id_com
 LEFT JOIN usuarios u1 ON mcv.id_usuario=u1.id
 LEFT JOIN usuarios u2 ON mcv.funcionario_responsable=u2.id
 WHERE 1 $where $where_grupos_filtro
-ORDER BY mcv.fecha_atencion DESC";
+ORDER BY " . ($filtro_todos_grupos ? "g.descripcion_grupo ASC, mcv.fecha_atencion DESC" : "mcv.fecha_atencion DESC");
 
 $result = $mysqli->query($sql);
 
