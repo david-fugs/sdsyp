@@ -1,0 +1,51 @@
+=== UPDATE EJECUTADO 2026-03-17 17:47:48 ===
+Usuario: 1
+Cedula: 12121212
+Estado POST: [ACTIVO]
+Estado escapado: [ACTIVO]
+
+QUERY COMPLETO:
+UPDATE personas_colombia_mayor SET
+        cedula_persona_cm = '12121212',
+        tipo_identificacion_cm = 'Cédula de Ciudadanía',
+        nombres_persona_cm = 'test',
+        apellidos_persona_cm = 'test',
+        genero_persona_cm = 'Otro',
+        telefono_persona_cm = '5125',
+        telefono_referencia_cm = '5125',
+        referencia_cm = 'ref',
+        fecha_nacimiento_cm = '1996-12-17',
+        edad_cm = '29',
+        grupo_sisben = '',
+        direccion_cm = 'sdsfg',
+        barrio_cm = 'AGUAS CLARAS',
+        comuna_cm = 'CONSOTA',
+        zona_cm = 'URBANO',
+        departamento_cm = 'Risaralda',
+        municipio_cm = 'Pereira',
+        estado_cm = 'ACTIVO',
+        fecha_ingreso_cm = '2026-03-17',
+        convivencia_actual = 'Pareja',
+        persona_discapacidad = 'Si',
+        cual_discapacidad = 'Auditiva',
+        cabeza_hogar = 'Si',
+        se_reconoce_como = 'Hombre',
+        orientacion_sexual = 'Heterosexual',
+        grupo_etnico = 'Indígena',
+        tipo_salud = 'Régimen subsidiado',
+        condicion_ocupacion = 'Ama de Casa',
+        condicion_componente = 'C.M Activo',
+        id_meta = 1,
+        id_actividad = 1,
+        id_accion = 1,
+        id_politica_publica = 6,
+        observaciones_cm = '',
+        usuario_modificacion = '1',
+        fecha_modificacion = NOW()
+    WHERE cedula_persona_cm = '12121212'
+
+
+RESULTADO:
+Filas afectadas: 1
+Valor en BD después: [ACTIVO]
+¿Coincide? SÍ
