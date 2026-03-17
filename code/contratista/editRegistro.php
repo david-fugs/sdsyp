@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre_lider = $_POST['nombre_lider'];
     $telefono_contacto = $_POST['telefono_contacto'];
     $id_comuna = $_POST['id_comuna'];
+    $id_barrio = isset($_POST['id_barrio']) ? intval($_POST['id_barrio']) : 0;
     $medio_verificacion = $_POST['medio_verificacion'];
     $cantidad_masculino = $_POST['cantidad_masculino'];
     $cantidad_femenino = $_POST['cantidad_femenino'];
@@ -33,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         nombre_lider = '$nombre_lider',
         telefono_contacto = '$telefono_contacto',
         id_comuna = '$id_comuna',
+        id_barrio = '$id_barrio',
         medio_verificacion = '$medio_verificacion',
         cantidad_masculino = '$cantidad_masculino',
         cantidad_femenino = '$cantidad_femenino',

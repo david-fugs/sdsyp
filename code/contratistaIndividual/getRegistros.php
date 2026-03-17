@@ -45,6 +45,8 @@ $where .= $where_grupos_filtro;
 $query = " SELECT ri.id_registro_individual,c.id_condicion,p.cedula_persona,p.nombres_persona,p.apellidos_persona,c.descripcion_condicion, 
            ri.fecha_registro,ri.observacion_registro,ri.id_centro_vida_traslado,g.descripcion_grupo as centro_vida_traslado,
            ri.id_meta, ri.id_actividad, ri.id_accion, ri.departamento_procedencia, ri.id_politica_publica,
+           ri.id_barrio, ri.id_comuna,
+           b.nombre_bar AS nombre_barrio, com.nombre_com AS nombre_com,
            m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, u.nombre as nombre_usuario, u.id as id_usuario, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica
            FROM personas as p
         JOIN registro_individual as ri ON p.cedula_persona = ri.cedula_persona
@@ -55,6 +57,8 @@ $query = " SELECT ri.id_registro_individual,c.id_condicion,p.cedula_persona,p.no
         LEFT JOIN acciones ac ON ri.id_accion = ac.id_accion
         LEFT JOIN usuarios u ON ri.id_usuario = u.id
         LEFT JOIN politicas_publicas pp ON ri.id_politica_publica = pp.id_politica
+        LEFT JOIN barrios b ON ri.id_barrio = b.id_bar
+        LEFT JOIN comunas com ON ri.id_comuna = com.id_com
 
         $where
         ORDER BY ri.fecha_registro DESC
@@ -99,7 +103,11 @@ if ($result->num_rows > 0) {
                         data-id_usuario="' . ($row['id_usuario'] ?? '') . '"
                         data-accion="' . ($row['id_accion'] ?? '') . '"
                         data-id_politica_publica="' . ($row['id_politica_publica'] ?? '') . '"
-                        data-departamento_procedencia="' . ($row['departamento_procedencia'] ?? '') . '">
+                        data-departamento_procedencia="' . ($row['departamento_procedencia'] ?? '') . '"
+                        data-barrio="' . ($row['id_barrio'] ?? '') . '"
+                        data-nombre_barrio="' . htmlspecialchars($row['nombre_barrio'] ?? '') . '"
+                        data-id_comuna="' . ($row['id_comuna'] ?? '') . '"
+                        data-nombre_com="' . htmlspecialchars($row['nombre_com'] ?? '') . '">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
                     <a href="?delete=' . $row['cedula_persona'] . '" 

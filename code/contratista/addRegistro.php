@@ -14,6 +14,7 @@ $fecha_atencion = isset($_POST['fecha_atencion']) ? mysqli_real_escape_string($m
 $nombre_lider = isset($_POST['nombre_lider']) ? mysqli_real_escape_string($mysqli, $_POST['nombre_lider']) : '';
 $telefono_contacto = isset($_POST['telefono_contacto']) ? mysqli_real_escape_string($mysqli, $_POST['telefono_contacto']) : '';
 $id_comuna = isset($_POST['id_comuna']) ? intval($_POST['id_comuna']) : 0;
+$id_barrio = isset($_POST['id_barrio']) ? intval($_POST['id_barrio']) : 0;
 $medio_verificacion = isset($_POST['medio_verificacion']) ? mysqli_real_escape_string($mysqli, $_POST['medio_verificacion']) : '';
 $cantidad_masculino = isset($_POST['cantidad_masculino']) ? intval($_POST['cantidad_masculino']) : 0;
 $cantidad_femenino = isset($_POST['cantidad_femenino']) ? intval($_POST['cantidad_femenino']) : 0;
@@ -36,6 +37,7 @@ $query = "INSERT INTO registro_actividades (
     nombre_lider,
     telefono_contacto,
     id_comuna,
+    id_barrio,
     medio_verificacion,
     cantidad_masculino,
     cantidad_femenino,
@@ -55,6 +57,7 @@ $query = "INSERT INTO registro_actividades (
     '$nombre_lider',
     '$telefono_contacto',
     $id_comuna,
+    $id_barrio,
     '$medio_verificacion',
     $cantidad_masculino,
     $cantidad_femenino,

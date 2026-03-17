@@ -77,6 +77,7 @@ elseif ($tipo_usuario == 3 && isset($_SESSION['id'])) {
 
 $query_masivas = "SELECT ra.id_registro, m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica,
        g.descripcion_grupo AS centro_vida, ra.otro_lugar, ra.fecha_atencion, ra.nombre_lider, ra.telefono_contacto, c.nombre_com AS nombre_comuna,
+       b.nombre_bar AS nombre_barrio,
        ra.medio_verificacion, ra.cantidad_masculino, ra.cantidad_femenino, ra.tipo_actividad, ra.observacion_actividad,
        ra.id_usuario, u1.nombre AS digitado_por, ra.funcionario_responsable, u2.nombre AS funcionario_responsable_nombre
 FROM registro_actividades AS ra
@@ -86,6 +87,7 @@ LEFT JOIN acciones ac ON ra.id_accion = ac.id_accion
 LEFT JOIN politicas_publicas pp ON ra.politica_publica = pp.id_politica
 LEFT JOIN grupos g ON ra.id_centro_vida = g.id_grupo
 LEFT JOIN comunas c ON ra.id_comuna = c.id_com
+LEFT JOIN barrios b ON ra.id_barrio = b.id_bar
 LEFT JOIN usuarios u1 ON ra.id_usuario = u1.id
 LEFT JOIN usuarios u2 ON CAST(ra.funcionario_responsable AS UNSIGNED) = u2.id AND ra.funcionario_responsable REGEXP '^[0-9]+$'
 WHERE 1 $where_masivas $where_grupos_filtro_masivas
@@ -97,7 +99,7 @@ $result_masivas = $mysqli->query($query_masivas);
 // Cabeceras hoja 1
 $headers_masivas = [
     'ID', 'Meta', 'Actividad', 'Acción', 'Política Pública', 'Lugar del Evento', 'Otro Lugar', 'Fecha Atención',
-    'Nombre Líder', 'Teléfono Contacto', 'Comuna/Corregimiento', 'Medio de Verificación',
+    'Nombre Líder', 'Teléfono Contacto', 'Barrio', 'Comuna/Corregimiento', 'Medio de Verificación',
     'Cant. Masculino', 'Cant. Femenino', 'Total personas', 'Tipo Actividad', 'Observación Actividad', 'Digitado por', 'Funcionario Responsable'
 ];
 
@@ -147,6 +149,7 @@ if ($result_masivas && $result_masivas->num_rows > 0) {
             $data['fecha_atencion'],
             $data['nombre_lider'],
             $data['telefono_contacto'],
+            $data['nombre_barrio'],
             $data['nombre_comuna'],
             $data['medio_verificacion'],
             $data['cantidad_masculino'],
@@ -242,6 +245,8 @@ $query_individuales = "SELECT
     ac.descripcion_accion,
     pp.descripcion_politica,
     ri.departamento_procedencia,
+    b.nombre_bar AS nombre_barrio,
+    com.nombre_com AS nombre_com,
     u.nombre as nombre_usuario,
     p_grupo.descripcion_grupo as grupo_persona,
     p.sin_convenio
@@ -255,6 +260,8 @@ LEFT JOIN actividades a ON ri.id_actividad = a.id_actividad
 LEFT JOIN acciones ac ON ri.id_accion = ac.id_accion
 LEFT JOIN politicas_publicas pp ON ri.id_politica_publica = pp.id_politica
 LEFT JOIN usuarios u ON ri.id_usuario = u.id
+LEFT JOIN barrios b ON ri.id_barrio = b.id_bar
+LEFT JOIN comunas com ON ri.id_comuna = com.id_com
 $where_individuales
 ORDER BY ri.fecha_registro DESC
 ";
@@ -276,6 +283,8 @@ $headers_individuales = [
     'Política Pública',
     'Centro Traslado',
     'Dpto. Procedencia',
+    'Barrio',
+    'Comuna/Corregimiento',
     'Observaciones',
     'Usuario Registro',
     'Con Convenio'
@@ -330,6 +339,8 @@ if ($result_individuales && $result_individuales->num_rows > 0) {
             $data['descripcion_politica'] ?? '',
             $data['centro_vida_traslado'] ?? '',
             $data['departamento_procedencia'] ?? '',
+            $data['nombre_barrio'] ?? '',
+            $data['nombre_com'] ?? '',
             $data['observacion_registro'] ?? '',
             $data['nombre_usuario'] ?? '',
             $con_convenio

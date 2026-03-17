@@ -28,6 +28,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id_actividad = $_POST['id_actividad'];
     $id_accion = $_POST['id_accion'];
     $departamento_procedencia = $_POST['departamento_procedencia'];
+    $id_barrio = isset($_POST['id_barrio']) ? intval($_POST['id_barrio']) : 0;
+    $id_comuna = isset($_POST['id_comuna']) ? intval($_POST['id_comuna']) : 0;
 
     // Validar que haya al menos una cédula
     if (empty($cedulas_array)) {
@@ -95,8 +97,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $mysqli->query($sql_update_persona);
         }
 
-        $sql_insert_movimiento = "INSERT INTO registro_individual (cedula_persona, id_condicion, id_centro_vida_traslado, fecha_registro, observacion_registro, id_meta, id_actividad, id_accion, departamento_procedencia, id_politica_publica, id_usuario)
-        VALUES ('$cedula_persona', '$id_condicion', " . ($id_centro_vida_traslado ? "'$id_centro_vida_traslado'" : "0") . ", '$fecha_movimiento', '$observacion_movimiento', '$id_meta', '$id_actividad', '$id_accion', '$departamento_procedencia','$politica_publica','$id_usuario')";
+        $sql_insert_movimiento = "INSERT INTO registro_individual (cedula_persona, id_condicion, id_centro_vida_traslado, fecha_registro, observacion_registro, id_meta, id_actividad, id_accion, departamento_procedencia, id_politica_publica, id_usuario, id_barrio, id_comuna)
+        VALUES ('$cedula_persona', '$id_condicion', " . ($id_centro_vida_traslado ? "'$id_centro_vida_traslado'" : "0") . ", '$fecha_movimiento', '$observacion_movimiento', '$id_meta', '$id_actividad', '$id_accion', '$departamento_procedencia','$politica_publica','$id_usuario', $id_barrio, $id_comuna)";
 
         // Ejecutar consulta
         if ($mysqli->query($sql_insert_movimiento)) {

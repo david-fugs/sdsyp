@@ -38,12 +38,12 @@ if ($filtro_funcionario) {
 }
 
 $query = "SELECT ra.id_registro, ra.id_meta, ra.id_actividad, ra.id_entregas, ra.id_accion, ra.politica_publica, ra.id_centro_vida,
-       ra.fecha_atencion, ra.nombre_lider, ra.telefono_contacto, ra.id_comuna, ra.medio_verificacion,
+       ra.fecha_atencion, ra.nombre_lider, ra.telefono_contacto, ra.id_comuna, ra.id_barrio, ra.medio_verificacion,
        ra.cantidad_masculino, ra.cantidad_femenino, ra.tipo_actividad, ra.observacion_actividad,
        ra.funcionario_responsable, ra.otro_lugar, ra.id_usuario,
        m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica,
        actc.descripcion_actividad AS descripcion_entrega,
-       g.descripcion_grupo AS centro_vida, c.nombre_com AS nombre_comuna, u.nombre AS nombre_funcionario,
+       g.descripcion_grupo AS centro_vida, c.nombre_com AS nombre_comuna, b.nombre_bar AS nombre_barrio, u.nombre AS nombre_funcionario,
        u_creador.nombre AS realizado_por
 FROM registro_actividades AS ra
 LEFT JOIN metas m ON ra.id_meta = m.id_meta
@@ -52,6 +52,7 @@ LEFT JOIN acciones ac ON ra.id_accion = ac.id_accion
 LEFT JOIN politicas_publicas pp ON ra.politica_publica = pp.id_politica
 LEFT JOIN grupos g ON ra.id_centro_vida = g.id_grupo
 LEFT JOIN comunas c ON ra.id_comuna = c.id_com
+LEFT JOIN barrios b ON ra.id_barrio = b.id_bar
 LEFT JOIN usuarios u ON CAST(ra.funcionario_responsable AS UNSIGNED) = u.id AND ra.funcionario_responsable REGEXP '^[0-9]+$'
 LEFT JOIN usuarios u_creador ON ra.id_usuario = u_creador.id
 LEFT JOIN actividad_contratista actc ON ra.id_entregas = actc.id_actividad_contratista
@@ -121,6 +122,9 @@ if ($result->num_rows > 0) {
                         data-nombre_lider="' . ($row['nombre_lider'] ?? '') . '"
                         data-telefono_contacto="' . ($row['telefono_contacto'] ?? '') . '"
                         data-comuna="' . ($row['id_comuna'] ?? '') . '"
+                        data-nombre_com="' . htmlspecialchars($row['nombre_comuna'] ?? '') . '"
+                        data-barrio="' . ($row['id_barrio'] ?? '') . '"
+                        data-nombre_barrio="' . htmlspecialchars($row['nombre_barrio'] ?? '') . '"
                         data-medio_verificacion="' . ($row['medio_verificacion'] ?? '') . '"
                         data-cantidad_masculino="' . ($row['cantidad_masculino'] ?? '0') . '"
                         data-cantidad_femenino="' . ($row['cantidad_femenino'] ?? '0') . '"

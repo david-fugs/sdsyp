@@ -93,6 +93,8 @@ $query = "SELECT
     ac.descripcion_accion,
     pp.descripcion_politica,
     ri.departamento_procedencia,
+    b.nombre_bar AS nombre_barrio,
+    com.nombre_com AS nombre_com,
     u.nombre as nombre_usuario,
     p_grupo.descripcion_grupo as grupo_persona,
     p.sin_convenio
@@ -106,6 +108,8 @@ LEFT JOIN actividades a ON ri.id_actividad = a.id_actividad
 LEFT JOIN acciones ac ON ri.id_accion = ac.id_accion
 LEFT JOIN politicas_publicas pp ON ri.id_politica_publica = pp.id_politica
 LEFT JOIN usuarios u ON ri.id_usuario = u.id
+LEFT JOIN barrios b ON ri.id_barrio = b.id_bar
+LEFT JOIN comunas com ON ri.id_comuna = com.id_com
 $where
 ORDER BY ri.fecha_registro DESC
 ";
@@ -132,6 +136,8 @@ $headers = [
     'Política Pública',
     'Centro Traslado',
     'Dpto. Procedencia',
+    'Barrio',
+    'Comuna/Corregimiento',
     'Observaciones',
     'Usuario Registro',
     'Con Convenio'
@@ -186,6 +192,8 @@ if ($result && $result->num_rows > 0) {
             $data['descripcion_politica'] ?? '',
             $data['centro_vida_traslado'] ?? '',
             $data['departamento_procedencia'] ?? '',
+            $data['nombre_barrio'] ?? '',
+            $data['nombre_com'] ?? '',
             $data['observacion_registro'] ?? '',
             $data['nombre_usuario'] ?? '',
             $con_convenio

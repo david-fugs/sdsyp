@@ -618,6 +618,20 @@ function deleteMember($id_movimiento)
                                 <label class="" for="grupo">Centro Vida Traslado</label>
                             </div>
                         </div>
+                        <!-- Fila Barrio y Comuna -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating position-relative">
+                                <input type="text" class="form-control" id="barrio_individual" name="barrio_individual" placeholder="Barrio" list="lista-barrios-individual" autocomplete="off">
+                                <label for="barrio_individual">Barrio</label>
+                                <datalist id="lista-barrios-individual"></datalist>
+                                <input type="hidden" id="id_barrio_individual" name="id_barrio">
+                                <input type="hidden" id="id_comuna_individual" name="id_comuna">
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="text" class="form-control" id="nombre_comuna_individual" placeholder="Comuna/Corregimiento" readonly>
+                                <label for="nombre_comuna_individual">Comuna/Corregimiento</label>
+                            </div>
+                        </div>
                         <!-- Fila 5: Observación -->
                         <div class="row">
                             <div class="col-md-12 mb-3 form-floating">
@@ -751,12 +765,26 @@ function deleteMember($id_movimiento)
                             <label for="edit-fecha_movimiento" class="form-label">fecha_movimiento</label>
                             <input type="date" class="form-control" id="edit-fecha_movimiento" name="fecha_movimiento">
                         </div>
+                        <!-- Fila Barrio y Comuna -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating position-relative">
+                                <input type="text" class="form-control" id="edit-barrio-individual" name="barrio_individual" placeholder="Barrio" list="edit-lista-barrios-individual" autocomplete="off">
+                                <label for="edit-barrio-individual">Barrio</label>
+                                <datalist id="edit-lista-barrios-individual"></datalist>
+                                <input type="hidden" id="edit-id-barrio-individual" name="id_barrio">
+                                <input type="hidden" id="edit-id-comuna-individual" name="id_comuna">
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="text" class="form-control" id="edit-nombre-comuna-individual" placeholder="Comuna/Corregimiento" readonly>
+                                <label for="edit-nombre-comuna-individual">Comuna/Corregimiento</label>
+                            </div>
+                        </div>
                         <div class="mb-3">
                             <label for="edit-observacion" class="form-label">Observacion</label>
                             <input type="text" class="form-control" id="edit-observacion" name="observacion_movimiento">
                         </div>
                         <input type="hidden" name="cedula_original" id="cedula_original" value="">
-                        <input type="hidden" name="id_movimiento_persona" id="id_movimiento_persona" value="">
+                        <input type="hidden" name="id_registro_individual" id="id_registro_individual" value="">
                     </div>
 
                     <div class="modal-footer bg-light">
@@ -775,7 +803,7 @@ function deleteMember($id_movimiento)
     </div>
 
     <br /><a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="back" /></a><br>
-</body>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const modalEdicion = document.getElementById("modalEdicion");
@@ -791,7 +819,13 @@ function deleteMember($id_movimiento)
             document.getElementById("edit-condicion").value = button.getAttribute("data-condicion");
             document.getElementById("edit-observacion").value = button.getAttribute("data-observacion_movimiento");
             document.getElementById("edit-centro-vida").value = button.getAttribute("data-centro_vida_traslado") || "";
-            document.getElementById("id_movimiento_persona").value = button.getAttribute("data-id_movimiento_persona");
+            document.getElementById("id_registro_individual").value = button.getAttribute("data-id_registro_individual");
+
+            // Prellenar barrio y comuna
+            document.getElementById("edit-barrio-individual").value = button.getAttribute("data-nombre_barrio") || "";
+            document.getElementById("edit-id-barrio-individual").value = button.getAttribute("data-barrio") || "";
+            document.getElementById("edit-id-comuna-individual").value = button.getAttribute("data-id_comuna") || "";
+            document.getElementById("edit-nombre-comuna-individual").value = button.getAttribute("data-nombre_com") || "";
 
             // Prellenar nuevos campos
             document.getElementById("edit-meta").value = button.getAttribute("data-meta") || "";
@@ -1747,6 +1781,132 @@ function deleteMember($id_movimiento)
         });
     });
 
+    // --- Autocompletado de Barrio y Comuna (Agregar Actividad Individual) ---
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('=== Inicializando autocomplete de barrio (Agregar Individual) ===');
+        const inputBarrioAdd = document.getElementById('barrio_individual');
+        const datalistBarriosAdd = document.getElementById('lista-barrios-individual');
+        const inputComunaAdd = document.getElementById('nombre_comuna_individual');
+        const inputIdBarrioAdd = document.getElementById('id_barrio_individual');
+        const inputIdComunaAdd = document.getElementById('id_comuna_individual');
+        let barriosDataAdd = [];
+
+        console.log('Elementos encontrados:', {
+            inputBarrioAdd: !!inputBarrioAdd,
+            datalistBarriosAdd: !!datalistBarriosAdd,
+            inputComunaAdd: !!inputComunaAdd,
+            inputIdBarrioAdd: !!inputIdBarrioAdd,
+            inputIdComunaAdd: !!inputIdComunaAdd
+        });
+
+        if (inputBarrioAdd && datalistBarriosAdd) {
+            inputBarrioAdd.addEventListener('input', function() {
+                const term = this.value.trim();
+                console.log('Input barrio (Add):', term);
+                if (term.length < 2) { 
+                    datalistBarriosAdd.innerHTML = ''; 
+                    return; 
+                }
+                fetch('../persons/buscar_barrio.php?term=' + encodeURIComponent(term))
+                    .then(res => {
+                        console.log('Respuesta fetch:', res.status);
+                        return res.json();
+                    })
+                    .then(data => {
+                        console.log('Datos barrios recibidos:', data);
+                        barriosDataAdd = data;
+                        datalistBarriosAdd.innerHTML = '';
+                        data.forEach(barrio => {
+                            const option = document.createElement('option');
+                            option.value = barrio.nombre_bar;
+                            option.setAttribute('data-id', barrio.id_bar);
+                            datalistBarriosAdd.appendChild(option);
+                        });
+                    })
+                    .catch(err => console.error('Error en fetch barrio:', err));
+            });
+            inputBarrioAdd.addEventListener('change', function() {
+                console.log('Change evento barrio (Add):', inputBarrioAdd.value);
+                const selected = barriosDataAdd.find(b => b.nombre_bar.toLowerCase() === inputBarrioAdd.value.trim().toLowerCase());
+                console.log('Barrio seleccionado:', selected);
+                if (selected) {
+                    inputComunaAdd.value = selected.nombre_com || '';
+                    if (inputIdBarrioAdd) inputIdBarrioAdd.value = selected.id_bar || '';
+                    if (inputIdComunaAdd) inputIdComunaAdd.value = selected.id_com || '';
+                } else {
+                    inputComunaAdd.value = '';
+                    if (inputIdBarrioAdd) inputIdBarrioAdd.value = '';
+                    if (inputIdComunaAdd) inputIdComunaAdd.value = '';
+                }
+            });
+        } else {
+            console.error('No se encontraron elementos del barrio (Add)');
+        }
+    });
+
+    // --- Autocompletado de Barrio y Comuna (Editar Actividad Individual) ---
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('=== Inicializando autocomplete de barrio (Editar Individual) ===');
+        const inputBarrioEdit = document.getElementById('edit-barrio-individual');
+        const datalistBarriosEdit = document.getElementById('edit-lista-barrios-individual');
+        const inputComunaEdit = document.getElementById('edit-nombre-comuna-individual');
+        const inputIdBarrioEdit = document.getElementById('edit-id-barrio-individual');
+        const inputIdComunaEdit = document.getElementById('edit-id-comuna-individual');
+        let barriosDataEdit = [];
+
+        console.log('Elementos encontrados (Edit):', {
+            inputBarrioEdit: !!inputBarrioEdit,
+            datalistBarriosEdit: !!datalistBarriosEdit,
+            inputComunaEdit: !!inputComunaEdit,
+            inputIdBarrioEdit: !!inputIdBarrioEdit,
+            inputIdComunaEdit: !!inputIdComunaEdit
+        });
+
+        if (inputBarrioEdit && datalistBarriosEdit) {
+            inputBarrioEdit.addEventListener('input', function() {
+                const term = this.value.trim();
+                console.log('Input barrio (Edit):', term);
+                if (term.length < 2) { 
+                    datalistBarriosEdit.innerHTML = ''; 
+                    return; 
+                }
+                fetch('../persons/buscar_barrio.php?term=' + encodeURIComponent(term))
+                    .then(res => {
+                        console.log('Respuesta fetch (Edit):', res.status);
+                        return res.json();
+                    })
+                    .then(data => {
+                        console.log('Datos barrios recibidos (Edit):', data);
+                        barriosDataEdit = data;
+                        datalistBarriosEdit.innerHTML = '';
+                        data.forEach(barrio => {
+                            const option = document.createElement('option');
+                            option.value = barrio.nombre_bar;
+                            option.setAttribute('data-id', barrio.id_bar);
+                            datalistBarriosEdit.appendChild(option);
+                        });
+                    })
+                    .catch(err => console.error('Error en fetch barrio (Edit):', err));
+            });
+            inputBarrioEdit.addEventListener('change', function() {
+                console.log('Change evento barrio (Edit):', inputBarrioEdit.value);
+                const selected = barriosDataEdit.find(b => b.nombre_bar.toLowerCase() === inputBarrioEdit.value.trim().toLowerCase());
+                console.log('Barrio seleccionado (Edit):', selected);
+                if (selected) {
+                    inputComunaEdit.value = selected.nombre_com || '';
+                    if (inputIdBarrioEdit) inputIdBarrioEdit.value = selected.id_bar || '';
+                    if (inputIdComunaEdit) inputIdComunaEdit.value = selected.id_com || '';
+                } else {
+                    inputComunaEdit.value = '';
+                    if (inputIdBarrioEdit) inputIdBarrioEdit.value = '';
+                    if (inputIdComunaEdit) inputIdComunaEdit.value = '';
+                }
+            });
+        } else {
+            console.error('No se encontraron elementos del barrio (Edit)');
+        }
+    });
+
     // Inicializar DataTables para la tabla de movimientos
     let movementTable;
 
@@ -1789,5 +1949,5 @@ function deleteMember($id_movimiento)
         initDataTable();
     });
 </script>
-
+</body>
 </html>

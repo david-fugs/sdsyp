@@ -504,14 +504,16 @@ if (!$result_comunas) {
                                 <input type="text" class="form-control" id="edit-telefono_contacto" name="telefono_contacto" placeholder="Teléfono de contacto">
                                 <label for="edit-telefono_contacto">Teléfono de contacto</label>
                             </div>
+                            <div class="col-md-6 mb-3 form-floating position-relative">
+                                <input type="text" class="form-control" id="edit-barrio-actividad" name="barrio_actividad" placeholder="Barrio" list="edit-lista-barrios-actividad" autocomplete="off">
+                                <label for="edit-barrio-actividad">Barrio</label>
+                                <datalist id="edit-lista-barrios-actividad"></datalist>
+                                <input type="hidden" id="edit-id-barrio-actividad" name="id_barrio">
+                                <input type="hidden" id="edit-id-comuna-actividad" name="id_comuna">
+                            </div>
                             <div class="col-md-6 mb-3 form-floating">
-                                <select name="id_comuna" id="edit-id_comuna" class="form-select">
-                                    <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_comunas as $comuna) { ?>
-                                        <option value="<?= $comuna['id_com']; ?>"><?= $comuna['nombre_com']; ?></option>
-                                    <?php } ?>
-                                </select>
-                                <label for="edit-id_comuna">Comuna/Corregimiento</label>
+                                <input type="text" class="form-control" id="edit-nombre-comuna-actividad" placeholder="Comuna/Corregimiento" readonly>
+                                <label for="edit-nombre-comuna-actividad">Comuna/Corregimiento</label>
                             </div>
                         </div>
                         <div class="row">
@@ -676,15 +678,19 @@ if (!$result_comunas) {
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-6 mb-3 form-floating">
-                                    <select name="id_comuna" id="id_comuna" class="form-select">
-                                        <option value="" selected>Seleccione...</option>
-                                        <?php foreach ($result_comunas as $comuna) { ?>
-                                            <option value="<?= $comuna['id_com']; ?>"><?= $comuna['nombre_com']; ?></option>
-                                        <?php } ?>
-                                    </select>
-                                    <label for="id_comuna">Comuna/Corregimiento</label>
+                                <div class="col-md-6 mb-3 form-floating position-relative">
+                                    <input type="text" class="form-control" id="barrio_actividad" name="barrio_actividad" placeholder="Barrio" list="lista-barrios-actividad" autocomplete="off">
+                                    <label for="barrio_actividad">Barrio</label>
+                                    <datalist id="lista-barrios-actividad"></datalist>
+                                    <input type="hidden" id="id_barrio_actividad" name="id_barrio">
+                                    <input type="hidden" id="id_comuna_actividad" name="id_comuna">
                                 </div>
+                                <div class="col-md-6 mb-3 form-floating">
+                                    <input type="text" class="form-control" id="nombre_comuna_actividad" placeholder="Comuna/Corregimiento" readonly>
+                                    <label for="nombre_comuna_actividad">Comuna/Corregimiento</label>
+                                </div>
+                            </div>
+                            <div class="row">
                                 <div class="col-md-6 mb-3 form-floating">
                                     <select name="medio_verificacion" id="medio_verificacion" class="form-select">
                                         <option value="" selected>Seleccione...</option>
@@ -933,7 +939,11 @@ if (!$result_comunas) {
             $("#edit-fecha_atencion").val(button.getAttribute("data-fecha_atencion") || "");
             $("#edit-nombre_lider").val(button.getAttribute("data-nombre_lider") || "");
             $("#edit-telefono_contacto").val(button.getAttribute("data-telefono_contacto") || "");
-            $("#edit-id_comuna").val(button.getAttribute("data-comuna") || "");
+            // Barrio y comuna en modal edición
+            $("#edit-barrio-actividad").val(button.getAttribute("data-nombre_barrio") || "");
+            $("#edit-id-barrio-actividad").val(button.getAttribute("data-barrio") || "");
+            $("#edit-id-comuna-actividad").val(button.getAttribute("data-comuna") || "");
+            $("#edit-nombre-comuna-actividad").val(button.getAttribute("data-nombre_com") || "");
             $("#edit-medio_verificacion").val(button.getAttribute("data-medio_verificacion") || "");
             $("#edit-cantidad_masculino").val(button.getAttribute("data-cantidad_masculino") || "");
             $("#edit-cantidad_femenino").val(button.getAttribute("data-cantidad_femenino") || "");
@@ -1978,6 +1988,88 @@ if (!$result_comunas) {
         // también al finalizar inicialización de jQuery
         $(window).on('load', setupTopScroller);
     })();
+
+    // --- Autocompletado de Barrio y Comuna (Agregar Actividad) ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputBarrioAdd = document.getElementById('barrio_actividad');
+        const datalistBarriosAdd = document.getElementById('lista-barrios-actividad');
+        const inputComunaAdd = document.getElementById('nombre_comuna_actividad');
+        const inputIdBarrioAdd = document.getElementById('id_barrio_actividad');
+        const inputIdComunaAdd = document.getElementById('id_comuna_actividad');
+        let barriosDataAdd = [];
+
+        if (inputBarrioAdd && datalistBarriosAdd) {
+            inputBarrioAdd.addEventListener('input', function() {
+                const term = this.value.trim();
+                if (term.length < 2) { datalistBarriosAdd.innerHTML = ''; return; }
+                fetch('../persons/buscar_barrio.php?term=' + encodeURIComponent(term))
+                    .then(res => res.json())
+                    .then(data => {
+                        barriosDataAdd = data;
+                        datalistBarriosAdd.innerHTML = '';
+                        data.forEach(barrio => {
+                            const option = document.createElement('option');
+                            option.value = barrio.nombre_bar;
+                            option.setAttribute('data-id', barrio.id_bar);
+                            datalistBarriosAdd.appendChild(option);
+                        });
+                    });
+            });
+            inputBarrioAdd.addEventListener('change', function() {
+                const selected = barriosDataAdd.find(b => b.nombre_bar.toLowerCase() === inputBarrioAdd.value.trim().toLowerCase());
+                if (selected) {
+                    inputComunaAdd.value = selected.nombre_com || '';
+                    if (inputIdBarrioAdd) inputIdBarrioAdd.value = selected.id_bar || '';
+                    if (inputIdComunaAdd) inputIdComunaAdd.value = selected.id_com || '';
+                } else {
+                    inputComunaAdd.value = '';
+                    if (inputIdBarrioAdd) inputIdBarrioAdd.value = '';
+                    if (inputIdComunaAdd) inputIdComunaAdd.value = '';
+                }
+            });
+        }
+    });
+
+    // --- Autocompletado de Barrio y Comuna (Editar Actividad) ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputBarrioEdit = document.getElementById('edit-barrio-actividad');
+        const datalistBarriosEdit = document.getElementById('edit-lista-barrios-actividad');
+        const inputComunaEdit = document.getElementById('edit-nombre-comuna-actividad');
+        const inputIdBarrioEdit = document.getElementById('edit-id-barrio-actividad');
+        const inputIdComunaEdit = document.getElementById('edit-id-comuna-actividad');
+        let barriosDataEdit = [];
+
+        if (inputBarrioEdit && datalistBarriosEdit) {
+            inputBarrioEdit.addEventListener('input', function() {
+                const term = this.value.trim();
+                if (term.length < 2) { datalistBarriosEdit.innerHTML = ''; return; }
+                fetch('../persons/buscar_barrio.php?term=' + encodeURIComponent(term))
+                    .then(res => res.json())
+                    .then(data => {
+                        barriosDataEdit = data;
+                        datalistBarriosEdit.innerHTML = '';
+                        data.forEach(barrio => {
+                            const option = document.createElement('option');
+                            option.value = barrio.nombre_bar;
+                            option.setAttribute('data-id', barrio.id_bar);
+                            datalistBarriosEdit.appendChild(option);
+                        });
+                    });
+            });
+            inputBarrioEdit.addEventListener('change', function() {
+                const selected = barriosDataEdit.find(b => b.nombre_bar.toLowerCase() === inputBarrioEdit.value.trim().toLowerCase());
+                if (selected) {
+                    inputComunaEdit.value = selected.nombre_com || '';
+                    if (inputIdBarrioEdit) inputIdBarrioEdit.value = selected.id_bar || '';
+                    if (inputIdComunaEdit) inputIdComunaEdit.value = selected.id_com || '';
+                } else {
+                    inputComunaEdit.value = '';
+                    if (inputIdBarrioEdit) inputIdBarrioEdit.value = '';
+                    if (inputIdComunaEdit) inputIdComunaEdit.value = '';
+                }
+            });
+        }
+    });
 </script>
 
 </html>

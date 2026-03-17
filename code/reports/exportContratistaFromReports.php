@@ -76,6 +76,7 @@ elseif ($tipo_usuario == 3 && isset($_SESSION['id'])) {
 
 $query = "SELECT ra.id_registro, m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica,
        g.descripcion_grupo AS centro_vida, ra.otro_lugar, ra.fecha_atencion, ra.nombre_lider, ra.telefono_contacto, c.nombre_com AS nombre_comuna,
+       b.nombre_bar AS nombre_barrio,
        ra.medio_verificacion, ra.cantidad_masculino, ra.cantidad_femenino, ra.tipo_actividad, ra.observacion_actividad,
        ra.id_usuario, u1.nombre AS digitado_por, ra.funcionario_responsable, u2.nombre AS funcionario_responsable_nombre
 FROM registro_actividades AS ra
@@ -85,6 +86,7 @@ LEFT JOIN acciones ac ON ra.id_accion = ac.id_accion
 LEFT JOIN politicas_publicas pp ON ra.politica_publica = pp.id_politica
 LEFT JOIN grupos g ON ra.id_centro_vida = g.id_grupo
 LEFT JOIN comunas c ON ra.id_comuna = c.id_com
+LEFT JOIN barrios b ON ra.id_barrio = b.id_bar
 LEFT JOIN usuarios u1 ON ra.id_usuario = u1.id
 LEFT JOIN usuarios u2 ON CAST(ra.funcionario_responsable AS UNSIGNED) = u2.id AND ra.funcionario_responsable REGEXP '^[0-9]+$'
 WHERE 1 $where $where_grupos_filtro
@@ -101,7 +103,7 @@ $sheet->setTitle('Actividades Contratista');
 // Cabeceras
 $headers = [
     'ID', 'Meta', 'Actividad', 'Acción', 'Política Pública', 'Lugar del Evento', 'Otro Lugar', 'Fecha Atención',
-    'Nombre Líder', 'Teléfono Contacto', 'Comuna/Corregimiento', 'Medio de Verificación',
+    'Nombre Líder', 'Teléfono Contacto', 'Barrio', 'Comuna/Corregimiento', 'Medio de Verificación',
     'Cant. Masculino', 'Cant. Femenino', 'Total personas', 'Tipo Actividad', 'Observación Actividad', 'Digitado por', 'Funcionario Responsable'
 ];
 
@@ -151,6 +153,7 @@ if ($result && $result->num_rows > 0) {
             $data['fecha_atencion'],
             $data['nombre_lider'],
             $data['telefono_contacto'],
+            $data['nombre_barrio'],
             $data['nombre_comuna'],
             $data['medio_verificacion'],
             $data['cantidad_masculino'],
