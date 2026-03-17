@@ -341,7 +341,6 @@ function deleteMember($cedula_persona_cm)
                                                 data-telefono="' . htmlspecialchars($row['telefono_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-telefono-referencia="' . htmlspecialchars($row['telefono_referencia_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-referencia="' . htmlspecialchars($row['referencia_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-correo="' . htmlspecialchars($row['correo_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-fecha-nacimiento="' . htmlspecialchars($row['fecha_nacimiento_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-edad="' . htmlspecialchars($row['edad_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-grupo-sisben="' . htmlspecialchars($row['grupo_sisben'] ?? '', ENT_QUOTES, 'UTF-8') . '"
@@ -351,26 +350,14 @@ function deleteMember($cedula_persona_cm)
                                                 data-zona="' . htmlspecialchars($row['zona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-departamento="' . htmlspecialchars($row['departamento_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-municipio="' . htmlspecialchars($row['municipio_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-eps="' . htmlspecialchars($row['eps'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-peso="' . htmlspecialchars($row['peso'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-talla="' . htmlspecialchars($row['talla'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-patologias="' . htmlspecialchars($row['patologias'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-factores-riesgo="' . htmlspecialchars($row['factores_riesgo'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-factores-preventivos="' . htmlspecialchars($row['factores_preventivos'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-ingresos-economicos="' . htmlspecialchars($row['ingresos_economicos'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-convivencia-actual="' . htmlspecialchars($row['convivencia_actual'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-resultado-actividad="' . htmlspecialchars($row['resultado_actividad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-remision="' . htmlspecialchars($row['remision'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-persona-discapacidad="' . htmlspecialchars($row['persona_discapacidad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-cual-discapacidad="' . htmlspecialchars($row['cual_discapacidad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-cabeza-hogar="' . htmlspecialchars($row['cabeza_hogar'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-lider-comunidad="' . htmlspecialchars($row['lider_comunidad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-se-reconoce-como="' . htmlspecialchars($row['se_reconoce_como'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-orientacion-sexual="' . htmlspecialchars($row['orientacion_sexual'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-experiencia-migratoria="' . htmlspecialchars($row['experiencia_migratoria'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-grupo-etnico="' . htmlspecialchars($row['grupo_etnico'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-tipo-salud="' . htmlspecialchars($row['tipo_salud'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-nivel-educativo="' . htmlspecialchars($row['nivel_educativo'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-condicion-ocupacion="' . htmlspecialchars($row['condicion_ocupacion'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-condicion-componente="' . htmlspecialchars($row['condicion_componente'] ?? '', ENT_QUOTES, 'UTF-8') . '"
                                                 data-fecha-ingreso="' . htmlspecialchars($row['fecha_ingreso_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
@@ -480,12 +467,8 @@ function deleteMember($cedula_persona_cm)
                             </div>
                         </div>
 
-                        <!-- Fila 3.7: Correo y Fecha de Nacimiento -->
+                        <!-- Fila 3.7: Fecha de Nacimiento -->
                         <div class="row">
-                            <div class="col-md-6 mb-3 form-floating">
-                                <input type="email" class="form-control" id="correo_persona" name="correo_cm" placeholder="Correo">
-                                <label for="correo_persona">Correo</label>
-                            </div>
                             <div class="col-md-6 mb-3 form-floating">
                                 <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento_cm" placeholder="Fecha de Nacimiento">
                                 <label for="fecha_nacimiento">Fecha de Nacimiento</label>
@@ -564,90 +547,9 @@ function deleteMember($cedula_persona_cm)
                             </div>
                         </div>
 
-                        <!-- Fila 8: EPS, Peso, Talla -->
-                        <div class="row">
-                            <div class="col-md-4 mb-3 form-floating">
-                                <input type="text" class="form-control" id="eps" name="eps" placeholder="EPS">
-                                <label for="eps">EPS</label>
-                            </div>
-                            <div class="col-md-4 mb-3 form-floating">
-                                <input type="number" step="0.01" class="form-control" id="peso" name="peso" placeholder="Peso (kg)">
-                                <label for="peso">Peso (kg)</label>
-                            </div>
-                            <div class="col-md-4 mb-3 form-floating">
-                                <input type="number" step="0.01" class="form-control" id="talla" name="talla" placeholder="Talla (cm)">
-                                <label for="talla">Talla (cm)</label>
-                            </div>
-                        </div>
-
-                        <!-- Fila 9: Patologías y Factores de Riesgo -->
+                        <!-- Fila 11: Convivencia Actual -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="patologias" name="patologias">
-                                    <option value="" selected>Seleccione...</option>
-                                    <option>Osteomuscular</option>
-                                    <option>Respiratoria</option>
-                                    <option>Diabetes</option>
-                                    <option>EPOC</option>
-                                    <option>Trastorno afectivo bipolar</option>
-                                    <option>Física</option>
-                                    <option>Cataratas senil nuclear</option>
-                                    <option>Hipertensión arterial</option>
-                                    <option>HTA</option>
-                                    <option>Hipertensión senecial</option>
-                                    <option>Hipotiroidismo</option>
-                                    <option>ICC</option>
-                                    <option>Mental</option>
-                                    <option>Ninguna</option>
-                                    <option>No aplica</option>
-                                    <option>Osteoastromuscular</option>
-                                    <option>Otras</option>
-                                </select>
-                                <label for="patologias">Patologías</label>
-                            </div>
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="factores_riesgo" name="factores_riesgo">
-                                    <option value="" selected>Seleccione...</option>
-                                    <option>Alcohol</option>
-                                    <option>Tabaco</option>
-                                    <option>Tabaco y alcohol</option>
-                                    <option>Otros</option>
-                                    <option>No aplica</option>
-                                </select>
-                                <label for="factores_riesgo">Factores de Riesgo</label>
-                            </div>
-                        </div>
-
-                        <!-- Fila 10: Factores Preventivos e Ingresos Económicos -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="factores_preventivos" name="factores_preventivos">
-                                    <option value="" selected>Seleccione...</option>
-                                    <option>Ejercicio</option>
-                                    <option>Dieta</option>
-                                    <option>Ejercicio y dieta</option>
-                                    <option>Otra</option>
-                                    <option>No aplica</option>
-                                </select>
-                                <label for="factores_preventivos">Factores Preventivos</label>
-                            </div>
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="ingresos_economicos" name="ingresos_economicos">
-                                    <option value="" selected>Seleccione...</option>
-                                    <option>Pensión</option>
-                                    <option>Estado</option>
-                                    <option>Conyuge</option>
-                                    <option>Mendicidad</option>
-                                    <option>Otro</option>
-                                    <option>No aplica</option>
-                                </select>
-                                <label for="ingresos_economicos">Ingresos Económicos</label>
-                            </div>
-                        </div>
-
-                        <!-- Fila 11: Convivencia, Resultado Actividad, Remisión -->
-                        <div class="row">
-                            <div class="col-md-4 mb-3 form-floating">
                                 <select class="form-select" id="convivencia_actual" name="convivencia_actual">
                                     <option value="" selected>Seleccione...</option>
                                     <option>Pareja</option>
@@ -656,51 +558,6 @@ function deleteMember($cedula_persona_cm)
                                     <option>No aplica</option>
                                 </select>
                                 <label for="convivencia_actual">Convivencia Actual</label>
-                            </div>
-                            <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="resultado_actividad" name="resultado_actividad">
-                                    <option value="" selected>Seleccione...</option>
-                                    <option>Con deterioro leve</option>
-                                    <option>Con deterioro moderado</option>
-                                    <option>Con deterioro severo</option>
-                                    <option>Sin deterioro</option>
-                                    <option>Delgadez</option>
-                                    <option>Normal</option>
-                                    <option>Obesidad grado 1</option>
-                                    <option>Obesidad grado II</option>
-                                    <option>Obesidad grado III</option>
-                                    <option>Sobrepeso</option>
-                                    <option>Depresión</option>
-                                    <option>En riesgo</option>
-                                    <option>Saludable</option>
-                                    <option>Demencia</option>
-                                    <option>Demencia leve</option>
-                                    <option>Deterioro cognitivo leve</option>
-                                    <option>Extrema</option>
-                                    <option>Leve</option>
-                                    <option>Moderada</option>
-                                    <option>Ninguna disfuncionalidad</option>
-                                    <option>Severa</option>
-                                    <option>Disfuncionalidad extrema</option>
-                                    <option>Disfuncionalidad leve</option>
-                                    <option>Disfuncionalidad moderada</option>
-                                    <option>Disfuncionalidad severa</option>
-                                    <option>Ninguna</option>
-                                    <option>No aplica</option>
-                                </select>
-                                <label for="resultado_actividad">Resultado según actividad</label>
-                            </div>
-                            <div class="col-md-4 mb-3 form-floating">
-                                <select class="form-select" id="remision" name="remision">
-                                    <option value="" selected>Seleccione...</option>
-                                    <option>Actividad física</option>
-                                    <option>Enfermería</option>
-                                    <option>Gerontología</option>
-                                    <option>Neuropsicología</option>
-                                    <option>Psicología EPS</option>
-                                    <option>No aplica</option>
-                                </select>
-                                <label for="remision">Remisión</label>
                             </div>
                         </div>
 
@@ -729,7 +586,7 @@ function deleteMember($cedula_persona_cm)
                             </div>
                         </div>
 
-                        <!-- Fila 13: Cabeza de hogar y Líder comunidad -->
+                        <!-- Fila 13: Cabeza de hogar -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="cabeza_hogar" name="cabeza_hogar">
@@ -738,14 +595,6 @@ function deleteMember($cedula_persona_cm)
                                     <option value="No">No</option>
                                 </select>
                                 <label for="cabeza_hogar">¿Cabeza de hogar?</label>
-                            </div>
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="lider_comunidad" name="lider_comunidad">
-                                    <option value="" selected>¿Líder/representante comunidad?</option>
-                                    <option value="Si">Sí</option>
-                                    <option value="No">No</option>
-                                </select>
-                                <label for="lider_comunidad">¿Líder/representante comunidad?</label>
                             </div>
                         </div>
 
@@ -777,16 +626,8 @@ function deleteMember($cedula_persona_cm)
                             </div>
                         </div>
 
-                        <!-- Fila 15: Experiencia migratoria y Grupo étnico -->
+                        <!-- Fila 15: Grupo étnico -->
                         <div class="row">
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="experiencia_migratoria" name="experiencia_migratoria">
-                                    <option value="" selected>¿Experiencia migratoria?</option>
-                                    <option value="Si">Sí</option>
-                                    <option value="No">No</option>
-                                </select>
-                                <label for="experiencia_migratoria">¿Experiencia migratoria?</label>
-                            </div>
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="grupo_etnico" name="grupo_etnico">
                                     <option value="" selected>Grupo étnico...</option>
@@ -801,7 +642,7 @@ function deleteMember($cedula_persona_cm)
                             </div>
                         </div>
 
-                        <!-- Fila 16: Tipo de salud y Nivel educativo -->
+                        <!-- Fila 16: Tipo de salud -->
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="tipo_salud" name="tipo_salud">
@@ -811,21 +652,6 @@ function deleteMember($cedula_persona_cm)
                                     <option value="Régimen vinculado">Régimen vinculado</option>
                                 </select>
                                 <label for="tipo_salud">Tipo de salud</label>
-                            </div>
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="nivel_educativo" name="nivel_educativo">
-                                    <option value="" selected>Nivel educativo...</option>
-                                    <option value="Preescolar">Preescolar</option>
-                                    <option value="Básica primaria">Básica primaria</option>
-                                    <option value="Básica secundaria">Básica secundaria</option>
-                                    <option value="Media académica o clásica">Media académica o clásica</option>
-                                    <option value="Media técnica">Media técnica</option>
-                                    <option value="Normalista">Normalista</option>
-                                    <option value="Técnica profesional">Técnica profesional</option>
-                                    <option value="Tecnológica">Tecnológica</option>
-                                    <option value="Profesional">Profesional</option>
-                                </select>
-                                <label for="nivel_educativo">Nivel educativo</label>
                             </div>
                         </div>
 
@@ -1010,12 +836,8 @@ function deleteMember($cedula_persona_cm)
                             </div>
                         </div>
 
-                        <!-- Fila: Correo y Grupo SISBEN -->
+                        <!-- Fila: Grupo SISBEN -->
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="edit-correo" class="form-label">Correo Electrónico</label>
-                                <input type="email" class="form-control" id="edit-correo" name="correo_cm">
-                            </div>
                             <div class="col-md-6 mb-3">
                                 <label for="edit-grupo-sisben" class="form-label">Grupo SISBEN</label>
                                 <select class="form-select" id="edit-grupo-sisben" name="grupo_sisben">
@@ -1083,141 +905,15 @@ function deleteMember($cedula_persona_cm)
                             </div>
                         </div>
 
-                        <!-- Fila: EPS, Peso, Talla -->
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="edit-eps" class="form-label">EPS</label>
-                                <input type="text" class="form-control" id="edit-eps" name="eps">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="edit-peso" class="form-label">Peso (kg)</label>
-                                <input type="number" step="0.01" class="form-control" id="edit-peso" name="peso">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="edit-talla" class="form-label">Talla (cm)</label>
-                                <input type="number" step="0.01" class="form-control" id="edit-talla" name="talla">
-                            </div>
-                        </div>
-
-                        <!-- Fila: Patologías y Factores de Riesgo -->
+                        <!-- Fila: Convivencia Actual -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="edit-patologias" class="form-label">Patologías</label>
-                                <select class="form-select" id="edit-patologias" name="patologias">
-                                    <option value="">Seleccione...</option>
-                                    <option>Osteomuscular</option>
-                                    <option>Respiratoria</option>
-                                    <option>Diabetes</option>
-                                    <option>EPOC</option>
-                                    <option>Trastorno afectivo bipolar</option>
-                                    <option>Física</option>
-                                    <option>Cataratas senil nuclear</option>
-                                    <option>Hipertensión arterial</option>
-                                    <option>HTA</option>
-                                    <option>Hipertensión senecial</option>
-                                    <option>Hipotiroidismo</option>
-                                    <option>ICC</option>
-                                    <option>Mental</option>
-                                    <option>Ninguna</option>
-                                    <option>No aplica</option>
-                                    <option>Osteoastromuscular</option>
-                                    <option>Otras</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="edit-factores-riesgo" class="form-label">Factores de Riesgo</label>
-                                <select class="form-select" id="edit-factores-riesgo" name="factores_riesgo">
-                                    <option value="">Seleccione...</option>
-                                    <option>Alcohol</option>
-                                    <option>Tabaco</option>
-                                    <option>Tabaco y alcohol</option>
-                                    <option>Otros</option>
-                                    <option>No aplica</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Fila: Factores Preventivos e Ingresos Económicos -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="edit-factores-preventivos" class="form-label">Factores Preventivos</label>
-                                <select class="form-select" id="edit-factores-preventivos" name="factores_preventivos">
-                                    <option value="">Seleccione...</option>
-                                    <option>Ejercicio</option>
-                                    <option>Dieta</option>
-                                    <option>Ejercicio y dieta</option>
-                                    <option>Otra</option>
-                                    <option>No aplica</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="edit-ingresos-economicos" class="form-label">Ingresos Económicos</label>
-                                <select class="form-select" id="edit-ingresos-economicos" name="ingresos_economicos">
-                                    <option value="">Seleccione...</option>
-                                    <option>Pensión</option>
-                                    <option>Estado</option>
-                                    <option>Conyuge</option>
-                                    <option>Mendicidad</option>
-                                    <option>Otro</option>
-                                    <option>No aplica</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Fila: Convivencia, Resultado Actividad, Remisión -->
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
                                 <label for="edit-convivencia-actual" class="form-label">Convivencia Actual</label>
                                 <select class="form-select" id="edit-convivencia-actual" name="convivencia_actual">
                                     <option value="">Seleccione...</option>
                                     <option>Pareja</option>
                                     <option>Familia</option>
                                     <option>Otro</option>
-                                    <option>No aplica</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="edit-resultado-actividad" class="form-label">Resultado según actividad</label>
-                                <select class="form-select" id="edit-resultado-actividad" name="resultado_actividad">
-                                    <option value="">Seleccione...</option>
-                                    <option>Con deterioro leve</option>
-                                    <option>Con deterioro moderado</option>
-                                    <option>Con deterioro severo</option>
-                                    <option>Sin deterioro</option>
-                                    <option>Delgadez</option>
-                                    <option>Normal</option>
-                                    <option>Obesidad grado 1</option>
-                                    <option>Obesidad grado II</option>
-                                    <option>Obesidad grado III</option>
-                                    <option>Sobrepeso</option>
-                                    <option>Depresión</option>
-                                    <option>En riesgo</option>
-                                    <option>Saludable</option>
-                                    <option>Demencia</option>
-                                    <option>Demencia leve</option>
-                                    <option>Deterioro cognitivo leve</option>
-                                    <option>Extrema</option>
-                                    <option>Leve</option>
-                                    <option>Moderada</option>
-                                    <option>Ninguna disfuncionalidad</option>
-                                    <option>Severa</option>
-                                    <option>Disfuncionalidad extrema</option>
-                                    <option>Disfuncionalidad leve</option>
-                                    <option>Disfuncionalidad moderada</option>
-                                    <option>Disfuncionalidad severa</option>
-                                    <option>Ninguna</option>
-                                    <option>No aplica</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="edit-remision" class="form-label">Remisión</label>
-                                <select class="form-select" id="edit-remision" name="remision">
-                                    <option value="">Seleccione...</option>
-                                    <option>Actividad física</option>
-                                    <option>Enfermería</option>
-                                    <option>Gerontología</option>
-                                    <option>Neuropsicología</option>
-                                    <option>Psicología EPS</option>
                                     <option>No aplica</option>
                                 </select>
                             </div>
@@ -1248,19 +944,11 @@ function deleteMember($cedula_persona_cm)
                             </div>
                         </div>
 
-                        <!-- Fila: Cabeza de hogar y Líder comunidad -->
+                        <!-- Fila: Cabeza de hogar -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="edit-cabeza-hogar" class="form-label">¿Cabeza de hogar?</label>
                                 <select class="form-select" id="edit-cabeza-hogar" name="cabeza_hogar">
-                                    <option value="">Seleccione...</option>
-                                    <option value="Si">Sí</option>
-                                    <option value="No">No</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="edit-lider-comunidad" class="form-label">¿Líder/representante comunidad?</label>
-                                <select class="form-select" id="edit-lider-comunidad" name="lider_comunidad">
                                     <option value="">Seleccione...</option>
                                     <option value="Si">Sí</option>
                                     <option value="No">No</option>
@@ -1296,16 +984,8 @@ function deleteMember($cedula_persona_cm)
                             </div>
                         </div>
 
-                        <!-- Fila: Experiencia migratoria y Grupo étnico -->
+                        <!-- Fila: Grupo étnico -->
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="edit-experiencia-migratoria" class="form-label">¿Experiencia migratoria?</label>
-                                <select class="form-select" id="edit-experiencia-migratoria" name="experiencia_migratoria">
-                                    <option value="">Seleccione...</option>
-                                    <option value="Si">Sí</option>
-                                    <option value="No">No</option>
-                                </select>
-                            </div>
                             <div class="col-md-6 mb-3">
                                 <label for="edit-grupo-etnico" class="form-label">Grupo étnico</label>
                                 <select class="form-select" id="edit-grupo-etnico" name="grupo_etnico">
@@ -1320,7 +1000,7 @@ function deleteMember($cedula_persona_cm)
                             </div>
                         </div>
 
-                        <!-- Fila: Tipo de salud y Nivel educativo -->
+                        <!-- Fila: Tipo de salud -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="edit-tipo-salud" class="form-label">Tipo de salud</label>
@@ -1329,21 +1009,6 @@ function deleteMember($cedula_persona_cm)
                                     <option value="Régimen subsidiado">Régimen subsidiado</option>
                                     <option value="Régimen contributivo">Régimen contributivo</option>
                                     <option value="Régimen vinculado">Régimen vinculado</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="edit-nivel-educativo" class="form-label">Nivel educativo</label>
-                                <select class="form-select" id="edit-nivel-educativo" name="nivel_educativo">
-                                    <option value="">Seleccione...</option>
-                                    <option value="Preescolar">Preescolar</option>
-                                    <option value="Básica primaria">Básica primaria</option>
-                                    <option value="Básica secundaria">Básica secundaria</option>
-                                    <option value="Media académica o clásica">Media académica o clásica</option>
-                                    <option value="Media técnica">Media técnica</option>
-                                    <option value="Normalista">Normalista</option>
-                                    <option value="Técnica profesional">Técnica profesional</option>
-                                    <option value="Tecnológica">Tecnológica</option>
-                                    <option value="Profesional">Profesional</option>
                                 </select>
                             </div>
                         </div>
@@ -1508,7 +1173,6 @@ function deleteMember($cedula_persona_cm)
                 modal.find('#edit-telefono').val(button.data('telefono'));
                 modal.find('#edit-telefono-referencia').val(button.data('telefono-referencia'));
                 modal.find('#edit-referencia').val(button.data('referencia'));
-                modal.find('#edit-correo').val(button.data('correo'));
                 modal.find('#edit-fecha-nacimiento').val(button.data('fecha-nacimiento'));
                 modal.find('#edit-edad').val(button.data('edad'));
                 modal.find('#edit-grupo-sisben').val(button.data('grupo-sisben'));
@@ -1522,28 +1186,16 @@ function deleteMember($cedula_persona_cm)
                 modal.find('#edit-municipio').val(button.data('municipio'));
                 
                 // Salud
-                modal.find('#edit-eps').val(button.data('eps'));
-                modal.find('#edit-peso').val(button.data('peso'));
-                modal.find('#edit-talla').val(button.data('talla'));
-                modal.find('#edit-patologias').val(button.data('patologias'));
-                modal.find('#edit-factores-riesgo').val(button.data('factores-riesgo'));
-                modal.find('#edit-factores-preventivos').val(button.data('factores-preventivos'));
-                modal.find('#edit-ingresos-economicos').val(button.data('ingresos-economicos'));
                 modal.find('#edit-convivencia-actual').val(button.data('convivencia-actual'));
-                modal.find('#edit-resultado-actividad').val(button.data('resultado-actividad'));
-                modal.find('#edit-remision').val(button.data('remision'));
                 
                 // Caracterización
                 modal.find('#edit-persona-discapacidad').val(button.data('persona-discapacidad'));
                 modal.find('#edit-cual-discapacidad').val(button.data('cual-discapacidad'));
                 modal.find('#edit-cabeza-hogar').val(button.data('cabeza-hogar'));
-                modal.find('#edit-lider-comunidad').val(button.data('lider-comunidad'));
                 modal.find('#edit-se-reconoce-como').val(button.data('se-reconoce-como'));
                 modal.find('#edit-orientacion-sexual').val(button.data('orientacion-sexual'));
-                modal.find('#edit-experiencia-migratoria').val(button.data('experiencia-migratoria'));
                 modal.find('#edit-grupo-etnico').val(button.data('grupo-etnico'));
                 modal.find('#edit-tipo-salud').val(button.data('tipo-salud'));
-                modal.find('#edit-nivel-educativo').val(button.data('nivel-educativo'));
                 modal.find('#edit-condicion-ocupacion').val(button.data('condicion-ocupacion'));
                 modal.find('#edit-condicion-componente').val(button.data('condicion-componente'));
                 
@@ -2023,7 +1675,6 @@ function deleteMember($cedula_persona_cm)
                 $('#edit-telefono').val(btn.data('telefono'));
                 $('#edit-telefono-referencia').val(btn.data('telefono-referencia'));
                 $('#edit-referencia').val(btn.data('referencia'));
-                $('#edit-correo').val(btn.data('correo'));
                 $('#edit-fecha-nacimiento').val(btn.data('fecha-nacimiento'));
                 $('#edit-edad').val(btn.data('edad'));
                 $('#edit-grupo-sisben').val(btn.data('grupo-sisben'));
@@ -2037,16 +1688,7 @@ function deleteMember($cedula_persona_cm)
                 $('#edit-municipio').val(btn.data('municipio'));
                 
                 // Salud
-                $('#edit-eps').val(btn.data('eps'));
-                $('#edit-peso').val(btn.data('peso'));
-                $('#edit-talla').val(btn.data('talla'));
-                $('#edit-patologias').val(btn.data('patologias'));
-                $('#edit-factores-riesgo').val(btn.data('factores-riesgo'));
-                $('#edit-factores-preventivos').val(btn.data('factores-preventivos'));
-                $('#edit-ingresos-economicos').val(btn.data('ingresos-economicos'));
                 $('#edit-convivencia-actual').val(btn.data('convivencia-actual'));
-                $('#edit-resultado-actividad').val(btn.data('resultado-actividad'));
-                $('#edit-remision').val(btn.data('remision'));
                 
                 // Caracterización
                 const personaDiscapacidad = btn.data('persona-discapacidad');
@@ -2060,13 +1702,10 @@ function deleteMember($cedula_persona_cm)
                 }
                 
                 $('#edit-cabeza-hogar').val(btn.data('cabeza-hogar'));
-                $('#edit-lider-comunidad').val(btn.data('lider-comunidad'));
                 $('#edit-se-reconoce-como').val(btn.data('se-reconoce-como'));
                 $('#edit-orientacion-sexual').val(btn.data('orientacion-sexual'));
-                $('#edit-experiencia-migratoria').val(btn.data('experiencia-migratoria'));
                 $('#edit-grupo-etnico').val(btn.data('grupo-etnico'));
                 $('#edit-tipo-salud').val(btn.data('tipo-salud'));
-                $('#edit-nivel-educativo').val(btn.data('nivel-educativo'));
                 $('#edit-condicion-ocupacion').val(btn.data('condicion-ocupacion'));
                 $('#edit-condicion-componente').val(btn.data('condicion-componente'));
                 
