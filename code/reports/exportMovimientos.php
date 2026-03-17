@@ -26,9 +26,38 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 
 // Obtener filtros
 $filtro_anio = isset($_GET['year']) ? intval($_GET['year']) : date('Y');
-$filtro_grupo = isset($_GET['filtro_grupo']) && !empty($_GET['filtro_grupo']) ? intval($_GET['filtro_grupo']) : '';
+$filtro_grupo = isset($_GET['filtro_grupo']) && !empty($_GET['filtro_grupo']) ? $_GET['filtro_grupo'] : '';
 $filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : '';
 $filtro_usuario = isset($_GET['filtro_usuario']) && !empty($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : '';
+
+// Detectar si se seleccionó "Todos CPSAM" o "Todos Centros Vida"
+$filtro_todos_grupos = false;
+$prefijo_grupo = '';
+$grupos_a_exportar = [];
+
+if ($filtro_grupo === 'TODOS_CPSAM') {
+    $filtro_todos_grupos = true;
+    $prefijo_grupo = 'CPSAM';
+    // Obtener todos los grupos que empiezan con CPSAM
+    $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CPSAM%' ORDER BY descripcion_grupo ASC";
+    $result_grupos_query = $mysqli->query($query_grupos);
+    if ($result_grupos_query) {
+        while ($grupo_row = $result_grupos_query->fetch_assoc()) {
+            $grupos_a_exportar[] = $grupo_row;
+        }
+    }
+} elseif ($filtro_grupo === 'TODOS_CV') {
+    $filtro_todos_grupos = true;
+    $prefijo_grupo = 'CV';
+    // Obtener todos los grupos que empiezan con CV
+    $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC";
+    $result_grupos_query = $mysqli->query($query_grupos);
+    if ($result_grupos_query) {
+        while ($grupo_row = $result_grupos_query->fetch_assoc()) {
+            $grupos_a_exportar[] = $grupo_row;
+        }
+    }
+}
 
 // Aplicar filtro de grupos según tipo de usuario
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
@@ -48,8 +77,13 @@ if ($filtro_mes) {
 }
 
 // Si se seleccionó un grupo específico
-if ($filtro_grupo) {
-    $where .= " AND p.id_grupo = $filtro_grupo ";
+if ($filtro_grupo && !$filtro_todos_grupos) {
+    $filtro_grupo_int = intval($filtro_grupo);
+    $where .= " AND p.id_grupo = $filtro_grupo_int ";
+} elseif ($filtro_todos_grupos && !empty($grupos_a_exportar)) {
+    // Si es "Todos CPSAM" o "Todos CV", filtrar por todos esos grupos
+    $ids_grupos = array_map(function($g) { return intval($g['id_grupo']); }, $grupos_a_exportar);
+    $where .= " AND p.id_grupo IN (" . implode(',', $ids_grupos) . ") ";
 }
 
 // Filtro por usuario
@@ -79,37 +113,73 @@ elseif ($tipo_usuario == 3 && isset($_SESSION['id'])) {
 $where .= $where_grupos_filtro;
 
 // Consulta SQL para obtener los movimientos
-$query = "SELECT 
-    mp.id_movimiento_persona,
-    p.cedula_persona,
-    p.nombres_persona,
-    p.apellidos_persona,
-    c.descripcion_condicion,
-    mp.fecha_movimiento,
-    mp.observacion_movimiento,
-    g.descripcion_grupo as centro_vida_traslado,
-    g_ant.descripcion_grupo as centro_vida_traslado_anterior,
-    m.descripcion_meta,
-    a.descripcion_actividad,
-    ac.descripcion_accion,
-    pp.descripcion_politica,
-    mp.departamento_procedencia,
-    p_grupo.descripcion_grupo as grupo_persona,
-    u.nombre as usuario_registro,
-    p.sin_convenio
-FROM movimiento_persona as mp
-JOIN personas as p ON mp.cedula_persona = p.cedula_persona
-JOIN condiciones_componente as c ON mp.id_condicion = c.id_condicion
-LEFT JOIN grupos g ON mp.id_centro_vida_traslado = g.id_grupo
-LEFT JOIN grupos g_ant ON mp.id_centro_vida_traslado_anterior = g_ant.id_grupo
-LEFT JOIN grupos p_grupo ON p.id_grupo = p_grupo.id_grupo
-LEFT JOIN metas m ON mp.id_meta = m.id_meta
-LEFT JOIN actividades a ON mp.id_actividad = a.id_actividad
-LEFT JOIN acciones ac ON mp.id_accion = ac.id_accion
-LEFT JOIN politicas_publicas pp ON mp.id_politica_publica = pp.id_politica
-LEFT JOIN usuarios u ON p.id_usuario = u.id
-$where
-ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC";
+if ($filtro_todos_grupos && !empty($grupos_a_exportar)) {
+    // Si es "Todos CPSAM" o "Todos CV", ordenar por grupo para agrupar los resultados
+    $query = "SELECT
+        mp.id_movimiento_persona,
+        p.cedula_persona,
+        p.nombres_persona,
+        p.apellidos_persona,
+        c.descripcion_condicion,
+        mp.fecha_movimiento,
+        mp.observacion_movimiento,
+        g.descripcion_grupo as centro_vida_traslado,
+        g_ant.descripcion_grupo as centro_vida_traslado_anterior,
+        m.descripcion_meta,
+        a.descripcion_actividad,
+        ac.descripcion_accion,
+        pp.descripcion_politica,
+        mp.departamento_procedencia,
+        p_grupo.descripcion_grupo as grupo_persona,
+        u.nombre as usuario_registro,
+        p.sin_convenio
+    FROM movimiento_persona as mp
+    JOIN personas as p ON mp.cedula_persona = p.cedula_persona
+    JOIN condiciones_componente as c ON mp.id_condicion = c.id_condicion
+    LEFT JOIN grupos g ON mp.id_centro_vida_traslado = g.id_grupo
+    LEFT JOIN grupos g_ant ON mp.id_centro_vida_traslado_anterior = g_ant.id_grupo
+    LEFT JOIN grupos p_grupo ON p.id_grupo = p_grupo.id_grupo
+    LEFT JOIN metas m ON mp.id_meta = m.id_meta
+    LEFT JOIN actividades a ON mp.id_actividad = a.id_actividad
+    LEFT JOIN acciones ac ON mp.id_accion = ac.id_accion
+    LEFT JOIN politicas_publicas pp ON mp.id_politica_publica = pp.id_politica
+    LEFT JOIN usuarios u ON p.id_usuario = u.id
+    $where
+    ORDER BY p_grupo.descripcion_grupo ASC, mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC";
+} else {
+    // Consulta normal
+    $query = "SELECT
+        mp.id_movimiento_persona,
+        p.cedula_persona,
+        p.nombres_persona,
+        p.apellidos_persona,
+        c.descripcion_condicion,
+        mp.fecha_movimiento,
+        mp.observacion_movimiento,
+        g.descripcion_grupo as centro_vida_traslado,
+        g_ant.descripcion_grupo as centro_vida_traslado_anterior,
+        m.descripcion_meta,
+        a.descripcion_actividad,
+        ac.descripcion_accion,
+        pp.descripcion_politica,
+        mp.departamento_procedencia,
+        p_grupo.descripcion_grupo as grupo_persona,
+        u.nombre as usuario_registro,
+        p.sin_convenio
+    FROM movimiento_persona as mp
+    JOIN personas as p ON mp.cedula_persona = p.cedula_persona
+    JOIN condiciones_componente as c ON mp.id_condicion = c.id_condicion
+    LEFT JOIN grupos g ON mp.id_centro_vida_traslado = g.id_grupo
+    LEFT JOIN grupos g_ant ON mp.id_centro_vida_traslado_anterior = g_ant.id_grupo
+    LEFT JOIN grupos p_grupo ON p.id_grupo = p_grupo.id_grupo
+    LEFT JOIN metas m ON mp.id_meta = m.id_meta
+    LEFT JOIN actividades a ON mp.id_actividad = a.id_actividad
+    LEFT JOIN acciones ac ON mp.id_accion = ac.id_accion
+    LEFT JOIN politicas_publicas pp ON mp.id_politica_publica = pp.id_politica
+    LEFT JOIN usuarios u ON p.id_usuario = u.id
+    $where
+    ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC";
+}
 
 $result = $mysqli->query($query);
 
@@ -170,8 +240,30 @@ $sheet->getRowDimension(1)->setRowHeight(35);
 
 // Llenar datos
 $row = 2;
+$grupo_anterior = '';
 if ($result && $result->num_rows > 0) {
     while ($data = $result->fetch_assoc()) {
+        // Si es "Todos CPSAM" o "Todos CV", agregar fila separadora entre grupos
+        if ($filtro_todos_grupos && $data['grupo_persona'] != $grupo_anterior && $grupo_anterior != '') {
+            // Agregar fila de separación
+            $sheet->mergeCells('A' . $row . ':' . $lastCol . $row);
+            $sheet->setCellValue('A' . $row, '--- ' . strtoupper($data['grupo_persona']) . ' ---');
+            $sheet->getStyle('A' . $row . ':' . $lastCol . $row)->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '1e3a8a']
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER
+                ]
+            ]);
+            $sheet->getRowDimension($row)->setRowHeight(30);
+            $row++;
+        }
+        $grupo_anterior = $data['grupo_persona'];
+
         // Determinar si es un traslado
         $traslado_info = '';
         if ($data['centro_vida_traslado'] && $data['centro_vida_traslado_anterior']) {
@@ -179,9 +271,9 @@ if ($result && $result->num_rows > 0) {
         } elseif ($data['centro_vida_traslado']) {
             $traslado_info = $data['centro_vida_traslado'];
         }
-        
+
         $con_convenio = (isset($data['sin_convenio']) && $data['sin_convenio'] == 1) ? 'NO' : 'SÍ';
-        
+
         $rowData = [
             $data['id_movimiento_persona'],
             $data['cedula_persona'],
@@ -201,13 +293,13 @@ if ($result && $result->num_rows > 0) {
             $data['usuario_registro'] ?? '',
             $con_convenio
         ];
-        
+
         $col = 'A';
         foreach ($rowData as $value) {
             $sheet->setCellValue($col . $row, $value);
             $col++;
         }
-        
+
         // Aplicar estilos a la fila
         $sheet->getStyle('A' . $row . ':' . $lastCol . $row)->applyFromArray([
             'borders' => [
@@ -221,7 +313,7 @@ if ($result && $result->num_rows > 0) {
                 'wrapText' => true
             ]
         ]);
-        
+
         $sheet->getRowDimension($row)->setRowHeight(24);
         $row++;
     }

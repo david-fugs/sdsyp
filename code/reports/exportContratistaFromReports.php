@@ -27,9 +27,38 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 
 // Obtener filtros
 $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
-$filtro_grupo = isset($_GET['filtro_grupo']) ? intval($_GET['filtro_grupo']) : '';
+$filtro_grupo = isset($_GET['filtro_grupo']) ? $_GET['filtro_grupo'] : '';
 $filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : '';
 $filtro_usuario = isset($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : '';
+
+// Detectar si se seleccionó "Todos CPSAM" o "Todos Centros Vida"
+$filtro_todos_grupos = false;
+$prefijo_grupo = '';
+$grupos_a_exportar = [];
+
+if ($filtro_grupo === 'TODOS_CPSAM') {
+    $filtro_todos_grupos = true;
+    $prefijo_grupo = 'CPSAM';
+    // Obtener todos los grupos que empiezan con CPSAM
+    $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CPSAM%' ORDER BY descripcion_grupo ASC";
+    $result_grupos_query = $mysqli->query($query_grupos);
+    if ($result_grupos_query) {
+        while ($grupo_row = $result_grupos_query->fetch_assoc()) {
+            $grupos_a_exportar[] = $grupo_row;
+        }
+    }
+} elseif ($filtro_grupo === 'TODOS_CV') {
+    $filtro_todos_grupos = true;
+    $prefijo_grupo = 'CV';
+    // Obtener todos los grupos que empiezan con CV
+    $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC";
+    $result_grupos_query = $mysqli->query($query_grupos);
+    if ($result_grupos_query) {
+        while ($grupo_row = $result_grupos_query->fetch_assoc()) {
+            $grupos_a_exportar[] = $grupo_row;
+        }
+    }
+}
 
 // Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
@@ -46,8 +75,13 @@ if ($filtro_mes) {
 }
 
 // Si se seleccionó un grupo específico, agregar ese filtro
-if ($filtro_grupo) {
-    $where .= " AND g.id_grupo = $filtro_grupo ";
+if ($filtro_grupo && !$filtro_todos_grupos) {
+    $filtro_grupo_int = intval($filtro_grupo);
+    $where .= " AND g.id_grupo = $filtro_grupo_int ";
+} elseif ($filtro_todos_grupos && !empty($grupos_a_exportar)) {
+    // Si es "Todos CPSAM" o "Todos CV", filtrar por todos esos grupos
+    $ids_grupos = array_map(function($g) { return intval($g['id_grupo']); }, $grupos_a_exportar);
+    $where .= " AND g.id_grupo IN (" . implode(',', $ids_grupos) . ") ";
 }
 
 // Aplicar filtro de usuario si se seleccionó
@@ -90,7 +124,7 @@ LEFT JOIN barrios b ON ra.id_barrio = b.id_bar
 LEFT JOIN usuarios u1 ON ra.id_usuario = u1.id
 LEFT JOIN usuarios u2 ON CAST(ra.funcionario_responsable AS UNSIGNED) = u2.id AND ra.funcionario_responsable REGEXP '^[0-9]+$'
 WHERE 1 $where $where_grupos_filtro
-ORDER BY ra.fecha_atencion DESC
+ORDER BY " . ($filtro_todos_grupos ? "g.descripcion_grupo ASC, ra.fecha_atencion DESC" : "ra.fecha_atencion DESC") . "
 ";
 
 $result = $mysqli->query($query);
@@ -138,10 +172,32 @@ $sheet->getRowDimension(1)->setRowHeight(32);
 
 // Llenar datos
 $row = 2;
+$grupo_anterior = '';
 if ($result && $result->num_rows > 0) {
     while ($data = $result->fetch_assoc()) {
+        // Si es "Todos CPSAM" o "Todos CV", agregar fila separadora entre grupos
+        if ($filtro_todos_grupos && $data['centro_vida'] != $grupo_anterior && $grupo_anterior != '') {
+            // Agregar fila de separación
+            $sheet->mergeCells('A' . $row . ':' . $lastCol . $row);
+            $sheet->setCellValue('A' . $row, '--- ' . strtoupper($data['centro_vida']) . ' ---');
+            $sheet->getStyle('A' . $row . ':' . $lastCol . $row)->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => '000000'], 'size' => 12],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'B0E0E6']
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER
+                ]
+            ]);
+            $sheet->getRowDimension($row)->setRowHeight(30);
+            $row++;
+        }
+        $grupo_anterior = $data['centro_vida'];
+
         $totalPersonas = $data['cantidad_masculino'] + $data['cantidad_femenino'];
-        
+
         $rowData = [
             $data['id_registro'],
             $data['descripcion_meta'],
@@ -164,13 +220,13 @@ if ($result && $result->num_rows > 0) {
             $data['digitado_por'],
             $data['funcionario_responsable_nombre']
         ];
-        
+
         $col = 'A';
         foreach ($rowData as $value) {
             $sheet->setCellValue($col . $row, $value);
             $col++;
         }
-        
+
         // Aplicar estilos a la fila
         $sheet->getStyle('A' . $row . ':' . $lastCol . $row)->applyFromArray([
             'borders' => [
@@ -184,7 +240,7 @@ if ($result && $result->num_rows > 0) {
                 'wrapText' => true
             ]
         ]);
-        
+
         $sheet->getRowDimension($row)->setRowHeight(24);
         $row++;
     }

@@ -796,7 +796,13 @@ $endYear = $currentYear + 1;
                             // Obtener grupos filtrados según tipo de usuario
                             $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
                             $id_grupo_usuario_session = isset($_SESSION['id_grupo']) ? $_SESSION['id_grupo'] : 0;
-                            
+
+                            // Si es tipo usuario 1 (ADMIN), agregar opciones especiales
+                            if ($tipo_usuario == 1) {
+                                echo '<option value="TODOS_CPSAM">Todos CPSAM</option>';
+                                echo '<option value="TODOS_CV">Todos Centros Vida</option>';
+                            }
+
                             // Si es tipo usuario 2, solo mostrar su grupo asociado
                             if ($tipo_usuario == 2 && $id_grupo_usuario_session != 0) {
                                 $query_grupos = "SELECT g.* FROM grupos g WHERE g.id_grupo = $id_grupo_usuario_session ORDER BY g.descripcion_grupo ASC";
@@ -805,7 +811,7 @@ $endYear = $currentYear + 1;
                                 $where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
                                 $query_grupos = "SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC";
                             }
-                            
+
                             $result_grupos = mysqli_query($mysqli, $query_grupos);
                             if ($result_grupos) {
                                 while ($grupo = mysqli_fetch_assoc($result_grupos)) {
@@ -849,6 +855,12 @@ $endYear = $currentYear + 1;
                         <select id="filtroUsuario" class="modern-select">
                             <option value="">Todos los usuarios</option>
                             <?php
+                            // Si es tipo usuario 1 (ADMIN), agregar opciones especiales
+                            if ($tipo_usuario == 1) {
+                                echo '<option value="TODOS_CONTRATISTA_CPSAM">Todos Contratista CPSAM</option>';
+                                echo '<option value="TODOS_CENTRO_VIDA">Todos Centro Vida</option>';
+                            }
+
                             // Construir filtro WHERE para usuarios según tipo de usuario de sesión
                             $where_usuarios = "WHERE 1=1";
                             
@@ -870,11 +882,38 @@ $endYear = $currentYear + 1;
                                 $where_usuarios .= " AND u.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
                             }
                             
-                            $query_usuarios = "SELECT u.id, u.nombre FROM usuarios u $where_usuarios ORDER BY u.nombre ASC";
+                            $query_usuarios = "SELECT u.id, u.nombre, u.tipo_usuario, g.descripcion_grupo
+                                              FROM usuarios u
+                                              LEFT JOIN grupos g ON u.id_grupo = g.id_grupo
+                                              $where_usuarios
+                                              ORDER BY u.nombre ASC";
                             $result_usuarios = mysqli_query($mysqli, $query_usuarios);
                             if ($result_usuarios) {
                                 while ($usuario = mysqli_fetch_assoc($result_usuarios)) {
-                                    echo '<option value="' . $usuario['id'] . '">' . htmlspecialchars($usuario['nombre']) . '</option>';
+                                    // Obtener descripción del tipo de usuario
+                                    $tipo_usuario_desc = '';
+                                    switch ($usuario['tipo_usuario']) {
+                                        case 1: $tipo_usuario_desc = 'ADMIN'; break;
+                                        case 2: $tipo_usuario_desc = 'CPSAM/CV'; break;
+                                        case 3: $tipo_usuario_desc = 'CONTRATISTA CPSAM'; break;
+                                        case 4: $tipo_usuario_desc = 'TÉCNICO CPSAM'; break;
+                                        case 5: $tipo_usuario_desc = 'TÉCNICO CV'; break;
+                                        case 7: $tipo_usuario_desc = 'SIN ACCESO'; break;
+                                        case 8: $tipo_usuario_desc = 'TÉCNICO CM'; break;
+                                        case 9: $tipo_usuario_desc = 'CONTRATISTA CM'; break;
+                                        case 10: $tipo_usuario_desc = 'CONTRATISTA CV PROPIO'; break;
+                                        case 11: $tipo_usuario_desc = 'INGENIERO CV'; break;
+                                        case 12: $tipo_usuario_desc = 'CONTRATISTA CV ALCALDÍA'; break;
+                                        default: $tipo_usuario_desc = 'DESCONOCIDO'; break;
+                                    }
+
+                                    // Construir texto del option
+                                    $option_text = htmlspecialchars($usuario['nombre']) . ' - ' . $tipo_usuario_desc;
+                                    if (!empty($usuario['descripcion_grupo'])) {
+                                        $option_text .= ' - ' . htmlspecialchars($usuario['descripcion_grupo']);
+                                    }
+
+                                    echo '<option value="' . $usuario['id'] . '">' . $option_text . '</option>';
                                 }
                             }
                             ?>
