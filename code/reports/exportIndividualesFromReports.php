@@ -30,6 +30,8 @@ $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
 $filtro_grupo = isset($_GET['filtro_grupo']) ? $_GET['filtro_grupo'] : '';
 $filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : '';
 $filtro_usuario = isset($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : '';
+$filtro_fecha_inicio = isset($_GET['filtro_fecha_inicio']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_inicio']) ? $_GET['filtro_fecha_inicio'] : '';
+$filtro_fecha_fin = isset($_GET['filtro_fecha_fin']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_fin']) ? $_GET['filtro_fecha_fin'] : '';
 
 // Detectar si se seleccionó "Todos CPSAM" o "Todos Centros Vida"
 $filtro_todos_grupos = false;
@@ -66,14 +68,17 @@ $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
 
 $where = 'WHERE p.estado_persona = 1';
 
-// Filtro por año (basado en fecha_registro)
-if ($filtro_anio) {
-    $where .= " AND YEAR(ri.fecha_registro) = $filtro_anio ";
-}
-
-// Aplicar filtro de mes si se seleccionó
-if ($filtro_mes) {
-    $where .= " AND MONTH(ri.fecha_registro) = " . intval($filtro_mes) . " ";
+// Filtro por rango de fechas (anula año y mes si ambos presentes)
+if ($filtro_fecha_inicio && $filtro_fecha_fin) {
+    $where .= " AND ri.fecha_registro BETWEEN '$filtro_fecha_inicio' AND '$filtro_fecha_fin' ";
+} else {
+    if ($filtro_anio) {
+        $where .= " AND YEAR(ri.fecha_registro) = $filtro_anio ";
+    }
+    // Aplicar filtro de mes si se seleccionó
+    if ($filtro_mes) {
+        $where .= " AND MONTH(ri.fecha_registro) = " . intval($filtro_mes) . " ";
+    }
 }
 
 // Si se seleccionó un grupo específico, agregar ese filtro
@@ -308,9 +313,9 @@ if (ob_get_length()) {
     ob_end_clean();
 }
 
-$anio_texto = $filtro_anio ? $filtro_anio : 'Todos';
+$anio_texto = ($filtro_fecha_inicio && $filtro_fecha_fin) ? $filtro_fecha_inicio . '_' . $filtro_fecha_fin : ($filtro_anio ? $filtro_anio : 'Todos');
 $mes_texto = '';
-if ($filtro_mes) {
+if (!$filtro_fecha_inicio && $filtro_mes) {
     $meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     $mes_texto = '_' . $meses[intval($filtro_mes)];
 }

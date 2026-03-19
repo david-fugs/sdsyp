@@ -223,6 +223,10 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                 </form>
             </div>
 
+            <center>
+                <br /><a href="../../access.php"><img src='../../img/atras.png' width="72" height="72" title="Regresar" /></a>
+            </center>
+
             <!-- Tabla moderna -->
             <div class="modern-table-wrapper">
 
@@ -468,23 +472,25 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                                         <label for="edit_tipo_usuario">Tipo Usuario</label>
                                         <select class="form-control" id="edit_tipo_usuario" name="tipo_usuario" required>
                                             <option value="">Seleccione tipo usuario</option>
-                                            <?php if ($tipo_usuario == 11) { // Solo mostrar tipos relacionados con CENTRO VIDA ?>
-                                            <option value="2">CPSAM O CENTRO VIDA</option>
-                                            <option value="5">TÉCNICO CENTRO VIDA</option>
-                                            <option value="10">CONTRATISTA CENTRO VIDA PROPIO</option>
-                                            <option value="12">CONTRATISTA CENTRO VIDA ALCALDIA</option>
-                                            <option value="11">INGENIERO CENTRO VIDA</option>
-                                            <?php } else { // Usuarios no tipo 11 pueden ver todos los tipos ?>
-                                            <option value="1">ADMINISTRADOR</option>
-                                            <option value="3">CONTRATISTA CPSAM</option>
-                                            <option value="2">CPSAM O CENTRO VIDA</option>
-                                            <option value="4">TÉCNICO CPSAM</option>
-                                            <option value="5">TÉCNICO CENTRO VIDA</option>
-                                            <option value="8">TÉCNICO COLOMBIA MAYOR</option>
-                                            <option value="9">CONTRATISTA COLOMBIA MAYOR</option>
-                                            <option value="10">CONTRATISTA CENTRO VIDA PROPIO</option>
-                                            <option value="12">CONTRATISTA CENTRO VIDA ALCALDIA</option>
-                                            <option value="11">INGENIERO CENTRO VIDA</option>
+                                            <?php if ($tipo_usuario == 11) { // Solo mostrar tipos relacionados con CENTRO VIDA 
+                                            ?>
+                                                <option value="2">CPSAM O CENTRO VIDA</option>
+                                                <option value="5">TÉCNICO CENTRO VIDA</option>
+                                                <option value="10">CONTRATISTA CENTRO VIDA PROPIO</option>
+                                                <option value="12">CONTRATISTA CENTRO VIDA ALCALDIA</option>
+                                                <option value="11">INGENIERO CENTRO VIDA</option>
+                                            <?php } else { // Usuarios no tipo 11 pueden ver todos los tipos 
+                                            ?>
+                                                <option value="1">ADMINISTRADOR</option>
+                                                <option value="3">CONTRATISTA CPSAM</option>
+                                                <option value="2">CPSAM O CENTRO VIDA</option>
+                                                <option value="4">TÉCNICO CPSAM</option>
+                                                <option value="5">TÉCNICO CENTRO VIDA</option>
+                                                <option value="8">TÉCNICO COLOMBIA MAYOR</option>
+                                                <option value="9">CONTRATISTA COLOMBIA MAYOR</option>
+                                                <option value="10">CONTRATISTA CENTRO VIDA PROPIO</option>
+                                                <option value="12">CONTRATISTA CENTRO VIDA ALCALDIA</option>
+                                                <option value="11">INGENIERO CENTRO VIDA</option>
                                             <?php } ?>
                                         </select>
                                     </div>

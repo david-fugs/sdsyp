@@ -32,6 +32,8 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 // Obtener filtros
 $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : date('Y');
 $filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : '';
+$filtro_fecha_inicio = isset($_GET['filtro_fecha_inicio']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_inicio']) ? $_GET['filtro_fecha_inicio'] : '';
+$filtro_fecha_fin = isset($_GET['filtro_fecha_fin']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_fin']) ? $_GET['filtro_fecha_fin'] : '';
 
 // Obtener el ID del usuario de sesión (tipo 3)
 $id_usuario_session = intval($_SESSION['id']);
@@ -41,14 +43,18 @@ $where = 'WHERE p.estado_persona = 1';
 // Filtro obligatorio: solo movimientos creados por este usuario
 $where .= " AND mp.id_usuario = $id_usuario_session ";
 
-// Filtro por año (basado en fecha_movimiento)
-if ($filtro_anio) {
-    $where .= " AND YEAR(mp.fecha_movimiento) = $filtro_anio ";
-}
-
-// Filtro por mes
-if ($filtro_mes) {
-    $where .= " AND MONTH(mp.fecha_movimiento) = " . intval($filtro_mes) . " ";
+// Filtro por rango de fechas (anula año y mes si ambos presentes)
+if ($filtro_fecha_inicio && $filtro_fecha_fin) {
+    $where .= " AND mp.fecha_movimiento BETWEEN '$filtro_fecha_inicio' AND '$filtro_fecha_fin' ";
+} else {
+    // Filtro por año (basado en fecha_movimiento)
+    if ($filtro_anio) {
+        $where .= " AND YEAR(mp.fecha_movimiento) = $filtro_anio ";
+    }
+    // Filtro por mes
+    if ($filtro_mes) {
+        $where .= " AND MONTH(mp.fecha_movimiento) = " . intval($filtro_mes) . " ";
+    }
 }
 
 // Consulta SQL para obtener los movimientos

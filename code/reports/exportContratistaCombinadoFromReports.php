@@ -30,6 +30,8 @@ $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
 $filtro_grupo = isset($_GET['filtro_grupo']) ? $_GET['filtro_grupo'] : '';
 $filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : '';
 $filtro_usuario = isset($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : '';
+$filtro_fecha_inicio = isset($_GET['filtro_fecha_inicio']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_inicio']) ? $_GET['filtro_fecha_inicio'] : '';
+$filtro_fecha_fin = isset($_GET['filtro_fecha_fin']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_fin']) ? $_GET['filtro_fecha_fin'] : '';
 
 // Detectar si se seleccionó "Todos CPSAM" o "Todos Centros Vida"
 $filtro_todos_grupos = false;
@@ -73,11 +75,15 @@ $sheet1->setTitle('Actividades Masivas');
 // Filtros para actividades masivas
 $where_grupos_filtro_masivas = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
 $where_masivas = '';
-if ($filtro_anio) {
-    $where_masivas .= " AND YEAR(ra.fecha_atencion) = $filtro_anio ";
-}
-if ($filtro_mes) {
-    $where_masivas .= " AND MONTH(ra.fecha_atencion) = " . intval($filtro_mes) . " ";
+if ($filtro_fecha_inicio && $filtro_fecha_fin) {
+    $where_masivas .= " AND ra.fecha_atencion BETWEEN '$filtro_fecha_inicio' AND '$filtro_fecha_fin' ";
+} else {
+    if ($filtro_anio) {
+        $where_masivas .= " AND YEAR(ra.fecha_atencion) = $filtro_anio ";
+    }
+    if ($filtro_mes) {
+        $where_masivas .= " AND MONTH(ra.fecha_atencion) = " . intval($filtro_mes) . " ";
+    }
 }
 if ($filtro_grupo && !$filtro_todos_grupos) {
     $filtro_grupo_int = intval($filtro_grupo);
@@ -255,11 +261,15 @@ $sheet2->setTitle('Actividades Individuales');
 $where_grupos_filtro_individuales = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
 $where_individuales = 'WHERE p.estado_persona = 1';
 
-if ($filtro_anio) {
-    $where_individuales .= " AND YEAR(ri.fecha_registro) = $filtro_anio ";
-}
-if ($filtro_mes) {
-    $where_individuales .= " AND MONTH(ri.fecha_registro) = " . intval($filtro_mes) . " ";
+if ($filtro_fecha_inicio && $filtro_fecha_fin) {
+    $where_individuales .= " AND ri.fecha_registro BETWEEN '$filtro_fecha_inicio' AND '$filtro_fecha_fin' ";
+} else {
+    if ($filtro_anio) {
+        $where_individuales .= " AND YEAR(ri.fecha_registro) = $filtro_anio ";
+    }
+    if ($filtro_mes) {
+        $where_individuales .= " AND MONTH(ri.fecha_registro) = " . intval($filtro_mes) . " ";
+    }
 }
 if ($filtro_grupo && !$filtro_todos_grupos) {
     $filtro_grupo_int = intval($filtro_grupo);
@@ -477,14 +487,169 @@ foreach ($columnWidths as $column => $width) {
     $sheet2->getColumnDimension($column)->setWidth($width);
 }
 
-// Limpiar buffer y generar archivo
+// ============== HOJA 3: MOVIMIENTOS ==============
+$sheet3 = $spreadsheet->createSheet();
+$sheet3->setTitle('Movimientos');
+
+// Filtros para movimientos
+$where_grupos_filtro_movimientos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
+$where_movimientos = 'WHERE p.estado_persona = 1';
+if ($filtro_fecha_inicio && $filtro_fecha_fin) {
+    $where_movimientos .= " AND mp.fecha_movimiento BETWEEN '$filtro_fecha_inicio' AND '$filtro_fecha_fin' ";
+} else {
+    if ($filtro_anio) {
+        $where_movimientos .= " AND YEAR(mp.fecha_movimiento) = $filtro_anio ";
+    }
+    if ($filtro_mes) {
+        $where_movimientos .= " AND MONTH(mp.fecha_movimiento) = " . intval($filtro_mes) . " ";
+    }
+}
+if ($filtro_grupo && !$filtro_todos_grupos) {
+    $filtro_grupo_int_mov = intval($filtro_grupo);
+    $where_movimientos .= " AND p.id_grupo = $filtro_grupo_int_mov ";
+} elseif ($filtro_todos_grupos && !empty($grupos_a_exportar)) {
+    $ids_grupos_mov = array_map(function($g) { return intval($g['id_grupo']); }, $grupos_a_exportar);
+    $where_movimientos .= " AND p.id_grupo IN (" . implode(',', $ids_grupos_mov) . ") ";
+}
+if ($filtro_usuario) {
+    $where_movimientos .= " AND p.id_usuario = $filtro_usuario ";
+}
+if ($tipo_usuario == 2 && isset($_SESSION['id_grupo'])) {
+    $id_grupo_session_mov = intval($_SESSION['id_grupo']);
+    $where_movimientos .= " AND p.id_grupo = $id_grupo_session_mov ";
+} elseif ($tipo_usuario == 3 && isset($_SESSION['id'])) {
+    $id_usuario_mov = intval($_SESSION['id']);
+    $where_movimientos .= " AND p.id_usuario = $id_usuario_mov ";
+}
+$where_movimientos .= $where_grupos_filtro_movimientos;
+
+if ($filtro_todos_grupos && !empty($grupos_a_exportar)) {
+    $query_movimientos = "SELECT
+        mp.id_movimiento_persona, p.cedula_persona, p.nombres_persona, p.apellidos_persona,
+        c.descripcion_condicion, mp.fecha_movimiento, mp.observacion_movimiento,
+        g.descripcion_grupo as centro_vida_traslado, g_ant.descripcion_grupo as centro_vida_traslado_anterior,
+        m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica,
+        mp.departamento_procedencia, p_grupo.descripcion_grupo as grupo_persona, u.nombre as usuario_registro, p.sin_convenio
+    FROM movimiento_persona as mp
+    JOIN personas as p ON mp.cedula_persona = p.cedula_persona
+    JOIN condiciones_componente as c ON mp.id_condicion = c.id_condicion
+    LEFT JOIN grupos g ON mp.id_centro_vida_traslado = g.id_grupo
+    LEFT JOIN grupos g_ant ON mp.id_centro_vida_traslado_anterior = g_ant.id_grupo
+    LEFT JOIN grupos p_grupo ON p.id_grupo = p_grupo.id_grupo
+    LEFT JOIN metas m ON mp.id_meta = m.id_meta
+    LEFT JOIN actividades a ON mp.id_actividad = a.id_actividad
+    LEFT JOIN acciones ac ON mp.id_accion = ac.id_accion
+    LEFT JOIN politicas_publicas pp ON mp.id_politica_publica = pp.id_politica
+    LEFT JOIN usuarios u ON p.id_usuario = u.id
+    $where_movimientos
+    ORDER BY p_grupo.descripcion_grupo ASC, mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC";
+} else {
+    $query_movimientos = "SELECT
+        mp.id_movimiento_persona, p.cedula_persona, p.nombres_persona, p.apellidos_persona,
+        c.descripcion_condicion, mp.fecha_movimiento, mp.observacion_movimiento,
+        g.descripcion_grupo as centro_vida_traslado, g_ant.descripcion_grupo as centro_vida_traslado_anterior,
+        m.descripcion_meta, a.descripcion_actividad, ac.descripcion_accion, pp.descripcion_politica,
+        mp.departamento_procedencia, p_grupo.descripcion_grupo as grupo_persona, u.nombre as usuario_registro, p.sin_convenio
+    FROM movimiento_persona as mp
+    JOIN personas as p ON mp.cedula_persona = p.cedula_persona
+    JOIN condiciones_componente as c ON mp.id_condicion = c.id_condicion
+    LEFT JOIN grupos g ON mp.id_centro_vida_traslado = g.id_grupo
+    LEFT JOIN grupos g_ant ON mp.id_centro_vida_traslado_anterior = g_ant.id_grupo
+    LEFT JOIN grupos p_grupo ON p.id_grupo = p_grupo.id_grupo
+    LEFT JOIN metas m ON mp.id_meta = m.id_meta
+    LEFT JOIN actividades a ON mp.id_actividad = a.id_actividad
+    LEFT JOIN acciones ac ON mp.id_accion = ac.id_accion
+    LEFT JOIN politicas_publicas pp ON mp.id_politica_publica = pp.id_politica
+    LEFT JOIN usuarios u ON p.id_usuario = u.id
+    $where_movimientos
+    ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC";
+}
+$result_movimientos = $mysqli->query($query_movimientos);
+
+// Cabeceras hoja 3
+$headers_movimientos = [
+    'ID Movimiento', 'Cédula', 'Nombres', 'Apellidos', 'Grupo/Centro Vida',
+    'Condición/Estado', 'Fecha Movimiento', 'Meta', 'Actividad', 'Acción',
+    'Política Pública', 'Centro Traslado Anterior', 'Centro Traslado Nuevo',
+    'Dpto. Procedencia', 'Observaciones', 'Usuario Registro', 'Con Convenio'
+];
+
+$col = 'A';
+foreach ($headers_movimientos as $header) {
+    $sheet3->setCellValue($col . '1', $header);
+    $col++;
+}
+$lastCol_mov = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers_movimientos));
+$sheet3->getStyle('A1:' . $lastCol_mov . '1')->applyFromArray([
+    'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '667eea']],
+    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '000000']]]
+]);
+$sheet3->getRowDimension(1)->setRowHeight(35);
+
+// Llenar datos de movimientos
+$row = 2;
+$grupo_anterior_mov = '';
+if ($result_movimientos && $result_movimientos->num_rows > 0) {
+    while ($data = $result_movimientos->fetch_assoc()) {
+        if ($filtro_todos_grupos && $data['grupo_persona'] != $grupo_anterior_mov && $grupo_anterior_mov != '') {
+            $sheet3->mergeCells('A' . $row . ':' . $lastCol_mov . $row);
+            $sheet3->setCellValue('A' . $row, '--- ' . strtoupper($data['grupo_persona']) . ' ---');
+            $sheet3->getStyle('A' . $row . ':' . $lastCol_mov . $row)->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1e3a8a']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+            ]);
+            $sheet3->getRowDimension($row)->setRowHeight(30);
+            $row++;
+        }
+        $grupo_anterior_mov = $data['grupo_persona'];
+        $con_convenio = (isset($data['sin_convenio']) && $data['sin_convenio'] == 1) ? 'NO' : 'SÍ';
+        $rowData = [
+            $data['id_movimiento_persona'],
+            $data['cedula_persona'],
+            $data['nombres_persona'],
+            $data['apellidos_persona'],
+            $data['grupo_persona'] ?? 'N/A',
+            $data['descripcion_condicion'],
+            $data['fecha_movimiento'],
+            $data['descripcion_meta'] ?? '',
+            $data['descripcion_actividad'] ?? '',
+            $data['descripcion_accion'] ?? '',
+            $data['descripcion_politica'] ?? '',
+            $data['centro_vida_traslado_anterior'] ?? '',
+            $data['centro_vida_traslado'] ?? '',
+            $data['departamento_procedencia'] ?? '',
+            $data['observacion_movimiento'] ?? '',
+            $data['usuario_registro'] ?? '',
+            $con_convenio
+        ];
+        $col = 'A';
+        foreach ($rowData as $value) {
+            $sheet3->setCellValue($col . $row, $value);
+            $col++;
+        }
+        $sheet3->getStyle('A' . $row . ':' . $lastCol_mov . $row)->applyFromArray([
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'DDDDDD']]],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true]
+        ]);
+        $sheet3->getRowDimension($row)->setRowHeight(24);
+        $row++;
+    }
+}
+// Anchos columna hoja 3
+$colWidthsMov = ['A'=>12,'B'=>15,'C'=>20,'D'=>20,'E'=>25,'F'=>25,'G'=>15,'H'=>25,'I'=>25,'J'=>25,'K'=>20,'L'=>25,'M'=>25,'N'=>20,'O'=>35,'P'=>20,'Q'=>10];
+foreach ($colWidthsMov as $col => $w) {
+    $sheet3->getColumnDimension($col)->setWidth($w);
+}
 if (ob_get_length()) {
     ob_end_clean();
 }
 
-$anio_texto = $filtro_anio ? $filtro_anio : 'Todos';
+$anio_texto = ($filtro_fecha_inicio && $filtro_fecha_fin) ? $filtro_fecha_inicio . '_' . $filtro_fecha_fin : ($filtro_anio ? $filtro_anio : 'Todos');
 $mes_texto = '';
-if ($filtro_mes) {
+if (!$filtro_fecha_inicio && $filtro_mes) {
     $meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     $mes_texto = '_' . $meses[intval($filtro_mes)];
 }

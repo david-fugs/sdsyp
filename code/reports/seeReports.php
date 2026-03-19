@@ -850,6 +850,33 @@ $endYear = $currentYear + 1;
                 <div class="col-md-4">
                     <div class="year-selector">
                         <label class="form-label fw-bold">
+                            <i class="bi bi-calendar-range"></i> Fecha Inicio:
+                        </label>
+                        <input type="date" id="filtroFechaInicio" class="modern-select form-control" style="width:200px;">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="year-selector">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar-range"></i> Fecha Fin:
+                        </label>
+                        <input type="date" id="filtroFechaFin" class="modern-select form-control" style="width:200px;">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="year-selector">
+                        <button type="button" id="btnLimpiarFechas" class="btn btn-secondary btn-sm mt-4">
+                            <i class="bi bi-x-circle"></i> Limpiar fechas
+                        </button>
+                        <small class="text-white d-block mt-1"><i class="bi bi-info-circle"></i> Si Fecha Inicio y Fin están activas, anulan Año y Mes</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center mb-3">
+                <div class="col-md-4">
+                    <div class="year-selector">
+                        <label class="form-label fw-bold">
                             <i class="bi bi-person-badge"></i> Filtrar por Usuario:
                         </label>
                         <select id="filtroUsuario" class="modern-select">
@@ -962,6 +989,8 @@ $endYear = $currentYear + 1;
                                     <input type="hidden" name="filtro_grupo" id="export_contratista_grupo">
                                     <input type="hidden" name="filtro_mes" id="export_contratista_mes">
                                     <input type="hidden" name="filtro_usuario" id="export_contratista_usuario">
+                                    <input type="hidden" name="filtro_fecha_inicio" id="export_contratista_fecha_inicio">
+                                    <input type="hidden" name="filtro_fecha_fin" id="export_contratista_fecha_fin">
                                     <button type="submit" class="btn btn-light btn-sm">
                                         <i class="bi bi-file-earmark-excel-fill"></i> Actividades Masivas CONTRATISTA
                                     </button>
@@ -975,6 +1004,8 @@ $endYear = $currentYear + 1;
                                     <input type="hidden" name="filtro_grupo" id="export_individuales_grupo">
                                     <input type="hidden" name="filtro_mes" id="export_individuales_mes">
                                     <input type="hidden" name="filtro_usuario" id="export_individuales_usuario">
+                                    <input type="hidden" name="filtro_fecha_inicio" id="export_individuales_fecha_inicio">
+                                    <input type="hidden" name="filtro_fecha_fin" id="export_individuales_fecha_fin">
                                     <button type="submit" class="btn btn-warning btn-sm">
                                         <i class="bi bi-file-earmark-person-fill"></i> Actividades INDIVIDUALES
                                     </button>
@@ -988,6 +1019,8 @@ $endYear = $currentYear + 1;
                                     <input type="hidden" name="filtro_grupo" id="export_combinado_grupo">
                                     <input type="hidden" name="filtro_mes" id="export_combinado_mes">
                                     <input type="hidden" name="filtro_usuario" id="export_combinado_usuario">
+                                    <input type="hidden" name="filtro_fecha_inicio" id="export_combinado_fecha_inicio">
+                                    <input type="hidden" name="filtro_fecha_fin" id="export_combinado_fecha_fin">
                                     <button type="submit" class="btn btn-info btn-sm">
                                         <i class="bi bi-file-earmark-spreadsheet-fill"></i> Masivas e Individuales CONTRATISTA
                                     </button>
@@ -1002,6 +1035,8 @@ $endYear = $currentYear + 1;
                                     <input type="hidden" name="filtro_grupo" id="export_cv_grupo">
                                     <input type="hidden" name="filtro_mes" id="export_cv_mes">
                                     <input type="hidden" name="filtro_usuario" id="export_cv_usuario">
+                                    <input type="hidden" name="filtro_fecha_inicio" id="export_cv_fecha_inicio">
+                                    <input type="hidden" name="filtro_fecha_fin" id="export_cv_fecha_fin">
                                     <button type="submit" class="btn btn-success btn-sm">
                                         <i class="bi bi-file-earmark-excel-fill"></i> Actividades CENTRO VIDA MASIVO
                                     </button>
@@ -1026,30 +1061,44 @@ $endYear = $currentYear + 1;
                 const grupo = $('#filtroGrupo').val();
                 const mes = $('#filtroMes').val();
                 const usuario = $('#filtroUsuario').val();
-                
+                const fechaInicio = $('#filtroFechaInicio').val();
+                const fechaFin = $('#filtroFechaFin').val();
+                // Si se usan fechas, anulan año y mes
+                const usarFechas = fechaInicio && fechaFin;
+                const anioExport = usarFechas ? '' : anio;
+                const mesExport = usarFechas ? '' : mes;
+
                 // Actualizar formulario Contratista
-                $('#export_contratista_anio').val(anio);
+                $('#export_contratista_anio').val(anioExport);
                 $('#export_contratista_grupo').val(grupo);
-                $('#export_contratista_mes').val(mes);
+                $('#export_contratista_mes').val(mesExport);
                 $('#export_contratista_usuario').val(usuario);
-                
+                $('#export_contratista_fecha_inicio').val(fechaInicio);
+                $('#export_contratista_fecha_fin').val(fechaFin);
+
                 // Actualizar formulario Individuales
-                $('#export_individuales_anio').val(anio);
+                $('#export_individuales_anio').val(anioExport);
                 $('#export_individuales_grupo').val(grupo);
-                $('#export_individuales_mes').val(mes);
+                $('#export_individuales_mes').val(mesExport);
                 $('#export_individuales_usuario').val(usuario);
-                
+                $('#export_individuales_fecha_inicio').val(fechaInicio);
+                $('#export_individuales_fecha_fin').val(fechaFin);
+
                 // Actualizar formulario Combinado (Masivas e Individuales)
-                $('#export_combinado_anio').val(anio);
+                $('#export_combinado_anio').val(anioExport);
                 $('#export_combinado_grupo').val(grupo);
-                $('#export_combinado_mes').val(mes);
+                $('#export_combinado_mes').val(mesExport);
                 $('#export_combinado_usuario').val(usuario);
-                
+                $('#export_combinado_fecha_inicio').val(fechaInicio);
+                $('#export_combinado_fecha_fin').val(fechaFin);
+
                 // Actualizar formulario Centro Vida
-                $('#export_cv_anio').val(anio);
+                $('#export_cv_anio').val(anioExport);
                 $('#export_cv_grupo').val(grupo);
-                $('#export_cv_mes').val(mes);
+                $('#export_cv_mes').val(mesExport);
                 $('#export_cv_usuario').val(usuario);
+                $('#export_cv_fecha_inicio').val(fechaInicio);
+                $('#export_cv_fecha_fin').val(fechaFin);
             }
 
             // Inicializar valores de formularios
@@ -1073,6 +1122,20 @@ $endYear = $currentYear + 1;
                 updateExportForms();
             });
 
+            $('#filtroFechaInicio').on('change', function() {
+                updateExportForms();
+            });
+
+            $('#filtroFechaFin').on('change', function() {
+                updateExportForms();
+            });
+
+            $('#btnLimpiarFechas').on('click', function() {
+                $('#filtroFechaInicio').val('');
+                $('#filtroFechaFin').val('');
+                updateExportForms();
+            });
+
             $('#btnExportExcel').on('click', exportToExcel);
             $('#btnExportMovimientos').on('click', exportMovimientos);
             $('#btnExportMovimientosTipo3').on('click', exportMovimientosTipo3);
@@ -1083,19 +1146,26 @@ $endYear = $currentYear + 1;
             const filtroGrupo = $('#filtroGrupo').val();
             const filtroMes = $('#filtroMes').val();
             const filtroUsuario = $('#filtroUsuario').val();
-            
+            const filtroFechaInicio = $('#filtroFechaInicio').val();
+            const filtroFechaFin = $('#filtroFechaFin').val();
+
             // Construir URL con parámetros
             let url = 'generateExcel.php?year=' + currentYear;
+            if (filtroFechaInicio && filtroFechaFin) {
+                url += '&filtro_fecha_inicio=' + filtroFechaInicio;
+                url += '&filtro_fecha_fin=' + filtroFechaFin;
+            } else {
+                if (filtroMes) {
+                    url += '&filtro_mes=' + filtroMes;
+                }
+            }
             if (filtroGrupo) {
                 url += '&filtro_grupo=' + filtroGrupo;
-            }
-            if (filtroMes) {
-                url += '&filtro_mes=' + filtroMes;
             }
             if (filtroUsuario) {
                 url += '&filtro_usuario=' + filtroUsuario;
             }
-            
+
             // Abrir el generador de Excel directamente para descargar
             window.open(url, '_blank');
         }
@@ -1105,19 +1175,26 @@ $endYear = $currentYear + 1;
             const filtroGrupo = $('#filtroGrupo').val();
             const filtroMes = $('#filtroMes').val();
             const filtroUsuario = $('#filtroUsuario').val();
-            
+            const filtroFechaInicio = $('#filtroFechaInicio').val();
+            const filtroFechaFin = $('#filtroFechaFin').val();
+
             // Construir URL con parámetros
             let url = 'exportMovimientos.php?year=' + currentYear;
+            if (filtroFechaInicio && filtroFechaFin) {
+                url += '&filtro_fecha_inicio=' + filtroFechaInicio;
+                url += '&filtro_fecha_fin=' + filtroFechaFin;
+            } else {
+                if (filtroMes) {
+                    url += '&filtro_mes=' + filtroMes;
+                }
+            }
             if (filtroGrupo) {
                 url += '&filtro_grupo=' + filtroGrupo;
-            }
-            if (filtroMes) {
-                url += '&filtro_mes=' + filtroMes;
             }
             if (filtroUsuario) {
                 url += '&filtro_usuario=' + filtroUsuario;
             }
-            
+
             // Abrir el generador de Excel directamente para descargar
             window.open(url, '_blank');
         }
@@ -1125,13 +1202,20 @@ $endYear = $currentYear + 1;
         function exportMovimientosTipo3() {
             // Obtener filtros (solo año y mes, el usuario siempre es el de sesión)
             const filtroMes = $('#filtroMes').val();
-            
+            const filtroFechaInicio = $('#filtroFechaInicio').val();
+            const filtroFechaFin = $('#filtroFechaFin').val();
+
             // Construir URL con parámetros
             let url = 'exportMovimientosTipo3.php?filtro_anio=' + currentYear;
-            if (filtroMes) {
-                url += '&filtro_mes=' + filtroMes;
+            if (filtroFechaInicio && filtroFechaFin) {
+                url += '&filtro_fecha_inicio=' + filtroFechaInicio;
+                url += '&filtro_fecha_fin=' + filtroFechaFin;
+            } else {
+                if (filtroMes) {
+                    url += '&filtro_mes=' + filtroMes;
+                }
             }
-            
+
             // Abrir el generador de Excel directamente para descargar
             window.open(url, '_blank');
         }

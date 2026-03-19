@@ -44,6 +44,8 @@ $year = intval($_GET['year']);
 $filtro_grupo = isset($_GET['filtro_grupo']) && !empty($_GET['filtro_grupo']) ? intval($_GET['filtro_grupo']) : null;
 $filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : null;
 $filtro_usuario = isset($_GET['filtro_usuario']) && !empty($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : null;
+$filtro_fecha_inicio = isset($_GET['filtro_fecha_inicio']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_inicio']) ? $_GET['filtro_fecha_inicio'] : '';
+$filtro_fecha_fin = isset($_GET['filtro_fecha_fin']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_fin']) ? $_GET['filtro_fecha_fin'] : '';
 
 try {
 
@@ -164,8 +166,14 @@ try {
         $where_grupos_filtro .= " AND p.id_usuario = " . intval($filtro_usuario);
     }
     
-    // Aplicar filtro de mes en movimientos si se seleccionó uno
-    if ($filtro_mes !== null) {
+    // Aplicar filtro de fecha/mes en movimientos si se seleccionó
+    if ($filtro_fecha_inicio && $filtro_fecha_fin) {
+        $where_grupos_filtro .= " AND EXISTS (
+            SELECT 1 FROM movimiento_persona mp 
+            WHERE mp.cedula_persona = p.cedula_persona 
+            AND mp.fecha_movimiento BETWEEN '$filtro_fecha_inicio' AND '$filtro_fecha_fin'
+        )";
+    } elseif ($filtro_mes !== null) {
         $where_grupos_filtro .= " AND EXISTS (
             SELECT 1 FROM movimiento_persona mp 
             WHERE mp.cedula_persona = p.cedula_persona 
@@ -274,19 +282,19 @@ try {
              ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC
              LIMIT 1) AS ultimo_centro_traslado_actual,
 
-            -- Estadísticas de movimientos en el año
+            -- Estadísticas de movimientos en el período
             (SELECT COUNT(*)
              FROM movimiento_persona mp2
              WHERE mp2.cedula_persona = p.cedula_persona
-             AND YEAR(mp2.fecha_movimiento) = ?" . ($filtro_mes !== null ? " AND MONTH(mp2.fecha_movimiento) = " . intval($filtro_mes) : "") . ") AS movimientos_en_year,
+             " . ($filtro_fecha_inicio && $filtro_fecha_fin ? "AND mp2.fecha_movimiento BETWEEN '$filtro_fecha_inicio' AND '$filtro_fecha_fin'" : ("AND YEAR(mp2.fecha_movimiento) = ?" . ($filtro_mes !== null ? " AND MONTH(mp2.fecha_movimiento) = " . intval($filtro_mes) : ""))) . ") AS movimientos_en_year,
              
-            -- Traslados en el año
+            -- Traslados en el período
             (SELECT COUNT(*)
              FROM movimiento_persona mp3
              JOIN condiciones_componente cc3 ON mp3.id_condicion = cc3.id_condicion
              WHERE mp3.cedula_persona = p.cedula_persona
              AND cc3.descripcion_condicion LIKE '%TRASLADADO%'
-             AND YEAR(mp3.fecha_movimiento) = ?" . ($filtro_mes !== null ? " AND MONTH(mp3.fecha_movimiento) = " . intval($filtro_mes) : "") . ") AS traslados_en_year,
+             " . ($filtro_fecha_inicio && $filtro_fecha_fin ? "AND mp3.fecha_movimiento BETWEEN '$filtro_fecha_inicio' AND '$filtro_fecha_fin'" : ("AND YEAR(mp3.fecha_movimiento) = ?" . ($filtro_mes !== null ? " AND MONTH(mp3.fecha_movimiento) = " . intval($filtro_mes) : ""))) . ") AS traslados_en_year,
 
             -- Último centro de traslado (para compatibilidad)
             (SELECT g2.descripcion_grupo
@@ -353,7 +361,9 @@ try {
     ";
 
     $stmt = $mysqli->prepare($query);
-    $stmt->bind_param("ii", $year, $year);
+    if (!($filtro_fecha_inicio && $filtro_fecha_fin)) {
+        $stmt->bind_param("ii", $year, $year);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
 
