@@ -3,7 +3,7 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-if (!isset($_SESSION['usuario']) || ($_SESSION['tipo_usuario'] != 8 && $_SESSION['tipo_usuario'] != 9)) {
+if (!isset($_SESSION['usuario']) || !in_array($_SESSION['tipo_usuario'], [1, 8, 9])) {
     header("location: ../../index.php");
     exit();
 }
@@ -18,7 +18,7 @@ $nombre_usuario = $_SESSION['usuario'];
 $usuarios_filtro = [];
 if ($tipo_usuario == 1) {
     // Tipo 1 (Admin) puede ver todos
-    $query_usuarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (8, 9) ORDER BY nombre ASC";
+    $query_usuarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (1, 8, 9) ORDER BY nombre ASC";
 } elseif ($tipo_usuario == 8) {
     // Tipo 8 puede filtrar por usuarios tipo 8 y 9
     $query_usuarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (8, 9) ORDER BY nombre ASC";

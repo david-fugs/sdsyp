@@ -852,6 +852,29 @@ $mysqli->close();
               <a href="code/reports/seeReports.php" class="nav_link sublink">Informes Anuales</a>
             </ul>
           </li>
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-chart-bar"></i>
+              </span>
+              <span class="navlink">Informes Colombia mayor</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/colombiaMayor/seePersonaCM.php" class="nav_link sublink">Informe Personas</a>
+            </ul>
+            <ul class="menu_items submenu">
+              <a href="code/colombiaMayor/seeMovimientosCM.php" class="nav_link sublink">Movimientos</a>
+            </ul>
+            <ul class="menu_items submenu">
+              <a href="code/colombiaMayor/formIndividualCM.php" class="nav_link sublink">Registros Individuales</a>
+            </ul>
+            <ul class="menu_items submenu">
+              <a href="code/colombiaMayor/formRegistroMasivoCM.php" class="nav_link sublink">Registros Masivos</a>
+            </ul>
+          </li>
+
           <?php } ?>
           <li class="item">
             <div href="#" class="nav_link submenu_item">

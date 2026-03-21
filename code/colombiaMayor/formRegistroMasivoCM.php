@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-// Verificar que el usuario tenga acceso (tipo 8 o 9)
-if (!isset($_SESSION['tipo_usuario']) || !in_array($_SESSION['tipo_usuario'], [8, 9])) {
+// Verificar que el usuario tenga acceso (tipo 1, 8 o 9)
+if (!isset($_SESSION['tipo_usuario']) || !in_array($_SESSION['tipo_usuario'], [1, 8, 9])) {
     header("Location: ../../access.php");
     exit();
 }
@@ -192,15 +192,6 @@ if ($result_count) {
 
     <div class="container mt-5">
         <div class="modern-container">
-            <!-- Información de personas activas -->
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="info-box text-center">
-                        <h3><?= $total_personas ?></h3>
-                        <p>Personas Activas en Colombia Mayor</p>
-                    </div>
-                </div>
-            </div>
 
             <!-- Header moderno -->
             <div class="modern-header">
