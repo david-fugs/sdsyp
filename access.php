@@ -719,11 +719,11 @@ $mysqli->close();
                 <?php if ($tipo_usuario != 4 && !($tipo_usuario == 2 && $prefijo_grupo == 'CPSAM')) : ?>
                   <a href="code/contratistaCentroVida/formCentroVida.php" class="nav_link sublink">Registros indiv Centro Vida</a>
                   <?php if (!($tipo_usuario == 2 && $prefijo_grupo == 'CPSAM')) : ?>
-                  <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
+                    <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
                   <?php endif; ?>
                 <?php endif; ?>
                 <?php if ($tipo_usuario != 5 || ($tipo_usuario == 2 && ($prefijo_grupo == 'CV' || $prefijo_grupo == 'CPSAM'))) : ?>
-                <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
+                  <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
                 <?php endif; ?>
                 <?php if ($tipo_usuario == 5) : ?>
                   <a href="code/contratistaCentroVida/comparadorActividades.php" class="nav_link sublink">Comparador Actividades</a>
@@ -766,24 +766,24 @@ $mysqli->close();
                 <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
                 <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
                 <a href="code/contratistaCentroVida/comparadorActividades.php" class="nav_link sublink">Comparador Actividades</a>
-                
+
 
 
               </ul>
             </li>
-              <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-bullseye"></i>
-              </span>
-              <span class="navlink">Registro SPP</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/contratistaCentroVida/formActividadPersonalizada.php" class="nav_link sublink">SPP</a>
-              
-            </ul>
-          </li>
+            <li class="item">
+              <div href="#" class="nav_link submenu_item">
+                <span class="navlink_icon">
+                  <i class="fa-solid fa-bullseye"></i>
+                </span>
+                <span class="navlink">Registro SPP</span>
+                <i class="bx bx-chevron-right arrow-left"></i>
+              </div>
+              <ul class="menu_items submenu">
+                <a href="code/contratistaCentroVida/formActividadPersonalizada.php" class="nav_link sublink">SPP</a>
+
+              </ul>
+            </li>
             <li class="item">
               <div href="#" class="nav_link submenu_item">
                 <span class="navlink_icon">
@@ -840,42 +840,43 @@ $mysqli->close();
           </li>
 
           <?php if ($tipo_usuario != 5) { ?>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-chart-bar"></i>
-              </span>
-              <span class="navlink">Informes</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/reports/seeReports.php" class="nav_link sublink">Informes Anuales</a>
-            </ul>
-          </li>
+            <li class="item">
+              <div href="#" class="nav_link submenu_item">
+                <span class="navlink_icon">
+                  <i class="fa-solid fa-chart-bar"></i>
+                </span>
+                <span class="navlink">Informes</span>
+                <i class="bx bx-chevron-right arrow-left"></i>
+              </div>
+              <ul class="menu_items submenu">
+                <a href="code/reports/seeReports.php" class="nav_link sublink">Informes Anuales</a>
+              </ul>
+            </li>
+            <?php if ($tipo_usuario != 4) { ?>
+              <li class="item">
+                <div href="#" class="nav_link submenu_item">
+                  <span class="navlink_icon">
+                    <i class="fa-solid fa-chart-bar"></i>
+                  </span>
+                  <span class="navlink">Informes Colombia mayor</span>
+                  <i class="bx bx-chevron-right arrow-left"></i>
+                </div>
+                <ul class="menu_items submenu">
+                  <a href="code/colombiaMayor/seePersonaCM.php" class="nav_link sublink">Informe Personas</a>
+                </ul>
+                <ul class="menu_items submenu">
+                  <a href="code/colombiaMayor/seeMovimientosCM.php" class="nav_link sublink">Movimientos</a>
+                </ul>
+                <ul class="menu_items submenu">
+                  <a href="code/colombiaMayor/formIndividualCM.php" class="nav_link sublink">Registros Individuales</a>
+                </ul>
+                <ul class="menu_items submenu">
+                  <a href="code/colombiaMayor/formRegistroMasivoCM.php" class="nav_link sublink">Registros Masivos</a>
+                </ul>
+              </li>
 
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-chart-bar"></i>
-              </span>
-              <span class="navlink">Informes Colombia mayor</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/colombiaMayor/seePersonaCM.php" class="nav_link sublink">Informe Personas</a>
-            </ul>
-            <ul class="menu_items submenu">
-              <a href="code/colombiaMayor/seeMovimientosCM.php" class="nav_link sublink">Movimientos</a>
-            </ul>
-            <ul class="menu_items submenu">
-              <a href="code/colombiaMayor/formIndividualCM.php" class="nav_link sublink">Registros Individuales</a>
-            </ul>
-            <ul class="menu_items submenu">
-              <a href="code/colombiaMayor/formRegistroMasivoCM.php" class="nav_link sublink">Registros Masivos</a>
-            </ul>
-          </li>
-
-          <?php } ?>
+          <?php }
+          } ?>
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
@@ -1013,7 +1014,7 @@ $mysqli->close();
               <a href="code/contratistaCentroVida/formCentroVida.php" class="nav_link sublink">Registros indiv Centro Vida</a>
               <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
               <!-- Movimientos Personas visible para tipo 10 -->
-              
+
               <a href="code/contratistaCentroVida/comparadorActividades.php" class="nav_link sublink">Comparador Actividades</a>
             </ul>
           </li>
@@ -1124,7 +1125,7 @@ $mysqli->close();
   <?php } ?>
 
   <!-- MENU CONTRATISTA CENTRO VIDA ALCALDIA -->
-    <!-- Menu para INGENIERO CENTRO VIDA (Tipo 11) - Acceso Restringido por Grupo -->
+  <!-- Menu para INGENIERO CENTRO VIDA (Tipo 11) - Acceso Restringido por Grupo -->
   <?php if ($tipo_usuario == 12) { ?>
     <nav class="sidebar">
       <div class="menu_content">
@@ -1152,7 +1153,7 @@ $mysqli->close();
             </div>
             <ul class="menu_items submenu">
               <a href="code/contratistaCentroVida/formActividadPersonalizada.php" class="nav_link sublink">SPP</a>
-              
+
             </ul>
           </li>
 
@@ -1211,8 +1212,8 @@ $mysqli->close();
             </div>
             <ul class="menu_items submenu">
               <a href="code/colombiaMayor/seePersonaCM.php" class="nav_link sublink">Ver Personas</a>
-              <?php  if( $tipo_usuario == 8) { ?>
-              <a href="code/colombiaMayor/seeMovimientosCM.php" class="nav_link sublink">Movimientos</a>
+              <?php if ($tipo_usuario == 8) { ?>
+                <a href="code/colombiaMayor/seeMovimientosCM.php" class="nav_link sublink">Movimientos</a>
               <?php } ?>
             </ul>
           </li>
@@ -1348,7 +1349,7 @@ $mysqli->close();
                   Plataforma de gestión integral con acceso controlado y protección de datos
                 </p>
               </div>
-              
+
               <div class="col-md-4 mb-4">
                 <div class="info-icon-container" style="margin-bottom: 1.5rem;">
                   <i class="bi bi-people-fill" style="font-size: 4rem; color: #764ba2;"></i>
@@ -1358,7 +1359,7 @@ $mysqli->close();
                   Administra personas, actividades, metas y políticas públicas de forma eficiente
                 </p>
               </div>
-              
+
               <div class="col-md-4 mb-4">
                 <div class="info-icon-container" style="margin-bottom: 1.5rem;">
                   <i class="bi bi-graph-up-arrow" style="font-size: 4rem; color: #28a745;"></i>
@@ -1375,76 +1376,76 @@ $mysqli->close();
 
       <!-- Estadísticas por Grupos y Acciones Rápidas -->
       <?php if ($tipo_usuario != 3 && $tipo_usuario != 2 && $tipo_usuario != 8) : ?>
-      <div class="row">
-        <div class="col-lg-8">
-          <div class="chart-container">
-            <h4 class="mb-4"><i class="bi bi-people-fill me-2"></i>Distribución de Personas por Grupo</h4>
-            <div class="table-responsive groups-table">
-              <table class="table table-hover">
-                <thead class="table-primary">
-                  <tr>
-                    <th>Grupo</th>
-                    <th class="text-center">Personas</th>
-                    <th class="text-center">Límite</th>
-                    <th class="text-center">Disponibles</th>
-                    <th class="text-center">% Ocupación</th>
-                    <th class="text-center">Sin Convenio</th>
-                    <th class="text-center">Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php foreach ($grupos_stats as $grupo): ?>
-                    <?php
-                    $disponibles = $grupo['limite_personas'] - $grupo['total_personas'];
-                    $porcentaje = $grupo['limite_personas'] > 0 ? round(($grupo['total_personas'] / $grupo['limite_personas']) * 100, 1) : 0;
-
-                    // Determinar el color según la ocupación
-                    if ($porcentaje >= 90) {
-                      $badge_class = 'bg-danger';
-                      $estado = 'Lleno';
-                    } elseif ($porcentaje >= 70) {
-                      $badge_class = 'bg-warning';
-                      $estado = 'Alto';
-                    } elseif ($porcentaje >= 40) {
-                      $badge_class = 'bg-info';
-                      $estado = 'Medio';
-                    } else {
-                      $badge_class = 'bg-success';
-                      $estado = 'Bajo';
-                    }
-                    ?>
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="chart-container">
+              <h4 class="mb-4"><i class="bi bi-people-fill me-2"></i>Distribución de Personas por Grupo</h4>
+              <div class="table-responsive groups-table">
+                <table class="table table-hover">
+                  <thead class="table-primary">
                     <tr>
-                      <td>
-                        <strong><?php echo htmlspecialchars($grupo['descripcion_grupo']); ?></strong>
-                      </td>
-                      <td class="text-center">
-                        <span class="badge bg-primary fs-6"><?php echo $grupo['total_personas']; ?></span>
-                      </td>
-                      <td class="text-center">
-                        <?php echo $grupo['limite_personas']; ?>
-                      </td>
-                      <td class="text-center">
-                        <span class="<?php echo $disponibles <= 0 ? 'text-danger' : 'text-success'; ?>">
-                          <?php echo max(0, $disponibles); ?>
-                        </span>
-                      </td>
-                      <td class="text-center">
-                        <?php echo $porcentaje; ?>%
-                      </td>
-                      <td class="text-center">
-                        <span class="badge bg-warning fs-6"><?php echo $grupo['sin_convenio'] ?? 0; ?></span>
-                      </td>
-                      <td class="text-center">
-                        <span class="badge <?php echo $badge_class; ?>"><?php echo $estado; ?></span>
-                      </td>
+                      <th>Grupo</th>
+                      <th class="text-center">Personas</th>
+                      <th class="text-center">Límite</th>
+                      <th class="text-center">Disponibles</th>
+                      <th class="text-center">% Ocupación</th>
+                      <th class="text-center">Sin Convenio</th>
+                      <th class="text-center">Estado</th>
                     </tr>
-                  <?php endforeach; ?>
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    <?php foreach ($grupos_stats as $grupo): ?>
+                      <?php
+                      $disponibles = $grupo['limite_personas'] - $grupo['total_personas'];
+                      $porcentaje = $grupo['limite_personas'] > 0 ? round(($grupo['total_personas'] / $grupo['limite_personas']) * 100, 1) : 0;
+
+                      // Determinar el color según la ocupación
+                      if ($porcentaje >= 90) {
+                        $badge_class = 'bg-danger';
+                        $estado = 'Lleno';
+                      } elseif ($porcentaje >= 70) {
+                        $badge_class = 'bg-warning';
+                        $estado = 'Alto';
+                      } elseif ($porcentaje >= 40) {
+                        $badge_class = 'bg-info';
+                        $estado = 'Medio';
+                      } else {
+                        $badge_class = 'bg-success';
+                        $estado = 'Bajo';
+                      }
+                      ?>
+                      <tr>
+                        <td>
+                          <strong><?php echo htmlspecialchars($grupo['descripcion_grupo']); ?></strong>
+                        </td>
+                        <td class="text-center">
+                          <span class="badge bg-primary fs-6"><?php echo $grupo['total_personas']; ?></span>
+                        </td>
+                        <td class="text-center">
+                          <?php echo $grupo['limite_personas']; ?>
+                        </td>
+                        <td class="text-center">
+                          <span class="<?php echo $disponibles <= 0 ? 'text-danger' : 'text-success'; ?>">
+                            <?php echo max(0, $disponibles); ?>
+                          </span>
+                        </td>
+                        <td class="text-center">
+                          <?php echo $porcentaje; ?>%
+                        </td>
+                        <td class="text-center">
+                          <span class="badge bg-warning fs-6"><?php echo $grupo['sin_convenio'] ?? 0; ?></span>
+                        </td>
+                        <td class="text-center">
+                          <span class="badge <?php echo $badge_class; ?>"><?php echo $estado; ?></span>
+                        </td>
+                      </tr>
+                    <?php endforeach; ?>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
-      </div>
       <?php endif ?>
     </div>
   </div>
