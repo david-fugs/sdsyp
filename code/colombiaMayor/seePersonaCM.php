@@ -685,6 +685,10 @@ function deleteMember($cedula_persona_cm)
                                     <option value="C.M Fallecido sin Certificado">C.M Fallecido sin Certificado</option>
                                     <option value="C.M Familias en Accion">C.M Familias en Accion</option>
                                     <option value="C.M Fuera de la Ciudad">C.M Fuera de la Ciudad</option>
+                                    <option value="C.M Inscrito">C.M Inscrito</option>
+                                    <option value="C.M Potencial beneficiario">C.M Potencial beneficiario</option>
+                                    <option value="C.M Retirado">C.M Retirado</option>
+                                    <option value="C.M Suspendido">C.M Suspendido</option>
                                     <option value="Visita psicosocial fallida">Visita psicosocial fallida</option>
                                 </select>
                                 <label for="condicion_componente">Condición Componente</label>
@@ -1044,6 +1048,8 @@ function deleteMember($cedula_persona_cm)
                                     <option value="C.M Fallecido sin Certificado">C.M Fallecido sin Certificado</option>
                                     <option value="C.M Familias en Accion">C.M Familias en Accion</option>
                                     <option value="C.M Fuera de la Ciudad">C.M Fuera de la Ciudad</option>
+                                    <option value="C.M Inscrito">C.M Inscrito</option>
+                                    <option value="C.M Potencial beneficiario">C.M Potencial beneficiario</option>
                                     <option value="Visita psicosocial fallida">Visita psicosocial fallida</option>
                                 </select>
                             </div>

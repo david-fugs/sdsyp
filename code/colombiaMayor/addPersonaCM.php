@@ -141,6 +141,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         '$id_usuario',
         NOW()
     )";
+    print_r($sql_insert); // Para depuración, puedes eliminar esta línea después de verificar la consulta
+    die;
 
     if ($mysqli->query($sql_insert)) {
         echo "<script>
