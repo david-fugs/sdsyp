@@ -40,10 +40,10 @@ if (!$result_metas) {
     die("Error en la consulta de metas: " . $mysqli->error);
 }
 
-// Contar personas activas en Colombia Mayor (excluyendo fallecidos y retirados)
+// Contar personas disponibles en Colombia Mayor (excluyendo fallecidos y retirados)
 $sql_count = "SELECT COUNT(*) as total 
               FROM personas_colombia_mayor 
-              WHERE estado_cm = 'ACTIVO' 
+              WHERE estado_cm IN ('ACTIVO', 'POTENCIAL_BENEFICIARIO', 'INSCRITO') 
               AND (condicion_componente IS NULL 
                    OR condicion_componente NOT IN ('C.M Fallecido', 'C.M Fallecido sin Certificado', 'C.M Retiro Definitivo'))";
 $result_count = $mysqli->query($sql_count);
@@ -689,6 +689,26 @@ if ($result_count) {
                 });
             }
 
+            // Función para obtener el badge de estado
+            function getBadgeEstado(estado) {
+                switch (estado) {
+                    case 'ACTIVO':
+                        return '<span class="badge bg-success">ACTIVO</span>';
+                    case 'SUSPENDIDO':
+                        return '<span class="badge bg-warning text-dark">SUSPENDIDO</span>';
+                    case 'FALLECIDO':
+                        return '<span class="badge bg-secondary">FALLECIDO</span>';
+                    case 'RETIRO_VOLUNTARIO':
+                        return '<span class="badge bg-info text-dark">RETIRO VOLUNTARIO</span>';
+                    case 'POTENCIAL_BENEFICIARIO':
+                        return '<span class="badge bg-primary">POTENCIAL BENEFICIARIO</span>';
+                    case 'INSCRITO':
+                        return '<span class="badge bg-primary">INSCRITO</span>';
+                    default:
+                        return '<span class="badge bg-secondary">' + (estado ? estado.replace(/_/g, ' ') : 'N/A') + '</span>';
+                }
+            }
+
             // Función para renderizar la tabla de personas
             function renderizarTablaPersonas(personas) {
                 const tbody = $('#tbody-personas-cm');
@@ -713,7 +733,7 @@ if ($result_count) {
                             <td>${persona.cedula}</td>
                             <td>${persona.nombre_completo}</td>
                             <td>${persona.genero || 'N/A'}</td>
-                            <td><span class="badge bg-success">ACTIVO</span></td>
+                            <td>${getBadgeEstado(persona.estado)}</td>
                         </tr>
                     `;
                     tbody.append(row);

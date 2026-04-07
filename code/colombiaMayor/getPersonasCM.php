@@ -92,6 +92,14 @@ if ($result && $result->num_rows > 0) {
                 $badge_class = 'status-badge status-info';
                 $estado_icon = '<i class="bi bi-arrow-left-circle-fill"></i>';
                 break;
+            case 'POTENCIAL_BENEFICIARIO':
+                $badge_class = 'status-badge status-info';
+                $estado_icon = '<i class="bi bi-person-fill-add"></i>';
+                break;
+            case 'INSCRITO':
+                $badge_class = 'status-badge status-primary';
+                $estado_icon = '<i class="bi bi-person-check-fill"></i>';
+                break;
         }
 
         // Formatear fecha de ingreso
