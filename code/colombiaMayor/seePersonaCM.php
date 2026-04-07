@@ -237,6 +237,8 @@ function deleteMember($cedula_persona_cm)
                                 <option value="SUSPENDIDO" <?php echo (($_GET['estado'] ?? '') == 'SUSPENDIDO') ? 'selected' : ''; ?>>SUSPENDIDO</option>
                                 <option value="FALLECIDO" <?php echo (($_GET['estado'] ?? '') == 'FALLECIDO') ? 'selected' : ''; ?>>FALLECIDO</option>
                                 <option value="RETIRO_VOLUNTARIO" <?php echo (($_GET['estado'] ?? '') == 'RETIRO_VOLUNTARIO') ? 'selected' : ''; ?>>RETIRO VOLUNTARIO</option>
+                                <option value="POTENCIAL_BENEFICIARIO" <?php echo (($_GET['estado'] ?? '') == 'POTENCIAL_BENEFICIARIO') ? 'selected' : ''; ?>>POTENCIAL BENEFICIARIO</option>
+                                <option value="INSCRITO" <?php echo (($_GET['estado'] ?? '') == 'INSCRITO') ? 'selected' : ''; ?>>INSCRITO</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -301,6 +303,12 @@ function deleteMember($cedula_persona_cm)
                                 } elseif (stripos($estado_value, 'SUSPENDIDO') !== false || stripos($estado_value, 'SUSPENDIDA') !== false) {
                                     $badge_class = 'status-badge status-warning';
                                     $estado_icon = '<i class="bi bi-pause-circle-fill"></i>';
+                                } elseif (stripos($estado_value, 'POTENCIAL') !== false || stripos($estado_value, 'BENEFICIARIO') !== false) {
+                                    $badge_class = 'status-badge status-info';
+                                    $estado_icon = '<i class="bi bi-person-fill-add"></i>';
+                                } elseif ($estado_value === 'INSCRITO') {
+                                    $badge_class = 'status-badge status-primary';
+                                    $estado_icon = '<i class="bi bi-person-check-fill"></i>';
                                 } elseif (stripos($estado_value, 'ESPERA') !== false || stripos($estado_value, 'LISTA') !== false) {
                                     $badge_class = 'status-badge status-warning';
                                     $estado_icon = '<i class="bi bi-clock-fill"></i>';
@@ -705,6 +713,11 @@ function deleteMember($cedula_persona_cm)
                                 <select class="form-select" id="estado" name="estado_cm" required>
                                     <option value="">Seleccione un estado...</option>
                                     <option value="ACTIVO">ACTIVO</option>
+                                    <option value="SUSPENDIDO">SUSPENDIDO</option>
+                                    <option value="FALLECIDO">FALLECIDO</option>
+                                    <option value="RETIRO_VOLUNTARIO">RETIRO VOLUNTARIO</option>
+                                    <option value="POTENCIAL_BENEFICIARIO">POTENCIAL BENEFICIARIO</option>
+                                    <option value="INSCRITO">INSCRITO</option>
                                     <?php foreach ($opciones_estado_cm as $opcion): ?>
                                         <option value="<?php echo htmlspecialchars($opcion); ?>">
                                             <?php echo htmlspecialchars($opcion); ?>
@@ -1065,6 +1078,11 @@ function deleteMember($cedula_persona_cm)
                                 <label for="edit-estado" class="form-label">Estado</label>
                                 <select class="form-select" id="edit-estado" name="estado_cm" required>
                                     <option value="ACTIVO">ACTIVO</option>
+                                    <option value="SUSPENDIDO">SUSPENDIDO</option>
+                                    <option value="FALLECIDO">FALLECIDO</option>
+                                    <option value="RETIRO_VOLUNTARIO">RETIRO VOLUNTARIO</option>
+                                    <option value="POTENCIAL_BENEFICIARIO">POTENCIAL BENEFICIARIO</option>
+                                    <option value="INSCRITO">INSCRITO</option>
                                     <?php foreach ($opciones_estado_cm as $opcion): ?>
                                         <option value="<?php echo htmlspecialchars($opcion); ?>">
                                             <?php echo htmlspecialchars($opcion); ?>
