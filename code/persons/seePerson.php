@@ -87,6 +87,15 @@ if ($tipo_usuario == 3) {
             $grupos_filtrados[] = $grupo;
         }
     }
+} elseif ($tipo_usuario == 12) {
+    // Para tipo_usuario 12 (CONTRATISTA CV ALCALDÍA): mostrar solo grupos CV%
+    $query_grupos_tipo12 = "SELECT * FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC";
+    $result_grupos_tipo12 = mysqli_query($mysqli, $query_grupos_tipo12);
+    if ($result_grupos_tipo12) {
+        while ($grupo = mysqli_fetch_assoc($result_grupos_tipo12)) {
+            $grupos_filtrados[] = $grupo;
+        }
+    }
 } else {
     // Para otros usuarios, mostrar todos los grupos filtrados
     foreach ($result_grupos as $grupo) {

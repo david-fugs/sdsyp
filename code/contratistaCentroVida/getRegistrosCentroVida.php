@@ -7,15 +7,21 @@ require_once('../filtros_grupo_usuario.php');
 $tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
 $id_usuario = isset($_SESSION['id']) ? $_SESSION['id'] : null;
 
+// Paginación servidor
+$per_page = 25;
+$current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($current_page - 1) * $per_page;
+
 // Aplicar filtro de grupos según tipo de usuario (tipos 4 y 5)
 $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
 
 // Aplicar filtro por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
 $where_grupo_usuario_filtro = obtenerCondicionFiltroGrupo('p');
 
-// Filtro para tipo usuario 10 y 12: solo ver sus propios registros
+// Filtro para tipo usuario 10: solo ver sus propios registros
+// Tipo 12 (CONTRATISTA CV ALCALDÍA) ve todos los registros de todos los CV
 $where_usuario_filtro = '';
-if (($tipo_usuario == 10 || $tipo_usuario == 12) && $id_usuario) {
+if ($tipo_usuario == 10 && $id_usuario) {
     $where_usuario_filtro = " AND rcv.funcionario_registro = " . intval($id_usuario);
 }
 // Tipo usuario 5 puede ver todo (no se agrega filtro adicional)
@@ -122,15 +128,23 @@ if (!empty($mes)) {
     }
 }
 if (!empty($params)) {
-    $stmt = $mysqli->prepare($query);
+    // Agregar SQL_CALC_FOUND_ROWS y LIMIT para paginación
+    $query_paginado = str_replace('SELECT DISTINCT', 'SELECT SQL_CALC_FOUND_ROWS DISTINCT', $query) . " LIMIT $per_page OFFSET $offset";
+    $stmt = $mysqli->prepare($query_paginado);
     if (!empty($types)) {
         $stmt->bind_param($types, ...$params);
     }
     $stmt->execute();
     $result = $stmt->get_result();
 } else {
-    $result = $mysqli->query($query);
+    $query_paginado = str_replace('SELECT DISTINCT', 'SELECT SQL_CALC_FOUND_ROWS DISTINCT', $query) . " LIMIT $per_page OFFSET $offset";
+    $result = $mysqli->query($query_paginado);
 }
+
+// Obtener total real de registros (sin LIMIT)
+$result_total = $mysqli->query("SELECT FOUND_ROWS() as total");
+$total_registros = ($result_total) ? (int)$result_total->fetch_assoc()['total'] : 0;
+$total_pages = max(1, (int)ceil($total_registros / $per_page));
 
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
@@ -196,5 +210,5 @@ if ($result && $result->num_rows > 0) {
 if (isset($stmt)) {
     $stmt->close();
 }
-$mysqli->close();
+// Nota: la conexión $mysqli se cierra en el archivo que hace el include
 ?>

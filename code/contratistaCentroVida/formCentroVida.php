@@ -558,6 +558,46 @@ function deleteRegistro($id_registro)
                     </tbody>
                 </table>
             </div>
+            <!-- Paginación servidor -->
+            <?php
+            $pag_total     = isset($total_pages)      ? $total_pages      : 1;
+            $pag_current   = isset($current_page)     ? $current_page     : 1;
+            $pag_total_reg = isset($total_registros)  ? $total_registros  : 0;
+            $pag_per_page  = isset($per_page)         ? $per_page         : 25;
+            if ($pag_total > 1 || $pag_total_reg > 0) {
+                $params_base = $_GET;
+                unset($params_base['page']);
+                $base_url = 'formCentroVida.php?' . http_build_query($params_base);
+                $start_reg = ($pag_current - 1) * $pag_per_page + 1;
+                $end_reg   = min($pag_current * $pag_per_page, $pag_total_reg);
+                echo '<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-top:1px solid #e5e7eb;flex-wrap:wrap;gap:8px;">';
+                echo '<span style="font-size:14px;color:#6b7280;">Mostrando ' . $start_reg . ' – ' . $end_reg . ' de <strong>' . $pag_total_reg . '</strong> registros</span>';
+                echo '<nav><ul class="pagination pagination-sm mb-0">';
+                // Anterior
+                if ($pag_current > 1) {
+                    echo '<li class="page-item"><a class="page-link" href="' . $base_url . '&page=' . ($pag_current - 1) . '">&#8249; Ant</a></li>';
+                } else {
+                    echo '<li class="page-item disabled"><span class="page-link">&#8249; Ant</span></li>';
+                }
+                // Páginas
+                $window = 2;
+                for ($p = 1; $p <= $pag_total; $p++) {
+                    if ($p == 1 || $p == $pag_total || abs($p - $pag_current) <= $window) {
+                        $active = ($p == $pag_current) ? ' active' : '';
+                        echo '<li class="page-item' . $active . '"><a class="page-link" href="' . $base_url . '&page=' . $p . '">' . $p . '</a></li>';
+                    } elseif (abs($p - $pag_current) == $window + 1) {
+                        echo '<li class="page-item disabled"><span class="page-link">…</span></li>';
+                    }
+                }
+                // Siguiente
+                if ($pag_current < $pag_total) {
+                    echo '<li class="page-item"><a class="page-link" href="' . $base_url . '&page=' . ($pag_current + 1) . '">Sig &#8250;</a></li>';
+                } else {
+                    echo '<li class="page-item disabled"><span class="page-link">Sig &#8250;</span></li>';
+                }
+                echo '</ul></nav></div>';
+            }
+            ?>
         </div>
     </div>
     <!-- Modal Agregar Masivo -->
@@ -943,7 +983,8 @@ function deleteRegistro($id_registro)
                     // Inicializar DataTables solo si la estructura es válida
                     try {
                         const table = $('#registrosTable').DataTable({
-                            pageLength: 15,
+                            paging: false,
+                            info: false,
                             responsive: true,
                             order: [
                                 [10, 'desc']

@@ -11,6 +11,7 @@ if (ob_get_length()) {
 session_start();
 require_once '../../conexion.php';
 require_once '../filtros_grupo_usuario.php';
+require_once '../filtros_grupos.php';
 
 if (isset($mysqli)) {
     $mysqli->set_charset('utf8mb4');
@@ -146,6 +147,17 @@ try {
             $query .= ' WHERE 1=1 ';
         }
         $query .= $where_grupo_usuario;
+    }
+    
+    // Aplicar filtro de grupos para tipo 12 (CONTRATISTA CV ALCALDÍA): solo grupos CV
+    $tipo_usuario_export = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+    $grupos_cv_export = getGruposPermitidos($mysqli, $tipo_usuario_export);
+    if (!empty($grupos_cv_export)) {
+        $ids_cv_export = implode(',', array_map('intval', $grupos_cv_export));
+        if (stripos($query, 'WHERE') === false) {
+            $query .= ' WHERE 1=1';
+        }
+        $query .= " AND p.id_grupo IN ($ids_cv_export)";
     }
     
     $query .= ' GROUP BY rcv.id_registro_centro_vida ORDER BY rcv.fecha_registro DESC';

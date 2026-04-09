@@ -61,11 +61,17 @@ if ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']
     $where .= " AND mcv.id_centro_vida = $id_grupo_session";
 }
 
-// Filtro para tipo usuario 10 y 12: solo ver sus propios registros
-if (($tipo_usuario == 10 || $tipo_usuario == 12) && $id_usuario) {
+// Filtro para tipo usuario 10: solo ver sus propios registros
+// Tipo 12 (CONTRATISTA CV ALCALDÍA) ve todos los registros de todos los CV
+if ($tipo_usuario == 10 && $id_usuario) {
     $where .= " AND mcv.id_usuario = " . intval($id_usuario);
 }
 // Tipo usuario 5 puede ver todo (no se agrega filtro adicional)
+
+// Paginación servidor
+$per_page_m = 25;
+$current_page_m = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset_m = ($current_page_m - 1) * $per_page_m;
 
 // Consulta principal (nueva tabla masiva_centro_vida). Alias de id para compatibilidad visual
 $query = "SELECT 
@@ -107,6 +113,13 @@ LEFT JOIN usuarios u2 ON mcv.funcionario_responsable = u2.id
 LEFT JOIN actividad_centro_vida acv ON mcv.id_actividad_centro_vida = acv.id_actividad_centro_vida
 WHERE 1 $where
 ORDER BY mcv.fecha_atencion DESC";
+// Contar total sin LIMIT (subquery para garantizar mismos JOINs/WHERE)
+$query_count_m = "SELECT COUNT(*) as total FROM ($query) as cnt_subq";
+$result_count_m = $mysqli->query($query_count_m);
+$total_registros_m = ($result_count_m) ? (int)$result_count_m->fetch_assoc()['total'] : 0;
+$total_pages_m = max(1, (int)ceil($total_registros_m / $per_page_m));
+// Añadir LIMIT para paginación
+$query .= " LIMIT $per_page_m OFFSET $offset_m";
 $result = $mysqli->query($query);
 ?>
 <!DOCTYPE html>
@@ -423,11 +436,41 @@ $result = $mysqli->query($query);
                     </tbody>
                 </table>
             </div>
+            <!-- Paginación servidor -->
+            <?php
+            if ($total_pages_m > 1 || $total_registros_m > 0) {
+                $params_base_m = $_GET;
+                unset($params_base_m['page']);
+                $base_url_m = 'formMasivoCentroVida.php?' . http_build_query($params_base_m);
+                $start_m = ($current_page_m - 1) * $per_page_m + 1;
+                $end_m   = min($current_page_m * $per_page_m, $total_registros_m);
+                echo '<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-top:1px solid #e5e7eb;flex-wrap:wrap;gap:8px;">';
+                echo '<span style="font-size:14px;color:#6b7280;">Mostrando ' . $start_m . ' – ' . $end_m . ' de <strong>' . $total_registros_m . '</strong> registros</span>';
+                echo '<nav><ul class="pagination pagination-sm mb-0">';
+                if ($current_page_m > 1) {
+                    echo '<li class="page-item"><a class="page-link" href="' . $base_url_m . '&page=' . ($current_page_m - 1) . '">&#8249; Ant</a></li>';
+                } else {
+                    echo '<li class="page-item disabled"><span class="page-link">&#8249; Ant</span></li>';
+                }
+                $window_m = 2;
+                for ($p = 1; $p <= $total_pages_m; $p++) {
+                    if ($p == 1 || $p == $total_pages_m || abs($p - $current_page_m) <= $window_m) {
+                        $active_m = ($p == $current_page_m) ? ' active' : '';
+                        echo '<li class="page-item' . $active_m . '"><a class="page-link" href="' . $base_url_m . '&page=' . $p . '">' . $p . '</a></li>';
+                    } elseif (abs($p - $current_page_m) == $window_m + 1) {
+                        echo '<li class="page-item disabled"><span class="page-link">…</span></li>';
+                    }
+                }
+                if ($current_page_m < $total_pages_m) {
+                    echo '<li class="page-item"><a class="page-link" href="' . $base_url_m . '&page=' . ($current_page_m + 1) . '">Sig &#8250;</a></li>';
+                } else {
+                    echo '<li class="page-item disabled"><span class="page-link">Sig &#8250;</span></li>';
+                }
+                echo '</ul></nav></div>';
+            }
+            ?>
         </div>
-    </div>
-
-    <br>
-    <center><a href='../../access.php'><img src='../../img/atras.png' width='72' height='72'></a></center><br>
+    </div><img src='../../img/atras.png' width='72' height='72'></a></center><br>
 
     <!-- Modal Agregar -->
     <div class="modal fade" id="modalAdd" tabindex="-1" aria-hidden="true">
@@ -628,7 +671,8 @@ $result = $mysqli->query($query);
                 });
                 if (valid) {
                     $('#tabla').DataTable({
-                        pageLength: 15,
+                        paging: false,
+                        info: false,
                         language: {
                             url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
                         },

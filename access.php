@@ -984,7 +984,7 @@ $mysqli->close();
   <?php } ?>
 
   <!-- Menu para CONTRATISTA CENTRO VIDA (Tipo 10) -->
-  <?php if ($tipo_usuario == 10) { ?>
+  <?php if ($tipo_usuario == 10 || $tipo_usuario == 12) { ?>
     <nav class="sidebar">
       <div class="menu_content">
         <ul class="menu_items">
@@ -1093,67 +1093,6 @@ $mysqli->close();
               <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
               <a href="code/contratistaCentroVida/comparadorActividades.php" class="nav_link sublink">Comparador Actividades</a>
               <a href="code/personMovement/seePersonMovement.php" class="nav_link sublink">Movimientos Personas</a>
-            </ul>
-          </li>
-
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-screwdriver-wrench"></i>
-              </span>
-              <span class="navlink">Mi Cuenta</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="reset-password.php" class="nav_link sublink">Cambiar Contraseña</a>
-            </ul>
-          </li>
-          <div class="bottom_content">
-            <div class="bottom expand_sidebar">
-              <span> Expand</span>
-              <i class='bx bx-log-in'></i>
-            </div>
-            <div class="bottom collapse_sidebar">
-              <span> Collapse</span>
-              <i class='bx bx-log-out'></i>
-            </div>
-          </div>
-        </ul>
-
-      </div>
-    </nav>
-  <?php } ?>
-
-  <!-- MENU CONTRATISTA CENTRO VIDA ALCALDIA -->
-  <!-- Menu para INGENIERO CENTRO VIDA (Tipo 11) - Acceso Restringido por Grupo -->
-  <?php if ($tipo_usuario == 12) { ?>
-    <nav class="sidebar">
-      <div class="menu_content">
-        <ul class="menu_items">
-          <div class="menu_title menu_dahsboard"></div>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-users"></i>
-              </span>
-              <span class="navlink">Personas</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/persons/seePerson.php" class="nav_link sublink">Ver Personas</a>
-            </ul>
-          </li>
-          <li class="item">
-            <div href="#" class="nav_link submenu_item">
-              <span class="navlink_icon">
-                <i class="fa-solid fa-bullseye"></i>
-              </span>
-              <span class="navlink">Registro SPP</span>
-              <i class="bx bx-chevron-right arrow-left"></i>
-            </div>
-            <ul class="menu_items submenu">
-              <a href="code/contratistaCentroVida/formActividadPersonalizada.php" class="nav_link sublink">SPP</a>
-
             </ul>
           </li>
 

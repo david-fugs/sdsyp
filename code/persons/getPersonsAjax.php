@@ -36,9 +36,9 @@ if (!empty($_GET['creado_por'])) {
     $where .= " AND u.nombre LIKE '%$creado_por%'";
 }
 
-// Filtrar por id_grupo si el tipo_usuario en la sesión es diferente de 1, 3, 4 y 5
+// Filtrar por id_grupo si el tipo_usuario en la sesión es diferente de 1, 3, 4, 5 y 12
 // (No aplicar este filtro a ADMIN, CONTRATISTA ni a los nuevos TÉCNICOS)
-if ($tipo_usuario != 1 && $id_grupo_session && !in_array($tipo_usuario, [3, 4, 5])) {
+if ($tipo_usuario != 1 && $id_grupo_session && !in_array($tipo_usuario, [3, 4, 5, 12])) {
     $where .= " AND p.id_grupo = '" . $mysqli->real_escape_string($id_grupo_session) . "'";
 }
 

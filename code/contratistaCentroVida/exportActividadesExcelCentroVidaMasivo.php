@@ -4,6 +4,7 @@ session_start();
 if (ob_get_length()) { header('Content-Type: text/plain; charset=utf-8'); echo 'Salida previa'; exit; }
 require_once '../../conexion.php';
 require_once '../filtros_grupo_usuario.php';
+require_once '../filtros_grupos.php';
 $mysqli->set_charset('utf8mb4');
 require_once '../../vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\Spreadsheet;use PhpOffice\PhpSpreadsheet\Writer\Xlsx;use PhpOffice\PhpSpreadsheet\Style\Fill;use PhpOffice\PhpSpreadsheet\Style\Alignment;use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -20,6 +21,14 @@ if($filtro_funcionario){ $where.=" AND mcv.id_usuario=$filtro_funcionario"; }
 if (debeAplicarFiltroGrupo($_SESSION['tipo_usuario'] ?? null) && isset($_SESSION['id_grupo'])) {
     $id_grupo = intval($_SESSION['id_grupo']);
     $where .= " AND mcv.id_centro_vida = $id_grupo";
+}
+
+// Aplicar filtro de grupos para tipo 12 (CONTRATISTA CV ALCALDÍA): solo grupos CV
+$tipo_usuario_export = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$grupos_cv_masivo = getGruposPermitidos($mysqli, $tipo_usuario_export);
+if (!empty($grupos_cv_masivo)) {
+    $ids_cv_masivo = implode(',', array_map('intval', $grupos_cv_masivo));
+    $where .= " AND mcv.id_centro_vida IN ($ids_cv_masivo)";
 }
 
 $sql = "SELECT 

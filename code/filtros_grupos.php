@@ -146,6 +146,20 @@ function getGruposPermitidos($conexion, $tipo_usuario) {
         }
     }
     
+    // Tipo 12: CONTRATISTA CV ALCALDÍA - acceso a todos los grupos CV
+    if ($tipo_usuario == 12) {
+        $query = "SELECT id_grupo FROM grupos 
+                  WHERE descripcion_grupo LIKE 'CV%'
+                  ORDER BY descripcion_grupo ASC";
+        
+        $result = $conexion->query($query);
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $grupos_permitidos[] = $row['id_grupo'];
+            }
+        }
+    }
+    
     return $grupos_permitidos;
 }
 
