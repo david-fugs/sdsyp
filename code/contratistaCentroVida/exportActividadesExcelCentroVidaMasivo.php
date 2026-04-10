@@ -31,6 +31,12 @@ if (!empty($grupos_cv_masivo)) {
     $where .= " AND mcv.id_centro_vida IN ($ids_cv_masivo)";
 }
 
+// Filtro para tipo 10 y 12: solo sus propios registros
+$id_usuario_export_m = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
+if (($tipo_usuario_export == 10 || $tipo_usuario_export == 12) && $id_usuario_export_m) {
+    $where .= " AND mcv.id_usuario = $id_usuario_export_m";
+}
+
 $sql = "SELECT 
  mcv.id_masiva_centro_vida AS id_registro,
  m.descripcion_meta,

@@ -160,6 +160,15 @@ try {
         $query .= " AND p.id_grupo IN ($ids_cv_export)";
     }
     
+    // Filtro para tipo 10 y 12: solo sus propios registros
+    $id_usuario_export = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
+    if (($tipo_usuario_export == 10 || $tipo_usuario_export == 12) && $id_usuario_export) {
+        if (stripos($query, 'WHERE') === false) {
+            $query .= ' WHERE 1=1';
+        }
+        $query .= " AND rcv.funcionario_registro = $id_usuario_export";
+    }
+
     $query .= ' GROUP BY rcv.id_registro_centro_vida ORDER BY rcv.fecha_registro DESC';
 
     if (!empty($params)) {

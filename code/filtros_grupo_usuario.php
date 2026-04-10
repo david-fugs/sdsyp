@@ -190,4 +190,19 @@ function generarMensajeFiltroGrupo($mysqli) {
                 Está viendo información filtrada para el grupo: <strong>' . htmlspecialchars($grupo['descripcion_grupo']) . '</strong>
             </div>';
 }
+
+/**
+ * Genera un mensaje informativo cuando el tipo de usuario 12 solo ve sus propios registros
+ *
+ * @return string HTML con el mensaje o string vacío
+ */
+function generarMensajeFiltroPropio() {
+    if (!isset($_SESSION['tipo_usuario']) || $_SESSION['tipo_usuario'] != 12) {
+        return '';
+    }
+    return '<div class="alert alert-info">
+                <i class="bi bi-person-lock"></i>
+                Está viendo únicamente los registros que <strong>usted ha realizado</strong>.
+            </div>';
+}
 ?>

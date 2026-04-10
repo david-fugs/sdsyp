@@ -479,6 +479,7 @@ function deleteRegistro($id_registro)
 
             <!-- Mensaje informativo de filtro por grupo -->
             <?php echo generarMensajeFiltroGrupo($mysqli); ?>
+            <?php echo generarMensajeFiltroPropio(); ?>
 
             <!-- Filtros modernos -->
             <div class="modern-filters">

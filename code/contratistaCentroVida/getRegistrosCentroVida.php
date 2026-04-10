@@ -18,10 +18,9 @@ $where_grupos_filtro = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'p');
 // Aplicar filtro por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
 $where_grupo_usuario_filtro = obtenerCondicionFiltroGrupo('p');
 
-// Filtro para tipo usuario 10: solo ver sus propios registros
-// Tipo 12 (CONTRATISTA CV ALCALDÍA) ve todos los registros de todos los CV
+// Filtro para tipo usuario 10 y 12: solo ver sus propios registros
 $where_usuario_filtro = '';
-if ($tipo_usuario == 10 && $id_usuario) {
+if (($tipo_usuario == 10 || $tipo_usuario == 12) && $id_usuario) {
     $where_usuario_filtro = " AND rcv.funcionario_registro = " . intval($id_usuario);
 }
 // Tipo usuario 5 puede ver todo (no se agrega filtro adicional)

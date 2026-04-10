@@ -61,9 +61,8 @@ if ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']
     $where .= " AND mcv.id_centro_vida = $id_grupo_session";
 }
 
-// Filtro para tipo usuario 10: solo ver sus propios registros
-// Tipo 12 (CONTRATISTA CV ALCALDÍA) ve todos los registros de todos los CV
-if ($tipo_usuario == 10 && $id_usuario) {
+// Filtro para tipo usuario 10 y 12: solo ver sus propios registros
+if (($tipo_usuario == 10 || $tipo_usuario == 12) && $id_usuario) {
     $where .= " AND mcv.id_usuario = " . intval($id_usuario);
 }
 // Tipo usuario 5 puede ver todo (no se agrega filtro adicional)
@@ -320,6 +319,7 @@ $result = $mysqli->query($query);
             </script>
             <!-- Mensaje informativo de filtro por grupo -->
             <?php echo generarMensajeFiltroGrupo($mysqli); ?>
+            <?php echo generarMensajeFiltroPropio(); ?>
             
             <div class="modern-filters">
                 <form action="formMasivoCentroVida.php" method="get" class="filter-row">
