@@ -12,10 +12,12 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;use PhpOffice\PhpSpreadsheet\Writer\Xls
 $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
 $filtro_mes = isset($_GET['filtro_mes']) ? intval($_GET['filtro_mes']) : '';
 $filtro_funcionario = isset($_GET['filtro_funcionario']) ? intval($_GET['filtro_funcionario']) : '';
+$filtro_tipo_registro = isset($_GET['filtro_tipo_registro']) ? $mysqli->real_escape_string($_GET['filtro_tipo_registro']) : '';
 $where='';
 if($filtro_anio){ $where.=" AND YEAR(mcv.fecha_atencion)=$filtro_anio"; }
 if($filtro_mes){ $where.=" AND MONTH(mcv.fecha_atencion)=$filtro_mes"; }
 if($filtro_funcionario){ $where.=" AND mcv.id_usuario=$filtro_funcionario"; }
+if($filtro_tipo_registro){ $where.=" AND mcv.tipo_registro='$filtro_tipo_registro'"; }
 
 // Aplicar filtro por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
 if (debeAplicarFiltroGrupo($_SESSION['tipo_usuario'] ?? null) && isset($_SESSION['id_grupo'])) {

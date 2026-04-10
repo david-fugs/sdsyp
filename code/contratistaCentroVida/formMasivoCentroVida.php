@@ -12,7 +12,7 @@ $where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
 // Cargar listas necesarias
 $metas = $mysqli->query("SELECT * FROM metas ORDER BY descripcion_meta ASC");
 $actividades_cv = $mysqli->query("SELECT id_actividad_centro_vida, descripcion_actividad FROM actividad_centro_vida ORDER BY descripcion_actividad ASC");
-$usuarios = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11) ORDER BY nombre ASC");
+$usuarios = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11 , 12) ORDER BY nombre ASC");
 $grupos = $mysqli->query("SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC");
 $comunas = $mysqli->query("SELECT * FROM comunas ORDER BY nombre_com ASC");
 
@@ -43,7 +43,7 @@ if ($filtro_mes) {
     $where .= " AND MONTH(ra.fecha_atencion) = $filtro_mes";
 }
 if ($filtro_funcionario) {
-    $where .= " AND ra.id_usuario = $filtro_funcionario";
+    $where .= " AND mcv.id_usuario = $filtro_funcionario";
 }
 if ($filtro_tipo_registro) {
     // filtrar por tipo_registro en la tabla masiva
@@ -820,22 +820,6 @@ $result = $mysqli->query($query);
                     const jornadas = data.jornada.split(',').map(j => j.trim());
                     if (jornadas.includes('Mañana')) $('#jornada_manana').prop('checked', true);
                     if (jornadas.includes('Noche')) $('#jornada_noche').prop('checked', true);
-                }
-                // cargar conteos solo si tipo_registro es 'Registro Actividad' y fecha+actividad están presentes
-                if (data.tipo_registro === 'Registro Actividad' && data.id_actividad_centro_vida && data.fecha_atencion) {
-                    $.post('countRegistrosByActivityDate.php', {
-                        id_actividad_centro_vida: data.id_actividad_centro_vida,
-                        fecha_atencion: data.fecha_atencion
-                    }, function(resp) {
-                        if (resp && !resp.error) {
-                            $('#cantidad_masculino').val(resp.masculino || 0);
-                            $('#cantidad_femenino').val(resp.femenino || 0);
-                        }
-                    }, 'json');
-                } else {
-                    // si no es Registro Actividad limpiar campos para evitar confusión
-                    $('#cantidad_masculino').val(0);
-                    $('#cantidad_femenino').val(0);
                 }
                 // Carga en cascada: meta -> actividad -> acción -> política
                 const metaId = data.id_meta || '';

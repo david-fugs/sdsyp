@@ -44,15 +44,15 @@ try {
 
     // Encabezados: incluir todas las columnas de la tabla `personas` (excepto id_usuario)
     $headers = [
+    // Fechas de actividad primero
+    'FECHAS ACTIVIDAD',
     // Campos de la tabla personas (caracterización)
-    'CÉDULA', 'TIPO IDENTIFICACIÓN', 'NOMBRES', 'FECHA NACIMIENTO', 'APELLIDOS', 'TELÉFONO', 'REFERENCIA PERSONA', 'GÉNERO', 'GRUPO SISBEN', 'PERSONA DISCAPACIDAD', 'CUÁL DISCAPACIDAD',
+    'CÉDULA', 'TIPO IDENTIFICACIÓN', 'NOMBRES', 'APELLIDOS', 'FECHA NACIMIENTO', 'EDAD', 'TELÉFONO', 'GÉNERO', 'GRUPO SISBEN', 'PERSONA DISCAPACIDAD', 'CUÁL DISCAPACIDAD',
     'CABEZA HOGAR', 'LÍDER COMUNIDAD', 'SE RECONOCE COMO', 'ORIENTACIÓN SEXUAL', 'EXPERIENCIA MIGRATORIA', 'GRUPO ÉTNICO', 'TIPO SALUD', 'NIVEL EDUCATIVO', 'GRUPO',
-    'ZONA PERSONA', 'BARRIO', 'COMUNA', 'EPS', 'PESO', 'TALLA', 'PATOLOGÍAS', 'FACTORES RIESGO', 'FACTORES PREVENTIVOS', 'INGRESOS ECONÓMICOS', 'CONVIVENCIA ACTUAL',
+    'ZONA PERSONA', 'BARRIO', 'COMUNA', 'REFERENCIA PERSONA', 'EPS', 'PESO', 'TALLA', 'PATOLOGÍAS', 'FACTORES RIESGO', 'FACTORES PREVENTIVOS', 'INGRESOS ECONÓMICOS', 'CONVIVENCIA ACTUAL',
         'RESULTADO ACTIVIDAD', 'REMISIÓN', 'CORREO PERSONA', 'TELÉFONO REFERENCIA PERSONA', 'DIRECCIÓN PERSONA', 'CONDICIÓN OCUPACIÓN', 'CONDICIÓN COMPONENTE', 'ACTIVO DESDE', 'META', 'ACTIVIDAD', 'ACCIÓN',
         // Campos del registro Centro Vida
-        'ACTIVIDAD CENTRO VIDA', 'POLÍTICA PÚBLICA', 'DEPARTAMENTO PROCEDENCIA', 'OBSERVACIÓN', 'FUNCIONARIO', 'FECHA REGISTRO',
-        // Fechas programadas (última columna, más ancha)
-        'FECHAS PROGRAMADAS'
+        'ACTIVIDAD CENTRO VIDA', 'POLÍTICA PÚBLICA', 'DEPARTAMENTO PROCEDENCIA', 'NOMBRE ACTIVIDAD EVENTO/ASUNTO', 'FUNCIONARIO', 'FECHA REGISTRO',
     ];
 
     // Escribir cabeceras
@@ -209,19 +209,26 @@ try {
                 $fechas_display = implode(', ', array_filter($map));
             }
 
+            // Calcular edad
+            $edad = '';
+            if (!empty($r['fecha_nacimiento']) && $r['fecha_nacimiento'] != '0000-00-00') {
+                $edad = (int)(new DateTime($r['fecha_nacimiento']))->diff(new DateTime())->y;
+            }
+
             // Formatear otras fechas
             $fecha_alta = (!empty($r['fecha_alta_persona']) && $r['fecha_alta_persona'] != '0000-00-00') ? date('d/m/Y', strtotime($r['fecha_alta_persona'])) : '';
             $activo_desde = (!empty($r['activo_desde']) && $r['activo_desde'] != '0000-00-00') ? date('d/m/Y', strtotime($r['activo_desde'])) : '';
 
-            // Construir fila: todas las columnas de personas (en el orden pedido), luego campos del registro, y por último fechas_programadas amplio
+            // Construir fila
             $data = [
+                $fechas_display,
                 $r['cedula_persona'] ?? '',
                 $r['tipo_identificacion'] ?? '',
                 $r['nombres_persona'] ?? '',
-                $fecha_nac,
                 $r['apellidos_persona'] ?? '',
+                $fecha_nac,
+                $edad,
                 $r['telefono_persona'] ?? '',
-                $r['referencia_persona'] ?? '',
                 $r['genero_persona'] ?? '',
                 $r['grupo_sisben'] ?? '',
                 $r['persona_discapacidad'] ?? '',
@@ -234,12 +241,11 @@ try {
                 $r['grupo_etnico'] ?? '',
                 $r['tipo_salud'] ?? '',
                 $r['nivel_educativo'] ?? '',
-                                // Reemplazar ids por descripciones donde aplican
                 $r['descripcion_grupo'] ?? '',
-                // id_centro eliminado según petición
                 $r['zona_persona'] ?? '',
                 $r['nombre_barrio'] ?? '',
                 $r['nombre_comuna'] ?? '',
+                $r['referencia_persona'] ?? '',
                 $r['eps'] ?? '',
                 $r['peso'] ?? '',
                 $r['talla'] ?? '',
@@ -266,8 +272,6 @@ try {
                 $r['observacion'] ?? '',
                 $r['nombre_funcionario'] ?? '',
                 $fecha_registro,
-                // Fechas programadas (última columna)
-                $fechas_display
             ];
 
             $col = 'A';
@@ -287,12 +291,12 @@ try {
         }
     }
 
-    // Ajustar anchos: hacer la última columna (fechas programadas) más ancha
+    // Ajustar anchos: primera columna (fechas actividad) más ancha
     $totalCols = count($headers);
     for ($i = 1; $i <= $totalCols; $i++) {
         $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i);
-        // Última columna mucho más ancha
-        if ($i === $totalCols) {
+        // Primera columna más ancha (fechas actividad)
+        if ($i === 1) {
             $sheet->getColumnDimension($colLetter)->setWidth(60);
         } else {
             $sheet->getColumnDimension($colLetter)->setWidth(20);
