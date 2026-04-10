@@ -1,6 +1,8 @@
 <?php
-include("../../conexion.php");
+ob_start();
 session_start();
+ini_set('display_errors', 0);
+include("../../conexion.php");
 
 // Configurar cabeceras para JSON
 header('Content-Type: application/json');
@@ -16,11 +18,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $id_meta = $_POST['id_meta'] ?? null;
         $id_actividad = $_POST['id_actividad'] ?? null;
         $id_accion = $_POST['id_accion'] ?? null;
-    $id_actividad_centro_vida = $_POST['id_actividad_centro_vida'] ?? null;
+        $id_actividad_centro_vida = $_POST['id_actividad_centro_vida'] ?? null;
         $politica_publica = $_POST['politica_publica'] ?? '';
         $departamento_procedencia = $_POST['departamento_procedencia'] ?? '';
         $observacion = $_POST['observacion'] ?? '';
-        $funcionario_registro = isset($_SESSION['nombre']) ? $_SESSION['nombre'] : 'Sistema';
+        // Guardar el ID numérico del usuario para filtrado (el nombre se resuelve por JOIN)
+        $funcionario_registro = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
 
         // Obtener las fechas del nuevo parámetro
         $fechas_atencion_json = $_POST['fechas_atencion'] ?? '[]';
@@ -59,8 +62,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             throw new Exception("Error al preparar consulta principal: " . $mysqli->error);
         }
 
-    $stmt->bind_param("iiiiiiisss", $cedula_persona, $id_condicion, $id_meta, $id_actividad, $id_accion, 
-             $id_actividad_centro_vida, $politica_publica, 
+    $stmt->bind_param("iiiiiiissi", $cedula_persona, $id_condicion, $id_meta, $id_actividad, $id_accion,
+             $id_actividad_centro_vida, $politica_publica,
              $departamento_procedencia, $observacion, $funcionario_registro);
         
         if (!$stmt->execute()) {
@@ -99,6 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         error_log("Registro insertado correctamente - ID: $id_registro_centro_vida, Fechas: $fechas_insertadas");
 
         // Devolver respuesta JSON exitosa
+        ob_clean();
         echo json_encode([
             'success' => true,
             'message' => "Registro de centro vida agregado correctamente. ID: $id_registro_centro_vida",
@@ -115,6 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         error_log("Error en addRegistroCentroVida.php: " . $e->getMessage());
         
         // Devolver respuesta JSON de error
+        ob_clean();
         echo json_encode([
             'success' => false,
             'message' => $e->getMessage()
@@ -122,6 +127,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 } else {
     // Devolver respuesta JSON para método no permitido
+    ob_clean();
     echo json_encode([
         'success' => false,
         'message' => 'Método no permitido'

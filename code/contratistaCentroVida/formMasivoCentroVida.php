@@ -389,7 +389,7 @@ $result = $mysqli->query($query);
                             <th>Medio Verif.</th>
                             <th>Masculino</th>
                             <th>Femenino</th>
-                            <th>Observación</th>
+                            <th>Nombre actividad,evento o asunto</th>
                             <th>Digitado por</th>
                             <th>Funcionario Resp.</th>
                             <th>Acciones</th>
@@ -470,7 +470,7 @@ $result = $mysqli->query($query);
             }
             ?>
         </div>
-    </div><img src='../../img/atras.png' width='72' height='72'></a></center><br>
+    </div> <a href="../../access.php"> <img src='../../img/atras.png' width='72' height='72'></a></center><br>
 
     <!-- Modal Agregar -->
     <div class="modal fade" id="modalAdd" tabindex="-1" aria-hidden="true">
@@ -645,7 +645,7 @@ $result = $mysqli->query($query);
                         <div class="row">
                             <div class="col-md-12 mb-3 form-floating">
                                 <input type="text" class="form-control" id="observacion_actividad" name="observacion_actividad" placeholder="Observación">
-                                <label for="observacion_actividad">Observación Actividad</label>
+                                <label for="observacion_actividad">Nombre actividad,evento o asunto</label>
                             </div>
                         </div>
                     </div>

@@ -548,7 +548,7 @@ function deleteRegistro($id_registro)
                             <th>Fechas Programadas</th>
                             <th>Política Pública</th>
                             <th>Departamento</th>
-                            <th>Observación</th>
+                            <th>Nombre actividad,evento o asunto</th>
                             <th>Funcionario</th>
                             <th>Fecha Registro</th>
                             <th class="col-actions">Acciones</th>
@@ -755,7 +755,7 @@ function deleteRegistro($id_registro)
                                 <div class="col-12 mb-3">
                                     <div class="form-floating">
                                         <textarea class="form-control" id="observacion_masivo" name="observacion" placeholder="Observación" style="height: 100px;"></textarea>
-                                        <label for="observacion_masivo">Observación</label>
+                                        <label for="observacion_masivo">Nombre actividad,evento o asunto</label>
                                     </div>
                                 </div>
                             </div>
@@ -918,7 +918,7 @@ function deleteRegistro($id_registro)
                             <div class="col-12 mb-3">
                                 <div class="form-floating">
                                     <textarea class="form-control" id="observacion" name="observacion" placeholder="Observación" style="height: 120px; resize: vertical; max-height: 240px;"></textarea>
-                                    <label for="observacion">Observación</label>
+                                    <label for="observacion">Nombre actividad,evento o asunto</label>
                                 </div>
                             </div>
                         </div>

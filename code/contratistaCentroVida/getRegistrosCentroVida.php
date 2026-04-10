@@ -4,8 +4,9 @@ include("../../conexion.php");
 require_once('../filtros_grupos.php');
 require_once('../filtros_grupo_usuario.php');
 
-$tipo_usuario = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
+$tipo_usuario = isset($_SESSION['tipo_usuario']) ? (int)$_SESSION['tipo_usuario'] : 0;
 $id_usuario = isset($_SESSION['id']) ? $_SESSION['id'] : null;
+$nombre_usuario = isset($_SESSION['nombre']) ? trim($_SESSION['nombre']) : '';
 
 // Paginación servidor
 $per_page = 25;
@@ -20,7 +21,7 @@ $where_grupo_usuario_filtro = obtenerCondicionFiltroGrupo('p');
 
 // Filtro para tipo usuario 10 y 12: solo ver sus propios registros
 $where_usuario_filtro = '';
-if (($tipo_usuario == 10 || $tipo_usuario == 12) && $id_usuario) {
+if (in_array($tipo_usuario, [10, 12]) && $id_usuario) {
     $where_usuario_filtro = " AND rcv.funcionario_registro = " . intval($id_usuario);
 }
 // Tipo usuario 5 puede ver todo (no se agrega filtro adicional)
@@ -38,6 +39,7 @@ $query = "
         rcv.departamento_procedencia,
         rcv.observacion,
         rcv.funcionario_registro,
+        COALESCE(u.nombre, rcv.funcionario_registro) AS nombre_funcionario,
         rcv.fecha_registro,
         GROUP_CONCAT(rcvf.fecha_atencion ORDER BY rcvf.fecha_atencion ASC SEPARATOR ', ') as fechas_programadas
     FROM registro_centro_vida rcv
@@ -45,6 +47,7 @@ $query = "
     INNER JOIN actividad_centro_vida acv ON rcv.id_actividad_centro_vida = acv.id_actividad_centro_vida
     LEFT JOIN registro_centro_vida_fechas rcvf ON rcv.id_registro_centro_vida = rcvf.id_registro_centro_vida
     LEFT JOIN politicas_publicas pp ON rcv.politica_publica = pp.id_politica
+    LEFT JOIN usuarios u ON u.id = rcv.funcionario_registro
 ";
 
 // Aplicar filtros si existen
@@ -179,7 +182,7 @@ if ($result && $result->num_rows > 0) {
              (strlen($row['observacion']) > 25 ? 
               substr(htmlspecialchars($row['observacion']), 0, 25) . "..." : 
               htmlspecialchars($row['observacion'])) . "</td>";
-        echo "<td>" . htmlspecialchars($row['funcionario_registro']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['nombre_funcionario']) . "</td>";
         echo "<td>" . date('d/m/Y H:i', strtotime($row['fecha_registro'])) . "</td>";
 
         // Botones de acción

@@ -9,6 +9,9 @@ if (ob_get_length()) {
 }
 
 session_start();
+// Leer variables de sesión ANTES del try-catch para garantizar disponibilidad
+$tipo_usuario_export  = isset($_SESSION['tipo_usuario']) ? (int)$_SESSION['tipo_usuario'] : 0;
+$nombre_usuario_export = isset($_SESSION['nombre'])      ? trim($_SESSION['nombre'])       : '';
 require_once '../../conexion.php';
 require_once '../filtros_grupo_usuario.php';
 require_once '../filtros_grupos.php';
@@ -18,8 +21,8 @@ if (isset($mysqli)) {
     $mysqli->query("SET NAMES 'utf8mb4'");
 }
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+ini_set('display_errors', 0);
+error_reporting(0);
 require_once '../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -80,6 +83,7 @@ try {
             rcv.departamento_procedencia,
             rcv.observacion,
             rcv.funcionario_registro,
+            COALESCE(u.nombre, rcv.funcionario_registro) AS nombre_funcionario,
             rcv.fecha_registro,
             GROUP_CONCAT(rcvf.fecha_atencion ORDER BY rcvf.fecha_atencion ASC SEPARATOR ', ') as fechas_programadas,
             g.descripcion_grupo as descripcion_grupo,
@@ -99,6 +103,7 @@ try {
     LEFT JOIN metas m ON rcv.id_meta = m.id_meta
     LEFT JOIN actividades a ON rcv.id_actividad = a.id_actividad
     LEFT JOIN acciones ac ON rcv.id_accion = ac.id_accion
+    LEFT JOIN usuarios u ON u.id = rcv.funcionario_registro
     ";
 
     // Aplicar filtros (mismos que la UI)
@@ -148,25 +153,26 @@ try {
         }
         $query .= $where_grupo_usuario;
     }
-    
-    // Aplicar filtro de grupos para tipo 12 (CONTRATISTA CV ALCALDÍA): solo grupos CV
-    $tipo_usuario_export = isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null;
-    $grupos_cv_export = getGruposPermitidos($mysqli, $tipo_usuario_export);
-    if (!empty($grupos_cv_export)) {
-        $ids_cv_export = implode(',', array_map('intval', $grupos_cv_export));
-        if (stripos($query, 'WHERE') === false) {
-            $query .= ' WHERE 1=1';
+
+    // Tipo 10 y 12: solo sus propios registros (filtro por ID numérico)
+    if (in_array($tipo_usuario_export, [10, 12])) {
+        $id_usuario_export = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
+        if ($id_usuario_export === 0) {
+            // Sin ID en sesión → bloquear todo
+            if (stripos($query, 'WHERE') === false) { $query .= ' WHERE 1=1'; }
+            $query .= ' AND 1=0';
+        } else {
+            if (stripos($query, 'WHERE') === false) { $query .= ' WHERE 1=1'; }
+            $query .= " AND rcv.funcionario_registro = $id_usuario_export";
         }
-        $query .= " AND p.id_grupo IN ($ids_cv_export)";
-    }
-    
-    // Filtro para tipo 10 y 12: solo sus propios registros
-    $id_usuario_export = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
-    if (($tipo_usuario_export == 10 || $tipo_usuario_export == 12) && $id_usuario_export) {
-        if (stripos($query, 'WHERE') === false) {
-            $query .= ' WHERE 1=1';
+    } else {
+        // Otros tipos con restricción de grupos CV (ej. tipo 5)
+        $grupos_cv_export = getGruposPermitidos($mysqli, $tipo_usuario_export);
+        if (!empty($grupos_cv_export)) {
+            $ids_cv_export = implode(',', array_map('intval', $grupos_cv_export));
+            if (stripos($query, 'WHERE') === false) { $query .= ' WHERE 1=1'; }
+            $query .= " AND p.id_grupo IN ($ids_cv_export)";
         }
-        $query .= " AND rcv.funcionario_registro = $id_usuario_export";
     }
 
     $query .= ' GROUP BY rcv.id_registro_centro_vida ORDER BY rcv.fecha_registro DESC';
@@ -258,7 +264,7 @@ try {
                 $r['descripcion_politica_registro'] ?? '',
                 $r['departamento_procedencia'] ?? '',
                 $r['observacion'] ?? '',
-                $r['funcionario_registro'] ?? '',
+                $r['nombre_funcionario'] ?? '',
                 $fecha_registro,
                 // Fechas programadas (última columna)
                 $fechas_display

@@ -1,6 +1,8 @@
 <?php
-include("../../conexion.php");
+ob_start();
 session_start();
+ini_set('display_errors', 0);
+include("../../conexion.php");
 
 header('Content-Type: application/json');
 
@@ -32,7 +34,8 @@ try {
     $politica_publica = isset($_POST['politica_publica']) ? intval($_POST['politica_publica']) : 0;
     $departamento_procedencia = $_POST['departamento_procedencia'] ?? '';
     $observacion = $_POST['observacion'] ?? '';
-    $funcionario_registro = isset($_SESSION['nombre']) ? $_SESSION['nombre'] : 'Sistema';
+    // Guardar el ID numérico del usuario para filtrado (el nombre se resuelve por JOIN)
+    $funcionario_registro = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
 
     $fechas_json = $_POST['fechas_seleccionadas'] ?? ($_POST['fechas_atencion'] ?? '[]');
     // Intentar parsear JSON; si no es JSON, aceptar formato coma-separado
@@ -65,7 +68,7 @@ try {
         if ($ced === '') continue;
 
         // Bind params: cedula as string
-        $stmt->bind_param('siiiiiisss', $ced, $id_condicion, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $funcionario_registro);
+        $stmt->bind_param('siiiiiissi', $ced, $id_condicion, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $funcionario_registro);
         if (!$stmt->execute()) {
             $failures[] = ['cedula' => $ced, 'error' => $stmt->error];
             continue;
@@ -89,6 +92,7 @@ try {
     if (count($failures) > 0) {
         $mysqli->rollback();
         $mysqli->autocommit(TRUE);
+        ob_clean();
         echo json_encode(['success' => false, 'message' => 'Ocurrieron errores en algunos registros.', 'failures' => $failures]);
         exit;
     }
@@ -96,6 +100,7 @@ try {
     $mysqli->commit();
     $mysqli->autocommit(TRUE);
 
+    ob_clean();
     echo json_encode(['success' => true, 'message' => "Registros agregados: $inserted"]);
     exit;
 
@@ -104,6 +109,7 @@ try {
         $mysqli->rollback();
         $mysqli->autocommit(TRUE);
     }
+    ob_clean();
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     exit;
 }
