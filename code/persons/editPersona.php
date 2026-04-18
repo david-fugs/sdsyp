@@ -59,6 +59,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Nuevo campo: Sin convenio
     $sin_convenio = isset($_POST['sin_convenio']) ? 1 : 0;
 
+    // Nuevos campos: Jornada y Grupos Externos
+    $jornada = $_POST['jornada'] ?? null;
+    if ($jornada === '') $jornada = null;
+    $grupos_externos_post = isset($_POST['grupos_externos']) && is_array($_POST['grupos_externos'])
+        ? array_filter(array_map('intval', $_POST['grupos_externos']))
+        : [];
+
     // Actualizar persona
     $sql_update_persona = "UPDATE personas SET
         cedula_persona='$cedula_persona',
@@ -104,7 +111,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         convivencia_actual='$convivencia_actual',
         resultado_actividad='$resultado_actividad',
         remision='$remision',
-        sin_convenio='$sin_convenio'
+        sin_convenio='$sin_convenio',
+        jornada=" . ($jornada !== null ? "'" . $mysqli->real_escape_string($jornada) . "'" : 'NULL') . "
         WHERE cedula_persona='$cedula_original'";
     // Ejecutar consulta
     if ($mysqli->query($sql_update_persona)) {
@@ -121,6 +129,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 echo "✅ Programa ID $id_programa insertado correctamente.<br>";
             } else {
                 echo "❌ Error al insertar programa ID $id_programa: " . $mysqli->error . "<br>";
+            }
+        }
+        // Actualizar grupos externos (borrar y reinsertar)
+        $mysqli->query("DELETE FROM persona_grupo_externo WHERE cedula_persona='$cedula_original'");
+        foreach ($grupos_externos_post as $id_ge) {
+            if ((int)$id_ge > 0) {
+                $mysqli->query("INSERT IGNORE INTO persona_grupo_externo (cedula_persona, id_grupo_externo) VALUES ('$cedula_persona', " . (int)$id_ge . ")");
             }
         }
         echo "<script>

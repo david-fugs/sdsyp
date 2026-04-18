@@ -13,7 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $id_registro = isset($_POST['id_registro_centro_vida']) ? intval($_POST['id_registro_centro_vida']) : 0;
 $cedula_persona = $_POST['cedula_persona'] ?? null;
-$id_condicion = $_POST['id_condicion'] ?? null;
+$id_condicion_raw = $_POST['id_condicion'] ?? null;
+$condicion_otra = ($id_condicion_raw === 'otra') ? trim($_POST['condicion_otra'] ?? '') : null;
+$id_condicion = ($id_condicion_raw === 'otra') ? null : $id_condicion_raw;
 $id_meta = $_POST['id_meta'] ?? null;
 $id_actividad = $_POST['id_actividad'] ?? null;
 $id_accion = $_POST['id_accion'] ?? null;
@@ -21,6 +23,9 @@ $id_actividad_centro_vida = $_POST['id_actividad_centro_vida'] ?? null;
 $politica_publica = $_POST['politica_publica'] ?? '';
 $departamento_procedencia = $_POST['departamento_procedencia'] ?? '';
 $observacion = $_POST['observacion'] ?? '';
+$profesion = $_POST['profesion'] ?? null;
+$jornada = $_POST['jornada'] ?? null;
+$grupos_externos_post = array_values(array_filter(array_map('intval', $_POST['grupos_externos'] ?? []), function($v){ return $v > 0; }));
 $funcionario_registro = isset($_SESSION['nombre']) ? $_SESSION['nombre'] : 'Sistema';
 
 $fechas_atencion_json = $_POST['fechas_atencion'] ?? '[]';
@@ -41,13 +46,16 @@ try {
     $sql_update = "UPDATE registro_centro_vida SET
         cedula_persona = ?,
         id_condicion = ?,
+        condicion_otra = ?,
         id_meta = ?,
         id_actividad = ?,
         id_accion = ?,
-    id_actividad_centro_vida = ?,
+        id_actividad_centro_vida = ?,
         politica_publica = ?,
         departamento_procedencia = ?,
         observacion = ?,
+        profesion = ?,
+        jornada = ?,
         funcionario_registro = ?,
         fecha_registro = NOW()
         WHERE id_registro_centro_vida = ?";
@@ -55,8 +63,7 @@ try {
     $stmt = $mysqli->prepare($sql_update);
     if (!$stmt) throw new Exception('Error al preparar consulta de actualización: ' . $mysqli->error);
 
-    // Bind parameters - types: i for integers, s for strings
-    $stmt->bind_param('iiiiiiisssi', $cedula_persona, $id_condicion, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $funcionario_registro, $id_registro);
+    $stmt->bind_param('sisiiiissssssi', $cedula_persona, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $profesion, $jornada, $funcionario_registro, $id_registro);
 
     if (!$stmt->execute()) {
         throw new Exception('Error al actualizar registro: ' . $stmt->error);
@@ -88,6 +95,24 @@ try {
             }
         }
         $stmt_fecha->close();
+    }
+
+    // Actualizar grupos externos del registro
+    $stmt_del_ge = $mysqli->prepare("DELETE FROM registro_centro_vida_grupo_externo WHERE id_registro_centro_vida = ?");
+    if ($stmt_del_ge) {
+        $stmt_del_ge->bind_param('i', $id_registro);
+        $stmt_del_ge->execute();
+        $stmt_del_ge->close();
+    }
+    if (!empty($grupos_externos_post)) {
+        $stmt_ge = $mysqli->prepare("INSERT IGNORE INTO registro_centro_vida_grupo_externo (id_registro_centro_vida, id_grupo_externo) VALUES (?, ?)");
+        if ($stmt_ge) {
+            foreach ($grupos_externos_post as $id_ge) {
+                $stmt_ge->bind_param('ii', $id_registro, $id_ge);
+                $stmt_ge->execute();
+            }
+            $stmt_ge->close();
+        }
     }
 
     $mysqli->commit();

@@ -97,6 +97,8 @@ $query = "SELECT
     mcv.cantidad_masculino,
     mcv.cantidad_femenino,
     mcv.observacion_actividad,
+    mcv.jornada,
+    mcv.profesion,
     u1.nombre AS digitado_por,
     u2.nombre AS funcionario_responsable_nombre,
     acv.descripcion_actividad AS actividad_centro_vida
@@ -296,27 +298,11 @@ $result = $mysqli->query($query);
                 <h2><i class="bi bi-heart-fill"></i> Actividades Realizadas</h2>
                 <div style="display:flex;gap:10px;flex-wrap:wrap">
                     <button type="button" class="btn-modern" data-bs-toggle="modal" data-bs-target="#modalAdd"><i class="bi bi-plus-circle-fill"></i> Agregar</button>
-                    <form id="exportForm" action="exportActividadesExcelCentroVidaMasivo.php" method="get" style="display:inline;">
-                        <input type="hidden" name="filtro_anio" id="export_filtro_anio">
-                        <input type="hidden" name="filtro_mes" id="export_filtro_mes">
-                        <input type="hidden" name="filtro_funcionario" id="export_filtro_funcionario">
-                        <input type="hidden" name="filtro_tipo_registro" id="export_filtro_tipo_registro">
-                        <button type="submit" class="btn-modern" style="background:rgba(255,255,255,.25)"><i class="bi bi-file-earmark-excel"></i> Exportar Excel</button>
-                    </form>
+                    <button type="button" class="btn-modern" data-bs-toggle="modal" data-bs-target="#modalExportMasivo">
+                        <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+                    </button>
                 </div>
             </div>
-            <script>
-                document.addEventListener('DOMContentLoaded', () => {
-                    const sync = () => {
-                        export_filtro_anio.value = filtro_anio.value;
-                        export_filtro_mes.value = filtro_mes.value;
-                        export_filtro_funcionario.value = filtro_funcionario.value;
-                        export_filtro_tipo_registro.value = filtro_tipo_registro.value;
-                    };
-                    ['change'].forEach(ev => ['filtro_anio', 'filtro_mes', 'filtro_funcionario', 'filtro_tipo_registro'].forEach(id => document.getElementById(id).addEventListener(ev, sync)));
-                    sync();
-                });
-            </script>
             <!-- Mensaje informativo de filtro por grupo -->
             <?php echo generarMensajeFiltroGrupo($mysqli); ?>
             <?php echo generarMensajeFiltroPropio(); ?>
@@ -620,26 +606,115 @@ $result = $mysqli->query($query);
                                 </select>
                                 <label for="centro_vida">Lugar del evento</label>
                             </div>
+                        </div>
 
-
+                        <!-- Sección Personas: visible solo cuando tipo_registro = Registro Actividad -->
+                        <div id="seccion_personas_cv" class="d-none">
+                            <hr>
+                            <div class="bg-light p-3 rounded border mb-3">
+                                <h6 class="text-primary mb-3"><i class="bi bi-people-fill"></i> Buscar y Agregar Personas C.V.
+                                    <small class="text-muted">(Requerido para Registro Actividad)</small>
+                                </h6>
+                                <div class="alert alert-warning mb-3">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    <strong>Importante:</strong> Debe agregar exactamente la misma cantidad de cédulas que indicó en Cantidad Masculino + Cantidad Femenino.
+                                    <span id="contador_req_cv" class="badge bg-danger ms-2">0 requeridas</span>
+                                    <span id="contador_sel_cv" class="badge bg-success ms-1">0 agregadas</span>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" id="buscar_persona_cv_input" placeholder="Buscar por nombre o cédula...">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="btn-group w-100" role="group">
+                                            <input type="radio" class="btn-check" name="filtroJornadaCV" id="filtroJornadaCV_todos" value="todos" checked>
+                                            <label class="btn btn-outline-secondary btn-sm" for="filtroJornadaCV_todos">Todos</label>
+                                            <input type="radio" class="btn-check" name="filtroJornadaCV" id="filtroJornadaCV_manana" value="Mañana">
+                                            <label class="btn btn-outline-primary btn-sm" for="filtroJornadaCV_manana">Mañana</label>
+                                            <input type="radio" class="btn-check" name="filtroJornadaCV" id="filtroJornadaCV_tarde" value="Tarde">
+                                            <label class="btn btn-outline-warning btn-sm" for="filtroJornadaCV_tarde">Tarde</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Selector de CV para cargar personas -->
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-8">
+                                        <select class="form-select form-select-sm" id="filtro_grupo_cv_personas">
+                                            <option value="">Seleccione un Centro de Vida...</option>
+                                            <?php
+                                            $cvs_modal = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC");
+                                            if ($cvs_modal) {
+                                                while ($cv_row = $cvs_modal->fetch_assoc()) {
+                                                    echo '<option value="' . $cv_row['id_grupo'] . '">' . htmlspecialchars($cv_row['descripcion_grupo']) . '</option>';
+                                                }
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-info btn-sm w-100" id="btn_cargar_personas_cv">
+                                            <i class="bi bi-arrow-clockwise"></i> Cargar Personas
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Lista de personas del CV -->
+                                <div id="area_personas_cv" style="display:none;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0">Personas: <span id="total_personas_cv" class="badge bg-info">0</span></h6>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-success btn-sm" id="btn_sel_todas_cv"><i class="bi bi-check-all"></i> Todas</button>
+                                            <button type="button" class="btn btn-warning btn-sm" id="btn_desel_todas_cv"><i class="bi bi-x"></i> Ninguna</button>
+                                            <button type="button" class="btn btn-primary btn-sm" id="btn_agregar_sel_cv"><i class="bi bi-plus-circle"></i> Agregar</button>
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive" style="max-height:300px;overflow-y:auto;border:1px solid #dee2e6;border-radius:4px;">
+                                        <table class="table table-sm table-hover mb-0">
+                                            <thead class="table-light sticky-top">
+                                                <tr><th style="width:50px"><input type="checkbox" class="form-check-input" id="chk_all_personas_cv"></th><th>Cédula</th><th>Nombres</th><th>Apellidos</th><th>Género</th><th>Jornada</th></tr>
+                                            </thead>
+                                            <tbody id="tbody_personas_cv"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <!-- Lista personas agregadas -->
+                                <div id="cedulas_cv_container" style="display:none;">
+                                    <hr class="my-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0"><i class="bi bi-people-fill"></i> Personas Agregadas: <span id="contador_cedulas_cv" class="badge bg-secondary">0</span></h6>
+                                    </div>
+                                    <div id="lista_cedulas_cv" class="list-group mb-3"></div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="cedulas_json_cv" name="cedulas_json" value="">
                         </div>
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label class="form-label fw-bold"><i class="bi bi-clock-fill"></i> Jornada</label>
                                 <div class="d-flex gap-4">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="jornada_manana" name="jornada[]" value="Mañana">
+                                        <input class="form-check-input" type="radio" id="jornada_manana" name="jornada" value="Mañana">
                                         <label class="form-check-label" for="jornada_manana">
                                             <i class="bi bi-sunrise"></i> Mañana
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="jornada_noche" name="jornada[]" value="Noche">
-                                        <label class="form-check-label" for="jornada_noche">
-                                            <i class="bi bi-moon-stars"></i> Noche
+                                        <input class="form-check-input" type="radio" id="jornada_tarde" name="jornada" value="Tarde">
+                                        <label class="form-check-label" for="jornada_tarde">
+                                            <i class="bi bi-sun"></i> Tarde
                                         </label>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="profesion_masivo" name="profesion">
+                                    <option value="" selected>Seleccione Profesión...</option>
+                                    <option value="Trabajo social">Trabajo social</option>
+                                    <option value="Psicología">Psicología</option>
+                                    <option value="Psicosocial">Psicosocial</option>
+                                </select>
+                                <label for="profesion_masivo">Profesión</label>
                             </div>
                         </div>
                         <div class="row">
@@ -652,6 +727,70 @@ $result = $mysqli->query($query);
                     <div class="modal-footer bg-light">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Cancelar</button>
                         <button type="submit" class="btn btn-success" id="btnSubmit"><i class="bi bi-save"></i> Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Exportar Excel Masivo -->
+    <div class="modal fade" id="modalExportMasivo" tabindex="-1" aria-labelledby="modalExportMasivoLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="exportActividadesExcelCentroVidaMasivo.php" method="get" target="_blank">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="modalExportMasivoLabel">
+                            <i class="bi bi-file-earmark-excel-fill me-2"></i>Exportar Actividades Masivas
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="exp_m_anio" name="filtro_anio">
+                                    <option value="">Todos los años</option>
+                                    <?php $yr = date('Y'); for ($y = 2023; $y <= $yr; $y++) echo "<option value=\"$y\">$y</option>"; ?>
+                                </select>
+                                <label for="exp_m_anio">Año</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="exp_m_mes" name="filtro_mes">
+                                    <option value="">Todos los meses</option>
+                                    <?php
+                                    $meses_m = [1=>'Enero',2=>'Febrero',3=>'Marzo',4=>'Abril',5=>'Mayo',6=>'Junio',
+                                                7=>'Julio',8=>'Agosto',9=>'Septiembre',10=>'Octubre',11=>'Noviembre',12=>'Diciembre'];
+                                    foreach ($meses_m as $nm => $nom_m) echo "<option value=\"$nm\">$nom_m</option>"; ?>
+                                </select>
+                                <label for="exp_m_mes">Mes</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="exp_m_tipo" name="filtro_tipo_registro">
+                                    <option value="">Todos</option>
+                                    <option value="Registro Actividad">Registro Actividad</option>
+                                    <option value="Masivas">Masivas</option>
+                                    <option value="Articulacion">Articulación</option>
+                                </select>
+                                <label for="exp_m_tipo">Tipo Registro</label>
+                            </div>
+                            <?php if (in_array($tipo_usuario, [5, 11])): ?>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="exp_m_func" name="filtro_funcionario">
+                                    <option value="">Todos los funcionarios</option>
+                                    <?php
+                                    $func_m = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5,10,11,12) ORDER BY nombre ASC");
+                                    if ($func_m) { while ($fu = $func_m->fetch_assoc()) echo "<option value=\"{$fu['id']}\">" . htmlspecialchars($fu['nombre']) . "</option>"; }
+                                    ?>
+                                </select>
+                                <label for="exp_m_func">Funcionario</label>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success"><i class="bi bi-file-earmark-excel"></i> Descargar Excel</button>
                     </div>
                 </form>
             </div>
@@ -791,6 +930,8 @@ $result = $mysqli->query($query);
                     $('#btnSubmit').html('<i class="bi bi-save"></i> Guardar');
                     $idHidden.val('');
                     $form[0].reset();
+                    $('input[name="jornada"]').prop('checked', false);
+                    resetPersonasCVSection();
                     resetActividad();
                     return;
                 }
@@ -811,15 +952,14 @@ $result = $mysqli->query($query);
                 $('#observacion_actividad').val(data.observacion_actividad || '');
                 $('#funcionario_responsable').val(data.funcionario_responsable || '');
                 $('#actividad_centro_vida').val(data.id_actividad_centro_vida || '');
+                $('#profesion_masivo').val(data.profesion || '');
                 // tipo_registro preload
                 $('#tipo_registro').val(data.tipo_registro || '');
-                // jornada preload (puede ser string con valores separados por coma)
-                $('#jornada_manana').prop('checked', false);
-                $('#jornada_noche').prop('checked', false);
+                toggleSeccionPersonasCV(data.tipo_registro || '');
+                // jornada preload (radio)
+                $('input[name="jornada"]').prop('checked', false);
                 if (data.jornada) {
-                    const jornadas = data.jornada.split(',').map(j => j.trim());
-                    if (jornadas.includes('Mañana')) $('#jornada_manana').prop('checked', true);
-                    if (jornadas.includes('Noche')) $('#jornada_noche').prop('checked', true);
+                    $('input[name="jornada"][value="' + data.jornada.trim() + '"]').prop('checked', true);
                 }
                 // Carga en cascada: meta -> actividad -> acción -> política
                 const metaId = data.id_meta || '';
@@ -880,8 +1020,10 @@ $result = $mysqli->query($query);
                 $title.text('Agregar Actividad Masiva Centro Vida');
                 $('#btnSubmit').html('<i class=\"bi bi-save\"></i> Guardar');
                 $idHidden.val('');
-                $form[0].reset();                $('#jornada_manana').prop('checked', false);
-                $('#jornada_noche').prop('checked', false);                resetActividad();
+                $form[0].reset();
+                $('input[name="jornada"]').prop('checked', false);
+                resetPersonasCVSection();
+                resetActividad();
             });
 
             // Eliminar
@@ -942,6 +1084,143 @@ $result = $mysqli->query($query);
             // cuando el tipo cambia, actualizar o limpiar según corresponda
             $(document).on('change', '#tipo_registro', function() {
                 fetchCountsForSelection();
+                toggleSeccionPersonasCV($(this).val());
+            });
+
+            // ================== SECCIÓN PERSONAS CV ==================
+            let personasAgregadasCV = []; // {cedula, nombre, genero}
+
+            function toggleSeccionPersonasCV(tipoReg) {
+                if (tipoReg === 'Registro Actividad') {
+                    $('#seccion_personas_cv').removeClass('d-none');
+                } else {
+                    $('#seccion_personas_cv').addClass('d-none');
+                }
+                actualizarContadoresCV();
+            }
+
+            function actualizarContadoresCV() {
+                const req = (parseInt($('#cantidad_masculino').val()) || 0) + (parseInt($('#cantidad_femenino').val()) || 0);
+                const sel = personasAgregadasCV.length;
+                $('#contador_req_cv').text(req + ' requeridas');
+                $('#contador_sel_cv').text(sel + ' agregadas');
+                $('#contador_cedulas_cv').text(sel);
+                if (sel > 0 && sel === req) {
+                    $('#contador_sel_cv').removeClass('bg-danger bg-warning').addClass('bg-success');
+                } else if (sel > 0) {
+                    $('#contador_sel_cv').removeClass('bg-success bg-danger').addClass('bg-warning');
+                } else {
+                    $('#contador_sel_cv').removeClass('bg-success bg-warning').addClass('bg-danger');
+                }
+                $('#cedulas_json_cv').val(JSON.stringify(personasAgregadasCV.map(p => p.cedula)));
+            }
+
+            function resetPersonasCVSection() {
+                personasAgregadasCV = [];
+                $('#area_personas_cv').hide();
+                $('#cedulas_cv_container').hide();
+                $('#lista_cedulas_cv').empty();
+                $('#tbody_personas_cv').empty();
+                $('#seccion_personas_cv').addClass('d-none');
+                $('#cedulas_json_cv').val('');
+            }
+
+            // Filtro de texto y jornada sobre la tabla de personas
+            function filtrarPersonasCV() {
+                const texto = $('#buscar_persona_cv_input').val().toLowerCase();
+                const jornada = $('input[name="filtroJornadaCV"]:checked').val();
+                $('#tbody_personas_cv tr').each(function() {
+                    const nombre = $(this).data('nombre') || '';
+                    const cedula = $(this).data('cedula') || '';
+                    const jorn = $(this).data('jornada') || '';
+                    const textoMatch = !texto || nombre.includes(texto) || cedula.includes(texto);
+                    const jornadaMatch = jornada === 'todos' || !jornada || jorn === jornada;
+                    $(this).toggle(textoMatch && jornadaMatch);
+                });
+            }
+
+            $('#buscar_persona_cv_input').on('input', filtrarPersonasCV);
+            $('input[name="filtroJornadaCV"]').on('change', filtrarPersonasCV);
+
+            // Cargar personas del CV seleccionado
+            $('#btn_cargar_personas_cv').on('click', function() {
+                const idGrupo = $('#filtro_grupo_cv_personas').val();
+                if (!idGrupo) { Swal.fire({icon:'warning',title:'Seleccione un Centro de Vida',toast:true,position:'top-end',timer:2000,showConfirmButton:false}); return; }
+                $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+                $.ajax({
+                    url: 'obtenerPersonasCentroVida.php',
+                    type: 'POST',
+                    data: { id_grupo: idGrupo },
+                    dataType: 'json',
+                    success: function(personas) {
+                        $('#tbody_personas_cv').empty();
+                        if (!personas || personas.length === 0) {
+                            $('#tbody_personas_cv').append('<tr><td colspan="6" class="text-center text-muted">No hay personas en este Centro de Vida</td></tr>');
+                        } else {
+                            personas.forEach(function(p) {
+                                const jornBadge = p.jornada ? '<span class="badge bg-secondary">' + p.jornada + '</span>' : '';
+                                const tr = $('<tr></tr>')
+                                    .data('cedula', p.cedula_persona)
+                                    .data('nombre', (p.nombres_persona + ' ' + p.apellidos_persona).toLowerCase())
+                                    .data('jornada', p.jornada || '')
+                                    .data('genero', p.genero_persona || '');
+                                tr.append('<td><input type="checkbox" class="form-check-input chk_persona_cv" value="' + p.cedula_persona + '" data-nombre="' + p.nombres_persona + ' ' + p.apellidos_persona + '" data-genero="' + (p.genero_persona || '') + '"></td>');
+                                tr.append('<td>' + p.cedula_persona + '</td>');
+                                tr.append('<td>' + p.nombres_persona + '</td>');
+                                tr.append('<td>' + p.apellidos_persona + '</td>');
+                                tr.append('<td>' + (p.genero_persona || '') + '</td>');
+                                tr.append('<td>' + jornBadge + '</td>');
+                                $('#tbody_personas_cv').append(tr);
+                            });
+                        }
+                        $('#total_personas_cv').text(personas.length);
+                        $('#area_personas_cv').show();
+                        filtrarPersonasCV();
+                    },
+                    error: function() {
+                        Swal.fire({icon:'error',title:'Error al cargar personas',toast:true,position:'top-end',timer:2000,showConfirmButton:false});
+                    },
+                    complete: function() {
+                        $('#btn_cargar_personas_cv').prop('disabled', false).html('<i class="bi bi-arrow-clockwise"></i> Cargar Personas');
+                    }
+                });
+            });
+
+            $('#chk_all_personas_cv').on('change', function() {
+                $('.chk_persona_cv:visible').prop('checked', $(this).is(':checked'));
+            });
+            $('#btn_sel_todas_cv').on('click', function() { $('.chk_persona_cv:visible').prop('checked', true); });
+            $('#btn_desel_todas_cv').on('click', function() { $('.chk_persona_cv:visible').prop('checked', false); });
+
+            $('#btn_agregar_sel_cv').on('click', function() {
+                $('.chk_persona_cv:checked').each(function() {
+                    const cedula = $(this).val();
+                    const nombre = $(this).data('nombre');
+                    const genero = $(this).data('genero');
+                    if (!personasAgregadasCV.find(p => p.cedula === cedula)) {
+                        personasAgregadasCV.push({ cedula, nombre, genero });
+                        const item = $('<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"></div>');
+                        item.append('<span><i class="bi bi-person-fill me-2"></i>' + nombre + ' — <small>' + cedula + '</small></span>');
+                        const btnRem = $('<button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>');
+                        btnRem.on('click', function() {
+                            personasAgregadasCV = personasAgregadasCV.filter(p => p.cedula !== cedula);
+                            item.remove();
+                            if (personasAgregadasCV.length === 0) $('#cedulas_cv_container').hide();
+                            actualizarContadoresCV();
+                        });
+                        item.append(btnRem);
+                        $('#lista_cedulas_cv').append(item);
+                    }
+                });
+                $('.chk_persona_cv').prop('checked', false);
+                $('#chk_all_personas_cv').prop('checked', false);
+                if (personasAgregadasCV.length > 0) $('#cedulas_cv_container').show();
+                actualizarContadoresCV();
+            });
+
+            // Actualizar contadores cuando cambian cantidades
+            $(document).on('input', '#cantidad_masculino, #cantidad_femenino', function() {
+                actualizarContadoresCV();
             });
         });
     </script>

@@ -52,7 +52,7 @@ try {
     'ZONA PERSONA', 'BARRIO', 'COMUNA', 'REFERENCIA PERSONA', 'EPS', 'PESO', 'TALLA', 'PATOLOGÍAS', 'FACTORES RIESGO', 'FACTORES PREVENTIVOS', 'INGRESOS ECONÓMICOS', 'CONVIVENCIA ACTUAL',
         'RESULTADO ACTIVIDAD', 'REMISIÓN', 'CORREO PERSONA', 'TELÉFONO REFERENCIA PERSONA', 'DIRECCIÓN PERSONA', 'CONDICIÓN OCUPACIÓN', 'CONDICIÓN COMPONENTE', 'ACTIVO DESDE', 'META', 'ACTIVIDAD', 'ACCIÓN',
         // Campos del registro Centro Vida
-        'ACTIVIDAD CENTRO VIDA', 'POLÍTICA PÚBLICA', 'DEPARTAMENTO PROCEDENCIA', 'NOMBRE ACTIVIDAD EVENTO/ASUNTO', 'FUNCIONARIO', 'FECHA REGISTRO',
+        'ACTIVIDAD CENTRO VIDA', 'POLÍTICA PÚBLICA', 'DEPARTAMENTO PROCEDENCIA', 'CONDICIÓN OTRA', 'PROFESIÓN', 'JORNADA', 'GRUPOS EXTERNOS', 'NOMBRE ACTIVIDAD EVENTO/ASUNTO', 'FUNCIONARIO', 'FECHA REGISTRO',
     ];
 
     // Escribir cabeceras
@@ -81,11 +81,15 @@ try {
             acv.descripcion_actividad as actividad_centro_vida,
             pol.descripcion_politica as descripcion_politica_registro,
             rcv.departamento_procedencia,
+            rcv.condicion_otra,
+            rcv.profesion,
+            rcv.jornada,
             rcv.observacion,
             rcv.funcionario_registro,
             COALESCE(u.nombre, rcv.funcionario_registro) AS nombre_funcionario,
             rcv.fecha_registro,
-            GROUP_CONCAT(rcvf.fecha_atencion ORDER BY rcvf.fecha_atencion ASC SEPARATOR ', ') as fechas_programadas,
+            GROUP_CONCAT(DISTINCT rcvf.fecha_atencion ORDER BY rcvf.fecha_atencion ASC SEPARATOR ', ') as fechas_programadas,
+            GROUP_CONCAT(DISTINCT ge.nombre_grupo_externo ORDER BY ge.nombre_grupo_externo ASC SEPARATOR ', ') as nombres_grupos_externos,
             g.descripcion_grupo as descripcion_grupo,
             b.nombre_bar as nombre_barrio,
             c.nombre_com as nombre_comuna,
@@ -104,6 +108,8 @@ try {
     LEFT JOIN actividades a ON rcv.id_actividad = a.id_actividad
     LEFT JOIN acciones ac ON rcv.id_accion = ac.id_accion
     LEFT JOIN usuarios u ON u.id = rcv.funcionario_registro
+    LEFT JOIN registro_centro_vida_grupo_externo rcvge ON rcv.id_registro_centro_vida = rcvge.id_registro_centro_vida
+    LEFT JOIN grupos_externos ge ON rcvge.id_grupo_externo = ge.id_grupo_externo
     ";
 
     // Aplicar filtros (mismos que la UI)
@@ -124,6 +130,16 @@ try {
     if (isset($_GET['actividad']) && $_GET['actividad'] !== '') {
         $where[] = "rcv.id_actividad_centro_vida = ?";
         $params[] = $_GET['actividad'];
+        $types .= 'i';
+    }
+    if (isset($_GET['funcionario']) && $_GET['funcionario'] !== '') {
+        $where[] = "rcv.funcionario_registro = ?";
+        $params[] = intval($_GET['funcionario']);
+        $types .= 'i';
+    }
+    if (isset($_GET['id_grupo_cv']) && $_GET['id_grupo_cv'] !== '') {
+        $where[] = "p.id_grupo = ?";
+        $params[] = intval($_GET['id_grupo_cv']);
         $types .= 'i';
     }
 
@@ -269,6 +285,10 @@ try {
                 $r['actividad_centro_vida'] ?? '',
                 $r['descripcion_politica_registro'] ?? '',
                 $r['departamento_procedencia'] ?? '',
+                $r['condicion_otra'] ?? '',
+                $r['profesion'] ?? '',
+                $r['jornada'] ?? '',
+                $r['nombres_grupos_externos'] ?? '',
                 $r['observacion'] ?? '',
                 $r['nombre_funcionario'] ?? '',
                 $fecha_registro,

@@ -28,17 +28,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Excluir grupos con estado: Trasladado, Fallecido, Evadido
     $stmt = $mysqli->prepare("
         SELECT p.nombres_persona, p.apellidos_persona, p.id_meta, p.id_actividad, p.id_accion, p.id_politica_publica,
-               m.descripcion_meta, a.descripcion_actividad, acc.descripcion_accion, pol.descripcion_politica
+               p.condicion_componente, p.jornada,
+               m.descripcion_meta, a.descripcion_actividad, acc.descripcion_accion, pol.descripcion_politica,
+               GROUP_CONCAT(pge.id_grupo_externo ORDER BY pge.id_grupo_externo ASC) AS ids_grupos_externos
         FROM personas p
         LEFT JOIN metas m ON p.id_meta = m.id_meta
         LEFT JOIN actividades a ON p.id_actividad = a.id_actividad
         LEFT JOIN acciones acc ON p.id_accion = acc.id_accion
         LEFT JOIN politicas_publicas pol ON p.id_politica_publica = pol.id_politica
         LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
+        LEFT JOIN persona_grupo_externo pge ON p.cedula_persona = pge.cedula_persona
         WHERE p.cedula_persona = ? $where_grupo
         AND (g.descripcion_grupo NOT LIKE '%Trasladado%' OR g.descripcion_grupo IS NULL)
         AND (g.descripcion_grupo NOT LIKE '%Fallecido%' OR g.descripcion_grupo IS NULL)
         AND (g.descripcion_grupo NOT LIKE '%Evadido%' OR g.descripcion_grupo IS NULL)
+        GROUP BY p.cedula_persona
     ");
     $stmt->bind_param("s", $cedula);
     $stmt->execute();
@@ -82,7 +86,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 'descripcion_politica' => $row['descripcion_politica'],
                 'fallecido' => $fallecido,
                 'id_condicion' => $lastCond,
-                'departamento_procedencia' => $lastDept
+                'departamento_procedencia' => $lastDept,
+                'condicion_componente' => $row['condicion_componente'],
+                'jornada' => $row['jornada'],
+                'ids_grupos_externos' => $row['ids_grupos_externos'] ?? ''
             ]);
     } else {
         echo json_encode(['encontrado' => false, 'mensaje' => 'Persona no encontrada']);

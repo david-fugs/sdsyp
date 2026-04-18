@@ -29,18 +29,19 @@ $funcionario_responsable = intval($_POST['funcionario_responsable'] ?? 0);
 $tipo_actividad = 'Masiva';
 // nuevo campo tipo_registro
 $tipo_registro = $mysqli->real_escape_string($_POST['tipo_registro'] ?? '');
-// Procesar jornada (array de checkboxes)
-$jornada_array = isset($_POST['jornada']) && is_array($_POST['jornada']) ? $_POST['jornada'] : [];
-$jornada = $mysqli->real_escape_string(implode(', ', $jornada_array));
+// Jornada: radio (valor único)
+$jornada = $mysqli->real_escape_string(trim($_POST['jornada'] ?? ''));
+// Profesión
+$profesion = $mysqli->real_escape_string(trim($_POST['profesion'] ?? ''));
 
 $sql = "UPDATE masiva_centro_vida SET 
- id_meta=?, id_actividad=?, id_accion=?, politica_publica=?, id_centro_vida=?, fecha_atencion=?, nombre_lider=?, telefono_contacto=?, id_comuna=?, medio_verificacion=?, cantidad_masculino=?, cantidad_femenino=?, tipo_actividad=?, tipo_registro=?, jornada=?, observacion_actividad=?, funcionario_responsable=?, id_actividad_centro_vida=?
+ id_meta=?, id_actividad=?, id_accion=?, politica_publica=?, id_centro_vida=?, fecha_atencion=?, nombre_lider=?, telefono_contacto=?, id_comuna=?, medio_verificacion=?, cantidad_masculino=?, cantidad_femenino=?, tipo_actividad=?, tipo_registro=?, jornada=?, profesion=?, observacion_actividad=?, funcionario_responsable=?, id_actividad_centro_vida=?
  WHERE id_masiva_centro_vida=?";
 $stmt = $mysqli->prepare($sql);
 if(!$stmt){
   echo "<script>alert('Error preparando actualización: {$mysqli->error}');window.location='formMasivoCentroVida.php';</script>";exit;
 }
- $stmt->bind_param('iiisisssisiissssiii',
+ $stmt->bind_param('iiisisssisiissssssiii',
  $id_meta,
  $id_actividad,
  $id_accion,
@@ -56,6 +57,7 @@ if(!$stmt){
  $tipo_actividad,
  $tipo_registro,
  $jornada,
+ $profesion,
  $observacion_actividad,
  $funcionario_responsable,
  $id_actividad_centro_vida,

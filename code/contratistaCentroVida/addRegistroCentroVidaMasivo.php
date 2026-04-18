@@ -26,7 +26,9 @@ try {
     }
 
     // Campos comunes
-    $id_condicion = $_POST['id_condicion'] ?? null;
+    $id_condicion_raw = $_POST['id_condicion'] ?? null;
+    $condicion_otra = ($id_condicion_raw === 'otra') ? trim($_POST['condicion_otra'] ?? '') : null;
+    $id_condicion = ($id_condicion_raw === 'otra') ? null : $id_condicion_raw;
     $id_meta = $_POST['id_meta'] ?? null;
     $id_actividad = $_POST['id_actividad'] ?? null;
     $id_accion = $_POST['id_accion'] ?? null;
@@ -34,6 +36,8 @@ try {
     $politica_publica = isset($_POST['politica_publica']) ? intval($_POST['politica_publica']) : 0;
     $departamento_procedencia = $_POST['departamento_procedencia'] ?? '';
     $observacion = $_POST['observacion'] ?? '';
+    $profesion = $_POST['profesion'] ?? null;
+    $jornada = $_POST['jornada'] ?? null;
     // Guardar el ID numérico del usuario para filtrado (el nombre se resuelve por JOIN)
     $funcionario_registro = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
 
@@ -52,13 +56,20 @@ try {
     // Iniciar transacción
     $mysqli->autocommit(FALSE);
 
-    $sql_insert = "INSERT INTO registro_centro_vida (cedula_persona, id_condicion, id_meta, id_actividad, id_accion, id_actividad_centro_vida, politica_publica, departamento_procedencia, observacion, funcionario_registro, fecha_registro) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+    // INSERT: 1 registro por persona por fecha
+    $sql_insert = "INSERT INTO registro_centro_vida (cedula_persona, id_condicion, condicion_otra, id_meta, id_actividad, id_accion, id_actividad_centro_vida, politica_publica, departamento_procedencia, observacion, profesion, jornada, funcionario_registro, fecha_registro) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
     $stmt = $mysqli->prepare($sql_insert);
     if (!$stmt) throw new Exception('Error al preparar consulta principal: ' . $mysqli->error);
 
     $sql_fecha = "INSERT INTO registro_centro_vida_fechas (id_registro_centro_vida, fecha_atencion) VALUES (?, ?)";
     $stmt_fecha = $mysqli->prepare($sql_fecha);
     if (!$stmt_fecha) throw new Exception('Error al preparar consulta de fechas: ' . $mysqli->error);
+
+    // Grupos externos: auto-poblar desde persona_grupo_externo
+    $sql_ge = "INSERT IGNORE INTO registro_centro_vida_grupo_externo (id_registro_centro_vida, id_grupo_externo)
+               SELECT ?, id_grupo_externo FROM persona_grupo_externo WHERE cedula_persona = ?";
+    $stmt_ge = $mysqli->prepare($sql_ge);
+    // No falla si la tabla no tiene datos; simplemente no inserta nada
 
     $inserted = 0;
     $failures = [];
@@ -67,27 +78,36 @@ try {
         $ced = trim($ced);
         if ($ced === '') continue;
 
-        // Bind params: cedula as string
-        $stmt->bind_param('siiiiiissi', $ced, $id_condicion, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $funcionario_registro);
-        if (!$stmt->execute()) {
-            $failures[] = ['cedula' => $ced, 'error' => $stmt->error];
-            continue;
-        }
-
-        $id_reg = $mysqli->insert_id;
         foreach ($fechas as $f) {
             if (empty($f)) continue;
+
+            // 1 registro por persona por fecha
+            $stmt->bind_param('sisiiiisssssi', $ced, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $profesion, $jornada, $funcionario_registro);
+            if (!$stmt->execute()) {
+                $failures[] = ['cedula' => $ced, 'fecha' => $f, 'error' => $stmt->error];
+                continue;
+            }
+
+            $id_reg = $mysqli->insert_id;
             $stmt_fecha->bind_param('is', $id_reg, $f);
             if (!$stmt_fecha->execute()) {
-                $failures[] = ['cedula' => $ced, 'error' => $stmt_fecha->error];
+                $failures[] = ['cedula' => $ced, 'fecha' => $f, 'error' => $stmt_fecha->error];
+                continue;
             }
-        }
 
-        $inserted++;
+            // Auto-poblar grupos externos de la persona
+            if ($stmt_ge && $id_reg > 0) {
+                $stmt_ge->bind_param('is', $id_reg, $ced);
+                $stmt_ge->execute();
+            }
+
+            $inserted++;
+        }
     }
 
     $stmt->close();
     $stmt_fecha->close();
+    if ($stmt_ge) $stmt_ge->close();
 
     if (count($failures) > 0) {
         $mysqli->rollback();

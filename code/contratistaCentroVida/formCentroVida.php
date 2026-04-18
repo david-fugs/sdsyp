@@ -348,7 +348,7 @@ $result_actividades_cv = $result_actividades_cv_query->fetch_all(MYSQLI_ASSOC);
 
 // Obtener lista de personas para el modal masivo (ordenadas alfabéticamente)
 // Solo personas relacionadas con grupos que inician con "CV"
-$personas_sql = "SELECT p.cedula_persona, CONCAT(p.nombres_persona, ' ', p.apellidos_persona) AS nombre_completo 
+$personas_sql = "SELECT p.cedula_persona, CONCAT(p.nombres_persona, ' ', p.apellidos_persona) AS nombre_completo, p.jornada
                  FROM personas p
                  INNER JOIN grupos g ON p.id_grupo = g.id_grupo
                  WHERE g.descripcion_grupo LIKE 'CV%'";
@@ -362,6 +362,41 @@ if (!$result_personas_query) {
     die("Error en consulta personas: " . $mysqli->error);
 }
 $result_personas = $result_personas_query->fetch_all(MYSQLI_ASSOC);
+
+// Variables de sesión para control de permisos
+$tipo_usuario_cv = isset($_SESSION['tipo_usuario']) ? (int)$_SESSION['tipo_usuario'] : 0;
+$id_usuario_cv   = isset($_SESSION['id'])           ? (int)$_SESSION['id']           : 0;
+
+// Grupos CV para el modal de exportación
+$cvs_export = [];
+$cvs_export_query = "SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC";
+$cvs_export_res = $mysqli->query($cvs_export_query);
+if ($cvs_export_res) { $cvs_export = $cvs_export_res->fetch_all(MYSQLI_ASSOC); }
+
+// Usuarios funcionarios para el modal de exportación
+$funcionarios_export = [];
+if (in_array($tipo_usuario_cv, [5, 11])) {
+    $func_query = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11, 12) ORDER BY nombre ASC";
+    if ($tipo_usuario_cv === 11) {
+        // Solo funcionarios de su grupo
+        $id_grupo_func = isset($_SESSION['id_grupo']) ? (int)$_SESSION['id_grupo'] : 0;
+        if ($id_grupo_func > 0) {
+            $func_query = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (10, 11, 12) AND id_grupo = $id_grupo_func ORDER BY nombre ASC";
+        }
+    }
+    $func_res = $mysqli->query($func_query);
+    if ($func_res) { $funcionarios_export = $func_res->fetch_all(MYSQLI_ASSOC); }
+}
+
+// Obtener grupos externos activos para los modales
+$ge_query = "SELECT id_grupo_externo, nombre_grupo_externo FROM grupos_externos WHERE activo=1 ORDER BY nombre_grupo_externo ASC";
+$ge_result = $mysqli->query($ge_query);
+$grupos_externos_list = $ge_result ? $ge_result->fetch_all(MYSQLI_ASSOC) : [];
+// Generar HTML de opciones para JS
+$grupoExternoOptionsHtml = '<option value="">Seleccione...</option>';
+foreach ($grupos_externos_list as $ge) {
+    $grupoExternoOptionsHtml .= '<option value="' . htmlspecialchars($ge['id_grupo_externo']) . '">' . htmlspecialchars($ge['nombre_grupo_externo']) . '</option>';
+}
 
 // Procesar filtros
 $where_conditions = [];
@@ -470,10 +505,16 @@ function deleteRegistro($id_registro)
                         <i class="bi bi-people-fill"></i>
                         Agregar Masivo
                     </button>
-                    <a href="exportExcelCentroVida.php<?= !empty($_GET) ? '?' . http_build_query($_GET) : '' ?>" class="btn-modern">
+                    <button type="button" class="btn-modern" data-bs-toggle="modal" data-bs-target="#modalExportCentroVida">
                         <i class="bi bi-file-excel"></i>
                         Exportar Excel
-                    </a>
+                    </button>
+                    <?php if ($tipo_usuario_cv === 11): ?>
+                    <button type="button" class="btn-modern" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.4);" data-bs-toggle="modal" data-bs-target="#modalConsolidado">
+                        <i class="bi bi-calendar3"></i>
+                        Consolidado por Mes
+                    </button>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -601,6 +642,173 @@ function deleteRegistro($id_registro)
             ?>
         </div>
     </div>
+    <!-- Modal Exportar Excel Centro Vida -->
+    <div class="modal fade" id="modalExportCentroVida" tabindex="-1" aria-labelledby="modalExportCentroVidaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="formExportCentroVida" action="exportExcelCentroVida.php" method="get" target="_blank">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="modalExportCentroVidaLabel">
+                            <i class="bi bi-file-earmark-excel-fill me-2"></i>Exportar Registros Centro Vida
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3">Aplique filtros antes de exportar. Los permisos de visualización se aplican automáticamente según su perfil.</p>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="number" class="form-control" id="exp_cedula" name="cedula_persona" placeholder="Cédula">
+                                <label for="exp_cedula">Cédula</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="text" class="form-control" id="exp_nombre" name="nombre" placeholder="Nombre">
+                                <label for="exp_nombre">Nombre</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="number" class="form-control" id="exp_anio" name="anio" placeholder="Año" min="2020" max="2099">
+                                <label for="exp_anio">Año</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="exp_mes" name="mes">
+                                    <option value="">Todos los meses</option>
+                                    <?php
+                                    $meses_exp = [1=>'Enero',2=>'Febrero',3=>'Marzo',4=>'Abril',5=>'Mayo',6=>'Junio',
+                                                  7=>'Julio',8=>'Agosto',9=>'Septiembre',10=>'Octubre',11=>'Noviembre',12=>'Diciembre'];
+                                    foreach ($meses_exp as $num => $nom) {
+                                        echo "<option value=\"$num\">$nom</option>";
+                                    } ?>
+                                </select>
+                                <label for="exp_mes">Mes</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="exp_actividad" name="actividad">
+                                    <option value="">Todas las actividades</option>
+                                    <?php foreach ($result_actividades_cv as $act_exp) { ?>
+                                        <option value="<?= $act_exp['id_actividad_centro_vida'] ?>"><?= htmlspecialchars($act_exp['descripcion_actividad']) ?></option>
+                                    <?php } ?>
+                                </select>
+                                <label for="exp_actividad">Actividad Centro Vida</label>
+                            </div>
+                            <?php if (in_array($tipo_usuario_cv, [5, 11])): ?>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="exp_funcionario" name="funcionario">
+                                    <option value="">Todos los funcionarios</option>
+                                    <?php foreach ($funcionarios_export as $func_e) { ?>
+                                        <option value="<?= $func_e['id'] ?>"><?= htmlspecialchars($func_e['nombre']) ?></option>
+                                    <?php } ?>
+                                </select>
+                                <label for="exp_funcionario">Funcionario</label>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php if ($tipo_usuario_cv === 5): ?>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="exp_centro_vida" name="id_grupo_cv">
+                                    <option value="">Todos los centros de vida</option>
+                                    <?php foreach ($cvs_export as $cv_e) { ?>
+                                        <option value="<?= $cv_e['id_grupo'] ?>"><?= htmlspecialchars($cv_e['descripcion_grupo']) ?></option>
+                                    <?php } ?>
+                                </select>
+                                <label for="exp_centro_vida">Centro de Vida</label>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-file-earmark-excel"></i> Descargar Excel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <?php if ($tipo_usuario_cv === 11): ?>
+    <!-- Modal Consolidado por Mes (solo tipo_usuario 11) -->
+    <div class="modal fade" id="modalConsolidado" tabindex="-1" aria-labelledby="modalConsolidadoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="formConsolidado" action="exportConsolidadoCentroVida.php" method="get" target="_blank">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg,#1976d2,#42a5f5);">
+                        <h5 class="modal-title" id="modalConsolidadoLabel">
+                            <i class="bi bi-calendar3 me-2"></i>Consolidado por Mes — Centro Vida
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3">Genera un Excel con el listado de personas del centro de vida y marca los días de asistencia en el mes seleccionado.</p>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="cons_mes" name="mes" required>
+                                    <option value="">-- Seleccione --</option>
+                                    <?php
+                                    $meses_cons = [1=>'Enero',2=>'Febrero',3=>'Marzo',4=>'Abril',5=>'Mayo',6=>'Junio',
+                                                   7=>'Julio',8=>'Agosto',9=>'Septiembre',10=>'Octubre',11=>'Noviembre',12=>'Diciembre'];
+                                    foreach ($meses_cons as $num => $nom) {
+                                        echo "<option value=\"$num\">$nom</option>";
+                                    } ?>
+                                </select>
+                                <label for="cons_mes">Mes <span class="text-danger">*</span></label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="number" class="form-control" id="cons_anio" name="anio" placeholder="Año"
+                                    min="2020" max="2099" value="<?= date('Y') ?>" required>
+                                <label for="cons_anio">Año <span class="text-danger">*</span></label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="cons_actividad" name="id_actividad_cv">
+                                    <option value="">Todas las actividades</option>
+                                    <?php foreach ($result_actividades_cv as $act_c) { ?>
+                                        <option value="<?= $act_c['id_actividad_centro_vida'] ?>"><?= htmlspecialchars($act_c['descripcion_actividad']) ?></option>
+                                    <?php } ?>
+                                </select>
+                                <label for="cons_actividad">Actividad Centro Vida</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="cons_funcionario" name="funcionario">
+                                    <option value="">Todos los funcionarios</option>
+                                    <?php foreach ($funcionarios_export as $func_c) { ?>
+                                        <option value="<?= $func_c['id'] ?>"><?= htmlspecialchars($func_c['nombre']) ?></option>
+                                    <?php } ?>
+                                </select>
+                                <label for="cons_funcionario">Funcionario</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <label class="form-label fw-bold">Jornada</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="jornada" id="cons_jornada_ambas" value="" checked>
+                                    <label class="btn btn-outline-secondary" for="cons_jornada_ambas">Ambas</label>
+                                    <input type="radio" class="btn-check" name="jornada" id="cons_jornada_manana" value="Mañana">
+                                    <label class="btn btn-outline-primary" for="cons_jornada_manana">Mañana</label>
+                                    <input type="radio" class="btn-check" name="jornada" id="cons_jornada_tarde" value="Tarde">
+                                    <label class="btn btn-outline-warning" for="cons_jornada_tarde">Tarde</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-file-earmark-excel"></i> Generar Consolidado
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Modal Agregar Masivo -->
     <div class="modal fade" id="modalMasivo" tabindex="-1" aria-labelledby="modalMasivoLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
@@ -617,8 +825,18 @@ function deleteRegistro($id_registro)
                         <p class="text-muted">Seleccione múltiples personas de la lista o escriba una cédula para agregarla manualmente. Los registros se agregarán con la misma información que en el formulario individual.</p>
 
                         <div class="row mb-3">
-                            <div class="col-12">
+                            <div class="col-md-8">
                                 <input type="text" id="searchPersona" class="form-control" placeholder="Buscar por nombre o cédula...">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="btn-group w-100" role="group" aria-label="Filtro jornada">
+                                    <input type="radio" class="btn-check" name="filtroJornada" id="filtroTodos" value="todos" checked>
+                                    <label class="btn btn-outline-secondary btn-sm" for="filtroTodos">Todos</label>
+                                    <input type="radio" class="btn-check" name="filtroJornada" id="filtroManana" value="Mañana">
+                                    <label class="btn btn-outline-primary btn-sm" for="filtroManana">Mañana</label>
+                                    <input type="radio" class="btn-check" name="filtroJornada" id="filtroTarde" value="Tarde">
+                                    <label class="btn btn-outline-warning btn-sm" for="filtroTarde">Tarde</label>
+                                </div>
                             </div>
                         </div>
 
@@ -631,9 +849,9 @@ function deleteRegistro($id_registro)
                             </div>
                             <div id="listaPersonasMasivo">
                                 <?php foreach ($result_personas as $p) { ?>
-                                    <div class="form-check">
+                                    <div class="form-check persona-item" data-jornada="<?= htmlspecialchars($p['jornada'] ?? '') ?>">
                                         <input class="form-check-input persona-checkbox" type="checkbox" value="<?= htmlspecialchars($p['cedula_persona']) ?>" id="persona_<?= htmlspecialchars($p['cedula_persona']) ?>">
-                                        <label class="form-check-label" for="persona_<?= htmlspecialchars($p['cedula_persona']) ?>"><?= htmlspecialchars($p['nombre_completo']) ?> — <small><?= htmlspecialchars($p['cedula_persona']) ?></small></label>
+                                        <label class="form-check-label" for="persona_<?= htmlspecialchars($p['cedula_persona']) ?>"><?= htmlspecialchars($p['nombre_completo']) ?> — <small><?= htmlspecialchars($p['cedula_persona']) ?></small><?= !empty($p['jornada']) ? ' <span class="badge bg-secondary">' . htmlspecialchars($p['jornada']) . '</span>' : '' ?></label>
                                     </div>
                                 <?php } ?>
                             </div>
@@ -657,8 +875,13 @@ function deleteRegistro($id_registro)
                                         ?>
                                             <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
                                         <?php } ?>
+                                        <option value="otra">Otra</option>
                                     </select>
                                     <label for="id_condicion_masivo">Condición</label>
+                                </div>
+                                <div class="col-md-6 mb-3 form-floating" id="condicion_otra_masivo_wrap" style="display:none;">
+                                    <input type="text" class="form-control" id="condicion_otra_masivo" name="condicion_otra" placeholder="Especifique condición">
+                                    <label for="condicion_otra_masivo">Especifique condición</label>
                                 </div>
                                 <div class="col-md-6 mb-3 form-floating">
                                     <select class="form-select" id="id_meta_masivo" name="id_meta" required>
@@ -744,6 +967,18 @@ function deleteRegistro($id_registro)
                             </div>
 
                             <div class="row">
+                                <div class="col-md-6 mb-3 form-floating">
+                                    <select class="form-select" id="profesion_masivo" name="profesion">
+                                        <option value="" selected>Seleccione Profesión...</option>
+                                        <option value="Trabajo social">Trabajo social</option>
+                                        <option value="Psicología">Psicología</option>
+                                        <option value="Psicosocial">Psicosocial</option>
+                                    </select>
+                                    <label for="profesion_masivo">Profesión</label>
+                                </div>
+                            </div>
+
+                            <div class="row">
                                 <div class="col-md-12 mb-3">
                                     <label for="fechas_atencion_masivo" class="form-label"><strong>Fechas de Atención</strong></label>
                                     <input type="text" class="form-control" id="fechas_atencion_masivo" name="fechas_atencion" placeholder="Haga clic para seleccionar múltiples fechas..." readonly required>
@@ -804,8 +1039,15 @@ function deleteRegistro($id_registro)
                                     ?>
                                         <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
                                     <?php } ?>
+                                    <option value="otra">Otra</option>
                                 </select>
                                 <label for="id_condicion">Condición</label>
+                            </div>
+                        </div>
+                        <div class="row" id="condicion_otra_individual_row" style="display:none;">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <input type="text" class="form-control" id="condicion_otra_individual" name="condicion_otra" placeholder="Especifique condición">
+                                <label for="condicion_otra_individual">Especifique condición</label>
                             </div>
                         </div>
 
@@ -910,6 +1152,52 @@ function deleteRegistro($id_registro)
                                     <option value="Bogotá D.C.">Bogotá D.C.</option>
                                 </select>
                                 <label for="departamento_procedencia">Departamento de Procedencia</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="profesion_individual" name="profesion">
+                                    <option value="" selected>Seleccione Profesión...</option>
+                                    <option value="Trabajo social">Trabajo social</option>
+                                    <option value="Psicología">Psicología</option>
+                                    <option value="Psicosocial">Psicosocial</option>
+                                </select>
+                                <label for="profesion_individual">Profesión</label>
+                            </div>
+                        </div>
+
+                        <!-- Jornada -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Jornada</label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="jornada" id="jornada_manana_ind" value="Mañana">
+                                        <label class="form-check-label" for="jornada_manana_ind">Mañana</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="jornada" id="jornada_tarde_ind" value="Tarde">
+                                        <label class="form-check-label" for="jornada_tarde_ind">Tarde</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grupos Externos -->
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-bold">Grupos Externos</label>
+                                <div id="grupos_externos_ind_container">
+                                    <div class="input-group mb-2 grupo-externo-row-ind">
+                                        <select class="form-select" name="grupos_externos[]">
+                                            <?= $grupoExternoOptionsHtml ?>
+                                        </select>
+                                        <button type="button" class="btn btn-danger btn-remove-ge-ind" tabindex="-1">
+                                            <i class="bi bi-dash-circle"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="btn_add_ge_ind">
+                                    <i class="bi bi-plus-circle"></i> Agregar grupo externo
+                                </button>
                             </div>
                         </div>
 
@@ -1344,6 +1632,53 @@ function deleteRegistro($id_registro)
                                 position: 'top-end'
                             });
 
+                            // Precargar condición: condicion_componente es texto, hay que buscar la opción cuyo texto coincida
+                            if (response.condicion_componente) {
+                                let foundCond = false;
+                                const condText = response.condicion_componente.trim().toLowerCase();
+                                $('#id_condicion option').each(function() {
+                                    if ($(this).text().trim().toLowerCase() === condText) {
+                                        $('#id_condicion').val($(this).val());
+                                        foundCond = true;
+                                        return false;
+                                    }
+                                });
+                                if (!foundCond && response.id_condicion) {
+                                    $('#id_condicion').val(response.id_condicion);
+                                }
+                            } else if (response.id_condicion) {
+                                $('#id_condicion').val(response.id_condicion);
+                            }
+                            if ($('#id_condicion').val() === 'otra') {
+                                $('#condicion_otra_individual_row').show();
+                                $('#condicion_otra_individual').prop('required', true);
+                            }
+
+                            // Precargar Jornada
+                            if (response.jornada) {
+                                $('input[name="jornada"][value="' + response.jornada + '"]').prop('checked', true);
+                            }
+
+                            // Precargar Grupos Externos
+                            if (response.ids_grupos_externos) {
+                                const geIds = response.ids_grupos_externos.toString().split(',').map(s => s.trim()).filter(s => s);
+                                resetGruposExternosInd();
+                                if (geIds.length > 0) {
+                                    const $container = $('#grupos_externos_ind_container');
+                                    $container.empty();
+                                    geIds.forEach(function(geId) {
+                                        const $row = $('<div class="input-group mb-2 grupo-externo-row-ind"></div>');
+                                        const $sel = $('<select class="form-select" name="grupos_externos[]"><?= $grupoExternoOptionsHtml ?></select>');
+                                        $sel.val(geId);
+                                        const $btn = $('<button type="button" class="btn btn-danger btn-remove-ge-ind" tabindex="-1"><i class="bi bi-dash-circle"></i></button>');
+                                        $row.append($sel).append($btn);
+                                        $container.append($row);
+                                    });
+                                } else {
+                                    resetGruposExternosInd();
+                                }
+                            }
+
                             // Precargar Meta, Actividad, Acción y Política Pública si existen en la tabla personas
                             if (response.id_meta) {
                                 $('#id_meta').val(response.id_meta);
@@ -1449,6 +1784,11 @@ function deleteRegistro($id_registro)
                 cedulaValida = false;
                 // Asegurar que el formulario vuelva a modo 'agregar' limpiando el id de edición
                 $('#id_registro_centro_vida').val('');
+                // Ocultar campo condicion_otra
+                $('#condicion_otra_individual_row').hide();
+                $('#condicion_otra_individual').val('').prop('required', false);
+                // Resetear grupos externos
+                resetGruposExternosInd();
 
                 // Limpiar flatpickr
                 if (document.querySelector("#fechas_atencion")._flatpickr) {
@@ -1468,6 +1808,10 @@ function deleteRegistro($id_registro)
                         $('#cedula_persona').focus();
                     }
                 }
+                // Precargar meta "2." y actividad "2.1" si no hay datos ya cargados
+                if (!$('#id_registro_centro_vida').val()) {
+                    autoprecargarMetaActividadInd();
+                }
             });
 
             // Evento para limpiar modal al hacer clic en "Agregar Registro"
@@ -1483,6 +1827,9 @@ function deleteRegistro($id_registro)
                 $('#modalNewRecord form')[0].reset();
                 selectedDates = [];
                 updateSelectedDatesDisplay([]);
+                $('#condicion_otra_individual_row').hide();
+                $('#condicion_otra_individual').val('').prop('required', false);
+                resetGruposExternosInd();
             });
 
             // Botón limpiar filtros
@@ -1494,10 +1841,116 @@ function deleteRegistro($id_registro)
                 // Enviar formulario con parámetros vacíos (redirecciona a la misma página sin GET)
                 window.location = 'formCentroVida.php';
             });
+
+            // Mostrar/ocultar campo condicion_otra en modal individual
+            $('#id_condicion').on('change', function() {
+                if ($(this).val() === 'otra') {
+                    $('#condicion_otra_individual_row').show();
+                    $('#condicion_otra_individual').prop('required', true);
+                } else {
+                    $('#condicion_otra_individual_row').hide();
+                    $('#condicion_otra_individual').val('').prop('required', false);
+                }
+            });
+
+            // Grupos externos en modal individual
+            function createGruposExternosIndRow(selectedId) {
+                const $row = $('<div class="input-group mb-2 grupo-externo-row-ind"></div>');
+                const $sel = $('<select class="form-select" name="grupos_externos[]"><?= $grupoExternoOptionsHtml ?></select>');
+                if (selectedId) $sel.val(selectedId);
+                const $btn = $('<button type="button" class="btn btn-danger btn-remove-ge-ind" tabindex="-1"><i class="bi bi-dash-circle"></i></button>');
+                $btn.on('click', function() {
+                    if ($('#grupos_externos_ind_container .grupo-externo-row-ind').length > 1) {
+                        $row.remove();
+                    } else {
+                        $sel.val('');
+                    }
+                });
+                $row.append($sel).append($btn);
+                return $row;
+            }
+
+            $('#btn_add_ge_ind').on('click', function() {
+                $('#grupos_externos_ind_container').append(createGruposExternosIndRow(''));
+            });
+
+            $(document).on('click', '.btn-remove-ge-ind', function() {
+                const $row = $(this).closest('.grupo-externo-row-ind');
+                if ($('#grupos_externos_ind_container .grupo-externo-row-ind').length > 1) {
+                    $row.remove();
+                } else {
+                    $row.find('select').val('');
+                }
+            });
+
+            function resetGruposExternosInd() {
+                $('#grupos_externos_ind_container').html(
+                    '<div class="input-group mb-2 grupo-externo-row-ind">' +
+                    '<select class="form-select" name="grupos_externos[]"><?= $grupoExternoOptionsHtml ?></select>' +
+                    '<button type="button" class="btn btn-danger btn-remove-ge-ind" tabindex="-1"><i class="bi bi-dash-circle"></i></button>' +
+                    '</div>'
+                );
+            }
+
+            // Precarga Meta "2." y Actividad "2.1" para modal individual
+            function autoprecargarMetaActividadInd() {
+                if ($('#id_meta').val()) return;
+                let idMeta2 = null;
+                $('#id_meta option').each(function() {
+                    if (/^2\./.test($(this).text().trim())) {
+                        idMeta2 = $(this).val();
+                        return false;
+                    }
+                });
+                if (!idMeta2) return;
+                $('#id_meta').val(idMeta2);
+                $.ajax({
+                    url: '../personMovement/getActividades.php',
+                    type: 'POST',
+                    data: { id_meta: idMeta2 },
+                    success: function(resp) {
+                        $('#id_actividad').empty().append('<option value="">Seleccione Actividad...</option>').append(resp).prop('disabled', false);
+                        let idAct21 = null;
+                        $('#id_actividad option').each(function() {
+                            if (/^2\.1/.test($(this).text().trim())) {
+                                idAct21 = $(this).val();
+                                return false;
+                            }
+                        });
+                        if (idAct21) {
+                            $('#id_actividad').val(idAct21);
+                            $.ajax({
+                                url: '../personMovement/getAcciones.php',
+                                type: 'POST',
+                                data: { id_actividad: idAct21 },
+                                success: function(resp2) {
+                                    $('#id_accion').empty().append('<option value="">Seleccione Acción...</option>').append(resp2).prop('disabled', false);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
         });
 
         // -------------------- JS para Modal Masivo --------------------
         $(document).ready(function() {
+            // Función helper para actualizar visibilidad de personas según texto y jornada
+            function aplicarFiltrosMasivo() {
+                const q = $('#searchPersona').val().toLowerCase().trim();
+                const jornada = $('input[name="filtroJornada"]:checked').val();
+                $('#listaPersonasMasivo .persona-item').each(function() {
+                    const txt = $(this).text().toLowerCase();
+                    const pJornada = $(this).data('jornada') || '';
+                    const matchText = !q || txt.indexOf(q) !== -1;
+                    const matchJornada = jornada === 'todos' || pJornada === jornada;
+                    $(this).toggle(matchText && matchJornada);
+                });
+                const totalVisible = $('#listaPersonasMasivo .persona-checkbox:visible').length;
+                const totalChecked = $('#listaPersonasMasivo .persona-checkbox:visible:checked').length;
+                $('#selectAllPersonas').prop('checked', totalVisible > 0 && totalVisible === totalChecked);
+            }
+
             // Seleccionar/deseleccionar todos
             $('#selectAllPersonas').on('change', function() {
                 const isChecked = $(this).is(':checked');
@@ -1511,20 +1964,26 @@ function deleteRegistro($id_registro)
                 $('#selectAllPersonas').prop('checked', totalVisible > 0 && totalVisible === totalChecked);
             });
 
-            // Filtrar la lista de personas
+            // Filtrar la lista de personas por texto
             $('#searchPersona').on('input', function() {
-                const q = $(this).val().toLowerCase().trim();
-                $('#listaPersonasMasivo .form-check').each(function() {
-                    const txt = $(this).text().toLowerCase();
-                    $(this).toggle(txt.indexOf(q) !== -1);
-                });
-                // Actualizar el estado del checkbox "Seleccionar todos" después de filtrar
-                const totalVisible = $('#listaPersonasMasivo .persona-checkbox:visible').length;
-                const totalChecked = $('#listaPersonasMasivo .persona-checkbox:visible:checked').length;
-                $('#selectAllPersonas').prop('checked', totalVisible > 0 && totalVisible === totalChecked);
+                aplicarFiltrosMasivo();
             });
 
-            // (funcionalidad de agregar cédula manual removida)
+            // Filtrar por jornada
+            $('input[name="filtroJornada"]').on('change', function() {
+                aplicarFiltrosMasivo();
+            });
+
+            // Mostrar/ocultar campo condicion_otra en masivo
+            $('#id_condicion_masivo').on('change', function() {
+                if ($(this).val() === 'otra') {
+                    $('#condicion_otra_masivo_wrap').show();
+                    $('#condicion_otra_masivo').prop('required', true);
+                } else {
+                    $('#condicion_otra_masivo_wrap').hide();
+                    $('#condicion_otra_masivo').val('').prop('required', false);
+                }
+            });
 
             // Inicializar flatpickr para masivo
             flatpickr("#fechas_atencion_masivo", {
@@ -1539,6 +1998,62 @@ function deleteRegistro($id_registro)
                     $('#fechas_seleccionadas_masivo').val(JSON.stringify(arr));
                 }
             });
+
+            // Precarga Meta "2." y Actividad "2.1" en masivo cuando se abre el modal
+            $('#modalMasivo').on('shown.bs.modal', function() {
+                autoprecargarMetaActividad('masivo');
+            });
+
+            // Función para precargar la meta que empiece con "2." y actividad "2.1"
+            function autoprecargarMetaActividad(modo) {
+                const metaSel = modo === 'masivo' ? '#id_meta_masivo' : '#id_meta';
+                const actSel  = modo === 'masivo' ? '#id_actividad_masivo' : '#id_actividad';
+                const acnSel  = modo === 'masivo' ? '#id_accion_masivo' : '#id_accion';
+
+                // Si ya hay una meta seleccionada, no sobreescribir
+                if ($(metaSel).val()) return;
+
+                // Buscar option cuyo texto empiece con "2."
+                let idMeta2 = null;
+                $(metaSel + ' option').each(function() {
+                    if (/^2\./.test($(this).text().trim())) {
+                        idMeta2 = $(this).val();
+                        return false;
+                    }
+                });
+                if (!idMeta2) return;
+
+                $(metaSel).val(idMeta2);
+                // Cargar actividades y luego seleccionar "2.1"
+                $.ajax({
+                    url: '../personMovement/getActividades.php',
+                    type: 'POST',
+                    data: { id_meta: idMeta2 },
+                    success: function(resp) {
+                        $(actSel).empty().append('<option value="">Seleccione Actividad...</option>').append(resp).prop('disabled', false);
+                        // Buscar actividad que empiece con "2.1"
+                        let idAct21 = null;
+                        $(actSel + ' option').each(function() {
+                            if (/^2\.1/.test($(this).text().trim())) {
+                                idAct21 = $(this).val();
+                                return false;
+                            }
+                        });
+                        if (idAct21) {
+                            $(actSel).val(idAct21);
+                            // Cargar acciones para esa actividad
+                            $.ajax({
+                                url: '../personMovement/getAcciones.php',
+                                type: 'POST',
+                                data: { id_actividad: idAct21 },
+                                success: function(resp2) {
+                                    $(acnSel).empty().append('<option value="">Seleccione Acción...</option>').append(resp2).prop('disabled', false);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
 
             // Cascada Meta -> Actividad -> Acción para masivo
             $('#id_meta_masivo').on('change', function() {
@@ -1788,6 +2303,36 @@ function deleteRegistro($id_registro)
                     $('#departamento_procedencia').val(d.departamento_procedencia);
                     $('#observacion').val(d.observacion);
 
+                    // Precargar campos nuevos
+                    if (d.condicion_otra) {
+                        $('#id_condicion').val('otra');
+                        $('#condicion_otra_individual_row').show();
+                        $('#condicion_otra_individual').val(d.condicion_otra).prop('required', true);
+                    }
+                    if (d.profesion) {
+                        $('#profesion_individual').val(d.profesion);
+                    }
+                    if (d.jornada) {
+                        $('input[name="jornada"][value="' + d.jornada + '"]').prop('checked', true);
+                    }
+                    if (d.ids_grupos_externos) {
+                        const geIds = d.ids_grupos_externos.toString().split(',').map(s => s.trim()).filter(s => s);
+                        const $container = $('#grupos_externos_ind_container');
+                        $container.empty();
+                        if (geIds.length > 0) {
+                            geIds.forEach(function(geId) {
+                                const $row = $('<div class="input-group mb-2 grupo-externo-row-ind"></div>');
+                                const $sel = $('<select class="form-select" name="grupos_externos[]"><?= $grupoExternoOptionsHtml ?></select>');
+                                $sel.val(geId);
+                                const $btn = $('<button type="button" class="btn btn-danger btn-remove-ge-ind" tabindex="-1"><i class="bi bi-dash-circle"></i></button>');
+                                $row.append($sel).append($btn);
+                                $container.append($row);
+                            });
+                        } else {
+                            resetGruposExternosInd();
+                        }
+                    }
+
                     // Fechas
                     if (Array.isArray(resp.fechas) && resp.fechas.length) {
                         selectedDates = resp.fechas;
@@ -1820,6 +2365,10 @@ function deleteRegistro($id_registro)
             $('#cedula_persona').prop('readonly', false).removeClass('is-valid is-invalid');
             selectedDates = [];
             updateSelectedDatesDisplay([]);
+            $('#condicion_otra_individual_row').hide();
+            $('#condicion_otra_individual').val('').prop('required', false);
+            $('input[name="jornada"]').prop('checked', false);
+            if (typeof resetGruposExternosInd === 'function') resetGruposExternosInd();
         };
     </script>
 </body>

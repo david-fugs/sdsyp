@@ -56,6 +56,7 @@ $query = "
 SELECT p.*, p.condicion_componente as condicion_componente,
        GROUP_CONCAT(pr.nombre_programa ORDER BY pr.nombre_programa ASC) AS programas,
        GROUP_CONCAT(pr.id_programa ORDER BY pr.nombre_programa ASC) AS ids_programas,
+       GROUP_CONCAT(DISTINCT pge.id_grupo_externo ORDER BY ge.nombre_grupo_externo ASC) AS ids_grupos_externos,
        g.descripcion_grupo,
        pol.descripcion_politica,
        m.descripcion_meta,
@@ -78,6 +79,8 @@ LEFT JOIN metas m ON p.id_meta = m.id_meta
 LEFT JOIN actividades a ON p.id_actividad = a.id_actividad
 LEFT JOIN acciones acc ON p.id_accion = acc.id_accion
 LEFT JOIN usuarios u ON p.id_usuario = u.id
+LEFT JOIN persona_grupo_externo pge ON p.cedula_persona = pge.cedula_persona
+LEFT JOIN grupos_externos ge ON pge.id_grupo_externo = ge.id_grupo_externo
 $where
 GROUP BY p.cedula_persona
 ORDER BY p.apellidos_persona ASC
@@ -285,7 +288,9 @@ if ($result && $result->num_rows > 0) {
                         data-id-actividad="' . (isset($row['id_actividad']) ? htmlspecialchars($row['id_actividad']) : '') . '"
                         data-id-accion="' . (isset($row['id_accion']) ? htmlspecialchars($row['id_accion']) : '') . '"
                         data-id-politica-publica-nueva="' . (isset($row['id_politica_publica']) ? htmlspecialchars($row['id_politica_publica']) : '') . '"
-                        data-sin-convenio="' . (isset($row['sin_convenio']) ? htmlspecialchars($row['sin_convenio']) : '0') . '">
+                        data-sin-convenio="' . (isset($row['sin_convenio']) ? htmlspecialchars($row['sin_convenio']) : '0') . '"
+                        data-jornada="' . (isset($row['jornada']) ? htmlspecialchars($row['jornada']) : '') . '"
+                        data-ids-grupos-externos="' . (isset($row['ids_grupos_externos']) ? htmlspecialchars($row['ids_grupos_externos']) : '') . '">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
                     <a href="?delete=' . htmlspecialchars($row['cedula_persona']) . '" 

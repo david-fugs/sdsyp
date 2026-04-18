@@ -103,6 +103,17 @@ if ($tipo_usuario == 3) {
     }
 }
 
+// Obtener catálogo de grupos externos
+$grupos_externos_result = $mysqli->query(
+    "SELECT id_grupo_externo, nombre_grupo_externo FROM grupos_externos WHERE activo = 1 ORDER BY nombre_grupo_externo ASC"
+);
+$grupos_externos = [];
+if ($grupos_externos_result) {
+    while ($ge = $grupos_externos_result->fetch_assoc()) {
+        $grupos_externos[] = $ge;
+    }
+}
+
 if (isset($_GET['delete'])) {
     $cedula_persona = $_GET['delete'];
     deleteMember($cedula_persona);
@@ -858,7 +869,7 @@ function deleteMember($cedula_persona)
                                 <?php } ?>
                             </div>
                             <div class="col-md-6 mb-3 form-floating mt-1">
-                                <select class="form-select" id="id_grupo" name="id_grupo" required >
+                                <select class="form-select" id="id_grupo" name="id_grupo" required>
                                     <option value="" selected>Seleccione...</option>
                                     <?php foreach ($grupos_filtrados as $grupo) { ?>
                                         <option value="<?= $grupo['id_grupo']; ?>"><?= $grupo['descripcion_grupo']; ?></option>
@@ -867,6 +878,28 @@ function deleteMember($cedula_persona)
                                 <label class="" for="id_grupo">Centro Vida / CPSAM</label>
                             </div>
 
+                        </div>
+                        <!-- Grupos Externos -->
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-semibold">Grupos Externos (Si aplica)</label>
+                                <div id="add-grupos-externos-container">
+                                    <div class="input-group mb-2 grupo-externo-row">
+                                        <select class="form-select" name="grupos_externos[]">
+                                            <option value="">Seleccione grupo externo...</option>
+                                            <?php foreach ($grupos_externos as $ge) { ?>
+                                                <option value="<?= $ge['id_grupo_externo']; ?>"><?= htmlspecialchars($ge['nombre_grupo_externo']); ?></option>
+                                            <?php } ?>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-danger btn-remove-grupo-externo" title="Quitar fila">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-success mt-1" id="btn-add-grupo-externo">
+                                    <i class="bi bi-plus-circle me-1"></i>Agregar más
+                                </button>
+                            </div>
                         </div>
                         <!-- fila 5 -->
                         <div class="row">
@@ -920,6 +953,25 @@ function deleteMember($cedula_persona)
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Jornada -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Jornada (Si aplica)</label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="jornada" id="jornada_manana" value="Mañana">
+                                        <label class="form-check-label" for="jornada_manana">Mañana</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="jornada" id="jornada_tarde" value="Tarde">
+                                        <label class="form-check-label" for="jornada_tarde">Tarde</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
 
                     </div>
 
@@ -1434,6 +1486,36 @@ function deleteMember($cedula_persona)
                             </div>
                         </div>
 
+                        <!-- Jornada (Edición) -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Jornada</label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="jornada" id="edit-jornada-manana" value="Mañana">
+                                        <label class="form-check-label" for="edit-jornada-manana">Mañana</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="jornada" id="edit-jornada-tarde" value="Tarde">
+                                        <label class="form-check-label" for="edit-jornada-tarde">Tarde</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grupos Externos (Edición) -->
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-semibold">Grupos Externos</label>
+                                <div id="edit-grupos-externos-container">
+                                    <!-- Se llenará dinámicamente al abrir el modal -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-success mt-1" id="btn-edit-add-grupo-externo">
+                                    <i class="bi bi-plus-circle me-1"></i>Agregar más
+                                </button>
+                            </div>
+                        </div>
+
                         <input type="hidden" name="cedula_original" id="cedula_original" value="">
                     </div>
                     <div class="modal-footer bg-light">
@@ -1468,7 +1550,7 @@ function deleteMember($cedula_persona)
             if (tipoUsuarioSession == 2 && idGrupoSession && idGrupoSession != 0 && grupoPrefixSession) {
                 const select = document.getElementById(selectId);
                 if (!select) return;
-                
+
                 const options = select.querySelectorAll('option');
                 options.forEach(function(option) {
                     if (option.value === '') {
@@ -1476,7 +1558,7 @@ function deleteMember($cedula_persona)
                         option.style.display = '';
                         return;
                     }
-                    
+
                     const text = option.textContent.trim();
                     // Verificar si el texto comienza con el prefijo del grupo del usuario
                     if (text.toUpperCase().indexOf(grupoPrefixSession.toUpperCase()) === 0) {
@@ -1493,7 +1575,7 @@ function deleteMember($cedula_persona)
             // Aplicar filtro de grupos al cargar la página (para ambos modales)
             filterGrupoOptions('id_grupo');
             filterGrupoOptions('edit-grupo');
-            
+
             // Aplicar filtro cuando se abren los modales
             const modalNewPerson = document.getElementById('modalNewPerson');
             if (modalNewPerson) {
@@ -1501,14 +1583,14 @@ function deleteMember($cedula_persona)
                     filterGrupoOptions('id_grupo');
                 });
             }
-            
+
             const modalEdicion = document.getElementById('modalEdicion');
             if (modalEdicion) {
                 modalEdicion.addEventListener('show.bs.modal', function() {
                     filterGrupoOptions('edit-grupo');
                 });
             }
-            
+
             const inputBarrio = document.getElementById('edit-barrio-persona');
             const datalistBarrios = document.getElementById('edit-lista-barrios');
             const inputComuna = document.getElementById('edit-comuna-persona');
@@ -1653,21 +1735,21 @@ function deleteMember($cedula_persona)
                     // Esperar un momento para que se limpie completamente
                     $('#salesTable').removeClass('dataTable');
                 }
-                
+
                 // Limpiar completamente el tbody
                 $('#salesTable tbody').empty();
-                
+
                 // Agregar los nuevos datos
                 $('#salesTable tbody').html(data);
-                
+
                 // Reinicializar DataTable
                 dataTable = null;
-                
+
                 // Usar setTimeout para asegurar que el DOM esté completamente actualizado
                 setTimeout(function() {
                     initializeDataTable();
                 }, 10);
-                
+
             } catch (error) {
                 console.error('Error al actualizar tabla:', error);
                 // Si hay un error, recargar la página como fallback
@@ -1678,7 +1760,7 @@ function deleteMember($cedula_persona)
         // Cargar datos filtrados sin recargar la tabla completa
         function loadTableData(params = {}) {
             const tbody = document.getElementById('table-body');
-            
+
             // Destruir DataTable antes de mostrar loading
             if ($.fn.DataTable.isDataTable('#salesTable')) {
                 try {
@@ -1690,7 +1772,7 @@ function deleteMember($cedula_persona)
                     console.warn('Error al destruir DataTable:', e);
                 }
             }
-            
+
             tbody.innerHTML = '<tr><td colspan="9" class="text-center loading">Cargando datos...</td></tr>';
 
             // Construir parámetros de consulta
@@ -1734,7 +1816,7 @@ function deleteMember($cedula_persona)
                                 confirmButtonColor: '#ffc107',
                                 width: '550px'
                             });
-                            
+
                             // Mostrar mensaje en la tabla
                             tbody.innerHTML = '<tr><td colspan="9" class="text-center text-warning"><i class="bi bi-shield-lock-fill"></i><br>Persona encontrada pero no tiene acceso a este grupo.</td></tr>';
                             return;
@@ -1742,10 +1824,10 @@ function deleteMember($cedula_persona)
                     } catch (e) {
                         // No es JSON, es HTML - continuar normalmente
                     }
-                    
+
                     // Actualizar contenido del tbody con HTML
                     tbody.innerHTML = text;
-                    
+
                     // Reinicializar DataTable después de actualizar el contenido
                     dataTable = null;
                     setTimeout(function() {
@@ -1945,33 +2027,39 @@ function deleteMember($cedula_persona)
                         if (result.isConfirmed) {
                             // Enviar formulario vía AJAX para capturar respuesta JSON
                             const formData = new FormData(form);
-                            
+
                             fetch('addPerson.php', {
-                                method: 'POST',
-                                body: formData
-                            })
-                            .then(response => {
-                                return response.text().then(text => {
-                                    // Intentar parsear como JSON
-                                    try {
-                                        const data = JSON.parse(text);
-                                        return { isJson: true, data: data };
-                                    } catch (e) {
-                                        // No es JSON, es HTML
-                                        return { isJson: false, html: text };
-                                    }
-                                });
-                            })
-                            .then(result => {
-                                if (result.isJson && result.data) {
-                                    const data = result.data;
-                                    if (data.error) {
-                                        if (data.tipo === 'duplicado') {
-                                            // Mostrar error de duplicado con información
-                                            Swal.fire({
-                                                icon: 'error',
-                                                title: 'Persona ya existe',
-                                                html: `
+                                    method: 'POST',
+                                    body: formData
+                                })
+                                .then(response => {
+                                    return response.text().then(text => {
+                                        // Intentar parsear como JSON
+                                        try {
+                                            const data = JSON.parse(text);
+                                            return {
+                                                isJson: true,
+                                                data: data
+                                            };
+                                        } catch (e) {
+                                            // No es JSON, es HTML
+                                            return {
+                                                isJson: false,
+                                                html: text
+                                            };
+                                        }
+                                    });
+                                })
+                                .then(result => {
+                                    if (result.isJson && result.data) {
+                                        const data = result.data;
+                                        if (data.error) {
+                                            if (data.tipo === 'duplicado') {
+                                                // Mostrar error de duplicado con información
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'Persona ya existe',
+                                                    html: `
                                                     <div style="text-align: left; padding: 10px;">
                                                         <p><strong>La cédula <span style="color: #d33;">${data.cedula}</span> ya está registrada.</strong></p>
                                                         <hr>
@@ -1980,49 +2068,49 @@ function deleteMember($cedula_persona)
                                                         <p><strong>Estado:</strong> <span style="color: #0d6efd; font-weight: bold;">${data.estado}</span></p>
                                                     </div>
                                                 `,
-                                                confirmButtonText: 'Entendido',
-                                                confirmButtonColor: '#3085d6',
-                                                width: '500px'
-                                            });
-                                        } else if (data.tipo === 'general') {
-                                            // Mostrar error general
+                                                    confirmButtonText: 'Entendido',
+                                                    confirmButtonColor: '#3085d6',
+                                                    width: '500px'
+                                                });
+                                            } else if (data.tipo === 'general') {
+                                                // Mostrar error general
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'Error al guardar',
+                                                    text: data.mensaje || 'Ocurrió un error al procesar la solicitud',
+                                                    confirmButtonText: 'OK'
+                                                });
+                                            }
+                                        } else {
+                                            // Éxito pero con JSON (caso raro)
+                                            window.location.href = 'seePerson.php';
+                                        }
+                                    } else if (!result.isJson) {
+                                        // Es HTML, buscar si hay redirección
+                                        if (result.html.includes('window.location')) {
+                                            // Extraer y ejecutar la redirección
+                                            window.location.href = 'seePerson.php';
+                                        } else {
+                                            // HTML sin redirección, mostrar error
+                                            console.error('Respuesta HTML inesperada:', result.html);
                                             Swal.fire({
                                                 icon: 'error',
-                                                title: 'Error al guardar',
-                                                text: data.mensaje || 'Ocurrió un error al procesar la solicitud',
+                                                title: 'Error del servidor',
+                                                text: 'Hubo un problema al procesar la solicitud. Revisa la consola para más detalles.',
                                                 confirmButtonText: 'OK'
                                             });
                                         }
-                                    } else {
-                                        // Éxito pero con JSON (caso raro)
-                                        window.location.href = 'seePerson.php';
                                     }
-                                } else if (!result.isJson) {
-                                    // Es HTML, buscar si hay redirección
-                                    if (result.html.includes('window.location')) {
-                                        // Extraer y ejecutar la redirección
-                                        window.location.href = 'seePerson.php';
-                                    } else {
-                                        // HTML sin redirección, mostrar error
-                                        console.error('Respuesta HTML inesperada:', result.html);
-                                        Swal.fire({
-                                            icon: 'error',
-                                            title: 'Error del servidor',
-                                            text: 'Hubo un problema al procesar la solicitud. Revisa la consola para más detalles.',
-                                            confirmButtonText: 'OK'
-                                        });
-                                    }
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: 'Ocurrió un error al procesar la solicitud',
-                                    confirmButtonText: 'OK'
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: 'Ocurrió un error al procesar la solicitud',
+                                        confirmButtonText: 'OK'
+                                    });
                                 });
-                            });
                         }
                     });
                 });
@@ -2247,29 +2335,35 @@ function deleteMember($cedula_persona)
                             $.ajax({
                                 url: 'getActividades.php',
                                 type: 'POST',
-                                data: { id_meta: idMeta },
+                                data: {
+                                    id_meta: idMeta
+                                },
                                 success: function(response) {
                                     $('#edit-actividad').empty().append('<option value="">Seleccione Actividad...</option>');
                                     $('#edit-actividad').append(response).prop('disabled', false);
                                     if (idActividad) {
                                         $('#edit-actividad').val(idActividad);
-                                        
+
                                         // Cargar acciones si hay actividad seleccionada
                                         $.ajax({
                                             url: 'getAcciones.php',
                                             type: 'POST',
-                                            data: { id_actividad: idActividad },
+                                            data: {
+                                                id_actividad: idActividad
+                                            },
                                             success: function(response) {
                                                 $('#edit-accion').empty().append('<option value="">Seleccione Acción...</option>');
                                                 $('#edit-accion').append(response).prop('disabled', false);
                                                 if (idAccion) {
                                                     $('#edit-accion').val(idAccion);
-                                                    
+
                                                     // Cargar políticas públicas si hay acción seleccionada
                                                     $.ajax({
                                                         url: 'getPoliticaPublica.php',
                                                         type: 'POST',
-                                                        data: { id_accion: idAccion },
+                                                        data: {
+                                                            id_accion: idAccion
+                                                        },
                                                         dataType: 'json',
                                                         success: function(response) {
                                                             $('#edit-politica-publica').empty().append('<option value="">Seleccione Política Pública...</option>');
@@ -2306,6 +2400,31 @@ function deleteMember($cedula_persona)
                         const checkboxSinConvenio = document.getElementById('edit-sin-convenio');
                         if (checkboxSinConvenio) {
                             checkboxSinConvenio.checked = (sinConvenio === '1');
+                        }
+
+                        // Cargar jornada
+                        const jornadaVal = button.getAttribute('data-jornada') || '';
+                        modalEdicionElement.querySelectorAll('input[name="jornada"]').forEach(function(radio) {
+                            radio.checked = (radio.value === jornadaVal);
+                        });
+
+                        // Cargar grupos externos
+                        const idsGruposExternos = button.getAttribute('data-ids-grupos-externos') || '';
+                        const idsGeArray = idsGruposExternos.split(',').map(function(id) {
+                            return id.trim();
+                        }).filter(function(id) {
+                            return id !== '';
+                        });
+                        const editGeContainer = document.getElementById('edit-grupos-externos-container');
+                        if (editGeContainer) {
+                            editGeContainer.innerHTML = '';
+                            if (idsGeArray.length > 0) {
+                                idsGeArray.forEach(function(id) {
+                                    editGeContainer.appendChild(createGrupoExternoRow(id));
+                                });
+                            } else {
+                                editGeContainer.appendChild(createGrupoExternoRow(''));
+                            }
                         }
 
                     });
@@ -2416,7 +2535,7 @@ function deleteMember($cedula_persona)
             });
 
             // *** FUNCIONALIDAD PARA META, ACTIVIDAD, ACCIÓN Y POLÍTICA PÚBLICA ***
-            
+
             // Manejar selección de Meta para cargar Actividades (Modal Agregar)
             $('#meta').on('change', function() {
                 const idMeta = $(this).val();
@@ -2487,7 +2606,9 @@ function deleteMember($cedula_persona)
                     $.ajax({
                         url: 'getPoliticaPublica.php',
                         type: 'POST',
-                        data: { id_accion: idAccion },
+                        data: {
+                            id_accion: idAccion
+                        },
                         dataType: 'json',
                         success: function(response) {
                             if (response && response.politicas && response.politicas.length > 0) {
@@ -2572,12 +2693,14 @@ function deleteMember($cedula_persona)
                 // Vaciar y resetear el select de política pública cada vez que se cambia la acción
                 $('#edit-politica-publica').empty().append('<option value="" selected>Seleccione Política Pública...</option>');
                 $('#edit-politica-publica').prop('selectedIndex', 0);
-                
+
                 if (idAccion) {
                     $.ajax({
                         url: 'getPoliticaPublica.php',
                         type: 'POST',
-                        data: { id_accion: idAccion },
+                        data: {
+                            id_accion: idAccion
+                        },
                         dataType: 'json',
                         success: function(response) {
                             if (response && response.politicas && response.politicas.length > 0) {
@@ -2594,6 +2717,71 @@ function deleteMember($cedula_persona)
                     });
                 }
             });
+        });
+    </script>
+
+    <!-- Script grupos externos y jornada -->
+    <script>
+        // Opciones HTML para el select de grupos externos (generadas por PHP)
+        const grupoExternoOptionsHtml = <?php
+                                        $opts = '<option value="">Seleccione grupo externo...</option>';
+                                        foreach ($grupos_externos as $ge) {
+                                            $opts .= '<option value="' . (int)$ge['id_grupo_externo'] . '">' . htmlspecialchars($ge['nombre_grupo_externo'], ENT_QUOTES) . '</option>';
+                                        }
+                                        echo json_encode($opts);
+                                        ?>;
+
+        function createGrupoExternoRow(selectedId) {
+            const div = document.createElement('div');
+            div.className = 'input-group mb-2 grupo-externo-row';
+            div.innerHTML =
+                '<select class="form-select" name="grupos_externos[]">' + grupoExternoOptionsHtml + '</select>' +
+                '<button type="button" class="btn btn-outline-danger btn-remove-grupo-externo" title="Quitar fila">' +
+                '<i class="bi bi-trash"></i></button>';
+            if (selectedId) {
+                div.querySelector('select').value = selectedId;
+            }
+            div.querySelector('.btn-remove-grupo-externo').addEventListener('click', function() {
+                div.remove();
+            });
+            return div;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Remove button para la fila inicial del modal Alta
+            document.querySelectorAll('#add-grupos-externos-container .btn-remove-grupo-externo').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    this.closest('.grupo-externo-row').remove();
+                });
+            });
+
+            // Botón "Agregar más" - modal Alta
+            const btnAddGe = document.getElementById('btn-add-grupo-externo');
+            if (btnAddGe) {
+                btnAddGe.addEventListener('click', function() {
+                    document.getElementById('add-grupos-externos-container').appendChild(createGrupoExternoRow(''));
+                });
+            }
+
+            // Botón "Agregar más" - modal Edición
+            const btnEditAddGe = document.getElementById('btn-edit-add-grupo-externo');
+            if (btnEditAddGe) {
+                btnEditAddGe.addEventListener('click', function() {
+                    document.getElementById('edit-grupos-externos-container').appendChild(createGrupoExternoRow(''));
+                });
+            }
+
+            // Resetear grupos externos del modal Alta al cerrarlo
+            const modalNewPersonEl = document.getElementById('modalNewPerson');
+            if (modalNewPersonEl) {
+                modalNewPersonEl.addEventListener('hidden.bs.modal', function() {
+                    const container = document.getElementById('add-grupos-externos-container');
+                    if (container) {
+                        container.innerHTML = '';
+                        container.appendChild(createGrupoExternoRow(''));
+                    }
+                });
+            }
         });
     </script>
 </body>

@@ -24,15 +24,18 @@ $observacion_actividad = $mysqli->real_escape_string($_POST['observacion_activid
 $id_usuario = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
 $funcionario_responsable = intval($_POST['funcionario_responsable'] ?? 0);
 $tipo_registro = $mysqli->real_escape_string($_POST['tipo_registro'] ?? '');
-// Procesar jornada (array de checkboxes)
-$jornada_array = isset($_POST['jornada']) && is_array($_POST['jornada']) ? $_POST['jornada'] : [];
-$jornada = $mysqli->real_escape_string(implode(', ', $jornada_array));
+// Jornada: radio (valor único)
+$jornada = $mysqli->real_escape_string(trim($_POST['jornada'] ?? ''));
+// Profesión
+$profesion = $mysqli->real_escape_string(trim($_POST['profesion'] ?? ''));
+// Cédulas JSON para tipo Registro Actividad
+$cedulas_json = $_POST['cedulas_json'] ?? '';
 
 // Insertar (sin tipo_actividad: siempre 'Masiva')
 $tipo_actividad = 'Masiva';
 
 // Construir consulta SQL plana (escapando valores de texto y casteando enteros)
-$cols = "id_meta,id_actividad,id_accion,politica_publica,id_centro_vida,fecha_atencion,nombre_lider,telefono_contacto,id_comuna,medio_verificacion,cantidad_masculino,cantidad_femenino,tipo_actividad,observacion_actividad,id_usuario,funcionario_responsable,id_actividad_centro_vida,tipo_registro,jornada";
+$cols = "id_meta,id_actividad,id_accion,politica_publica,id_centro_vida,fecha_atencion,nombre_lider,telefono_contacto,id_comuna,medio_verificacion,cantidad_masculino,cantidad_femenino,tipo_actividad,observacion_actividad,id_usuario,funcionario_responsable,id_actividad_centro_vida,tipo_registro,jornada,profesion";
 
 // Escapar y formatear valores
 $vals = [
@@ -54,12 +57,60 @@ $vals = [
     intval($funcionario_responsable),
     intval($id_actividad_centro_vida),
     "'" . $mysqli->real_escape_string($tipo_registro) . "'",
-    "'" . $mysqli->real_escape_string($jornada) . "'"
+    "'" . $mysqli->real_escape_string($jornada) . "'",
+    "'" . $mysqli->real_escape_string($profesion) . "'"
 ];
 
 $sql = "INSERT INTO masiva_centro_vida (" . $cols . ") VALUES (" . implode(',', $vals) . ")";
 
 if ($mysqli->query($sql)) {
+    // Si tipo_registro = Registro Actividad, generar registros individuales en registro_centro_vida
+    if ($tipo_registro === 'Registro Actividad' && !empty($cedulas_json)) {
+        $cedulas = json_decode($cedulas_json, true);
+        if (is_array($cedulas) && count($cedulas) > 0) {
+            $stmt_ind = $mysqli->prepare(
+                "INSERT INTO registro_centro_vida (cedula_persona, id_meta, id_actividad, id_accion, id_actividad_centro_vida, politica_publica, departamento_procedencia, observacion, profesion, jornada, funcionario_registro, fecha_registro)
+                 VALUES (?, ?, ?, ?, ?, ?, '', ?, ?, ?, ?, NOW())"
+            );
+            $stmt_ge_ind = $mysqli->prepare(
+                "INSERT IGNORE INTO registro_centro_vida_grupo_externo (id_registro_centro_vida, id_grupo_externo)
+                 SELECT ?, id_grupo_externo FROM persona_grupo_externo WHERE cedula_persona = ?"
+            );
+            if ($stmt_ind) {
+                foreach ($cedulas as $ced) {
+                    $ced = trim($ced);
+                    if (empty($ced)) continue;
+                    $stmt_ind->bind_param('siiiissssi',
+                        $ced,
+                        $id_meta,
+                        $id_actividad,
+                        $id_accion,
+                        $id_actividad_centro_vida,
+                        $politica_publica,
+                        $observacion_actividad,
+                        $profesion,
+                        $jornada,
+                        $id_usuario
+                    );
+                    $stmt_ind->execute();
+                    $id_reg_ind = $mysqli->insert_id;
+                    if ($id_reg_ind > 0) {
+                        // Insertar fecha
+                        if (!empty($fecha_atencion)) {
+                            $mysqli->query("INSERT INTO registro_centro_vida_fechas (id_registro_centro_vida, fecha_atencion) VALUES ($id_reg_ind, '" . $mysqli->real_escape_string($fecha_atencion) . "')");
+                        }
+                        // Auto-poblar grupos externos de persona_grupo_externo
+                        if ($stmt_ge_ind) {
+                            $stmt_ge_ind->bind_param('is', $id_reg_ind, $ced);
+                            $stmt_ge_ind->execute();
+                        }
+                    }
+                }
+                $stmt_ind->close();
+                if ($stmt_ge_ind) $stmt_ge_ind->close();
+            }
+        }
+    }
     echo "<script>alert('Registro guardado correctamente');window.location='formMasivoCentroVida.php';</script>";
 } else {
     $error = $mysqli->error;

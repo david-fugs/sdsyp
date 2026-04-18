@@ -63,6 +63,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Nuevo campo: Sin convenio
     $sin_convenio = isset($_POST['sin_convenio']) ? 1 : 0;
 
+    // Nuevos campos: Jornada y Grupos Externos
+    $jornada = $_POST['jornada'] ?? null;
+    if ($jornada === '') $jornada = null;
+    $grupos_externos_post = isset($_POST['grupos_externos']) && is_array($_POST['grupos_externos'])
+        ? array_filter(array_map('intval', $_POST['grupos_externos']))
+        : [];
+
     // Normalizar cadenas vacías a NULL para columnas FK y opcionales
     if ($id_meta === '' ) $id_meta = null;
     if ($id_actividad === '' ) $id_actividad = null;
@@ -123,7 +130,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         id_actividad,
         id_accion,
         id_politica_publica,
-        sin_convenio
+        sin_convenio,
+        jornada
     ) VALUES (
         '$cedula_persona',
         '$tipo_identificacion',
@@ -171,7 +179,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         " . ($id_actividad !== null ? "'$id_actividad'" : 'NULL') . ",
         " . ($id_accion !== null ? "'$id_accion'" : 'NULL') . ",
         " . ($id_politica_publica !== null ? "'$id_politica_publica'" : 'NULL') . ",
-        '$sin_convenio'
+        '$sin_convenio',
+        " . ($jornada !== null ? "'" . $mysqli->real_escape_string($jornada) . "'" : 'NULL') . "
     )";
 
 
@@ -188,6 +197,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     } else {
                         echo "❌ Error al insertar programa ID $id_programa: " . $mysqli->error . "<br>";
                     }
+                }
+            }
+            // Insertar grupos externos (relación muchos a muchos)
+            foreach ($grupos_externos_post as $id_ge) {
+                if ((int)$id_ge > 0) {
+                    $mysqli->query("INSERT IGNORE INTO persona_grupo_externo (cedula_persona, id_grupo_externo) VALUES ('$cedula_persona', " . (int)$id_ge . ")");
                 }
             }
             echo "<script>

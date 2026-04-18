@@ -15,6 +15,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         // Capturar datos del formulario
         $cedula_persona = $_POST['cedula_persona'] ?? null;
         $id_condicion = $_POST['id_condicion'] ?? null;
+        $condicion_otra = (isset($_POST['id_condicion']) && $_POST['id_condicion'] === 'otra') ? (trim($_POST['condicion_otra'] ?? '')) : null;
+        if ($id_condicion === 'otra') $id_condicion = null; // guardar NULL en id_condicion cuando es "Otra"
         $id_meta = $_POST['id_meta'] ?? null;
         $id_actividad = $_POST['id_actividad'] ?? null;
         $id_accion = $_POST['id_accion'] ?? null;
@@ -22,6 +24,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $politica_publica = $_POST['politica_publica'] ?? '';
         $departamento_procedencia = $_POST['departamento_procedencia'] ?? '';
         $observacion = $_POST['observacion'] ?? '';
+        $profesion = $_POST['profesion'] ?? null;
+        $jornada = $_POST['jornada'] ?? null;
+        $grupos_externos_post = array_values(array_filter(array_map('intval', $_POST['grupos_externos'] ?? []), function($v){ return $v > 0; }));
         // Guardar el ID numérico del usuario para filtrado (el nombre se resuelve por JOIN)
         $funcionario_registro = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
 
@@ -53,18 +58,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         // Insertar el registro principal
         $sql_insert_registro = "INSERT INTO registro_centro_vida 
-            (cedula_persona, id_condicion, id_meta, id_actividad, id_accion, id_actividad_centro_vida, 
-             politica_publica, departamento_procedencia, observacion, funcionario_registro, fecha_registro) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+            (cedula_persona, id_condicion, condicion_otra, id_meta, id_actividad, id_accion, id_actividad_centro_vida, 
+             politica_publica, departamento_procedencia, observacion, profesion, jornada, funcionario_registro, fecha_registro) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         
         $stmt = $mysqli->prepare($sql_insert_registro);
         if (!$stmt) {
             throw new Exception("Error al preparar consulta principal: " . $mysqli->error);
         }
 
-    $stmt->bind_param("iiiiiiissi", $cedula_persona, $id_condicion, $id_meta, $id_actividad, $id_accion,
-             $id_actividad_centro_vida, $politica_publica,
-             $departamento_procedencia, $observacion, $funcionario_registro);
+        $stmt->bind_param("sisiiiisssssi", $cedula_persona, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion,
+                 $id_actividad_centro_vida, $politica_publica,
+                 $departamento_procedencia, $observacion, $profesion, $jornada, $funcionario_registro);
         
         if (!$stmt->execute()) {
             throw new Exception("Error al insertar el registro principal: " . $stmt->error);
@@ -93,6 +98,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
         
         $stmt_fecha->close();
+
+        // Insertar grupos externos del registro
+        if (!empty($grupos_externos_post)) {
+            $stmt_ge = $mysqli->prepare("INSERT IGNORE INTO registro_centro_vida_grupo_externo (id_registro_centro_vida, id_grupo_externo) VALUES (?, ?)");
+            if ($stmt_ge) {
+                foreach ($grupos_externos_post as $id_ge) {
+                    $stmt_ge->bind_param("ii", $id_registro_centro_vida, $id_ge);
+                    $stmt_ge->execute();
+                }
+                $stmt_ge->close();
+            }
+        }
 
         // Confirmar transacción
         $mysqli->commit();

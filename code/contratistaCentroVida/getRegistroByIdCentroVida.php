@@ -9,9 +9,11 @@ if (!isset($_GET['id'])) {
 
 $id = intval($_GET['id']);
 
-$sql = "SELECT rcv.*, GROUP_CONCAT(rcvf.fecha_atencion ORDER BY rcvf.fecha_atencion ASC SEPARATOR ',') AS fechas
+$sql = "SELECT rcv.*, GROUP_CONCAT(rcvf.fecha_atencion ORDER BY rcvf.fecha_atencion ASC SEPARATOR ',') AS fechas,
+               GROUP_CONCAT(DISTINCT rcvge.id_grupo_externo ORDER BY rcvge.id_grupo_externo ASC SEPARATOR ',') AS ids_grupos_externos
         FROM registro_centro_vida rcv
         LEFT JOIN registro_centro_vida_fechas rcvf ON rcv.id_registro_centro_vida = rcvf.id_registro_centro_vida
+        LEFT JOIN registro_centro_vida_grupo_externo rcvge ON rcv.id_registro_centro_vida = rcvge.id_registro_centro_vida
         WHERE rcv.id_registro_centro_vida = ?
         GROUP BY rcv.id_registro_centro_vida LIMIT 1";
 
