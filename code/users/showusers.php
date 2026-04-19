@@ -474,10 +474,7 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                                             <option value="">Seleccione tipo usuario</option>
                                             <?php if ($tipo_usuario == 11) { // Solo mostrar tipos relacionados con CENTRO VIDA 
                                             ?>
-                                                <option value="2">CPSAM O CENTRO VIDA</option>
-                                                <option value="5">TÉCNICO CENTRO VIDA</option>
                                                 <option value="10">CONTRATISTA CENTRO VIDA PROPIO</option>
-                                                <option value="12">CONTRATISTA CENTRO VIDA ALCALDIA</option>
                                                 <option value="11">INGENIERO CENTRO VIDA</option>
                                             <?php } else { // Usuarios no tipo 11 pueden ver todos los tipos 
                                             ?>

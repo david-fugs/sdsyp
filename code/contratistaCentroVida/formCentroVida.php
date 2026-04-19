@@ -1635,9 +1635,10 @@ function deleteRegistro($id_registro)
                             // Precargar condición: condicion_componente es texto, hay que buscar la opción cuyo texto coincida
                             if (response.condicion_componente) {
                                 let foundCond = false;
-                                const condText = response.condicion_componente.trim().toLowerCase();
+                                const normalize = s => s.trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ');
+                                const condText = normalize(response.condicion_componente);
                                 $('#id_condicion option').each(function() {
-                                    if ($(this).text().trim().toLowerCase() === condText) {
+                                    if (normalize($(this).text()) === condText) {
                                         $('#id_condicion').val($(this).val());
                                         foundCond = true;
                                         return false;
