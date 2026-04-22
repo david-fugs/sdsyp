@@ -29,7 +29,8 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
 $filtro_grupo = isset($_GET['filtro_grupo']) ? $_GET['filtro_grupo'] : '';
 $filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : '';
-$filtro_usuario = isset($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : '';
+$filtro_usuario = isset($_GET['filtro_usuario']) ? $_GET['filtro_usuario'] : '';
+$filtro_todos_tipo3 = ($filtro_usuario === 'TODOS_TIPO3');
 $filtro_fecha_inicio = isset($_GET['filtro_fecha_inicio']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_inicio']) ? $_GET['filtro_fecha_inicio'] : '';
 $filtro_fecha_fin = isset($_GET['filtro_fecha_fin']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_fin']) ? $_GET['filtro_fecha_fin'] : '';
 
@@ -92,17 +93,19 @@ if ($filtro_grupo && !$filtro_todos_grupos) {
 }
 
 // Aplicar filtro de usuario si se seleccionó
-if ($filtro_usuario) {
-    $where .= " AND ri.id_usuario = $filtro_usuario ";
+if ($filtro_todos_tipo3) {
+    $where .= " AND ri.id_usuario IN (SELECT id FROM usuarios WHERE tipo_usuario = 3) ";
+} elseif (is_numeric($filtro_usuario) && intval($filtro_usuario) > 0) {
+    $filtro_usuario_int = intval($filtro_usuario);
+    $where .= " AND ri.id_usuario = $filtro_usuario_int ";
 }
 
 // Si es usuario tipo 2 (INGENIERO), filtrar solo actividades de su grupo y usuarios de su grupo
 if ($tipo_usuario == 2 && isset($_SESSION['id_grupo'])) {
     $id_grupo_session = intval($_SESSION['id_grupo']);
     $where .= " AND p.id_grupo = $id_grupo_session ";
-    // Si se especificó usuario, verificar que sea del mismo grupo
-    if ($filtro_usuario) {
-        $query_check = "SELECT id FROM usuarios WHERE id = $filtro_usuario AND id_grupo = $id_grupo_session";
+    if (is_numeric($filtro_usuario) && intval($filtro_usuario) > 0) {
+        $query_check = "SELECT id FROM usuarios WHERE id = " . intval($filtro_usuario) . " AND id_grupo = $id_grupo_session";
         $result_check = $mysqli->query($query_check);
         if (!$result_check || $result_check->num_rows == 0) {
             die("Acceso denegado: No puede exportar datos de usuarios de otros grupos.");
@@ -121,8 +124,41 @@ $where .= $where_grupos_filtro;
 $query = "SELECT 
     ri.id_registro_individual,
     p.cedula_persona,
+    p.tipo_identificacion,
     p.nombres_persona,
     p.apellidos_persona,
+    p.genero_persona,
+    p.fecha_nacimiento,
+    p.telefono_persona,
+    p.telefono_referencia_persona,
+    p.referencia_persona,
+    p.correo_persona,
+    p.direccion_persona,
+    p.zona_persona,
+    b_per.nombre_bar AS barrio_residencia,
+    p.grupo_sisben,
+    p.eps,
+    p.peso,
+    p.talla,
+    p.patologias,
+    p.factores_riesgo,
+    p.factores_preventivos,
+    p.ingresos_economicos,
+    p.convivencia_actual,
+    p.resultado_actividad,
+    p.remision,
+    p.persona_discapacidad,
+    p.cual_discapacidad,
+    p.cabeza_hogar,
+    p.lider_comunidad,
+    p.se_reconoce_como,
+    p.orientacion_sexual,
+    p.experiencia_migratoria,
+    p.grupo_etnico,
+    p.tipo_salud,
+    p.nivel_educativo,
+    p.condicion_ocupacion,
+    p.condicion_componente AS condicion_componente_persona,
     c.descripcion_condicion,
     ri.fecha_registro,
     ri.observacion_registro,
@@ -149,8 +185,9 @@ LEFT JOIN politicas_publicas pp ON ri.id_politica_publica = pp.id_politica
 LEFT JOIN usuarios u ON ri.id_usuario = u.id
 LEFT JOIN barrios b ON ri.id_barrio = b.id_bar
 LEFT JOIN comunas com ON ri.id_comuna = com.id_com
+LEFT JOIN barrios b_per ON p.id_barrio_persona = b_per.id_bar
 $where
-ORDER BY " . ($filtro_todos_grupos ? "p_grupo.descripcion_grupo ASC, ri.fecha_registro DESC" : "ri.fecha_registro DESC") . "
+ORDER BY " . ($filtro_todos_tipo3 ? "u.nombre ASC, ri.fecha_registro DESC" : ($filtro_todos_grupos ? "p_grupo.descripcion_grupo ASC, ri.fecha_registro DESC" : "ri.fecha_registro DESC")) . "
 ";
 
 $result = $mysqli->query($query);
@@ -162,24 +199,57 @@ $sheet->setTitle('Actividades Individuales');
 
 // Cabeceras
 $headers = [
-    'ID',
+    'Fecha Registro',
     'Cédula',
+    'Tipo Identificación',
     'Nombres',
     'Apellidos',
+    'Género',
+    'Fecha Nacimiento',
+    'Edad',
+    'Teléfono',
+    'Teléfono Referencia',
+    'Referencia',
+    'Correo',
+    'Dirección',
+    'Barrio Residencia',
+    'Zona',
     'Grupo/Centro Vida',
     'Condición',
-    'Fecha Registro',
     'Meta',
     'Actividad',
     'Acción',
     'Política Pública',
     'Centro Traslado',
     'Dpto. Procedencia',
-    'Barrio',
+    'Barrio (Actividad)',
     'Comuna/Corregimiento',
     'Observaciones',
+    'Con Convenio',
+    'Grupo Sisbén',
+    'EPS',
+    'Peso (kg)',
+    'Talla (cm)',
+    'Patologías',
+    'Factores de Riesgo',
+    'Factores Preventivos',
+    'Ingresos Económicos',
+    'Convivencia Actual',
+    'Resultado Actividad',
+    'Remisión',
+    '¿Discapacidad?',
+    'Categoría Discapacidad',
+    '¿Cabeza Hogar?',
+    '¿Líder Comunidad?',
+    'Se Reconoce Como',
+    'Orientación Sexual',
+    '¿Exp. Migratoria?',
+    'Grupo Étnico',
+    'Tipo Salud',
+    'Nivel Educativo',
+    'Condición Ocupación',
+    'Condición Componente',
     'Usuario Registro',
-    'Con Convenio'
 ];
 
 $col = 'A';
@@ -214,8 +284,22 @@ $sheet->getRowDimension(1)->setRowHeight(32);
 // Llenar datos
 $row = 2;
 $grupo_anterior = '';
+$usuario_anterior = '';
 if ($result && $result->num_rows > 0) {
     while ($data = $result->fetch_assoc()) {
+        // Separador por usuario cuando se filtra por TODOS_TIPO3
+        if ($filtro_todos_tipo3 && $data['nombre_usuario'] != $usuario_anterior && $usuario_anterior != '') {
+            $sheet->mergeCells('A' . $row . ':' . $lastCol . $row);
+            $sheet->setCellValue('A' . $row, '--- ' . strtoupper($data['nombre_usuario']) . ' ---');
+            $sheet->getStyle('A' . $row . ':' . $lastCol . $row)->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1a237e']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+            ]);
+            $sheet->getRowDimension($row)->setRowHeight(30);
+            $row++;
+        }
+        $usuario_anterior = $data['nombre_usuario'];
         // Si es "Todos CPSAM" o "Todos CV", agregar fila separadora entre grupos
         if ($filtro_todos_grupos && $data['grupo_persona'] != $grupo_anterior && $grupo_anterior != '') {
             // Agregar fila de separación
@@ -239,14 +323,31 @@ if ($result && $result->num_rows > 0) {
 
         $con_convenio = (isset($data['sin_convenio']) && $data['sin_convenio'] == 1) ? 'NO' : 'SÍ';
 
+        $edad = '';
+        if (!empty($data['fecha_nacimiento'])) {
+            $nacimiento = new DateTime($data['fecha_nacimiento']);
+            $hoy = new DateTime();
+            $edad = $nacimiento->diff($hoy)->y;
+        }
+
         $rowData = [
-            $data['id_registro_individual'],
+            $data['fecha_registro'],
             $data['cedula_persona'],
+            $data['tipo_identificacion'] ?? '',
             $data['nombres_persona'],
             $data['apellidos_persona'],
+            $data['genero_persona'] ?? '',
+            $data['fecha_nacimiento'] ?? '',
+            $edad,
+            $data['telefono_persona'] ?? '',
+            $data['telefono_referencia_persona'] ?? '',
+            $data['referencia_persona'] ?? '',
+            $data['correo_persona'] ?? '',
+            $data['direccion_persona'] ?? '',
+            $data['barrio_residencia'] ?? '',
+            $data['zona_persona'] ?? '',
             $data['grupo_persona'] ?? 'N/A',
             $data['descripcion_condicion'],
-            $data['fecha_registro'],
             $data['descripcion_meta'] ?? '',
             $data['descripcion_actividad'] ?? '',
             $data['descripcion_accion'] ?? '',
@@ -256,8 +357,31 @@ if ($result && $result->num_rows > 0) {
             $data['nombre_barrio'] ?? '',
             $data['nombre_com'] ?? '',
             $data['observacion_registro'] ?? '',
+            $con_convenio,
+            $data['grupo_sisben'] ?? '',
+            $data['eps'] ?? '',
+            $data['peso'] ?? '',
+            $data['talla'] ?? '',
+            $data['patologias'] ?? '',
+            $data['factores_riesgo'] ?? '',
+            $data['factores_preventivos'] ?? '',
+            $data['ingresos_economicos'] ?? '',
+            $data['convivencia_actual'] ?? '',
+            $data['resultado_actividad'] ?? '',
+            $data['remision'] ?? '',
+            $data['persona_discapacidad'] ?? '',
+            $data['cual_discapacidad'] ?? '',
+            $data['cabeza_hogar'] ?? '',
+            $data['lider_comunidad'] ?? '',
+            $data['se_reconoce_como'] ?? '',
+            $data['orientacion_sexual'] ?? '',
+            $data['experiencia_migratoria'] ?? '',
+            $data['grupo_etnico'] ?? '',
+            $data['tipo_salud'] ?? '',
+            $data['nivel_educativo'] ?? '',
+            $data['condicion_ocupacion'] ?? '',
+            $data['condicion_componente_persona'] ?? '',
             $data['nombre_usuario'] ?? '',
-            $con_convenio
         ];
 
         $col = 'A';
@@ -286,26 +410,8 @@ if ($result && $result->num_rows > 0) {
 }
 
 // Ajustar anchos de columna
-$columnWidths = [
-    'A' => 10,  // ID
-    'B' => 15,  // Cédula
-    'C' => 20,  // Nombres
-    'D' => 20,  // Apellidos
-    'E' => 25,  // Grupo
-    'F' => 25,  // Condición
-    'G' => 15,  // Fecha
-    'H' => 25,  // Meta
-    'I' => 25,  // Actividad
-    'J' => 25,  // Acción
-    'K' => 20,  // Política
-    'L' => 25,  // Centro
-    'M' => 20,  // Dpto
-    'N' => 35,  // Observaciones
-    'O' => 20   // Usuario
-];
-
-foreach ($columnWidths as $column => $width) {
-    $sheet->getColumnDimension($column)->setWidth($width);
+for ($i = 1; $i <= count($headers); $i++) {
+    $sheet->getColumnDimension(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i))->setWidth(22);
 }
 
 // Limpiar buffer y generar archivo

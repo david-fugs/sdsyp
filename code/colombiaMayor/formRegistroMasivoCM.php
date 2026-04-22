@@ -16,15 +16,15 @@ $id_usuario = $_SESSION['id'];
 $usuarios_filtro = [];
 if ($tipo_usuario == 1) {
     // Tipo 1 (Admin) puede ver todos
-    $query_usuarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (8, 9) ORDER BY nombre ASC";
+    $query_usuarios = "SELECT id, nombre, tipo_usuario FROM usuarios WHERE tipo_usuario IN (8, 9) ORDER BY nombre ASC";
 } elseif ($tipo_usuario == 8) {
     // Tipo 8 puede filtrar por usuarios tipo 8 y 9
-    $query_usuarios = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (8, 9) ORDER BY nombre ASC";
+    $query_usuarios = "SELECT id, nombre, tipo_usuario FROM usuarios WHERE tipo_usuario IN (8, 9) ORDER BY nombre ASC";
 } elseif ($tipo_usuario == 9) {
     // Tipo 9 solo ve sus propios registros (no necesita filtro de usuario)
-    $query_usuarios = "SELECT id, nombre FROM usuarios WHERE id = $id_usuario";
+    $query_usuarios = "SELECT id, nombre, tipo_usuario FROM usuarios WHERE id = $id_usuario";
 } else {
-    $query_usuarios = "SELECT id, nombre FROM usuarios WHERE id = $id_usuario";
+    $query_usuarios = "SELECT id, nombre, tipo_usuario FROM usuarios WHERE id = $id_usuario";
 }
 $result_usuarios_filtro = $mysqli->query($query_usuarios);
 if ($result_usuarios_filtro) {
@@ -116,6 +116,31 @@ if ($result_count) {
         .btn-modern {
             font-size: 15px !important;
             padding: 10px 20px !important;
+        }
+
+        /* Truncación de texto largo en tabla */
+        .cm-texto-corto {
+            display: inline-block;
+            max-width: 220px;
+            word-break: break-word;
+        }
+
+        .btn-ver-mas-cm {
+            background: none;
+            border: 1px solid #667eea;
+            border-radius: 4px;
+            color: #667eea;
+            font-size: 11px;
+            padding: 1px 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            vertical-align: middle;
+            margin-left: 3px;
+        }
+
+        .btn-ver-mas-cm:hover {
+            background: #667eea;
+            color: #fff;
         }
 
         .modern-header h2 {
@@ -933,13 +958,26 @@ if ($result_count) {
                         </div>
                         
                         <?php if ($tipo_usuario == 1 || $tipo_usuario == 8): ?>
+                        <!-- Filtro tipo de usuario -->
+                        <div class="mb-3">
+                            <label for="filtro_tipo_usuario" class="form-label">Tipo de Usuario</label>
+                            <select class="form-select" id="filtro_tipo_usuario" name="filtro_tipo_usuario">
+                                <option value="">-- Todos --</option>
+                                <option value="8">Técnico Colombia Mayor</option>
+                                <option value="9">Contratista Colombia Mayor</option>
+                            </select>
+                        </div>
                         <!-- Filtro de usuario (solo para tipo 1 y 8) -->
                         <div class="mb-3">
                             <label for="filtro_usuario" class="form-label">Usuario</label>
                             <select class="form-select" id="filtro_usuario" name="filtro_usuario">
                                 <option value="">-- Todos --</option>
-                                <?php foreach ($usuarios_filtro as $usuario): ?>
-                                    <option value="<?= $usuario['id'] ?>"><?= htmlspecialchars($usuario['nombre']) ?></option>
+                                <?php
+                                $tipo_labels = [1 => 'Admin', 8 => 'Técnico CM', 9 => 'Contratista CM'];
+                                foreach ($usuarios_filtro as $usuario):
+                                    $label = $tipo_labels[$usuario['tipo_usuario']] ?? '';
+                                ?>
+                                    <option value="<?= $usuario['id'] ?>"><?= htmlspecialchars($usuario['nombre']) ?><?= $label ? ' (' . $label . ')' : '' ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>

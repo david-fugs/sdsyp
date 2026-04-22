@@ -2,8 +2,8 @@
 session_start();
 include("../../conexion.php");
 
-// Verificar que el usuario tenga acceso (tipo 8 o 9)
-if (!isset($_SESSION['tipo_usuario']) || !in_array($_SESSION['tipo_usuario'], [8, 9])) {
+// Verificar que el usuario tenga acceso (tipo 1, 8 o 9)
+if (!isset($_SESSION['tipo_usuario']) || !in_array($_SESSION['tipo_usuario'], [1, 8, 9])) {
     header("Location: ../../access.php");
     exit();
 }

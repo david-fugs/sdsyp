@@ -170,6 +170,20 @@ while ($row = $result_grupos_personas->fetch_assoc()) {
   $grupos_stats[] = $row;
 }
 
+// Fix: Colombia Mayor persons are stored in personas_colombia_mayor, not personas
+foreach ($grupos_stats as &$grupo) {
+  if (strtoupper(trim($grupo['descripcion_grupo'])) === 'COLOMBIA MAYOR') {
+    $q_cm = "SELECT COUNT(*) as total FROM personas_colombia_mayor WHERE estado_cm = 'ACTIVO' OR condicion_componente = 'C.M Activo'";
+    $r_cm = $mysqli->query($q_cm);
+    if ($r_cm) {
+      $grupo['total_personas'] = $r_cm->fetch_assoc()['total'];
+    }
+    $grupo['sin_convenio'] = 0;
+    break;
+  }
+}
+unset($grupo);
+
 $mysqli->close();
 ?>
 

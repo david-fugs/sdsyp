@@ -1319,10 +1319,10 @@ function deleteMember($cedula_persona_cm)
                 }
                 
                 // Meta, actividad, acción y política pública
-                modal.find('#edit-id-meta').val(button.data('id-meta'));
-                modal.find('#edit-id-actividad').val(button.data('id-actividad'));
-                modal.find('#edit-id-accion').val(button.data('id-accion'));
-                modal.find('#edit-id-politica-publica').val(button.data('id-politica-publica'));
+                modal.find('#edit-meta').val(button.data('id-meta'));
+                modal.find('#edit-actividad').val(button.data('id-actividad'));
+                modal.find('#edit-accion').val(button.data('id-accion'));
+                modal.find('#edit-politica-publica').val(button.data('id-politica-publica'));
                 
                 // Observaciones
                 modal.find('#edit-observaciones').val(button.data('observaciones'));

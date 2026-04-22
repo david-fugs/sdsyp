@@ -886,6 +886,7 @@ $endYear = $currentYear + 1;
                             if ($tipo_usuario == 1) {
                                 echo '<option value="TODOS_CONTRATISTA_CPSAM">Todos Contratista CPSAM</option>';
                                 echo '<option value="TODOS_CENTRO_VIDA">Todos Centro Vida</option>';
+                                echo '<option value="TODOS_TIPO3">CPSAM Contratista Alcaldía (todos)</option>';
                             }
 
                             // Construir filtro WHERE para usuarios según tipo de usuario de sesión

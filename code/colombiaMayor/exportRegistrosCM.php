@@ -3,7 +3,7 @@ error_reporting(0);
 ini_set('display_errors', 0);
 session_start();
 
-if (!isset($_SESSION['usuario']) || ($_SESSION['tipo_usuario'] != 8 && $_SESSION['tipo_usuario'] != 9)) {
+if (!isset($_SESSION['usuario']) || !in_array($_SESSION['tipo_usuario'], [1, 8, 9])) {
     exit('Acceso denegado');
 }
 
@@ -22,27 +22,24 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 $tipo_usuario = $_SESSION['tipo_usuario'];
-$usuario_id = $_SESSION['id'];
+$usuario_id = intval($_SESSION['id']);
 
 // Obtener filtros de GET
-$filtro_fecha_inicio = isset($_GET['filtro_fecha_inicio']) && !empty($_GET['filtro_fecha_inicio']) ? $_GET['filtro_fecha_inicio'] : null;
-$filtro_fecha_fin = isset($_GET['filtro_fecha_fin']) && !empty($_GET['filtro_fecha_fin']) ? $_GET['filtro_fecha_fin'] : null;
-$filtro_usuario = isset($_GET['filtro_usuario']) && !empty($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : null;
+$filtro_fecha_inicio  = isset($_GET['filtro_fecha_inicio'])  && !empty($_GET['filtro_fecha_inicio'])  ? $_GET['filtro_fecha_inicio']  : null;
+$filtro_fecha_fin     = isset($_GET['filtro_fecha_fin'])     && !empty($_GET['filtro_fecha_fin'])     ? $_GET['filtro_fecha_fin']     : null;
+$filtro_usuario       = isset($_GET['filtro_usuario'])       && is_numeric($_GET['filtro_usuario'])   ? intval($_GET['filtro_usuario']) : null;
+$filtro_tipo_usuario  = isset($_GET['filtro_tipo_usuario'])  && is_numeric($_GET['filtro_tipo_usuario']) ? intval($_GET['filtro_tipo_usuario']) : null;
 
 // Filtro por usuario según permisos
 $where = "1=1";
 
-// Tipo 9 solo ve sus propios registros (sin importar el filtro)
-if($tipo_usuario == 9) {
-    $where .= " AND r.usuario_registro = '$usuario_id'";
-}
-// Tipo 8 puede filtrar por usuarios 8 y 9 si se pasa el filtro
-elseif($tipo_usuario == 8 && $filtro_usuario) {
+// Tipo 9 solo ve sus propios registros
+if ($tipo_usuario == 9) {
+    $where .= " AND r.usuario_registro = " . $usuario_id;
+} elseif ($filtro_usuario) {
     $where .= " AND r.usuario_registro = " . $filtro_usuario;
-}
-// Tipo 1 (Admin) puede filtrar por usuario si se pasa
-elseif($tipo_usuario == 1 && $filtro_usuario) {
-    $where .= " AND r.usuario_registro = " . $filtro_usuario;
+} elseif ($filtro_tipo_usuario) {
+    $where .= " AND u.tipo_usuario = " . $filtro_tipo_usuario;
 }
 
 // Aplicar filtros de fecha
@@ -50,21 +47,59 @@ if ($filtro_fecha_inicio) {
     $where .= " AND r.fecha_registro_actividad >= '" . $mysqli->real_escape_string($filtro_fecha_inicio) . "'";
 }
 if ($filtro_fecha_fin) {
-    $where .= " AND r.fecha_registro_actividad <= '" . $mysqli->real_escape_string($filtro_fecha_fin) . "'";
+    $where .= " AND r.fecha_registro_actividad <= '" . $mysqli->real_escape_string($filtro_fecha_fin) . " 23:59:59'";
 }
 
-// Consulta
-$sql = "SELECT r.id_registro_individual_cm, 
-        p.cedula_persona_cm, 
-        CONCAT(p.nombres_persona_cm, ' ', p.apellidos_persona_cm) as persona_nombre,
-        c.descripcion_condicion as condicion, 
-        m.descripcion_meta as meta,
-        act.descripcion_actividad as actividad, 
-        acc.descripcion_accion as accion,
-        pp.descripcion_politica as politica_publica,
-        r.fecha_registro_actividad as fecha_registro, 
+// Consulta con toda la caracterización
+$sql = "SELECT
+        r.fecha_registro_actividad,
+        p.cedula_persona_cm,
+        p.tipo_identificacion_cm,
+        p.nombres_persona_cm,
+        p.apellidos_persona_cm,
+        p.genero_persona_cm,
+        p.fecha_nacimiento_cm,
+        p.telefono_persona_cm,
+        p.telefono_referencia_cm,
+        p.referencia_cm,
+        p.correo_cm,
+        p.direccion_cm,
+        p.barrio_cm,
+        p.comuna_cm,
+        p.zona_cm,
+        p.departamento_cm,
+        p.municipio_cm,
+        p.estado_cm,
+        p.condicion_componente,
+        c.descripcion_condicion AS condicion,
+        m.descripcion_meta AS meta,
+        act.descripcion_actividad AS actividad,
+        acc.descripcion_accion AS accion,
+        pp.descripcion_politica AS politica_publica,
         r.observaciones,
-        u.nombre as registrado_por
+        p.grupo_sisben,
+        p.eps,
+        p.peso,
+        p.talla,
+        p.patologias,
+        p.factores_riesgo,
+        p.factores_preventivos,
+        p.ingresos_economicos,
+        p.convivencia_actual,
+        p.resultado_actividad,
+        p.remision,
+        p.persona_discapacidad,
+        p.cual_discapacidad,
+        p.cabeza_hogar,
+        p.lider_comunidad,
+        p.se_reconoce_como,
+        p.orientacion_sexual,
+        p.experiencia_migratoria,
+        p.grupo_etnico,
+        p.tipo_salud,
+        p.nivel_educativo,
+        p.condicion_ocupacion,
+        u.nombre AS registrado_por
         FROM registros_individuales_cm r
         INNER JOIN personas_colombia_mayor p ON r.cedula_persona_cm = p.cedula_persona_cm
         LEFT JOIN condiciones_componente c ON r.id_condicion = c.id_condicion
@@ -74,7 +109,7 @@ $sql = "SELECT r.id_registro_individual_cm,
         LEFT JOIN politicas_publicas pp ON r.id_politica_publica = pp.id_politica
         LEFT JOIN usuarios u ON r.usuario_registro = u.id
         WHERE $where
-        ORDER BY r.fecha_registro DESC";
+        ORDER BY r.fecha_registro_actividad DESC, r.id_registro_individual_cm DESC";
 
 $result = $mysqli->query($sql);
 
@@ -87,97 +122,209 @@ $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 $sheet->setTitle('Registros CM');
 
-// Encabezados
-$headers = ['Cédula', 'Persona', 'Condición', 'Meta', 'Actividad', 'Acción', 'Política Pública', 'Fecha Registro', 'Observaciones', 'Registrado por'];
-$col = 'A';
-foreach($headers as $header) {
-    $sheet->setCellValue($col.'1', $header);
+// Encabezados - Fecha Registro primero, Registrado Por último
+$headers = [
+    'Fecha Registro',
+    'Cédula',
+    'Tipo Identificación',
+    'Nombres',
+    'Apellidos',
+    'Género',
+    'Fecha Nacimiento',
+    'Edad',
+    'Teléfono',
+    'Teléfono Referencia',
+    'Referencia',
+    'Correo',
+    'Dirección',
+    'Barrio',
+    'Comuna',
+    'Zona',
+    'Departamento',
+    'Municipio',
+    'Estado CM',
+    'Condición Componente',
+    'Condición',
+    'Meta',
+    'Actividad',
+    'Acción',
+    'Política Pública',
+    'Observaciones',
+    'Grupo Sisbén',
+    'EPS',
+    'Peso (kg)',
+    'Talla (cm)',
+    'Patologías',
+    'Factores de Riesgo',
+    'Factores Preventivos',
+    'Ingresos Económicos',
+    'Convivencia Actual',
+    'Resultado Actividad',
+    'Remisión',
+    '¿Discapacidad?',
+    'Categoría Discapacidad',
+    '¿Cabeza Hogar?',
+    '¿Líder Comunidad?',
+    'Se Reconoce Como',
+    'Orientación Sexual',
+    '¿Exp. Migratoria?',
+    'Grupo Étnico',
+    'Tipo Salud',
+    'Nivel Educativo',
+    'Condición Ocupación',
+    'Registrado Por',
+];
+
+$totalCols = count($headers); // 49
+$lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($totalCols);
+
+$col = 1;
+foreach ($headers as $header) {
+    $sheet->setCellValueByColumnAndRow($col, 1, $header);
     $col++;
 }
 
-// Estilo encabezados - Bonito y amplio
-$sheet->getStyle('A1:J1')->getFont()->setBold(true)->setSize(12);
-$sheet->getStyle('A1:J1')->getFill()
+// Estilo encabezados
+$headerRange = 'A1:' . $lastColLetter . '1';
+$sheet->getStyle($headerRange)->getFont()->setBold(true)->setSize(11);
+$sheet->getStyle($headerRange)->getFill()
     ->setFillType(Fill::FILL_SOLID)
-    ->getStartColor()->setRGB('2E75B6');
-$sheet->getStyle('A1:J1')->getFont()->getColor()->setRGB('FFFFFF');
-$sheet->getStyle('A1:J1')->getAlignment()
+    ->getStartColor()->setRGB('667eea');
+$sheet->getStyle($headerRange)->getFont()->getColor()->setRGB('FFFFFF');
+$sheet->getStyle($headerRange)->getAlignment()
     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
     ->setVertical(Alignment::VERTICAL_CENTER);
 $sheet->getRowDimension(1)->setRowHeight(25);
 
-// Freeze pane (congelar encabezado)
+// Freeze pane
 $sheet->freezePane('A2');
 
 // Datos
 $fila = 2;
-while($row = $result->fetch_assoc()) {
-    $sheet->setCellValue('A'.$fila, $row['cedula_persona_cm'] ?? '');
-    $sheet->setCellValue('B'.$fila, $row['persona_nombre'] ?? '');
-    $sheet->setCellValue('C'.$fila, $row['condicion'] ?? 'N/A');
-    $sheet->setCellValue('D'.$fila, $row['meta'] ?? 'N/A');
-    $sheet->setCellValue('E'.$fila, $row['actividad'] ?? 'N/A');
-    $sheet->setCellValue('F'.$fila, $row['accion'] ?? 'N/A');
-    $sheet->setCellValue('G'.$fila, $row['politica_publica'] ?? 'N/A');
-    $sheet->setCellValue('H'.$fila, $row['fecha_registro'] ?? '');
-    $sheet->setCellValue('I'.$fila, $row['observaciones'] ?? '');
-    $sheet->setCellValue('J'.$fila, $row['registrado_por'] ?? 'N/A');
-    
-    // Filas alternadas con color
-    if ($fila % 2 == 0) {
-        $sheet->getStyle('A'.$fila.':J'.$fila)->getFill()
-            ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setRGB('E7F0FF');
+while ($row = $result->fetch_assoc()) {
+    // Calcular edad
+    $edad = '';
+    if (!empty($row['fecha_nacimiento_cm'])) {
+        try {
+            $nacimiento = new DateTime($row['fecha_nacimiento_cm']);
+            $hoy = new DateTime();
+            $edad = $nacimiento->diff($hoy)->y;
+        } catch (Exception $e) {
+            $edad = '';
+        }
     }
-    
-    // Altura de fila más amplia
+
+    $valores = [
+        !empty($row['fecha_registro_actividad']) ? date('d/m/Y', strtotime($row['fecha_registro_actividad'])) : '',
+        $row['cedula_persona_cm']       ?? '',
+        $row['tipo_identificacion_cm']  ?? '',
+        $row['nombres_persona_cm']      ?? '',
+        $row['apellidos_persona_cm']    ?? '',
+        $row['genero_persona_cm']       ?? '',
+        !empty($row['fecha_nacimiento_cm']) ? date('d/m/Y', strtotime($row['fecha_nacimiento_cm'])) : '',
+        $edad,
+        $row['telefono_persona_cm']     ?? '',
+        $row['telefono_referencia_cm']  ?? '',
+        $row['referencia_cm']           ?? '',
+        $row['correo_cm']               ?? '',
+        $row['direccion_cm']            ?? '',
+        $row['barrio_cm']               ?? '',
+        $row['comuna_cm']               ?? '',
+        $row['zona_cm']                 ?? '',
+        $row['departamento_cm']         ?? '',
+        $row['municipio_cm']            ?? '',
+        $row['estado_cm']               ?? '',
+        $row['condicion_componente']    ?? '',
+        $row['condicion']               ?? 'N/A',
+        $row['meta']                    ?? 'N/A',
+        $row['actividad']               ?? 'N/A',
+        $row['accion']                  ?? 'N/A',
+        $row['politica_publica']        ?? 'N/A',
+        $row['observaciones']           ?? '',
+        $row['grupo_sisben']            ?? '',
+        $row['eps']                     ?? '',
+        $row['peso']                    ?? '',
+        $row['talla']                   ?? '',
+        $row['patologias']              ?? '',
+        $row['factores_riesgo']         ?? '',
+        $row['factores_preventivos']    ?? '',
+        $row['ingresos_economicos']     ?? '',
+        $row['convivencia_actual']      ?? '',
+        $row['resultado_actividad']     ?? '',
+        $row['remision']                ?? '',
+        $row['persona_discapacidad']    ?? '',
+        $row['cual_discapacidad']       ?? '',
+        $row['cabeza_hogar']            ?? '',
+        $row['lider_comunidad']         ?? '',
+        $row['se_reconoce_como']        ?? '',
+        $row['orientacion_sexual']      ?? '',
+        $row['experiencia_migratoria']  ?? '',
+        $row['grupo_etnico']            ?? '',
+        $row['tipo_salud']              ?? '',
+        $row['nivel_educativo']         ?? '',
+        $row['condicion_ocupacion']     ?? '',
+        $row['registrado_por']          ?? 'N/A',
+    ];
+
+    foreach ($valores as $idx => $val) {
+        $sheet->setCellValueByColumnAndRow($idx + 1, $fila, $val);
+    }
+
+    // Filas alternadas
+    if ($fila % 2 == 0) {
+        $sheet->getStyle('A' . $fila . ':' . $lastColLetter . $fila)->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('EEF0FF');
+    }
+
     $sheet->getRowDimension($fila)->setRowHeight(18);
     $fila++;
 }
 
-// Ajustar columnas más amplias
-$columnWidths = [
-    'A' => 15,  // Cédula
-    'B' => 30,  // Persona
-    'C' => 25,  // Condición
-    'D' => 25,  // Meta
-    'E' => 30,  // Actividad
-    'F' => 30,  // Acción
-    'G' => 30,  // Política Pública
-    'H' => 18,  // Fecha Registro
-    'I' => 40,  // Observaciones
-    'J' => 20   // Registrado por
+// Anchos de columna
+$colWidths = [
+    18, 15, 18, 22, 22, 10, 16, 6,
+    14, 18, 18, 25, 25, 15, 10, 8,
+    15, 15, 14, 22,
+    25, 35, 35, 35, 35,
+    30, 14, 14, 8, 8,
+    30, 25, 25, 20, 20,
+    20, 15, 14, 22, 14, 16,
+    20, 18, 16, 18, 15, 18, 22,
+    22
 ];
-foreach($columnWidths as $col => $width) {
-    $sheet->getColumnDimension($col)->setWidth($width);
+for ($i = 0; $i < $totalCols; $i++) {
+    $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i + 1);
+    $sheet->getColumnDimension($letter)->setWidth($colWidths[$i] ?? 18);
 }
 
-// Bordes más prominentes
-$styleArray = [
+// Bordes
+$dataRange = 'A1:' . $lastColLetter . ($fila - 1);
+$sheet->getStyle($dataRange)->applyFromArray([
     'borders' => [
         'allBorders' => [
             'borderStyle' => Border::BORDER_THIN,
-            'color' => ['rgb' => '000000']
+            'color'       => ['rgb' => 'CCCCCC']
         ],
         'outline' => [
             'borderStyle' => Border::BORDER_MEDIUM,
-            'color' => ['rgb' => '000000']
+            'color'       => ['rgb' => '667eea']
         ]
     ],
-];
-$sheet->getStyle('A1:J'.($fila-1))->applyFromArray($styleArray);
+]);
 
-// Alineación vertical centrada para todos los datos
-$sheet->getStyle('A2:J'.($fila-1))->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+// Alineación vertical
+$sheet->getStyle('A2:' . $lastColLetter . ($fila - 1))->getAlignment()
+    ->setVertical(Alignment::VERTICAL_CENTER);
 
 $mysqli->close();
 
 ob_end_clean();
 
 // Descargar
-$filename = 'RegistrosCM_'.date('Y-m-d_His').'.xlsx';
+$filename = 'RegistrosIndividualesCM_' . date('Y-m-d_His') . '.xlsx';
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="'.$filename.'"');
+header('Content-Disposition: attachment;filename="' . $filename . '"');
 header('Cache-Control: max-age=0');
 
 $writer = new Xlsx($spreadsheet);

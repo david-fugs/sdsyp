@@ -15,34 +15,40 @@ if (!isset($mysqli)) {
 $tipo_usuario = $_SESSION['tipo_usuario'];
 $usuario_id = $_SESSION['id'];
 
-// Filtros
-$filtro_cedula = isset($_GET['cedula']) ? $mysqli->real_escape_string($_GET['cedula']) : '';
-$filtro_nombre = isset($_GET['nombre']) ? $mysqli->real_escape_string($_GET['nombre']) : '';
-$filtro_condicion = isset($_GET['condicion']) ? $mysqli->real_escape_string($_GET['condicion']) : '';
+// Filtros - los nombres deben coincidir con los campos del formulario en formIndividualCM.php
+$filtro_cedula = isset($_GET['cedula_persona']) ? $mysqli->real_escape_string(trim($_GET['cedula_persona'])) : '';
+$filtro_nombre = isset($_GET['nombre']) ? $mysqli->real_escape_string(trim($_GET['nombre'])) : '';
+$filtro_condicion = isset($_GET['condicion']) && is_numeric($_GET['condicion']) ? intval($_GET['condicion']) : 0;
+$filtro_tipo_usuario = isset($_GET['filtro_tipo_usuario']) && is_numeric($_GET['filtro_tipo_usuario']) ? intval($_GET['filtro_tipo_usuario']) : 0;
 
 // Construir WHERE
 $where = "1=1";
 
-if($tipo_usuario == 9) {
-    $where .= " AND r.usuario_registro = '$usuario_id'";
+if ($tipo_usuario == 9) {
+    $where .= " AND r.usuario_registro = " . intval($usuario_id);
 }
 
-if($filtro_cedula != '') {
-    $where .= " AND p.cedula LIKE '%$filtro_cedula%'";
+if ($filtro_cedula !== '') {
+    $where .= " AND p.cedula_persona_cm LIKE '%" . $filtro_cedula . "%'";
 }
 
-if($filtro_nombre != '') {
-    $where .= " AND CONCAT(p.nombre, ' ', p.apellido) LIKE '%$filtro_nombre%'";
+if ($filtro_nombre !== '') {
+    $where .= " AND CONCAT(p.nombres_persona_cm, ' ', p.apellidos_persona_cm) LIKE '%" . $filtro_nombre . "%'";
 }
 
-if($filtro_condicion != '') {
-    $where .= " AND r.id_condicion = '$filtro_condicion'";
+if ($filtro_condicion > 0) {
+    $where .= " AND r.id_condicion = " . $filtro_condicion;
 }
 
-// Consulta principal (usando tablas generales)
-$sql = "SELECT r.*, 
+if ($filtro_tipo_usuario > 0) {
+    $where .= " AND u.tipo_usuario = " . $filtro_tipo_usuario;
+}
+
+// Consulta principal
+$sql = "SELECT r.id_registro_individual_cm,
+        r.fecha_registro_actividad,
+        p.cedula_persona_cm,
         CONCAT(p.nombres_persona_cm, ' ', p.apellidos_persona_cm) as persona_nombre,
-        p.cedula_persona_cm as cedula,
         c.descripcion_condicion as condicion,
         m.descripcion_meta as meta,
         act.descripcion_actividad as actividad,
@@ -58,59 +64,57 @@ $sql = "SELECT r.*,
         LEFT JOIN politicas_publicas pp ON r.id_politica_publica = pp.id_politica
         LEFT JOIN usuarios u ON r.usuario_registro = u.id
         WHERE $where
-        ORDER BY r.fecha_registro DESC, r.id_registro_individual_cm DESC";
+        ORDER BY r.fecha_registro_actividad DESC, r.id_registro_individual_cm DESC";
 
 $result = $mysqli->query($sql);
 
-if($result->num_rows > 0) {
+// Función para truncar texto con botón "ver más"
+function truncateCM($text, $max = 40) {
+    $text = $text ?? '';
+    if (mb_strlen($text) <= $max) {
+        return '<span>' . htmlspecialchars($text) . '</span>';
+    }
+    $short = htmlspecialchars(mb_substr($text, 0, $max));
+    $full  = htmlspecialchars($text, ENT_QUOTES);
+    return '<span class="cm-texto-corto">' . $short
+         . '... <button type="button" class="btn-ver-mas-cm" data-full="' . $full
+         . '" onclick="verMasCM(this)" title="' . $full . '"><i class="bi bi-eye-fill"></i> ver</button></span>';
+}
+
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $fecha = !empty($row['fecha_registro_actividad'])
+            ? date('d/m/Y', strtotime($row['fecha_registro_actividad']))
+            : 'N/A';
 ?>
-    <table id="registrosTable" class="table modern-table table-hover">
-        <thead>
-            <tr>
-                <th>Cédula</th>
-                <th>Persona</th>
-                <th>Condición</th>
-                <th>Meta</th>
-                <th>Actividad</th>
-                <th>Acción</th>
-                <th>Política Pública</th>
-                <th>Fecha Registro</th>
-                <th>Registrado por</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while($row = $result->fetch_assoc()): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($row['cedula']); ?></td>
-                <td><?php echo htmlspecialchars($row['persona_nombre']); ?></td>
-                <td><?php echo htmlspecialchars($row['condicion'] ?? 'N/A'); ?></td>
-                <td><?php echo htmlspecialchars($row['meta'] ?? 'N/A'); ?></td>
-                <td><?php echo htmlspecialchars($row['actividad'] ?? 'N/A'); ?></td>
-                <td><?php echo htmlspecialchars($row['accion'] ?? 'N/A'); ?></td>
-                <td><?php echo htmlspecialchars($row['politica_publica'] ?? 'N/A'); ?></td>
-                <td><?php echo date('d/m/Y', strtotime($row['fecha_registro'])); ?></td>
-                <td><?php echo htmlspecialchars($row['usuario'] ?? 'N/A'); ?></td>
-                <td class="col-actions">
-                    <div class="action-buttons">
-                        <button type="button" class="btn-action btn-edit" 
-                                title="Editar registro"
-                                onclick="editarRegistro(<?php echo $row['id_registro_individual_cm']; ?>)">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                        <button type="button" class="btn-action btn-delete" 
-                                title="Eliminar registro"
-                                onclick="eliminarRegistro(<?php echo $row['id_registro_individual_cm']; ?>)">
-                            <i class="bi bi-trash3"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
+        <tr>
+            <td><?= htmlspecialchars($row['cedula_persona_cm'] ?? '') ?></td>
+            <td><?= truncateCM($row['persona_nombre'] ?? '', 30) ?></td>
+            <td><?= truncateCM($row['condicion'] ?? 'N/A', 35) ?></td>
+            <td><?= truncateCM($row['meta'] ?? 'N/A', 38) ?></td>
+            <td><?= truncateCM($row['actividad'] ?? 'N/A', 38) ?></td>
+            <td><?= truncateCM($row['accion'] ?? 'N/A', 35) ?></td>
+            <td><?= truncateCM($row['politica_publica'] ?? 'N/A', 38) ?></td>
+            <td><?= $fecha ?></td>
+            <td><?= htmlspecialchars($row['usuario'] ?? 'N/A') ?></td>
+            <td class="col-actions">
+                <div class="action-buttons">
+                    <button type="button" class="btn-action btn-edit"
+                            title="Editar registro"
+                            onclick="editarRegistro(<?= $row['id_registro_individual_cm'] ?>)">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button type="button" class="btn-action btn-delete"
+                            title="Eliminar registro"
+                            onclick="eliminarRegistro(<?= $row['id_registro_individual_cm'] ?>)">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
 <?php
+    }
 } else {
-    echo '<div class="alert alert-info">No se encontraron registros</div>';
+    echo '<tr><td colspan="10" class="text-center py-4 text-muted"><i class="bi bi-inbox fs-3 d-block mb-2"></i>No se encontraron registros</td></tr>';
 }
 ?>

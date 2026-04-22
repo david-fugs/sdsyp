@@ -28,7 +28,8 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 $filtro_anio = isset($_GET['year']) ? intval($_GET['year']) : date('Y');
 $filtro_grupo = isset($_GET['filtro_grupo']) && !empty($_GET['filtro_grupo']) ? $_GET['filtro_grupo'] : '';
 $filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : '';
-$filtro_usuario = isset($_GET['filtro_usuario']) && !empty($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : '';
+$filtro_usuario = isset($_GET['filtro_usuario']) && !empty($_GET['filtro_usuario']) ? $_GET['filtro_usuario'] : '';
+$filtro_todos_tipo3 = ($filtro_usuario === 'TODOS_TIPO3');
 $filtro_fecha_inicio = isset($_GET['filtro_fecha_inicio']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_inicio']) ? $_GET['filtro_fecha_inicio'] : '';
 $filtro_fecha_fin = isset($_GET['filtro_fecha_fin']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_fin']) ? $_GET['filtro_fecha_fin'] : '';
 
@@ -91,16 +92,18 @@ if ($filtro_grupo && !$filtro_todos_grupos) {
 }
 
 // Filtro por usuario
-if ($filtro_usuario) {
-    $where .= " AND p.id_usuario = $filtro_usuario ";
+if ($filtro_todos_tipo3) {
+    $where .= " AND p.id_usuario IN (SELECT id FROM usuarios WHERE tipo_usuario = 3) ";
+} elseif (is_numeric($filtro_usuario) && intval($filtro_usuario) > 0) {
+    $filtro_usuario_int = intval($filtro_usuario);
+    $where .= " AND p.id_usuario = $filtro_usuario_int ";
 }
 
 // Si es usuario tipo 2 (INGENIERO), filtrar solo personas de su grupo y usuarios de su grupo
 if ($tipo_usuario == 2 && $id_grupo_session) {
     $where .= " AND p.id_grupo = " . intval($id_grupo_session) . " ";
-    // Si se especificó usuario, verificar que sea del mismo grupo
-    if ($filtro_usuario) {
-        $query_check = "SELECT id FROM usuarios WHERE id = $filtro_usuario AND id_grupo = " . intval($id_grupo_session);
+    if (is_numeric($filtro_usuario) && intval($filtro_usuario) > 0) {
+        $query_check = "SELECT id FROM usuarios WHERE id = " . intval($filtro_usuario) . " AND id_grupo = " . intval($id_grupo_session);
         $result_check = $mysqli->query($query_check);
         if (!$result_check || $result_check->num_rows == 0) {
             die("Acceso denegado: No puede exportar datos de usuarios de otros grupos.");
@@ -182,7 +185,7 @@ if ($filtro_todos_grupos && !empty($grupos_a_exportar)) {
     LEFT JOIN politicas_publicas pp ON mp.id_politica_publica = pp.id_politica
     LEFT JOIN usuarios u ON p.id_usuario = u.id
     $where
-    ORDER BY mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC";
+    ORDER BY " . ($filtro_todos_tipo3 ? "u.nombre ASC, mp.fecha_movimiento DESC" : "mp.fecha_movimiento DESC, mp.id_movimiento_persona DESC") . "";
 }
 
 $result = $mysqli->query($query);
@@ -209,8 +212,8 @@ $headers = [
     'Centro Traslado Nuevo',
     'Dpto. Procedencia',
     'Observaciones',
-    'Usuario Registro',
-    'Con Convenio'
+    'Con Convenio',
+    'Usuario Registro'
 ];
 
 $col = 'A';
@@ -245,8 +248,21 @@ $sheet->getRowDimension(1)->setRowHeight(35);
 // Llenar datos
 $row = 2;
 $grupo_anterior = '';
+$usuario_anterior = '';
 if ($result && $result->num_rows > 0) {
     while ($data = $result->fetch_assoc()) {
+        if ($filtro_todos_tipo3 && $data['usuario_registro'] != $usuario_anterior && $usuario_anterior != '') {
+            $sheet->mergeCells('A' . $row . ':' . $lastCol . $row);
+            $sheet->setCellValue('A' . $row, '--- ' . strtoupper($data['usuario_registro']) . ' ---');
+            $sheet->getStyle('A' . $row . ':' . $lastCol . $row)->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1a237e']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+            ]);
+            $sheet->getRowDimension($row)->setRowHeight(30);
+            $row++;
+        }
+        $usuario_anterior = $data['usuario_registro'];
         // Si es "Todos CPSAM" o "Todos CV", agregar fila separadora entre grupos
         if ($filtro_todos_grupos && $data['grupo_persona'] != $grupo_anterior && $grupo_anterior != '') {
             // Agregar fila de separación
@@ -294,8 +310,8 @@ if ($result && $result->num_rows > 0) {
             $data['centro_vida_traslado'] ?? '',
             $data['departamento_procedencia'] ?? '',
             $data['observacion_movimiento'] ?? '',
+            $con_convenio,
             $data['usuario_registro'] ?? '',
-            $con_convenio
         ];
 
         $col = 'A';

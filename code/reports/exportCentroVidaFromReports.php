@@ -29,7 +29,8 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
 $filtro_grupo = isset($_GET['filtro_grupo']) ? $_GET['filtro_grupo'] : '';
 $filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : '';
-$filtro_usuario = isset($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : '';
+$filtro_usuario = isset($_GET['filtro_usuario']) ? $_GET['filtro_usuario'] : '';
+$filtro_todos_tipo3 = ($filtro_usuario === 'TODOS_TIPO3');
 $filtro_fecha_inicio = isset($_GET['filtro_fecha_inicio']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_inicio']) ? $_GET['filtro_fecha_inicio'] : '';
 $filtro_fecha_fin = isset($_GET['filtro_fecha_fin']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_fin']) ? $_GET['filtro_fecha_fin'] : '';
 
@@ -90,17 +91,19 @@ if ($filtro_grupo && !$filtro_todos_grupos) {
 }
 
 // Aplicar filtro de usuario si se seleccionó
-if ($filtro_usuario) {
-    $where .= " AND mcv.id_usuario = $filtro_usuario ";
+if ($filtro_todos_tipo3) {
+    $where .= " AND mcv.id_usuario IN (SELECT id FROM usuarios WHERE tipo_usuario = 3) ";
+} elseif (is_numeric($filtro_usuario) && intval($filtro_usuario) > 0) {
+    $filtro_usuario_int = intval($filtro_usuario);
+    $where .= " AND mcv.id_usuario = $filtro_usuario_int ";
 }
 
 // Si es usuario tipo 2 (INGENIERO), filtrar solo actividades de su grupo y usuarios de su grupo
 if ($tipo_usuario == 2 && isset($_SESSION['id_grupo'])) {
     $id_grupo_session = intval($_SESSION['id_grupo']);
     $where .= " AND g.id_grupo = $id_grupo_session ";
-    // Si se especificó usuario, verificar que sea del mismo grupo
-    if ($filtro_usuario) {
-        $query_check = "SELECT id FROM usuarios WHERE id = $filtro_usuario AND id_grupo = $id_grupo_session";
+    if (is_numeric($filtro_usuario) && intval($filtro_usuario) > 0) {
+        $query_check = "SELECT id FROM usuarios WHERE id = " . intval($filtro_usuario) . " AND id_grupo = $id_grupo_session";
         $result_check = $mysqli->query($query_check);
         if (!$result_check || $result_check->num_rows == 0) {
             die("Acceso denegado: No puede exportar datos de usuarios de otros grupos.");
@@ -148,7 +151,7 @@ LEFT JOIN comunas c ON mcv.id_comuna=c.id_com
 LEFT JOIN usuarios u1 ON mcv.id_usuario=u1.id
 LEFT JOIN usuarios u2 ON mcv.funcionario_responsable=u2.id
 WHERE 1 $where $where_grupos_filtro
-ORDER BY " . ($filtro_todos_grupos ? "g.descripcion_grupo ASC, mcv.fecha_atencion DESC" : "mcv.fecha_atencion DESC");
+ORDER BY " . ($filtro_todos_tipo3 ? "u1.nombre ASC, mcv.fecha_atencion DESC" : ($filtro_todos_grupos ? "g.descripcion_grupo ASC, mcv.fecha_atencion DESC" : "mcv.fecha_atencion DESC"));
 
 $result = $mysqli->query($sql);
 
@@ -195,8 +198,22 @@ $sheet->getRowDimension(1)->setRowHeight(32);
 
 // Llenar datos
 $row = 2;
+$grupo_anterior = '';
+$usuario_anterior = '';
 if ($result && $result->num_rows > 0) {
     while ($data = $result->fetch_assoc()) {
+        if ($filtro_todos_tipo3 && $data['digitado_por'] != $usuario_anterior && $usuario_anterior != '') {
+            $sheet->mergeCells('A' . $row . ':' . $lastCol . $row);
+            $sheet->setCellValue('A' . $row, '--- ' . strtoupper($data['digitado_por']) . ' ---');
+            $sheet->getStyle('A' . $row . ':' . $lastCol . $row)->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1a237e']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+            ]);
+            $sheet->getRowDimension($row)->setRowHeight(30);
+            $row++;
+        }
+        $usuario_anterior = $data['digitado_por'];
         $totalPersonas = $data['cantidad_masculino'] + $data['cantidad_femenino'];
         
         $rowData = [
