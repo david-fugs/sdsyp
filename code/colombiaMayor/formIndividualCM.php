@@ -1308,8 +1308,8 @@ while($row = $result_metas_query->fetch_assoc()) {
             }
         });
         
-        // Función para eliminar registro
-        function eliminarRegistro(id) {
+        // Función para eliminar registro (global para ser accesible desde onclick)
+        window.eliminarRegistro = function(id) {
             Swal.fire({
                 title: '¿Eliminar registro?',
                 text: 'Esta acción no se puede deshacer',

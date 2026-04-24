@@ -973,6 +973,7 @@ function deleteRegistro($id_registro)
                                         <option value="Trabajo social">Trabajo social</option>
                                         <option value="Psicología">Psicología</option>
                                         <option value="Psicosocial">Psicosocial</option>
+                                        <option value="Gerontología">Gerontología</option>
                                     </select>
                                     <label for="profesion_masivo">Profesión</label>
                                 </div>
@@ -1159,6 +1160,7 @@ function deleteRegistro($id_registro)
                                     <option value="Trabajo social">Trabajo social</option>
                                     <option value="Psicología">Psicología</option>
                                     <option value="Psicosocial">Psicosocial</option>
+                                    <option value="Gerontología">Gerontología</option>
                                 </select>
                                 <label for="profesion_individual">Profesión</label>
                             </div>

@@ -485,9 +485,16 @@ if ($result_count) {
         $(document).ready(function() {
             // Función para cargar los registros
             function cargarRegistros() {
+                const desde = $('#filter-fecha-desde').val();
+                const hasta = $('#filter-fecha-hasta').val();
+                const params = {};
+                if (desde) params.fecha_desde = desde;
+                if (hasta) params.fecha_hasta = hasta;
+
                 $.ajax({
                     url: 'getRegistrosMasivosCM.php',
                     type: 'GET',
+                    data: params,
                     success: function(data) {
                         $('#table-body').html(data);
                         calcularTotales();
@@ -497,6 +504,11 @@ if ($result_count) {
                     }
                 });
             }
+
+            // Botón filtrar
+            $('#btn-filter').on('click', function() {
+                cargarRegistros();
+            });
 
             // Función para calcular totales de la tabla
             function calcularTotales() {
@@ -931,6 +943,42 @@ if ($result_count) {
                 return true;
             };
         });
+
+        // Global: función para eliminar registro masivo
+        window.eliminarRegistro = function(id) {
+            Swal.fire({
+                title: '¿Eliminar registro?',
+                text: 'Esta acción no se puede deshacer',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: 'deleteRegistroMasivoCM.php',
+                        type: 'POST',
+                        data: { id: id },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire('Eliminado', 'Registro eliminado correctamente', 'success')
+                                    .then(function() {
+                                        $('#btn-filter').trigger('click');
+                                    });
+                            } else {
+                                Swal.fire('Error', response.message, 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Error', 'Error al eliminar el registro', 'error');
+                        }
+                    });
+                }
+            });
+        };
     </script>
 
     <!-- Modal de Filtros de Exportación -->

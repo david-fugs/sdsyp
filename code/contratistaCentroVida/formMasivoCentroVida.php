@@ -713,6 +713,7 @@ $result = $mysqli->query($query);
                                     <option value="Trabajo social">Trabajo social</option>
                                     <option value="Psicología">Psicología</option>
                                     <option value="Psicosocial">Psicosocial</option>
+                                    <option value="Gerontología">Gerontología</option>
                                 </select>
                                 <label for="profesion_masivo">Profesión</label>
                             </div>
@@ -933,6 +934,37 @@ $result = $mysqli->query($query);
                     $('input[name="jornada"]').prop('checked', false);
                     resetPersonasCVSection();
                     resetActividad();
+                    
+                    // Precargar meta que empieza por "2." y luego actividad que empieza por "2.1."
+                    const metaOption = $meta.find('option').filter(function() {
+                        const text = $(this).text().trim();
+                        return text.startsWith('2.');
+                    }).first();
+                    
+                    if (metaOption.length) {
+                        const metaId = metaOption.val();
+                        $meta.val(metaId);
+                        
+                        // Cargar actividades para esta meta
+                        $actividad.prop('disabled', true).html('<option value="">Cargando...</option>');
+                        $.post('../contratista/getActividades.php', {
+                            id_meta: metaId
+                        }, function(r) {
+                            $actividad.html('<option value="">Seleccione Actividad...</option>' + r).prop('disabled', false);
+                            
+                            // Buscar actividad que empieza por "2.1."
+                            const actividadOption = $actividad.find('option').filter(function() {
+                                const text = $(this).text().trim();
+                                return text.startsWith('2.1.');
+                            }).first();
+                            
+                            if (actividadOption.length) {
+                                $actividad.val(actividadOption.val());
+                                $actividad.trigger('change');
+                            }
+                        });
+                    }
+                    
                     return;
                 }
                 // modo edición
