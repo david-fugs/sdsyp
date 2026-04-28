@@ -171,6 +171,7 @@ $headers = [
     'Remisión',
     'Persona con Discapacidad',
     'Categoría Discapacidad',
+    'Víctima',
     'Cabeza de Hogar',
     'Líder Comunidad',
     'Se Reconoce Como',
@@ -329,6 +330,8 @@ while($row = $result->fetch_assoc()) {
     $sheet->setCellValue($col++.$fila, $row['persona_discapacidad'] ?? '');
     // Categoría Discapacidad
     $sheet->setCellValue($col++.$fila, $row['cual_discapacidad'] ?? '');
+    // Víctima
+    $sheet->setCellValue($col++.$fila, $row['victima'] ?? '');
     // Cabeza de Hogar
     $sheet->setCellValue($col++.$fila, $row['cabeza_hogar'] ?? '');
     // Líder Comunidad

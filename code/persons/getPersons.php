@@ -239,6 +239,7 @@ if ($result->num_rows > 0) {
                         data-grupo-sisben="' . $row['grupo_sisben'] . '"
                         data-persona-discapacidad="' . $row['persona_discapacidad'] . '"
                         data-cual-discapacidad="' . $row['cual_discapacidad'] . '"
+                        data-victima="' . htmlspecialchars($row['victima'] ?? '') . '"
                         data-tipo-identificacion="' . $row['tipo_identificacion'] . '"
                         data-cabeza-hogar="' . $row['cabeza_hogar'] . '"
                         data-lider-comunidad="' . $row['lider_comunidad'] . '"

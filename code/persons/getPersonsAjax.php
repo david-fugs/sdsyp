@@ -256,6 +256,7 @@ if ($result && $result->num_rows > 0) {
                         data-grupo-sisben="' . (isset($row['grupo_sisben']) ? htmlspecialchars($row['grupo_sisben']) : '') . '"
                         data-persona-discapacidad="' . (isset($row['persona_discapacidad']) ? htmlspecialchars($row['persona_discapacidad']) : '') . '"
                         data-cual-discapacidad="' . (isset($row['cual_discapacidad']) ? htmlspecialchars($row['cual_discapacidad']) : '') . '"
+                        data-victima="' . (isset($row['victima']) ? htmlspecialchars($row['victima']) : '') . '"
                         data-tipo-identificacion="' . (isset($row['tipo_identificacion']) ? htmlspecialchars($row['tipo_identificacion']) : '') . '"
                         data-cabeza-hogar="' . (isset($row['cabeza_hogar']) ? htmlspecialchars($row['cabeza_hogar']) : '') . '"
                         data-lider-comunidad="' . (isset($row['lider_comunidad']) ? htmlspecialchars($row['lider_comunidad']) : '') . '"

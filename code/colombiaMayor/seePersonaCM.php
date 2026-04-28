@@ -229,6 +229,10 @@ function deleteMember($cedula_persona_cm)
                         <i class="bi bi-person-plus-fill"></i>
                         Agregar Persona
                     </button>
+                    <button type="button" class="btn-modern btn-secondary" onclick="window.location.href='../../access.php'">
+                        <i class="bi bi-arrow-left-circle-fill"></i>
+                        Volver
+                    </button>
                 </div>
             </div>
 
@@ -330,6 +334,9 @@ function deleteMember($cedula_persona_cm)
                                 } elseif ($estado_value === 'INSCRITO') {
                                     $badge_class = 'status-badge status-primary';
                                     $estado_icon = '<i class="bi bi-person-check-fill"></i>';
+                                } elseif ($estado_value === 'C.M OTROS') {
+                                    $badge_class = 'status-badge status-secondary';
+                                    $estado_icon = '<i class="bi bi-question-circle-fill"></i>';
                                 } elseif (stripos($estado_value, 'ESPERA') !== false || stripos($estado_value, 'LISTA') !== false) {
                                     $badge_class = 'status-badge status-warning';
                                     $estado_icon = '<i class="bi bi-clock-fill"></i>';
@@ -779,6 +786,7 @@ function deleteMember($cedula_persona_cm)
                                     <option value="C.M Retirado">C.M Retirado</option>
                                     <option value="C.M Suspendido">C.M Suspendido</option>
                                     <option value="Visita psicosocial fallida">Visita psicosocial fallida</option>
+                                    <option value="C.M OTROS">C.M OTROS</option>
                                 </select>
                                 <label for="condicion_componente">Condición Componente</label>
                             </div>
@@ -1145,6 +1153,7 @@ function deleteMember($cedula_persona_cm)
                                     <option value="C.M Inscrito">C.M Inscrito</option>
                                     <option value="C.M Potencial beneficiario">C.M Potencial beneficiario</option>
                                     <option value="Visita psicosocial fallida">Visita psicosocial fallida</option>
+                                    <option value="C.M OTROS">C.M OTROS</option>
                                 </select>
                             </div>
                         </div>
@@ -1158,6 +1167,7 @@ function deleteMember($cedula_persona_cm)
                             <div class="col-md-6 mb-3">
                                 <label for="edit-estado" class="form-label">Estado</label>
                                 <select class="form-select" id="edit-estado" name="estado_cm" required>
+                                    <option value="">Seleccione un estado...</option>
                                     <option value="ACTIVO">ACTIVO</option>
                                     <option value="SUSPENDIDO">SUSPENDIDO</option>
                                     <option value="FALLECIDO">FALLECIDO</option>

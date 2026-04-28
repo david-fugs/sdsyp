@@ -30,6 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $grupo_sisben = $_POST['grupo_sisben'] ?? '';
     $persona_discapacidad = $_POST['persona_discapacidad'] ?? '';
     $cual_discapacidad = $_POST['cual_discapacidad'] ?? '';
+    $victima = $_POST['victima'] ?? '';
     $cabeza_hogar = $_POST['cabeza_hogar'] ?? '';
     $lider_comunidad = $_POST['lider_comunidad'] ?? '';
     $se_reconoce_como = $_POST['se_reconoce_como'] ?? '';
@@ -82,6 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         grupo_sisben='$grupo_sisben',
         persona_discapacidad='$persona_discapacidad',
         cual_discapacidad='$cual_discapacidad',
+        victima='$victima',
         cabeza_hogar='$cabeza_hogar',
         lider_comunidad='$lider_comunidad',
         se_reconoce_como='$se_reconoce_como',

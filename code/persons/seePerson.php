@@ -695,6 +695,14 @@ function deleteMember($cedula_persona)
                                 </select>
                                 <label for="persona_discapacidad">¿Persona con discapacidad?</label>
                             </div>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="victima" name="victima">
+                                    <option value="" selected disabled>¿Víctima?</option>
+                                    <option value="Si">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                                <label for="victima">¿Víctima?</label>
+                            </div>
                             <div class="col-md-6 mb-3 form-floating" id="div_cual_discapacidad" style="display:none;">
                                 <select class="form-select" id="cual_discapacidad" name="cual_discapacidad">
                                     <option value="" selected disabled>Categoría discapacidad...</option>
@@ -1197,7 +1205,17 @@ function deleteMember($cedula_persona)
                                 </select>
                             </div>
                         </div>
-                        <!-- Fila 1.7: Discapacidad y cabeza de hogar -->
+                        <!-- Fila 1.7: Discapacidad, Víctima y cabeza de hogar -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-victima" class="form-label">¿Víctima?</label>
+                                <select class="form-select" id="edit-victima" name="victima">
+                                    <option value="" selected disabled>¿Víctima?</option>
+                                    <option value="Si">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="edit-persona-discapacidad" class="form-label">¿Persona con discapacidad?</label>
@@ -2300,6 +2318,10 @@ function deleteMember($cedula_persona)
                         }
                         if (document.getElementById("edit-remision")) {
                             document.getElementById("edit-remision").value = button.getAttribute("data-remision");
+                        }
+                        // Precargar víctima
+                        if (document.getElementById("edit-victima")) {
+                            document.getElementById("edit-victima").value = button.getAttribute("data-victima") || '';
                         }
                         // Precargar persona discapacidad
                         if (document.getElementById("edit-persona-discapacidad")) {

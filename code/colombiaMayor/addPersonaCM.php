@@ -46,7 +46,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $tipo_salud = $mysqli->real_escape_string($_POST['tipo_salud'] ?? '');
     $condicion_ocupacion = $mysqli->real_escape_string($_POST['condicion_ocupacion'] ?? '');
     $condicion_componente = $mysqli->real_escape_string($_POST['condicion_componente'] ?? '');
-    
+
+    // Normalizar 'C.M Otro' al valor canónico de la BD
+    if ($condicion_componente === 'C.M Otro') {
+        $condicion_componente = 'C.M OTROS';
+    }
+    // Si la condición es C.M OTROS, asignar ese mismo valor al estado
+    if ($condicion_componente === 'C.M OTROS') {
+        $estado_cm = 'C.M OTROS';
+    }
+    $estado_cm = $mysqli->real_escape_string($estado_cm);
+
     // Capturar campos de Meta, Actividad, Acción y Política Pública
     $id_meta = !empty($_POST['id_meta']) ? intval($_POST['id_meta']) : null;
     $id_actividad = !empty($_POST['id_actividad']) ? intval($_POST['id_actividad']) : null;
@@ -141,9 +151,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         '$id_usuario',
         NOW()
     )";
-    print_r($sql_insert); // Para depuración, puedes eliminar esta línea después de verificar la consulta
-    die;
-
     if ($mysqli->query($sql_insert)) {
         echo "<script>
             alert('Persona agregada correctamente a Colombia Mayor');
