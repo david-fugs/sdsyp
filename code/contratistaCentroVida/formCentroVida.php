@@ -501,9 +501,13 @@ function deleteRegistro($id_registro)
                         <i class="bi bi-plus-circle-fill"></i>
                         Agregar Registro
                     </button>
-                    <button type="button" class="btn-modern btn-warning" data-bs-toggle="modal" data-bs-target="#modalMasivo">
+                    <button type="button" id="btnAbrirMasivo" class="btn-modern btn-warning">
                         <i class="bi bi-people-fill"></i>
-                        Agregar Masivo
+                        Agregar Grupal 
+                    </button>
+                    <button type="button" class="btn-modern" style="background:rgba(0,188,212,0.35);border-color:rgba(0,188,212,0.6);" data-bs-toggle="modal" data-bs-target="#modalControlAsistencia">
+                        <i class="bi bi-calendar-check-fill"></i>
+                        Control Asistencia
                     </button>
                     <button type="button" class="btn-modern" data-bs-toggle="modal" data-bs-target="#modalExportCentroVida">
                         <i class="bi bi-file-excel"></i>
@@ -1007,6 +1011,74 @@ function deleteRegistro($id_registro)
         </div>
     </div>
 
+    <!-- Modal Control de Asistencia -->
+    <div class="modal fade" id="modalControlAsistencia" tabindex="-1" aria-labelledby="modalCALabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#00bcd4,#0097a7);color:#fff;">
+                    <h5 class="modal-title" id="modalCALabel">
+                        <i class="bi bi-calendar-check-fill me-2"></i>Control de Asistencia
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Marque las personas presentes y seleccione la fecha de asistencia. Al guardar, podrá cargar esta lista al abrir el modal de Agregar Masivo.</p>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold"><i class="bi bi-calendar3"></i> Fecha de Asistencia</label>
+                            <input type="date" class="form-control" id="ca_fecha" max="<?= date('Y-m-d') ?>" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <input type="text" id="ca_searchPersona" class="form-control" placeholder="Buscar por nombre o cédula...">
+                        </div>
+                        <div class="col-md-4">
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="ca_filtroJornada" id="ca_filtroTodos" value="todos" checked>
+                                <label class="btn btn-outline-secondary btn-sm" for="ca_filtroTodos">Todos</label>
+                                <input type="radio" class="btn-check" name="ca_filtroJornada" id="ca_filtroManana" value="Mañana">
+                                <label class="btn btn-outline-primary btn-sm" for="ca_filtroManana">Mañana</label>
+                                <input type="radio" class="btn-check" name="ca_filtroJornada" id="ca_filtroTarde" value="Tarde">
+                                <label class="btn btn-outline-warning btn-sm" for="ca_filtroTarde">Tarde</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="max-height: 350px; overflow:auto; border:1px solid #e5e7eb; padding:8px; border-radius:6px;">
+                        <div class="form-check mb-2 border-bottom pb-2">
+                            <input class="form-check-input" type="checkbox" id="ca_selectAll">
+                            <label class="form-check-label fw-bold" for="ca_selectAll">
+                                <i class="bi bi-check-square me-1"></i>Seleccionar Todos
+                            </label>
+                        </div>
+                        <div id="ca_listaPersonas">
+                            <?php foreach ($result_personas as $p) { ?>
+                                <div class="form-check persona-ca-item" data-jornada="<?= htmlspecialchars($p['jornada'] ?? '') ?>">
+                                    <input class="form-check-input persona-ca-checkbox" type="checkbox"
+                                           value="<?= htmlspecialchars($p['cedula_persona']) ?>"
+                                           id="ca_p_<?= htmlspecialchars($p['cedula_persona']) ?>">
+                                    <label class="form-check-label" for="ca_p_<?= htmlspecialchars($p['cedula_persona']) ?>">
+                                        <?= htmlspecialchars($p['nombre_completo']) ?>
+                                        — <small><?= htmlspecialchars($p['cedula_persona']) ?></small>
+                                        <?= !empty($p['jornada']) ? ' <span class="badge bg-secondary">' . htmlspecialchars($p['jornada']) . '</span>' : '' ?>
+                                    </label>
+                                </div>
+                            <?php } ?>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        <i class="bi bi-info-circle"></i> Personas seleccionadas: <span id="ca_contador" class="fw-bold">0</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-info text-white" id="ca_btnGuardar">
+                        <i class="bi bi-save"></i> Guardar Asistencia
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Agregar Registro -->
     <div class="modal fade" id="modalNewRecord" tabindex="-1" aria-labelledby="modalNewRecordLabel" aria-hidden="true">
@@ -2373,6 +2445,191 @@ function deleteRegistro($id_registro)
             $('input[name="jornada"]').prop('checked', false);
             if (typeof resetGruposExternosInd === 'function') resetGruposExternosInd();
         };
+    </script>
+
+    <!-- ====== Control de Asistencia JS ====== -->
+    <script>
+    $(function() {
+
+        // ---- Filtros del modal Control Asistencia ----
+        function filtrarCA() {
+            const q       = $('#ca_searchPersona').val().toLowerCase().trim();
+            const jornada = $('input[name="ca_filtroJornada"]:checked').val();
+            $('#ca_listaPersonas .persona-ca-item').each(function() {
+                const txt        = $(this).text().toLowerCase();
+                const pJornada   = $(this).data('jornada') || '';
+                const matchText  = !q || txt.indexOf(q) !== -1;
+                const matchJorn  = jornada === 'todos' || pJornada === jornada;
+                $(this).toggle(matchText && matchJorn);
+            });
+            updateCACounter();
+        }
+
+        function updateCACounter() {
+            const total   = $('#ca_listaPersonas .persona-ca-checkbox:checked').length;
+            const visible = $('#ca_listaPersonas .persona-ca-checkbox:visible').length;
+            const chkVis  = $('#ca_listaPersonas .persona-ca-checkbox:visible:checked').length;
+            $('#ca_contador').text(total);
+            $('#ca_selectAll').prop('checked', visible > 0 && visible === chkVis);
+        }
+
+        // ---- Precargar asistencia guardada al cambiar fecha ----
+        function cargarAsistenciaGuardadaCA(fecha) {
+            if (!fecha) return;
+            $.ajax({
+                url: 'getControlAsistencia.php',
+                type: 'GET',
+                data: { fecha: fecha },
+                dataType: 'json',
+                success: function(resp) {
+                    // Desmarcar todos primero
+                    $('#ca_listaPersonas .persona-ca-checkbox').prop('checked', false);
+                    if (resp.success && resp.cedulas.length > 0) {
+                        let marcadas = 0;
+                        $('#ca_listaPersonas .persona-ca-checkbox').each(function() {
+                            if (resp.cedulas.indexOf($(this).val()) !== -1) {
+                                $(this).prop('checked', true);
+                                marcadas++;
+                            }
+                        });
+                        if (marcadas > 0) {
+                            Swal.fire({ icon: 'info', title: 'Asistencia cargada', text: marcadas + ' persona(s) precargadas del registro guardado para esta fecha.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                        }
+                    }
+                    updateCACounter();
+                }
+            });
+        }
+
+        $('#ca_fecha').on('change', function() {
+            cargarAsistenciaGuardadaCA($(this).val());
+        });
+
+        $('#ca_searchPersona').on('input', filtrarCA);
+        $('input[name="ca_filtroJornada"]').on('change', filtrarCA);
+
+        $('#ca_selectAll').on('change', function() {
+            $('#ca_listaPersonas .persona-ca-checkbox:visible').prop('checked', $(this).is(':checked'));
+            updateCACounter();
+        });
+
+        $(document).on('change', '#ca_listaPersonas .persona-ca-checkbox', updateCACounter);
+
+        // Limpiar al cerrar modal Control Asistencia
+        $('#modalControlAsistencia').on('hidden.bs.modal', function() {
+            $('#ca_listaPersonas .persona-ca-checkbox').prop('checked', false);
+            $('#ca_selectAll').prop('checked', false);
+            $('#ca_searchPersona').val('');
+            $('#ca_fecha').val('');
+            $('input[name="ca_filtroJornada"][value="todos"]').prop('checked', true);
+            filtrarCA();
+        });
+
+        // ---- Guardar Control de Asistencia ----
+        $('#ca_btnGuardar').on('click', function() {
+            const fecha = $('#ca_fecha').val();
+            if (!fecha) {
+                Swal.fire({ icon: 'warning', title: 'Fecha requerida', text: 'Seleccione una fecha de asistencia.', toast: true, position: 'top-end', timer: 2500, showConfirmButton: false });
+                return;
+            }
+            const cedulas = [];
+            $('#ca_listaPersonas .persona-ca-checkbox:checked').each(function() {
+                cedulas.push($(this).val());
+            });
+            if (cedulas.length === 0) {
+                Swal.fire({ icon: 'warning', title: 'Sin personas', text: 'Seleccione al menos una persona.', toast: true, position: 'top-end', timer: 2500, showConfirmButton: false });
+                return;
+            }
+            const $btn = $(this);
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Guardando...');
+            $.ajax({
+                url: 'saveControlAsistencia.php',
+                type: 'POST',
+                data: { cedulas: JSON.stringify(cedulas), fecha_asistencia: fecha },
+                dataType: 'json',
+                success: function(resp) {
+                    if (resp.success) {
+                        Swal.fire({ icon: 'success', title: 'Asistencia guardada', text: resp.count + ' persona(s) registradas para el ' + fecha + '.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                        $('#modalControlAsistencia').modal('hide');
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: resp.message || 'No se pudo guardar.' });
+                    }
+                },
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar Asistencia');
+                }
+            });
+        });
+
+        // ---- Intercept "Agregar Masivo" button: preguntar por Control de Asistencia ----
+        let _skipCAMasivo = false;
+
+        $('#btnAbrirMasivo').on('click', function() {
+            if (_skipCAMasivo) {
+                _skipCAMasivo = false;
+                $('#modalMasivo').modal('show');
+                return;
+            }
+            Swal.fire({
+                title: '¿Control de Asistencia?',
+                text: '¿Desea precargar las personas desde un control de asistencia guardado?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-calendar-check-fill"></i> Sí, cargar',
+                cancelButtonText: 'No, continuar'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Seleccione la fecha',
+                        html: '<input type="date" id="swal_ca_fecha_masivo" class="swal2-input" max="' + (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})() + '">',
+                        didOpen: function() { document.getElementById('swal_ca_fecha_masivo').value = (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})(); },
+                        confirmButtonText: 'Cargar',
+                        showCancelButton: true,
+                        cancelButtonText: 'Cancelar',
+                        preConfirm: function() {
+                            const f = document.getElementById('swal_ca_fecha_masivo').value;
+                            if (!f) { Swal.showValidationMessage('Seleccione una fecha'); }
+                            return f;
+                        }
+                    }).then(function(dateResult) {
+                        if (dateResult.isConfirmed && dateResult.value) {
+                            $.ajax({
+                                url: 'getControlAsistencia.php',
+                                type: 'GET',
+                                data: { fecha: dateResult.value },
+                                dataType: 'json',
+                                success: function(resp) {
+                                    $('#modalMasivo').modal('show');
+                                    if (resp.success && resp.cedulas.length > 0) {
+                                        // Pre-check matching people
+                                        $('#listaPersonasMasivo .persona-checkbox').each(function() {
+                                            $(this).prop('checked', resp.cedulas.indexOf($(this).val()) !== -1);
+                                        });
+                                        const found = $('#listaPersonasMasivo .persona-checkbox:checked').length;
+                                        Swal.fire({ icon: 'success', title: 'Listo', text: found + ' persona(s) precargadas del control de asistencia del ' + dateResult.value + '.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                    } else {
+                                        Swal.fire({ icon: 'info', title: 'Sin registros', text: 'No hay control de asistencia guardado para esa fecha.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                    }
+                                },
+                                error: function() {
+                                    $('#modalMasivo').modal('show');
+                                    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo obtener el control de asistencia.' });
+                                }
+                            });
+                        } else {
+                            $('#modalMasivo').modal('show');
+                        }
+                    });
+                } else {
+                    $('#modalMasivo').modal('show');
+                }
+            });
+        });
+
+    });
     </script>
 </body>
 

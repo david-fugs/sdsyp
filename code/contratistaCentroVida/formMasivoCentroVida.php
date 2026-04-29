@@ -297,7 +297,10 @@ $result = $mysqli->query($query);
             <div class="modern-header">
                 <h2><i class="bi bi-heart-fill"></i> Actividades Realizadas</h2>
                 <div style="display:flex;gap:10px;flex-wrap:wrap">
-                    <button type="button" class="btn-modern" data-bs-toggle="modal" data-bs-target="#modalAdd"><i class="bi bi-plus-circle-fill"></i> Agregar</button>
+                    <button type="button" id="btnAbrirModalAdd" class="btn-modern"><i class="bi bi-plus-circle-fill"></i> Agregar</button>
+                    <button type="button" class="btn-modern" style="background:rgba(0,188,212,0.35);border-color:rgba(0,188,212,0.6);" data-bs-toggle="modal" data-bs-target="#modalControlAsistenciaM">
+                        <i class="bi bi-calendar-check-fill"></i> Control Asistencia
+                    </button>
                     <button type="button" class="btn-modern" data-bs-toggle="modal" data-bs-target="#modalExportMasivo">
                         <i class="bi bi-file-earmark-excel"></i> Exportar Excel
                     </button>
@@ -734,6 +737,86 @@ $result = $mysqli->query($query);
         </div>
     </div>
 
+    <!-- Modal Control de Asistencia (Masivo) -->
+    <div class="modal fade" id="modalControlAsistenciaM" tabindex="-1" aria-labelledby="modalCAMLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#00bcd4,#0097a7);color:#fff;">
+                    <h5 class="modal-title" id="modalCAMLabel">
+                        <i class="bi bi-calendar-check-fill me-2"></i>Control de Asistencia
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Marque las personas presentes y seleccione la fecha de asistencia. Al guardar, podrá cargar esta lista al abrir el modal de Agregar.</p>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold"><i class="bi bi-calendar3"></i> Fecha de Asistencia</label>
+                            <input type="date" class="form-control" id="cam_fecha" max="<?= date('Y-m-d') ?>" required>
+                        </div>
+                    </div>
+                    <!-- Selector de CV para cargar personas -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-8">
+                            <select class="form-select" id="cam_filtro_grupo">
+                                <option value="">Seleccione un Centro de Vida para cargar personas...</option>
+                                <?php
+                                $cvs_cam = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC");
+                                if ($cvs_cam) {
+                                    while ($cv_row = $cvs_cam->fetch_assoc()) {
+                                        echo '<option value="' . $cv_row['id_grupo'] . '">' . htmlspecialchars($cv_row['descripcion_grupo']) . '</option>';
+                                    }
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-info btn-sm w-100 text-white" id="cam_btnCargar">
+                                <i class="bi bi-arrow-clockwise"></i> Cargar Personas
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Lista de personas -->
+                    <div id="cam_areaPersonas" style="display:none;">
+                        <div class="row mb-2">
+                            <div class="col-md-8">
+                                <input type="text" id="cam_searchPersona" class="form-control" placeholder="Buscar por nombre o cédula...">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="cam_filtroJornada" id="cam_filtroTodos" value="todos" checked>
+                                    <label class="btn btn-outline-secondary btn-sm" for="cam_filtroTodos">Todos</label>
+                                    <input type="radio" class="btn-check" name="cam_filtroJornada" id="cam_filtroManana" value="Mañana">
+                                    <label class="btn btn-outline-primary btn-sm" for="cam_filtroManana">Mañana</label>
+                                    <input type="radio" class="btn-check" name="cam_filtroJornada" id="cam_filtroTarde" value="Tarde">
+                                    <label class="btn btn-outline-warning btn-sm" for="cam_filtroTarde">Tarde</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="max-height:350px;overflow:auto;border:1px solid #e5e7eb;padding:8px;border-radius:6px;">
+                            <div class="form-check mb-2 border-bottom pb-2">
+                                <input class="form-check-input" type="checkbox" id="cam_selectAll">
+                                <label class="form-check-label fw-bold" for="cam_selectAll">
+                                    <i class="bi bi-check-square me-1"></i>Seleccionar Todos
+                                </label>
+                            </div>
+                            <div id="cam_listaPersonas"></div>
+                        </div>
+                        <div class="mt-2 text-muted small">
+                            <i class="bi bi-info-circle"></i> Personas seleccionadas: <span id="cam_contador" class="fw-bold">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-info text-white" id="cam_btnGuardar">
+                        <i class="bi bi-save"></i> Guardar Asistencia
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Exportar Excel Masivo -->
     <div class="modal fade" id="modalExportMasivo" tabindex="-1" aria-labelledby="modalExportMasivoLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -920,6 +1003,77 @@ $result = $mysqli->query($query);
 
             // Inicial: deshabilitar dependientes
             resetActividad();
+
+            // Modo agregar al abrir
+            // ---- Control Asistencia: flag y cedulas precargadas ----
+            let _skipCAQuery = false;
+            window._caCedulasToLoad = null;
+
+            // Intercept header "Agregar" button (not edit buttons)
+            $('#btnAbrirModalAdd').on('click', function() {
+                if (_skipCAQuery) {
+                    _skipCAQuery = false;
+                    $('#modalAdd').modal('show');
+                    return;
+                }
+                Swal.fire({
+                    title: '¿Control de Asistencia?',
+                    text: '¿Desea precargar las personas desde un control de asistencia guardado?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="bi bi-calendar-check-fill"></i> Sí, cargar',
+                    cancelButtonText: 'No, continuar'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Seleccione la fecha',
+                            html: '<input type="date" id="swal_cam_fecha" class="swal2-input" max="' + (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})() + '">',
+                            didOpen: function() { document.getElementById('swal_cam_fecha').value = (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})(); },
+                            confirmButtonText: 'Cargar',
+                            showCancelButton: true,
+                            cancelButtonText: 'Cancelar',
+                            preConfirm: function() {
+                                const f = document.getElementById('swal_cam_fecha').value;
+                                if (!f) { Swal.showValidationMessage('Seleccione una fecha'); }
+                                return f;
+                            }
+                        }).then(function(dateResult) {
+                            if (dateResult.isConfirmed && dateResult.value) {
+                                $.ajax({
+                                    url: 'getControlAsistencia.php',
+                                    type: 'GET',
+                                    data: { fecha: dateResult.value },
+                                    dataType: 'json',
+                                    success: function(resp) {
+                                        if (resp.success && resp.cedulas.length > 0) {
+                                            window._caCedulasToLoad = resp.cedulas;
+                                        } else {
+                                            window._caCedulasToLoad = null;
+                                            Swal.fire({ icon: 'info', title: 'Sin registros', text: 'No hay control de asistencia para esa fecha.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                        }
+                                    },
+                                    error: function() {
+                                        window._caCedulasToLoad = null;
+                                        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo obtener el control de asistencia.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                    },
+                                    complete: function() {
+                                        _skipCAQuery = true;
+                                        $('#modalAdd').modal('show');
+                                    }
+                                });
+                            } else {
+                                _skipCAQuery = true;
+                                window._caCedulasToLoad = null;
+                                $('#modalAdd').modal('show');
+                            }
+                        });
+                    } else {
+                        _skipCAQuery = true;
+                        window._caCedulasToLoad = null;
+                        $('#modalAdd').modal('show');
+                    }
+                });
+            });
 
             // Modo agregar al abrir
             $('#modalAdd').on('show.bs.modal', function(e) {
@@ -1125,6 +1279,63 @@ $result = $mysqli->query($query);
             function toggleSeccionPersonasCV(tipoReg) {
                 if (tipoReg === 'Registro Actividad') {
                     $('#seccion_personas_cv').removeClass('d-none');
+                    // Si hay cédulas del control de asistencia pendientes, cargarlas directamente
+                    if (window._caCedulasToLoad && window._caCedulasToLoad.length > 0) {
+                        const cedulasPendientes = window._caCedulasToLoad.slice();
+                        window._caCedulasToLoad = null;
+                        $.ajax({
+                            url: 'getPersonasByCedulas.php',
+                            type: 'POST',
+                            data: { cedulas: JSON.stringify(cedulasPendientes) },
+                            dataType: 'json',
+                            success: function(resp) {
+                                if (!resp.success || !resp.personas.length) {
+                                    Swal.fire({ icon: 'warning', title: 'Control de Asistencia', text: 'No se encontraron personas para las cédulas guardadas.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                    return;
+                                }
+                                let agregadas = 0;
+                                resp.personas.forEach(function(p) {
+                                    const cedula = p.cedula_persona;
+                                    const nombre = p.nombres_persona + ' ' + p.apellidos_persona;
+                                    const genero = p.genero_persona || '';
+                                    if (!personasAgregadasCV.find(function(x){ return x.cedula === cedula; })) {
+                                        personasAgregadasCV.push({ cedula: cedula, nombre: nombre, genero: genero });
+                                        const item = $('<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"></div>');
+                                        item.append('<span><i class="bi bi-person-fill me-2"></i>' + nombre + ' — <small>' + cedula + '</small></span>');
+                                        const btnRem = $('<button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>');
+                                        (function(c, itm) {
+                                            btnRem.on('click', function() {
+                                                personasAgregadasCV = personasAgregadasCV.filter(function(x){ return x.cedula !== c; });
+                                                itm.remove();
+                                                if (personasAgregadasCV.length === 0) $('#cedulas_cv_container').hide();
+                                                actualizarContadoresCV();
+                                            });
+                                        })(cedula, item);
+                                        item.append(btnRem);
+                                        $('#lista_cedulas_cv').append(item);
+                                        agregadas++;
+                                    }
+                                });
+                                if (agregadas > 0) {
+                                    $('#cedulas_cv_container').show();
+                                    // Contar géneros y actualizar inputs
+                                    let cntMasc = 0, cntFem = 0;
+                                    personasAgregadasCV.forEach(function(px) {
+                                        const g = (px.genero || '').toLowerCase();
+                                        if (g === 'masculino') cntMasc++;
+                                        else if (g === 'femenino') cntFem++;
+                                    });
+                                    $('#cantidad_masculino').val(cntMasc);
+                                    $('#cantidad_femenino').val(cntFem);
+                                    actualizarContadoresCV();
+                                    Swal.fire({ icon: 'success', title: 'Control de Asistencia', text: agregadas + ' persona(s) precargadas: ' + cntMasc + ' masculino(s), ' + cntFem + ' femenino(s).', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
+                                }
+                            },
+                            error: function() {
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar las personas del control de asistencia.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                            }
+                        });
+                    }
                 } else {
                     $('#seccion_personas_cv').addClass('d-none');
                 }
@@ -1208,6 +1419,22 @@ $result = $mysqli->query($query);
                         $('#total_personas_cv').text(personas.length);
                         $('#area_personas_cv').show();
                         filtrarPersonasCV();
+                        // Si hay personas del Control de Asistencia precargadas, marcarlas
+                        if (window._caCedulasToLoad && window._caCedulasToLoad.length > 0) {
+                            let marcadas = 0;
+                            $('.chk_persona_cv').each(function() {
+                                if (window._caCedulasToLoad.indexOf($(this).val()) !== -1) {
+                                    $(this).prop('checked', true);
+                                    marcadas++;
+                                }
+                            });
+                            window._caCedulasToLoad = null;
+                            if (marcadas > 0) {
+                                // Agregar automáticamente las personas marcadas a "Personas Agregadas"
+                                $('#btn_agregar_sel_cv').trigger('click');
+                                Swal.fire({ icon: 'success', title: 'Control de Asistencia', text: marcadas + ' persona(s) del control de asistencia fueron agregadas automáticamente.', toast: true, position: 'top-end', timer: 3500, showConfirmButton: false });
+                            }
+                        }
                     },
                     error: function() {
                         Swal.fire({icon:'error',title:'Error al cargar personas',toast:true,position:'top-end',timer:2000,showConfirmButton:false});
@@ -1255,6 +1482,174 @@ $result = $mysqli->query($query);
                 actualizarContadoresCV();
             });
         });
+    </script>
+
+    <!-- ====== Control de Asistencia (Masivo) JS ====== -->
+    <script>
+    $(function() {
+
+        // ---- Cargar personas en modal CAM ----
+        $('#cam_btnCargar').on('click', function() {
+            const idGrupo = $('#cam_filtro_grupo').val();
+            if (!idGrupo) {
+                Swal.fire({ icon: 'warning', title: 'Seleccione un Centro de Vida', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                return;
+            }
+            const $btn = $(this);
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+            $.ajax({
+                url: 'obtenerPersonasCentroVida.php',
+                type: 'POST',
+                data: { id_grupo: idGrupo },
+                dataType: 'json',
+                success: function(personas) {
+                    $('#cam_listaPersonas').empty();
+                    $('#cam_selectAll').prop('checked', false);
+                    if (!personas || personas.length === 0) {
+                        $('#cam_listaPersonas').html('<p class="text-muted text-center">No hay personas en este Centro de Vida.</p>');
+                    } else {
+                        personas.forEach(function(p) {
+                            const jornBadge = p.jornada ? ' <span class="badge bg-secondary">' + p.jornada + '</span>' : '';
+                            const item = $('<div class="form-check persona-cam-item"></div>')
+                                .attr('data-jornada', p.jornada || '');
+                            const chk  = $('<input class="form-check-input persona-cam-checkbox" type="checkbox">')
+                                .val(p.cedula_persona);
+                            const lbl  = $('<label class="form-check-label"></label>')
+                                .html(p.nombres_persona + ' ' + p.apellidos_persona + ' — <small>' + p.cedula_persona + '</small>' + jornBadge);
+                            item.append(chk).append(lbl);
+                            $('#cam_listaPersonas').append(item);
+                        });
+                    }
+                    $('#cam_areaPersonas').show();
+                    filtrarCAM();
+                    // Si ya hay fecha seleccionada, precargar asistencia guardada
+                    const fechaActual = $('#cam_fecha').val();
+                    if (fechaActual) cargarAsistenciaGuardadaCAM(fechaActual);
+                },
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'Error al cargar personas', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html('<i class="bi bi-arrow-clockwise"></i> Cargar Personas');
+                }
+            });
+        });
+
+        // ---- Precargar asistencia guardada al cambiar fecha (CAM) ----
+        function cargarAsistenciaGuardadaCAM(fecha) {
+            if (!fecha) return;
+            // Solo si ya hay personas cargadas en la lista
+            if ($('#cam_listaPersonas .persona-cam-checkbox').length === 0) return;
+            $.ajax({
+                url: 'getControlAsistencia.php',
+                type: 'GET',
+                data: { fecha: fecha },
+                dataType: 'json',
+                success: function(resp) {
+                    $('#cam_listaPersonas .persona-cam-checkbox').prop('checked', false);
+                    if (resp.success && resp.cedulas.length > 0) {
+                        let marcadas = 0;
+                        $('#cam_listaPersonas .persona-cam-checkbox').each(function() {
+                            if (resp.cedulas.indexOf($(this).val()) !== -1) {
+                                $(this).prop('checked', true);
+                                marcadas++;
+                            }
+                        });
+                        if (marcadas > 0) {
+                            Swal.fire({ icon: 'info', title: 'Asistencia cargada', text: marcadas + ' persona(s) precargadas del registro guardado para esta fecha.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                        }
+                    }
+                    updateCAMCounter();
+                }
+            });
+        }
+
+        $('#cam_fecha').on('change', function() {
+            cargarAsistenciaGuardadaCAM($(this).val());
+        });
+
+        // ---- Filtros modal CAM ----
+        function filtrarCAM() {
+            const q       = $('#cam_searchPersona').val().toLowerCase().trim();
+            const jornada = $('input[name="cam_filtroJornada"]:checked').val();
+            $('#cam_listaPersonas .persona-cam-item').each(function() {
+                const txt      = $(this).text().toLowerCase();
+                const pJornada = $(this).data('jornada') || '';
+                const mText    = !q || txt.indexOf(q) !== -1;
+                const mJorn    = jornada === 'todos' || pJornada === jornada;
+                $(this).toggle(mText && mJorn);
+            });
+            updateCAMCounter();
+        }
+
+        function updateCAMCounter() {
+            const total   = $('#cam_listaPersonas .persona-cam-checkbox:checked').length;
+            const visible = $('#cam_listaPersonas .persona-cam-checkbox:visible').length;
+            const chkVis  = $('#cam_listaPersonas .persona-cam-checkbox:visible:checked').length;
+            $('#cam_contador').text(total);
+            $('#cam_selectAll').prop('checked', visible > 0 && visible === chkVis);
+        }
+
+        $('#cam_searchPersona').on('input', filtrarCAM);
+        $('input[name="cam_filtroJornada"]').on('change', filtrarCAM);
+
+        $('#cam_selectAll').on('change', function() {
+            $('#cam_listaPersonas .persona-cam-checkbox:visible').prop('checked', $(this).is(':checked'));
+            updateCAMCounter();
+        });
+
+        $(document).on('change', '#cam_listaPersonas .persona-cam-checkbox', updateCAMCounter);
+
+        // Limpiar al cerrar
+        $('#modalControlAsistenciaM').on('hidden.bs.modal', function() {
+            $('#cam_listaPersonas').empty();
+            $('#cam_areaPersonas').hide();
+            $('#cam_selectAll').prop('checked', false);
+            $('#cam_searchPersona').val('');
+            $('#cam_fecha').val('');
+            $('input[name="cam_filtroJornada"][value="todos"]').prop('checked', true);
+        });
+
+        // ---- Guardar Control de Asistencia (Masivo) ----
+        $('#cam_btnGuardar').on('click', function() {
+            const fecha = $('#cam_fecha').val();
+            if (!fecha) {
+                Swal.fire({ icon: 'warning', title: 'Fecha requerida', text: 'Seleccione una fecha de asistencia.', toast: true, position: 'top-end', timer: 2500, showConfirmButton: false });
+                return;
+            }
+            const cedulas = [];
+            $('#cam_listaPersonas .persona-cam-checkbox:checked').each(function() {
+                cedulas.push($(this).val());
+            });
+            if (cedulas.length === 0) {
+                Swal.fire({ icon: 'warning', title: 'Sin personas', text: 'Seleccione al menos una persona.', toast: true, position: 'top-end', timer: 2500, showConfirmButton: false });
+                return;
+            }
+            const $btn = $(this);
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Guardando...');
+            $.ajax({
+                url: 'saveControlAsistencia.php',
+                type: 'POST',
+                data: { cedulas: JSON.stringify(cedulas), fecha_asistencia: fecha },
+                dataType: 'json',
+                success: function(resp) {
+                    if (resp.success) {
+                        Swal.fire({ icon: 'success', title: 'Asistencia guardada', text: resp.count + ' persona(s) registradas para el ' + fecha + '.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                        $('#modalControlAsistenciaM').modal('hide');
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: resp.message || 'No se pudo guardar.' });
+                    }
+                },
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar Asistencia');
+                }
+            });
+        });
+
+    });
     </script>
 </body>
 
