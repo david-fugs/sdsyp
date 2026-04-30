@@ -1328,7 +1328,7 @@ $mysqli->close();
       </div>
 
       <!-- Estadísticas por Grupos y Acciones Rápidas -->
-      <?php if ($tipo_usuario != 3 && $tipo_usuario != 2 && $tipo_usuario != 8) : ?>
+         <?php if (!in_array($tipo_usuario, [2, 3, 8, 11])) : ?>
         <div class="row">
           <div class="col-lg-8">
             <div class="chart-container">

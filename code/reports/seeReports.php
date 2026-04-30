@@ -887,6 +887,9 @@ $endYear = $currentYear + 1;
                                 echo '<option value="TODOS_CONTRATISTA_CPSAM">Todos Contratista CPSAM</option>';
                                 echo '<option value="TODOS_CENTRO_VIDA">Todos Centro Vida</option>';
                                 echo '<option value="TODOS_TIPO3">CPSAM Contratista Alcaldía (todos)</option>';
+                                echo '<option value="TODOS_TIPO2">CONTRATISTAS CPSAM PROPIOS</option>';
+                                echo '<option value="TODOS_TIPO10">CENTRO VIDA PROPIO</option>';
+                                echo '<option value="TODOS_TIPO12">CONTRATISTA CENTRO VIDA ALCALDÍA</option>';
                             }
 
                             // Construir filtro WHERE para usuarios según tipo de usuario de sesión

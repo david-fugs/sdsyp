@@ -43,7 +43,8 @@ $year = intval($_GET['year']);
 // Obtener filtros
 $filtro_grupo = isset($_GET['filtro_grupo']) && !empty($_GET['filtro_grupo']) ? intval($_GET['filtro_grupo']) : null;
 $filtro_mes = isset($_GET['filtro_mes']) && !empty($_GET['filtro_mes']) ? $_GET['filtro_mes'] : null;
-$filtro_usuario = isset($_GET['filtro_usuario']) && !empty($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : null;
+$filtro_usuario_raw = isset($_GET['filtro_usuario']) && !empty($_GET['filtro_usuario']) ? $_GET['filtro_usuario'] : null;
+$filtro_usuario = ($filtro_usuario_raw !== null && is_numeric($filtro_usuario_raw)) ? intval($filtro_usuario_raw) : null;
 $filtro_fecha_inicio = isset($_GET['filtro_fecha_inicio']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_inicio']) ? $_GET['filtro_fecha_inicio'] : '';
 $filtro_fecha_fin = isset($_GET['filtro_fecha_fin']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['filtro_fecha_fin']) ? $_GET['filtro_fecha_fin'] : '';
 
@@ -165,6 +166,12 @@ try {
     // Aplicar filtro por usuario específico si se seleccionó uno
     if ($filtro_usuario !== null) {
         $where_grupos_filtro .= " AND p.id_usuario = " . intval($filtro_usuario);
+    } elseif ($filtro_usuario_raw === 'TODOS_TIPO2') {
+        $where_grupos_filtro .= " AND u.tipo_usuario = 2";
+    } elseif ($filtro_usuario_raw === 'TODOS_TIPO10') {
+        $where_grupos_filtro .= " AND u.tipo_usuario = 10";
+    } elseif ($filtro_usuario_raw === 'TODOS_TIPO12') {
+        $where_grupos_filtro .= " AND u.tipo_usuario = 12";
     }
     
     // Aplicar filtro de fecha/mes en movimientos si se seleccionó
