@@ -56,75 +56,87 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         // Iniciar transacción
         $mysqli->autocommit(FALSE);
 
-        // Insertar el registro principal
+        // Preparar sentencias: 1 registro por cada fecha seleccionada
         $sql_insert_registro = "INSERT INTO registro_centro_vida 
             (cedula_persona, id_condicion, condicion_otra, id_meta, id_actividad, id_accion, id_actividad_centro_vida, 
              politica_publica, departamento_procedencia, observacion, profesion, jornada, funcionario_registro, fecha_registro) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-        
+
         $stmt = $mysqli->prepare($sql_insert_registro);
         if (!$stmt) {
             throw new Exception("Error al preparar consulta principal: " . $mysqli->error);
         }
 
-        $stmt->bind_param("sisiiiisssssi", $cedula_persona, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion,
-                 $id_actividad_centro_vida, $politica_publica,
-                 $departamento_procedencia, $observacion, $profesion, $jornada, $funcionario_registro);
-        
-        if (!$stmt->execute()) {
-            throw new Exception("Error al insertar el registro principal: " . $stmt->error);
-        }
-
-        $id_registro_centro_vida = $mysqli->insert_id;
-        $stmt->close();
-
-        // Insertar las fechas seleccionadas
         $sql_insert_fecha = "INSERT INTO registro_centro_vida_fechas (id_registro_centro_vida, fecha_atencion) VALUES (?, ?)";
         $stmt_fecha = $mysqli->prepare($sql_insert_fecha);
-        
         if (!$stmt_fecha) {
             throw new Exception("Error al preparar consulta de fechas: " . $mysqli->error);
         }
 
-        $fechas_insertadas = 0;
-        foreach ($fechas_array as $fecha) {
-            if (!empty($fecha)) {
-                $stmt_fecha->bind_param("is", $id_registro_centro_vida, $fecha);
-                if (!$stmt_fecha->execute()) {
-                    throw new Exception("Error al insertar fecha '$fecha': " . $stmt_fecha->error);
-                }
-                $fechas_insertadas++;
-            }
-        }
-        
-        $stmt_fecha->close();
-
-        // Insertar grupos externos del registro
+        $stmt_ge = null;
         if (!empty($grupos_externos_post)) {
             $stmt_ge = $mysqli->prepare("INSERT IGNORE INTO registro_centro_vida_grupo_externo (id_registro_centro_vida, id_grupo_externo) VALUES (?, ?)");
+            if (!$stmt_ge) {
+                throw new Exception("Error al preparar consulta de grupos externos: " . $mysqli->error);
+            }
+        }
+
+        $registros_insertados = 0;
+        $primer_id = null;
+
+        // Insertar 1 registro por cada fecha seleccionada
+        foreach ($fechas_array as $fecha) {
+            if (empty($fecha)) continue;
+
+            $stmt->bind_param("sisiiiisssssi", $cedula_persona, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion,
+                     $id_actividad_centro_vida, $politica_publica,
+                     $departamento_procedencia, $observacion, $profesion, $jornada, $funcionario_registro);
+
+            if (!$stmt->execute()) {
+                throw new Exception("Error al insertar registro para fecha '$fecha': " . $stmt->error);
+            }
+
+            $id_registro_centro_vida = $mysqli->insert_id;
+            if ($primer_id === null) $primer_id = $id_registro_centro_vida;
+
+            $stmt_fecha->bind_param("is", $id_registro_centro_vida, $fecha);
+            if (!$stmt_fecha->execute()) {
+                throw new Exception("Error al insertar fecha '$fecha': " . $stmt_fecha->error);
+            }
+
+            // Insertar grupos externos para este registro
             if ($stmt_ge) {
                 foreach ($grupos_externos_post as $id_ge) {
                     $stmt_ge->bind_param("ii", $id_registro_centro_vida, $id_ge);
                     $stmt_ge->execute();
                 }
-                $stmt_ge->close();
             }
+
+            $registros_insertados++;
         }
+
+        $stmt->close();
+        $stmt_fecha->close();
+        if ($stmt_ge) $stmt_ge->close();
 
         // Confirmar transacción
         $mysqli->commit();
         $mysqli->autocommit(TRUE);
 
         // Debug: Confirmar inserción exitosa
-        error_log("Registro insertado correctamente - ID: $id_registro_centro_vida, Fechas: $fechas_insertadas");
+        error_log("Registros insertados: $registros_insertados (1 por fecha) - Primer ID: $primer_id");
 
         // Devolver respuesta JSON exitosa
+        $msg = $registros_insertados === 1
+            ? "Registro de centro vida agregado correctamente. ID: $primer_id"
+            : "Se agregaron $registros_insertados registros (uno por cada fecha seleccionada).";
+
         ob_clean();
         echo json_encode([
             'success' => true,
-            'message' => "Registro de centro vida agregado correctamente. ID: $id_registro_centro_vida",
-            'id_registro' => $id_registro_centro_vida,
-            'fechas_insertadas' => $fechas_insertadas
+            'message' => $msg,
+            'id_registro' => $primer_id,
+            'registros_insertados' => $registros_insertados
         ]);
 
     } catch (Exception $e) {
