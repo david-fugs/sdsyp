@@ -348,13 +348,23 @@ $result_actividades_cv = $result_actividades_cv_query->fetch_all(MYSQLI_ASSOC);
 
 // Obtener lista de personas para el modal masivo (ordenadas alfabéticamente)
 // Solo personas relacionadas con grupos que inician con "CV"
+// Excluir personas cuya condicion_componente contenga "Inactivo" (ej: "C.V Beneficiario Inactivo")
 $personas_sql = "SELECT p.cedula_persona, CONCAT(p.nombres_persona, ' ', p.apellidos_persona) AS nombre_completo, p.jornada
                  FROM personas p
                  INNER JOIN grupos g ON p.id_grupo = g.id_grupo
-                 WHERE g.descripcion_grupo LIKE 'CV%'";
+                 WHERE g.descripcion_grupo LIKE 'CV%'
+                 AND (p.condicion_componente IS NULL OR p.condicion_componente NOT LIKE '%Inactivo%')";
 
 // Aplicar filtro por grupo de usuario si corresponde (tipo 11: INGENIERO CENTRO VIDA)
 $personas_sql .= obtenerCondicionFiltroGrupo('p');
+// Para tipo 10 (CONTRATISTA CV): solo personas de su centro asignado
+$_tipo_u_temp = isset($_SESSION['tipo_usuario']) ? (int)$_SESSION['tipo_usuario'] : 0;
+if ($_tipo_u_temp === 10) {
+    $_id_grupo_temp = isset($_SESSION['id_grupo']) ? (int)$_SESSION['id_grupo'] : 0;
+    if ($_id_grupo_temp > 0) {
+        $personas_sql .= " AND p.id_grupo = $_id_grupo_temp";
+    }
+}
 $personas_sql .= " ORDER BY p.nombres_persona ASC, p.apellidos_persona ASC";
 
 $result_personas_query = $mysqli->query($personas_sql);
@@ -868,19 +878,22 @@ function deleteRegistro($id_registro)
                             <!-- Reusar partes del formulario individual -->
                             <div class="row">
                                 <div class="col-md-6 mb-3 form-floating">
-                                    <select class="form-select" id="id_condicion_masivo" name="id_condicion" required>
-                                        <option value="" selected>Seleccione...</option>
-                                        <?php foreach ($result_condiciones as $condicion) { 
-                                            // Filtrar opciones que empiecen con CPSAM o C.M.
-                                            $descripcion = $condicion['descripcion_condicion'];
-                                            if (substr($descripcion, 0, 5) === 'CPSAM' || substr($descripcion, 0, 4) === 'C.M.' || substr($descripcion, 0, 4) === 'C.M ') {
-                                                continue;
-                                            }
-                                        ?>
-                                            <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
-                                        <?php } ?>
-                                        <option value="otra">Otra</option>
+                                    <?php
+                                    $id_cv_activo_masivo = '';
+                                    $desc_cv_activo_masivo = '';
+                                    foreach ($result_condiciones as $c_find) {
+                                        $d_find = $c_find['descripcion_condicion'];
+                                        if (stripos($d_find, 'C.V') !== false && stripos($d_find, 'Activo') !== false && stripos($d_find, 'Inactivo') === false) {
+                                            $id_cv_activo_masivo = $c_find['id_condicion'];
+                                            $desc_cv_activo_masivo = $d_find;
+                                            break;
+                                        }
+                                    }
+                                    ?>
+                                    <select class="form-select" id="id_condicion_masivo" style="pointer-events: none; background-color: #e9ecef;" tabindex="-1">
+                                        <option value="<?= htmlspecialchars($id_cv_activo_masivo) ?>" selected><?= htmlspecialchars($desc_cv_activo_masivo) ?></option>
                                     </select>
+                                    <input type="hidden" name="id_condicion" value="<?= htmlspecialchars($id_cv_activo_masivo) ?>">
                                     <label for="id_condicion_masivo">Condición</label>
                                 </div>
                                 <div class="col-md-6 mb-3 form-floating" id="condicion_otra_masivo_wrap" style="display:none;">
@@ -923,45 +936,7 @@ function deleteRegistro($id_registro)
                             </div>
 
                             <div class="row">
-                                <div class="col-md-6 mb-3 form-floating">
-                                    <select class="form-select" id="departamento_procedencia_masivo" name="departamento_procedencia" required>
-                                        <option value="" selected>Seleccione Departamento...</option>
-                                        <option value="Amazonas">Amazonas</option>
-                                        <option value="Antioquia">Antioquia</option>
-                                        <option value="Arauca">Arauca</option>
-                                        <option value="Atlántico">Atlántico</option>
-                                        <option value="Bolívar">Bolívar</option>
-                                        <option value="Boyacá">Boyacá</option>
-                                        <option value="Caldas">Caldas</option>
-                                        <option value="Caquetá">Caquetá</option>
-                                        <option value="Casanare">Casanare</option>
-                                        <option value="Cauca">Cauca</option>
-                                        <option value="Cesar">Cesar</option>
-                                        <option value="Chocó">Chocó</option>
-                                        <option value="Córdoba">Córdoba</option>
-                                        <option value="Cundinamarca">Cundinamarca</option>
-                                        <option value="Guainía">Guainía</option>
-                                        <option value="Guaviare">Guaviare</option>
-                                        <option value="Huila">Huila</option>
-                                        <option value="La Guajira">La Guajira</option>
-                                        <option value="Magdalena">Magdalena</option>
-                                        <option value="Meta">Meta</option>
-                                        <option value="Nariño">Nariño</option>
-                                        <option value="Norte de Santander">Norte de Santander</option>
-                                        <option value="Putumayo">Putumayo</option>
-                                        <option value="Quindío">Quindío</option>
-                                        <option value="Risaralda">Risaralda</option>
-                                        <option value="San Andrés y Providencia">San Andrés y Providencia</option>
-                                        <option value="Santander">Santander</option>
-                                        <option value="Sucre">Sucre</option>
-                                        <option value="Tolima">Tolima</option>
-                                        <option value="Valle del Cauca">Valle del Cauca</option>
-                                        <option value="Vaupés">Vaupés</option>
-                                        <option value="Vichada">Vichada</option>
-                                        <option value="Bogotá D.C.">Bogotá D.C.</option>
-                                    </select>
-                                    <label for="departamento_procedencia_masivo">Departamento de Procedencia</label>
-                                </div>
+                                <input type="hidden" name="departamento_procedencia" value="Risaralda">
                                 <div class="col-md-6 mb-3 form-floating">
                                     <select class="form-select" id="politica_publica_masivo" name="politica_publica">
                                         <option value="" selected>Seleccione Política Pública...</option>

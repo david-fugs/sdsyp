@@ -280,12 +280,12 @@ if ($result->num_rows > 0) {
                         data-ids-grupos-externos="' . (isset($row['ids_grupos_externos']) ? htmlspecialchars($row['ids_grupos_externos']) : '') . '">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
-                    <a href="?delete=' . $row['cedula_persona'] . '" 
+                    ' . ($tipo_usuario != 10 ? '<a href="?delete=' . $row['cedula_persona'] . '" 
                        class="btn-action btn-delete" 
                        title="Eliminar persona"
                        onclick="return confirm(\'¿Estás seguro de que deseas eliminar esta persona?\')">
                         <i class="bi bi-trash-fill"></i>
-                    </a>
+                    </a>' : '') . '
 
                 </div>
             </td>';

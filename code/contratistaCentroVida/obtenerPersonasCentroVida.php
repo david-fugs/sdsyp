@@ -29,6 +29,7 @@ $query = "SELECT
           WHERE p.id_grupo = $id_grupo
           AND (p.estado_persona = 1 OR p.estado_persona IS NULL)
           AND (p.sin_convenio IS NULL OR p.sin_convenio = 0)
+          AND (p.condicion_componente IS NULL OR p.condicion_componente NOT LIKE '%Inactivo%')
           $where_filtro
           ORDER BY p.nombres_persona, p.apellidos_persona ASC";
 

@@ -645,7 +645,11 @@ $result = $mysqli->query($query);
                                         <select class="form-select form-select-sm" id="filtro_grupo_cv_personas">
                                             <option value="">Seleccione un Centro de Vida...</option>
                                             <?php
-                                            $cvs_modal = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC");
+                                            if ($tipo_usuario == 10 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                                                $cvs_modal = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE id_grupo = " . intval($_SESSION['id_grupo']));
+                                            } else {
+                                                $cvs_modal = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC");
+                                            }
                                             if ($cvs_modal) {
                                                 while ($cv_row = $cvs_modal->fetch_assoc()) {
                                                     echo '<option value="' . $cv_row['id_grupo'] . '">' . htmlspecialchars($cv_row['descripcion_grupo']) . '</option>';
@@ -761,7 +765,11 @@ $result = $mysqli->query($query);
                             <select class="form-select" id="cam_filtro_grupo">
                                 <option value="">Seleccione un Centro de Vida para cargar personas...</option>
                                 <?php
-                                $cvs_cam = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC");
+                                if ($tipo_usuario == 10 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                                    $cvs_cam = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE id_grupo = " . intval($_SESSION['id_grupo']));
+                                } else {
+                                    $cvs_cam = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC");
+                                }
                                 if ($cvs_cam) {
                                     while ($cv_row = $cvs_cam->fetch_assoc()) {
                                         echo '<option value="' . $cv_row['id_grupo'] . '">' . htmlspecialchars($cv_row['descripcion_grupo']) . '</option>';
