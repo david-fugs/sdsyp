@@ -354,27 +354,38 @@ function deleteMember($cedula_persona)
                         <input type="text" id="filter-nombre" class="modern-input" placeholder="Buscar por nombre...">
                     </div>
                     <div class="filter-group">
-                        <label for="filter-programa">Programa</label>
-                        <select id="filter-programa" class="modern-select">
-                            <option value="">Todos los programas</option>
-                            <?php
-                            mysqli_data_seek($result_programas, 0);
-                            while ($programa = mysqli_fetch_assoc($result_programas)) { ?>
-                                <option value="<?= $programa['id_programa']; ?>"><?= $programa['nombre_programa']; ?></option>
-                            <?php } ?>
+                        <label for="filter-jornada">Jornada</label>
+                        <select id="filter-jornada" class="modern-select">
+                            <option value="">Todas las jornadas</option>
+                            <option value="Mañana">Mañana</option>
+                            <option value="Tarde">Tarde</option>
                         </select>
                     </div>
                     <div class="filter-group">
                         <label for="filter-estado">Estado</label>
                         <select id="filter-estado" class="modern-select">
                             <option value="">Todos los estados</option>
-                            <option value="ACTIVO">Activo</option>
-                            <option value="EVADIDO">Evadido</option>
-                            <option value="FALLECIDO">Fallecido</option>
-                            <option value="RETIRADO_VOLUNTARIO">Retirado Voluntario</option>
-                            <option value="TRASLADADO">Trasladado</option>
+                            <option value="ACTIVO">C.V / CPSAM Activo</option>
+                            <option value="CV_INACTIVO">C.V Beneficiario Inactivo</option>
+                            <option value="EVADIDO">CPSAM Evadido</option>
+                            <option value="FALLECIDO">CPSAM Fallecido</option>
+                            <option value="RETIRADO_VOLUNTARIO">CPSAM Retiro Voluntario</option>
+                            <option value="CPSAM_REMITIDO">CPSAM Remitido</option>
+                            <option value="TRASLADADO">CPSAM Trasladado</option>
                             <option value="USUARIO_INTERESADO">Usuario Interesado</option>
                             <option value="USUARIO_INDIRECTO">Usuario Indirecto</option>
+                            <option value="VISITA_FALLIDA">Visita Psicosocial Fallida</option>
+                            <option value="CM_ACTIVO">C.M Activo</option>
+                            <option value="CM_BDUA">C.M BDUA</option>
+                            <option value="CM_BLOQUEO">C.M Bloqueo Registraduria</option>
+                            <option value="CM_DUPLICIDAD">C.M Duplicidad Documento</option>
+                            <option value="CM_MENDICIDAD">C.M Ejercicio Mendicidad Comprobada</option>
+                            <option value="CM_ESPERA">C.M En lista de Espera</option>
+                            <option value="CM_FALLECIDO">C.M Fallecido</option>
+                            <option value="CM_FALLECIDO_SC">C.M Fallecido sin Certificado</option>
+                            <option value="CM_FAMILIAS">C.M Familias en Accion</option>
+                            <option value="CM_FUERA">C.M Fuera de la Ciudad</option>
+                            <option value="CM_RETIRO">C.M Retiro Definitivo</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -1736,7 +1747,7 @@ function deleteMember($cedula_persona)
                     } // Acciones es la columna 9 (índice 8)
                 ],
                 "order": [
-                    [2, 'asc']
+                    [1, 'asc']
                 ]
             });
         }
@@ -1798,7 +1809,7 @@ function deleteMember($cedula_persona)
             const queryParams = new URLSearchParams();
             if (params.cedula) queryParams.append('cedula_persona', params.cedula);
             if (params.nombre) queryParams.append('nombre', params.nombre);
-            if (params.programa) queryParams.append('programa', params.programa);
+            if (params.jornada) queryParams.append('jornada', params.jornada);
             if (params.estado) queryParams.append('estado', params.estado);
             if (params.creado_por) queryParams.append('creado_por', params.creado_por);
 
@@ -1876,7 +1887,7 @@ function deleteMember($cedula_persona)
         document.addEventListener('DOMContentLoaded', function() {
             initializeDataTable();
             // Configurar filtro automático en tiempo real (500ms debounce)
-            const filterInputs = ['filter-cedula', 'filter-nombre', 'filter-programa', 'filter-estado', 'filter-creado-por'];
+            const filterInputs = ['filter-cedula', 'filter-nombre', 'filter-jornada', 'filter-estado', 'filter-creado-por'];
             filterInputs.forEach(filterId => {
                 const element = document.getElementById(filterId);
                 if (element) {
@@ -1884,7 +1895,7 @@ function deleteMember($cedula_persona)
                         const params = {
                             cedula: document.getElementById('filter-cedula').value,
                             nombre: document.getElementById('filter-nombre').value,
-                            programa: document.getElementById('filter-programa').value,
+                            jornada: document.getElementById('filter-jornada').value,
                             estado: document.getElementById('filter-estado').value,
                             creado_por: document.getElementById('filter-creado-por').value
                         };
@@ -1896,7 +1907,7 @@ function deleteMember($cedula_persona)
                             const params = {
                                 cedula: document.getElementById('filter-cedula').value,
                                 nombre: document.getElementById('filter-nombre').value,
-                                programa: document.getElementById('filter-programa').value,
+                                jornada: document.getElementById('filter-jornada').value,
                                 estado: document.getElementById('filter-estado').value,
                                 creado_por: document.getElementById('filter-creado-por').value
                             };
@@ -1912,7 +1923,7 @@ function deleteMember($cedula_persona)
                     const params = {
                         cedula: document.getElementById('filter-cedula').value,
                         nombre: document.getElementById('filter-nombre').value,
-                        programa: document.getElementById('filter-programa').value,
+                        jornada: document.getElementById('filter-jornada').value,
                         estado: document.getElementById('filter-estado').value,
                         creado_por: document.getElementById('filter-creado-por').value
                     };
@@ -1929,13 +1940,13 @@ function deleteMember($cedula_persona)
 
                     const cedula = document.getElementById('filter-cedula').value;
                     const nombre = document.getElementById('filter-nombre').value;
-                    const programa = document.getElementById('filter-programa').value;
+                    const jornada = document.getElementById('filter-jornada').value;
                     const estado = document.getElementById('filter-estado').value;
                     const creado_por = document.getElementById('filter-creado-por').value;
 
                     if (cedula) params.append('cedula_persona', cedula);
                     if (nombre) params.append('nombre', nombre);
-                    if (programa) params.append('programa', programa);
+                    if (jornada) params.append('jornada', jornada);
                     if (estado) params.append('estado', estado);
                     if (creado_por) params.append('creado_por', creado_por);
 

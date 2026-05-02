@@ -24,10 +24,10 @@ if (!empty($_GET['nombre'])) {
     $where .= " AND (p.nombres_persona LIKE '%$nombre%' OR p.apellidos_persona LIKE '%$nombre%')";
 }
 
-// Filtro por programa
-if (!empty($_GET['programa'])) {
-    $programa = $mysqli->real_escape_string($_GET['programa']);
-    $where .= " AND pp.id_programa = '$programa'";
+// Filtro por jornada
+if (!empty($_GET['jornada'])) {
+    $jornada = $mysqli->real_escape_string($_GET['jornada']);
+    $where .= " AND p.jornada = '$jornada'";
 }
 
 // Filtro por creado por
@@ -83,7 +83,7 @@ LEFT JOIN persona_grupo_externo pge ON p.cedula_persona = pge.cedula_persona
 LEFT JOIN grupos_externos ge ON pge.id_grupo_externo = ge.id_grupo_externo
 $where
 GROUP BY p.cedula_persona
-ORDER BY p.apellidos_persona ASC
+ORDER BY p.nombres_persona ASC
 ";
 
 $result = $mysqli->query($query);
@@ -150,15 +150,35 @@ if ($result && $result->num_rows > 0) {
         // Aplicar filtro por estado si está seleccionado
         if (!empty($filtro_estado)) {
             $estado_filtro_map = [
-                'ACTIVO' => 'CPSAM ACTIVO',
-                'EVADIDO' => 'CPSAM EVADIDO',
-                'FALLECIDO' => 'CPSAM FALLECIDO',
-                'RETIRADO_VOLUNTARIO' => 'CPSAM RETIRADO VOLUNTARIO',
-                'TRASLADADO' => 'CPSAM TRASLADADO'
+                'ACTIVO'             => 'CPSAM ACTIVO',
+                'EVADIDO'            => 'CPSAM EVADIDO',
+                'FALLECIDO'          => 'CPSAM FALLECIDO',
+                'RETIRADO_VOLUNTARIO'=> 'CPSAM RETIRADO VOLUNTARIO',
+                'TRASLADADO'         => 'CPSAM TRASLADADO',
+                'USUARIO_INTERESADO' => 'USUARIO INTERESADO',
+                'USUARIO_INDIRECTO'  => 'USUARIO INDIRECTO'
             ];
-
-            if (isset($estado_filtro_map[$filtro_estado]) && $estado_persona !== $estado_filtro_map[$filtro_estado]) {
-                continue; // Saltar esta fila si no coincide con el filtro
+            $condicion_filtro_map = [
+                'CV_INACTIVO'     => 'c.v beneficiario inactivo',
+                'CPSAM_REMITIDO'  => 'cpsam remitido',
+                'VISITA_FALLIDA'  => 'visita psicosocial fallida',
+                'CM_ACTIVO'       => 'c.m activo',
+                'CM_BDUA'         => 'c.m bdua',
+                'CM_BLOQUEO'      => 'c.m bloqueo registraduria',
+                'CM_DUPLICIDAD'   => 'c.m duplicidad documento',
+                'CM_MENDICIDAD'   => 'c.m ejercicio mendicidad comprobada',
+                'CM_ESPERA'       => 'c.m en lista de espera',
+                'CM_FALLECIDO'    => 'c.m fallecido',
+                'CM_FALLECIDO_SC' => 'c.m fallecido sin certificado',
+                'CM_FAMILIAS'     => 'c.m familias en accion',
+                'CM_FUERA'        => 'c.m fuera de la ciudad',
+                'CM_RETIRO'       => 'c.m retiro definitivo'
+            ];
+            if (isset($estado_filtro_map[$filtro_estado])) {
+                if ($estado_persona !== $estado_filtro_map[$filtro_estado]) continue;
+            } elseif (isset($condicion_filtro_map[$filtro_estado])) {
+                $cc = mb_strtolower(trim($row['condicion_componente'] ?? ''));
+                if ($cc !== $condicion_filtro_map[$filtro_estado]) continue;
             }
         }
 
@@ -226,6 +246,13 @@ if ($result && $result->num_rows > 0) {
         }
         if ($row['condicion_componente'] == 'Usuario interesado') {
             $estado_mostrar = 'Usuario Interesado';
+        }
+
+        // Si la condicion_componente es C.V Beneficiario Inactivo, mostrar ese estado
+        if (isset($row['condicion_componente']) && mb_strtolower(trim($row['condicion_componente'])) === 'c.v beneficiario inactivo') {
+            $estado_mostrar = 'C.V Inactivo';
+            $badge_class = 'status-badge status-secondary';
+            $estado_icon = '<i class="bi bi-pause-circle-fill"></i>';
         }
         
         // Agregar indicador SIN CONVENIO si está activo

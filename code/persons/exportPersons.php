@@ -63,10 +63,10 @@ if (!empty($_GET['nombre'])) {
     $where .= " AND (p.nombres_persona LIKE '%$nombre%' OR p.apellidos_persona LIKE '%$nombre%')";
 }
 
-// Filtro por programa
-if (!empty($_GET['programa'])) {
-    $programa = $mysqli->real_escape_string($_GET['programa']);
-    $where .= " AND pp.id_programa = '$programa'";
+// Filtro por jornada
+if (!empty($_GET['jornada'])) {
+    $jornada = $mysqli->real_escape_string($_GET['jornada']);
+    $where .= " AND p.jornada = '$jornada'";
 }
 
 // Filtro por creado por
@@ -121,7 +121,7 @@ LEFT JOIN barrios b ON p.id_barrio_persona = b.id_bar
 LEFT JOIN comunas c ON p.id_comuna_persona = c.id_com
 $where
 GROUP BY p.cedula_persona
-ORDER BY p.apellidos_persona ASC
+ORDER BY p.nombres_persona ASC
 ";
 
 $result = $mysqli->query($query);
@@ -189,7 +189,7 @@ $headers = [
     'Meta',
     'Actividad',
     'Acción',
-    'Estado',
+    'Jornada',
     'Creado por',
     'Con Convenio'
 ];
@@ -367,18 +367,8 @@ while($row = $result->fetch_assoc()) {
     // Acción
     $sheet->setCellValue($col++.$fila, $row['descripcion_accion'] ?? '');
     
-    // Estado formateado
-    $estado_sin_cpsam = str_ireplace('CPSAM ', '', $estado_persona);
-    if (strtoupper($estado_sin_cpsam) === 'TRASLADADO') {
-        $estado_mostrar = 'ACTIVO (TRASLADADO)';
-    } elseif ($estado_persona == 'USUARIO INTERESADO') {
-        $estado_mostrar = 'Usuario Interesado';
-    } elseif ($estado_persona == 'USUARIO INDIRECTO') {
-        $estado_mostrar = 'Usuario Indirecto';
-    } else {
-        $estado_mostrar = $estado_sin_cpsam;
-    }
-    $sheet->setCellValue($col++.$fila, $estado_mostrar);
+    // Jornada
+    $sheet->setCellValue($col++.$fila, $row['jornada'] ?? '');
     
     // Creado por
     $sheet->setCellValue($col++.$fila, $row['creado_por'] ?? 'N/A');
@@ -455,7 +445,7 @@ $columnWidths = [
     'AV' => 15, // Con Convenio
     'AR' => 30, // Actividad
     'AS' => 30, // Acción
-    'AT' => 25, // Estado
+    'AT' => 15, // Jornada
     'AU' => 20  // Creado por
 ];
 
