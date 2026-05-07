@@ -63,7 +63,7 @@
 </head>
 <body>
     <center>
-        <img src='img/logo_educacion.png' width=600 height=121 class="responsive">
+        <img src='img/logo.png' width=600 height=121 class="responsive">
     </center>
 
     <br />

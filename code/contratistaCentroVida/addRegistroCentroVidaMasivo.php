@@ -120,6 +120,57 @@ try {
     $mysqli->commit();
     $mysqli->autocommit(TRUE);
 
+    // ── Crear registro resumen en masiva_centro_vida ────────────────────────
+    if ($inserted > 0 && !empty($cedulas)) {
+        $cedulas_esc = array_map(function($c) use ($mysqli) {
+            return "'" . $mysqli->real_escape_string(trim($c)) . "'";
+        }, $cedulas);
+        $cedulas_in = implode(',', $cedulas_esc);
+
+        // Contar géneros desde personas
+        $cnt_masc = 0; $cnt_fem = 0;
+        $cnt_res = $mysqli->query("SELECT genero_persona, COUNT(*) as cnt FROM personas WHERE cedula_persona IN ($cedulas_in) GROUP BY genero_persona");
+        if ($cnt_res) {
+            while ($cr = $cnt_res->fetch_assoc()) {
+                $g_lower = strtolower(trim($cr['genero_persona'] ?? ''));
+                if ($g_lower === 'masculino') $cnt_masc = (int)$cr['cnt'];
+                elseif ($g_lower === 'femenino') $cnt_fem = (int)$cr['cnt'];
+            }
+        }
+
+        // Obtener id_grupo de la primera persona con grupo CV
+        $id_centro_vida_masivo = 0;
+        $cv_res = $mysqli->query("SELECT p.id_grupo FROM personas p INNER JOIN grupos g ON p.id_grupo = g.id_grupo WHERE p.cedula_persona IN ($cedulas_in) AND g.descripcion_grupo LIKE 'CV%' LIMIT 1");
+        if ($cv_res) {
+            $cv_row = $cv_res->fetch_assoc();
+            $id_centro_vida_masivo = $cv_row ? (int)$cv_row['id_grupo'] : 0;
+        }
+
+        // Usar primera fecha disponible
+        $primera_fecha_masivo = !empty($fechas) ? $mysqli->real_escape_string($fechas[0]) : date('Y-m-d');
+        $obs_esc   = $mysqli->real_escape_string($observacion ?? '');
+        $prof_esc  = $mysqli->real_escape_string($profesion ?? '');
+        $jorn_esc  = $mysqli->real_escape_string($jornada ?? '');
+        $pol_int   = intval($politica_publica ?? 0);
+        $meta_int  = intval($id_meta ?? 0);
+        $act_int   = intval($id_actividad ?? 0);
+        $acc_int   = intval($id_accion ?? 0);
+        $acv_int   = intval($id_actividad_centro_vida ?? 0);
+
+        $sql_masivo = "INSERT INTO masiva_centro_vida
+            (id_meta, id_actividad, id_accion, politica_publica, id_centro_vida,
+             fecha_atencion, nombre_lider, telefono_contacto, id_comuna, medio_verificacion,
+             cantidad_masculino, cantidad_femenino, tipo_actividad, observacion_actividad,
+             id_usuario, funcionario_responsable, id_actividad_centro_vida, tipo_registro, jornada, profesion)
+            VALUES
+            ($meta_int, $act_int, $acc_int, $pol_int, $id_centro_vida_masivo,
+             '$primera_fecha_masivo', '', '', 0, '',
+             $cnt_masc, $cnt_fem, 'Masiva', '$obs_esc',
+             $funcionario_registro, $funcionario_registro, $acv_int, 'Registro Actividad', '$jorn_esc', '$prof_esc')";
+        $mysqli->query($sql_masivo); // Error no crítico; no interrumpir el flujo
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     ob_clean();
     echo json_encode(['success' => true, 'message' => "Registros agregados: $inserted"]);
     exit;

@@ -37,25 +37,7 @@ if (!empty($_GET['estado'])) {
     $where .= " AND estado_cm LIKE '%$estado%'";
 }
 
-// Paginación
-$limite = 50;
-$pagina = isset($_GET['pagina']) ? max(1, (int)$_GET['pagina']) : 1;
-$offset = ($pagina - 1) * $limite;
-
-// Contar total de registros con los filtros aplicados
-$query_count = "SELECT COUNT(*) AS total FROM personas_colombia_mayor p $where";
-$result_count = $mysqli->query($query_count);
-if (!$result_count) {
-    die("Error en la consulta de conteo: " . $mysqli->error);
-}
-$total_registros = $result_count->fetch_assoc()['total'];
-$total_paginas = (int)ceil($total_registros / $limite);
-if ($pagina > $total_paginas && $total_paginas > 0) {
-    $pagina = $total_paginas;
-    $offset = ($pagina - 1) * $limite;
-}
-
-// Consulta de personas con filtros y paginación
+// Consulta de personas con filtros
 $query_personas = "
     SELECT 
         p.*,
@@ -64,7 +46,6 @@ $query_personas = "
     LEFT JOIN usuarios u ON p.usuario_registro = u.id
     $where
     ORDER BY p.apellidos_persona_cm ASC, p.nombres_persona_cm ASC
-    LIMIT $limite OFFSET $offset
 ";
 
 $result_personas = $mysqli->query($query_personas);
@@ -229,18 +210,12 @@ function deleteMember($cedula_persona_cm)
                         <i class="bi bi-person-plus-fill"></i>
                         Agregar Persona
                     </button>
-                    <button type="button" class="btn-modern btn-secondary" onclick="window.location.href='../../access.php'">
-                        <i class="bi bi-arrow-left-circle-fill"></i>
-                        Volver
-                    </button>
                 </div>
             </div>
 
             <!-- Filtros modernos -->
             <div class="modern-filters">
                 <form method="GET" action="" id="form-filtros">
-                    <!-- campo oculto para resetear la página al filtrar -->
-                    <input type="hidden" name="pagina" value="1">
                     <div class="filter-row">
                         <div class="filter-group">
                             <label for="cedula">Cédula</label>
@@ -334,9 +309,6 @@ function deleteMember($cedula_persona_cm)
                                 } elseif ($estado_value === 'INSCRITO') {
                                     $badge_class = 'status-badge status-primary';
                                     $estado_icon = '<i class="bi bi-person-check-fill"></i>';
-                                } elseif ($estado_value === 'C.M OTROS') {
-                                    $badge_class = 'status-badge status-secondary';
-                                    $estado_icon = '<i class="bi bi-question-circle-fill"></i>';
                                 } elseif (stripos($estado_value, 'ESPERA') !== false || stripos($estado_value, 'LISTA') !== false) {
                                     $badge_class = 'status-badge status-warning';
                                     $estado_icon = '<i class="bi bi-clock-fill"></i>';
@@ -425,66 +397,6 @@ function deleteMember($cedula_persona_cm)
                         ?>
                     </tbody>
                 </table>
-
-                <!-- Paginación server-side -->
-                <?php
-                // Construir parámetros de URL conservando filtros activos
-                $params_base = [];
-                if (!empty($_GET['cedula']))  $params_base['cedula']  = $_GET['cedula'];
-                if (!empty($_GET['nombre']))  $params_base['nombre']  = $_GET['nombre'];
-                if (!empty($_GET['estado']))  $params_base['estado']  = $_GET['estado'];
-
-                $desde = $total_registros > 0 ? $offset + 1 : 0;
-                $hasta = min($offset + $limite, $total_registros);
-                ?>
-                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-                    <div class="text-muted" style="font-size:14px;">
-                        Mostrando <strong><?php echo $desde; ?> – <?php echo $hasta; ?></strong>
-                        de <strong><?php echo number_format($total_registros); ?></strong> registros
-                        &nbsp;|&nbsp; Página <strong><?php echo $pagina; ?></strong> de <strong><?php echo max(1, $total_paginas); ?></strong>
-                    </div>
-                    <nav>
-                        <ul class="pagination pagination-sm mb-0">
-                            <?php
-                            // Anterior
-                            $prev = max(1, $pagina - 1);
-                            $prev_url = '?' . http_build_query(array_merge($params_base, ['pagina' => $prev]));
-                            echo '<li class="page-item ' . ($pagina <= 1 ? 'disabled' : '') . '">';
-                            echo '<a class="page-link" href="' . ($pagina > 1 ? htmlspecialchars($prev_url) : '#') . '">&laquo; Anterior</a></li>';
-
-                            // Rango de páginas a mostrar (ventana de 5)
-                            $rango_inicio = max(1, $pagina - 2);
-                            $rango_fin    = min($total_paginas, $pagina + 2);
-
-                            if ($rango_inicio > 1) {
-                                $url_p1 = '?' . http_build_query(array_merge($params_base, ['pagina' => 1]));
-                                echo '<li class="page-item"><a class="page-link" href="' . htmlspecialchars($url_p1) . '">1</a></li>';
-                                if ($rango_inicio > 2) echo '<li class="page-item disabled"><span class="page-link">…</span></li>';
-                            }
-
-                            for ($p = $rango_inicio; $p <= $rango_fin; $p++) {
-                                $url_p = '?' . http_build_query(array_merge($params_base, ['pagina' => $p]));
-                                $active = ($p === $pagina) ? 'active' : '';
-                                echo '<li class="page-item ' . $active . '">';
-                                echo '<a class="page-link" href="' . htmlspecialchars($url_p) . '">' . $p . '</a></li>';
-                            }
-
-                            if ($rango_fin < $total_paginas) {
-                                if ($rango_fin < $total_paginas - 1) echo '<li class="page-item disabled"><span class="page-link">…</span></li>';
-                                $url_last = '?' . http_build_query(array_merge($params_base, ['pagina' => $total_paginas]));
-                                echo '<li class="page-item"><a class="page-link" href="' . htmlspecialchars($url_last) . '">' . $total_paginas . '</a></li>';
-                            }
-
-                            // Siguiente
-                            $next = min($total_paginas, $pagina + 1);
-                            $next_url = '?' . http_build_query(array_merge($params_base, ['pagina' => $next]));
-                            echo '<li class="page-item ' . ($pagina >= $total_paginas ? 'disabled' : '') . '">';
-                            echo '<a class="page-link" href="' . ($pagina < $total_paginas ? htmlspecialchars($next_url) : '#') . '">Siguiente &raquo;</a></li>';
-                            ?>
-                        </ul>
-                    </nav>
-                </div>
-
             </div>
         </div>
     </div>
@@ -786,7 +698,6 @@ function deleteMember($cedula_persona_cm)
                                     <option value="C.M Retirado">C.M Retirado</option>
                                     <option value="C.M Suspendido">C.M Suspendido</option>
                                     <option value="Visita psicosocial fallida">Visita psicosocial fallida</option>
-                                    <option value="C.M OTROS">C.M OTROS</option>
                                 </select>
                                 <label for="condicion_componente">Condición Componente</label>
                             </div>
@@ -1153,7 +1064,6 @@ function deleteMember($cedula_persona_cm)
                                     <option value="C.M Inscrito">C.M Inscrito</option>
                                     <option value="C.M Potencial beneficiario">C.M Potencial beneficiario</option>
                                     <option value="Visita psicosocial fallida">Visita psicosocial fallida</option>
-                                    <option value="C.M OTROS">C.M OTROS</option>
                                 </select>
                             </div>
                         </div>
@@ -1167,7 +1077,6 @@ function deleteMember($cedula_persona_cm)
                             <div class="col-md-6 mb-3">
                                 <label for="edit-estado" class="form-label">Estado</label>
                                 <select class="form-select" id="edit-estado" name="estado_cm" required>
-                                    <option value="">Seleccione un estado...</option>
                                     <option value="ACTIVO">ACTIVO</option>
                                     <option value="SUSPENDIDO">SUSPENDIDO</option>
                                     <option value="FALLECIDO">FALLECIDO</option>
@@ -1247,9 +1156,7 @@ function deleteMember($cedula_persona_cm)
                 "language": {
                     "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
                 },
-                "paging": false,
-                "searching": false,
-                "info": false,
+                "pageLength": 25,
                 "order": [[1, "asc"]],
                 "columnDefs": [
                     { "orderable": false, "targets": 7 } // Columna de acciones no ordenable
@@ -1329,10 +1236,10 @@ function deleteMember($cedula_persona_cm)
                 }
                 
                 // Meta, actividad, acción y política pública
-                modal.find('#edit-meta').val(button.data('id-meta'));
-                modal.find('#edit-actividad').val(button.data('id-actividad'));
-                modal.find('#edit-accion').val(button.data('id-accion'));
-                modal.find('#edit-politica-publica').val(button.data('id-politica-publica'));
+                modal.find('#edit-id-meta').val(button.data('id-meta'));
+                modal.find('#edit-id-actividad').val(button.data('id-actividad'));
+                modal.find('#edit-id-accion').val(button.data('id-accion'));
+                modal.find('#edit-id-politica-publica').val(button.data('id-politica-publica'));
                 
                 // Observaciones
                 modal.find('#edit-observaciones').val(button.data('observaciones'));

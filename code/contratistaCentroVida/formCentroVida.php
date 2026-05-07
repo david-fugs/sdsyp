@@ -568,7 +568,7 @@ function deleteRegistro($id_registro)
                     <div class="filter-group">
                         <label for="actividad">Actividad</label>
                         <select name="actividad" id="actividad" class="modern-select">
-                            <option value="">Todas las actividades</option>
+                            <option value="">-- Seleccione --</option>
                             <?php foreach ($result_actividades_cv as $actividad) {
                                 $selected = (isset($_GET['actividad']) && $_GET['actividad'] == $actividad['id_actividad_centro_vida']) ? 'selected' : '';
                             ?>
@@ -779,13 +779,13 @@ function deleteRegistro($id_registro)
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="cons_actividad" name="id_actividad_cv">
-                                    <option value="">Todas las actividades</option>
+                                <select class="form-select" id="cons_actividad" name="id_actividad_cv" required>
+                                    <option value=""></option>
                                     <?php foreach ($result_actividades_cv as $act_c) { ?>
                                         <option value="<?= $act_c['id_actividad_centro_vida'] ?>"><?= htmlspecialchars($act_c['descripcion_actividad']) ?></option>
                                     <?php } ?>
                                 </select>
-                                <label for="cons_actividad">Actividad Centro Vida</label>
+                                <label for="cons_actividad">Actividad Centro Vida <span class="text-danger">*</span></label>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="cons_funcionario" name="funcionario">

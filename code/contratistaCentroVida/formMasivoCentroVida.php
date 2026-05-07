@@ -14,6 +14,16 @@ $metas = $mysqli->query("SELECT * FROM metas ORDER BY descripcion_meta ASC");
 $actividades_cv = $mysqli->query("SELECT id_actividad_centro_vida, descripcion_actividad FROM actividad_centro_vida ORDER BY descripcion_actividad ASC");
 $usuarios = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11 , 12) ORDER BY nombre ASC");
 $grupos = $mysqli->query("SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC");
+
+// Queries filtradas para modal (tipos 10 y 11 solo ven su grupo)
+if (in_array($tipo_usuario, [10, 11]) && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+    $id_grupo_modal = intval($_SESSION['id_grupo']);
+    $usuarios_modal = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11, 12) AND id_grupo = $id_grupo_modal ORDER BY nombre ASC");
+    $grupos_modal   = $mysqli->query("SELECT g.* FROM grupos g WHERE g.id_grupo = $id_grupo_modal ORDER BY g.descripcion_grupo ASC");
+} else {
+    $usuarios_modal = null; // usará $usuarios con seek
+    $grupos_modal   = null; // usará $grupos con seek
+}
 $comunas = $mysqli->query("SELECT * FROM comunas ORDER BY nombre_com ASC");
 
 // Filtros
@@ -535,9 +545,11 @@ $result = $mysqli->query($query);
                             <div class="col-md-4 mb-3 form-floating">
                                 <select name="funcionario_responsable" id="funcionario_responsable" class="form-select">
                                     <option value="" selected>Seleccione funcionario...</option>
-                                    <?php mysqli_data_seek($usuarios, 0);
-                                    if ($usuarios) {
-                                        while ($u = $usuarios->fetch_assoc()) {
+                                    <?php
+                                    $usuarios_modal_use = $usuarios_modal ?? $usuarios;
+                                    if ($usuarios_modal === null) { mysqli_data_seek($usuarios, 0); }
+                                    if ($usuarios_modal_use) {
+                                        while ($u = $usuarios_modal_use->fetch_assoc()) {
                                             echo "<option value='{$u['id']}'>" . htmlspecialchars($u['nombre']) . "</option>";
                                         }
                                     } ?>
@@ -595,10 +607,10 @@ $result = $mysqli->query($query);
                                 <select class="form-select" id="centro_vida" name="id_centro_vida">
                                     <option value="" selected>Seleccione...</option>
                                     <?php 
-                                    if ($grupos) {
-                                        mysqli_data_seek($grupos, 0); // Resetear cursor
-                                        while ($g = $grupos->fetch_assoc()) {
-                                            // Filtrar opciones que empiecen con CPSAM
+                                    $grupos_modal_use = $grupos_modal ?? $grupos;
+                                    if ($grupos_modal === null) { mysqli_data_seek($grupos, 0); }
+                                    if ($grupos_modal_use) {
+                                        while ($g = $grupos_modal_use->fetch_assoc()) {
                                             $descripcion = $g['descripcion_grupo'];
                                             if (substr($descripcion, 0, 5) === 'CPSAM') {
                                                 continue;
@@ -871,7 +883,12 @@ $result = $mysqli->query($query);
                                 <select class="form-select" id="exp_m_func" name="filtro_funcionario">
                                     <option value="">Todos los funcionarios</option>
                                     <?php
-                                    $func_m = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5,10,11,12) ORDER BY nombre ASC");
+                                    if ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                                        $id_grupo_exp_m = intval($_SESSION['id_grupo']);
+                                        $func_m = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (10,11,12) AND id_grupo = $id_grupo_exp_m ORDER BY nombre ASC");
+                                    } else {
+                                        $func_m = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5,10,11,12) ORDER BY nombre ASC");
+                                    }
                                     if ($func_m) { while ($fu = $func_m->fetch_assoc()) echo "<option value=\"{$fu['id']}\">" . htmlspecialchars($fu['nombre']) . "</option>"; }
                                     ?>
                                 </select>
