@@ -21,6 +21,14 @@ $cantidad_femenino = isset($_POST['cantidad_femenino']) ? intval($_POST['cantida
 $tipo_actividad = isset($_POST['tipo_actividad']) ? mysqli_real_escape_string($mysqli, $_POST['tipo_actividad']) : '';
 $observacion_actividad = isset($_POST['observacion_actividad']) ? mysqli_real_escape_string($mysqli, $_POST['observacion_actividad']) : '';
 $id_usuario = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
+// Fallback: si la sesión no tiene el id, buscarlo por nombre de usuario
+if ($id_usuario === 0 && !empty($_SESSION['usuario'])) {
+    $u_esc = $mysqli->real_escape_string($_SESSION['usuario']);
+    $r_u = $mysqli->query("SELECT id FROM usuarios WHERE usuario = '$u_esc' LIMIT 1");
+    if ($r_u && $row_u = $r_u->fetch_assoc()) {
+        $id_usuario = intval($row_u['id']);
+    }
+}
 $funcionario_responsable = isset($_POST['funcionario_responsable']) ? mysqli_real_escape_string($mysqli, $_POST['funcionario_responsable']) : '';
 $id_entregas = isset($_POST['id_entregas']) ? intval($_POST['id_entregas']) : 0;
 $otro_lugar = isset($_POST['otro_lugar']) ? mysqli_real_escape_string($mysqli, $_POST['otro_lugar']) : '';

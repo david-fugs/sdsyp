@@ -345,7 +345,7 @@ function deleteMember($id_movimiento)
                         </tr>
                     </thead>
                     <tbody>
-                        <?php include "getRegistros.php"; ?>
+                        <!-- Cargado vía AJAX server-side -->
                     </tbody>
                 </table>
             </div>
@@ -1910,34 +1910,59 @@ function deleteMember($id_movimiento)
     // Inicializar DataTables para la tabla de movimientos
     let movementTable;
 
+    // Valores de filtro renderizados desde PHP para pasarlos al endpoint AJAX
+    const filterCedula   = '<?= isset($_GET['cedula_persona']) ? htmlspecialchars($_GET['cedula_persona'], ENT_QUOTES) : '' ?>';
+    const filterNombre   = '<?= isset($_GET['nombre'])        ? htmlspecialchars($_GET['nombre'],         ENT_QUOTES) : '' ?>';
+    const filterCondicion = '<?= isset($_GET['condicion'])    ? intval($_GET['condicion'])                            : '' ?>';
+
     function initDataTable() {
         if ($.fn.DataTable.isDataTable('#salesTable')) {
             $('#salesTable').DataTable().destroy();
         }
 
         movementTable = $('#salesTable').DataTable({
+            serverSide: true,
+            processing: true,
+            ajax: {
+                url: 'getRegistrosPaginados.php',
+                type: 'GET',
+                data: function(d) {
+                    d.cedula_persona = filterCedula;
+                    d.nombre         = filterNombre;
+                    d.condicion      = filterCondicion;
+                    return d;
+                }
+            },
+            columns: [
+                { data: 0 },
+                { data: 1 },
+                { data: 2 },
+                { data: 3 },
+                { data: 4 },
+                { data: 5 },
+                { data: 6 },
+                { data: 7 },
+                { data: 8 },
+                { data: 9 },
+                { data: 10 },
+                { data: 11 },
+                { data: 12 },
+                { data: 13, orderable: false, render: function(data) { return data; } }
+            ],
             pageLength: 15,
             lengthMenu: [
-                [5, 10, 25, 50, -1],
-                [5, 10, 25, 50, "Todos"]
+                [5, 10, 25, 50],
+                [5, 10, 25, 50]
             ],
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
             },
-            columnDefs: [{
-                    orderable: false,
-                    targets: [9]
-                }, // Deshabilitar orden en la columna de acciones (ahora es la columna 9)
-                {
-                    className: "text-center",
-                    targets: [0, 9]
-                } // Centrar columna de ID y acciones
+            columnDefs: [
+                { className: 'text-center', targets: [0, 13] }
             ],
-            order: [
-                [7, 'desc']
-            ], // Ordenar por fecha de movimiento (ahora es la columna 7) descendente
-            dom: 'frtip', // Solo mostrar filtro, tabla, información y paginación
-            searching: false, // Deshabilitar búsqueda de DataTables (usamos filtros propios)
+            order: [[10, 'desc']],
+            dom: 'frtip',
+            searching: false,
             info: true,
             paging: true,
             responsive: true
