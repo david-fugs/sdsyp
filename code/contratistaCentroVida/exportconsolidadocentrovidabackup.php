@@ -28,8 +28,7 @@ if (!$id_grupo_ses) {
 // Parámetros
 $mes       = isset($_GET['mes'])          ? (int)$_GET['mes']                           : 0;
 $anio      = isset($_GET['anio'])         ? (int)$_GET['anio']                          : 0;
-$ids_act_cv_raw = isset($_GET['id_actividad_cv']) ? (array)$_GET['id_actividad_cv'] : [];
-$ids_act_cv = array_values(array_filter(array_map('intval', $ids_act_cv_raw)));
+$id_act_cv = isset($_GET['id_actividad_cv']) ? (int)$_GET['id_actividad_cv']            : 0;
 $funcionario = isset($_GET['funcionario']) ? (int)$_GET['funcionario']                  : 0;
 $jornada   = isset($_GET['jornada'])      ? trim($_GET['jornada'])                      : ''; // '' = Ambas, 'Mañana', 'Tarde'
 
@@ -72,7 +71,7 @@ $COLOR_TOT_F_BG   = 'F8BBD9';
 /**
  * Construye y llena una hoja con el consolidado de una jornada específica.
  */
-function llenarHojaConsolidado($sheet, $personas, $jornada_hoja, $id_grupo_ses, $mes, $anio, $dias_mes, $mes_nombre, $cv_nombre, $ids_act_cv, $funcionario, $mysqli, $colors) {
+function llenarHojaConsolidado($sheet, $personas, $jornada_hoja, $id_grupo_ses, $mes, $anio, $dias_mes, $mes_nombre, $cv_nombre, $id_act_cv, $funcionario, $mysqli, $colors) {
     extract($colors);
     $last_col_idx = 3 + $dias_mes;
     $last_col_ltr = Coordinate::stringFromColumnIndex($last_col_idx);
@@ -99,14 +98,9 @@ function llenarHojaConsolidado($sheet, $personas, $jornada_hoja, $id_grupo_ses, 
     // Fila 1: Título
     $sheet->mergeCells('A1:' . $last_col_ltr . '1');
     $titulo = "$cv_nombre — Consolidado $mes_nombre $anio | Jornada: $jornada_hoja";
-    if (!empty($ids_act_cv)) {
-        $act_names = [];
-        foreach ($ids_act_cv as $act_id) {
-            $act_r = $mysqli->query("SELECT descripcion_actividad FROM actividad_centro_vida WHERE id_actividad_centro_vida = $act_id LIMIT 1");
-            if ($act_r) $act_names[] = $act_r->fetch_assoc()['descripcion_actividad'] ?? '';
-        }
-        $act_names = array_filter($act_names);
-        if (!empty($act_names)) $titulo .= " | Actividad: " . implode(', ', $act_names);
+    if ($id_act_cv) {
+        $act_r = $mysqli->query("SELECT descripcion_actividad FROM actividad_centro_vida WHERE id_actividad_centro_vida = $id_act_cv LIMIT 1");
+        if ($act_r) $titulo .= " | Actividad: " . ($act_r->fetch_assoc()['descripcion_actividad'] ?? '');
     }
     $sheet->setCellValue('A1', $titulo);
     $sheet->getStyle('A1')->applyFromArray([
@@ -149,7 +143,7 @@ function llenarHojaConsolidado($sheet, $personas, $jornada_hoja, $id_grupo_ses, 
         $cond_jornada = "rcv.jornada = '$jornada_esc'";
     }
     $where_rec = "YEAR(rcvf.fecha_atencion) = $anio AND MONTH(rcvf.fecha_atencion) = $mes AND p.id_grupo = $id_grupo_ses AND $cond_jornada";
-    if (!empty($ids_act_cv)) $where_rec .= " AND rcv.id_actividad_centro_vida IN (" . implode(',', $ids_act_cv) . ")";
+    if ($id_act_cv)   $where_rec .= " AND rcv.id_actividad_centro_vida = $id_act_cv";
     if ($funcionario) $where_rec .= " AND rcv.funcionario_registro = $funcionario";
 
     $sql_reg = "SELECT DISTINCT rcv.cedula_persona, DAY(rcvf.fecha_atencion) AS dia
@@ -249,21 +243,21 @@ if (empty($jornada)) {
     // Ambas: crear hojas Mañana y Tarde
     $sheetM = $spreadsheet->getActiveSheet();
     $sheetM->setTitle('Mañana');
-    llenarHojaConsolidado($sheetM, $personas_all, 'Mañana', $id_grupo_ses, $mes, $anio, $dias_mes, $mes_nombre, $cv_nombre, $ids_act_cv, $funcionario, $mysqli, $colors);
+    llenarHojaConsolidado($sheetM, $personas_all, 'Mañana', $id_grupo_ses, $mes, $anio, $dias_mes, $mes_nombre, $cv_nombre, $id_act_cv, $funcionario, $mysqli, $colors);
 
     $sheetT = $spreadsheet->createSheet();
     $sheetT->setTitle('Tarde');
-    llenarHojaConsolidado($sheetT, $personas_all, 'Tarde', $id_grupo_ses, $mes, $anio, $dias_mes, $mes_nombre, $cv_nombre, $ids_act_cv, $funcionario, $mysqli, $colors);
+    llenarHojaConsolidado($sheetT, $personas_all, 'Tarde', $id_grupo_ses, $mes, $anio, $dias_mes, $mes_nombre, $cv_nombre, $id_act_cv, $funcionario, $mysqli, $colors);
 } elseif ($jornada === 'Mañana') {
     // Solo Mañana
     $sheetM = $spreadsheet->getActiveSheet();
     $sheetM->setTitle('Mañana');
-    llenarHojaConsolidado($sheetM, $personas_all, 'Mañana', $id_grupo_ses, $mes, $anio, $dias_mes, $mes_nombre, $cv_nombre, $ids_act_cv, $funcionario, $mysqli, $colors);
+    llenarHojaConsolidado($sheetM, $personas_all, 'Mañana', $id_grupo_ses, $mes, $anio, $dias_mes, $mes_nombre, $cv_nombre, $id_act_cv, $funcionario, $mysqli, $colors);
 } elseif ($jornada === 'Tarde') {
     // Solo Tarde
     $sheetT = $spreadsheet->getActiveSheet();
     $sheetT->setTitle('Tarde');
-    llenarHojaConsolidado($sheetT, $personas_all, 'Tarde', $id_grupo_ses, $mes, $anio, $dias_mes, $mes_nombre, $cv_nombre, $ids_act_cv, $funcionario, $mysqli, $colors);
+    llenarHojaConsolidado($sheetT, $personas_all, 'Tarde', $id_grupo_ses, $mes, $anio, $dias_mes, $mes_nombre, $cv_nombre, $id_act_cv, $funcionario, $mysqli, $colors);
 }
 
 $spreadsheet->setActiveSheetIndex(0);

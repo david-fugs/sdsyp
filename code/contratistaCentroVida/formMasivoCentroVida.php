@@ -729,10 +729,17 @@ $result = $mysqli->query($query);
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="profesion_masivo" name="profesion">
                                     <option value="" selected>Seleccione Profesión...</option>
-                                    <option value="Trabajo social">Trabajo social</option>
+                                    <option value="Administrador">Administrador</option>
+                                    <option value="Auxiliar administrativo">Auxiliar administrativo</option>
+                                    <option value="Deportes">Deportes</option>
+                                    <option value="Enfermera">Enfermera</option>
+                                    <option value="Fisioterapeuta">Fisioterapeuta</option>
+                                    <option value="Gerontología">Gerontología</option>
+                                    <option value="Nutricionista">Nutricionista</option>
                                     <option value="Psicología">Psicología</option>
                                     <option value="Psicosocial">Psicosocial</option>
-                                    <option value="Gerontología">Gerontología</option>
+                                    <option value="Tallerista">Tallerista</option>
+                                    <option value="Trabajo social">Trabajo social</option>
                                 </select>
                                 <label for="profesion_masivo">Profesión</label>
                             </div>

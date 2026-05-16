@@ -7,7 +7,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $eps = $_POST['eps'] ?? '';
     $peso = $_POST['peso'] ?? '';
     $talla = $_POST['talla'] ?? '';
-    $patologias = $_POST['patologias'] ?? '';
+    $patologias = is_array($_POST['patologias'] ?? '') ? implode(',', $_POST['patologias']) : ($_POST['patologias'] ?? '');
     $factores_riesgo = $_POST['factores_riesgo'] ?? '';
     $factores_preventivos = $_POST['factores_preventivos'] ?? '';
     $ingresos_economicos = $_POST['ingresos_economicos'] ?? '';

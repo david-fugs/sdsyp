@@ -853,6 +853,21 @@ $mysqli->close();
             </ul>
           </li>
 
+          <?php if ($tipo_usuario == 4 || $tipo_usuario == 5  || $tipo_usuario == 1) { ?>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-sitemap"></i>
+              </span>
+              <span class="navlink">Grupos Externos</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/gruposExternos/seeGruposExternos.php" class="nav_link sublink">Gestionar Grupos</a>
+            </ul>
+          </li>
+          <?php } ?>
+
           <?php if ($tipo_usuario != 5) { ?>
             <li class="item">
               <div href="#" class="nav_link submenu_item">
@@ -1113,6 +1128,19 @@ $mysqli->close();
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">
+                <i class="fa-solid fa-sitemap"></i>
+              </span>
+              <span class="navlink">Grupos Externos</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/gruposExternos/seeGruposExternos.php" class="nav_link sublink">Gestionar Grupos</a>
+            </ul>
+          </li>
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
                 <i class="fa-solid fa-screwdriver-wrench"></i>
               </span>
               <span class="navlink">Mi Cuenta</span>
@@ -1220,6 +1248,20 @@ $mysqli->close();
           </li> -->
 
           <!-- Mi Cuenta -->
+          <?php if ($tipo_usuario == 8) { ?>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-sitemap"></i>
+              </span>
+              <span class="navlink">Grupos Externos</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/gruposExternos/seeGruposExternos.php" class="nav_link sublink">Gestionar Grupos</a>
+            </ul>
+          </li>
+          <?php } ?>
           <li class="item">
             <div href="#" class="nav_link submenu_item">
               <span class="navlink_icon">

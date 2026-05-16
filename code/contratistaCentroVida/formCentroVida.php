@@ -778,14 +778,14 @@ function deleteRegistro($id_registro)
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="cons_actividad" name="id_actividad_cv" required>
-                                    <option value=""></option>
+                            <div class="col-md-6 mb-3">
+                                <label for="cons_actividad" class="form-label fw-bold">Actividad Centro Vida <span class="text-danger">*</span></label>
+                                <select class="form-select" id="cons_actividad" name="id_actividad_cv[]" multiple required style="height:110px;">
                                     <?php foreach ($result_actividades_cv as $act_c) { ?>
                                         <option value="<?= $act_c['id_actividad_centro_vida'] ?>"><?= htmlspecialchars($act_c['descripcion_actividad']) ?></option>
                                     <?php } ?>
                                 </select>
-                                <label for="cons_actividad">Actividad Centro Vida <span class="text-danger">*</span></label>
+                                <small class="text-muted">Haga clic en cada actividad para seleccionarla o deseleccionarla.</small>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="cons_funcionario" name="funcionario">
@@ -821,6 +821,16 @@ function deleteRegistro($id_registro)
             </div>
         </div>
     </div>
+    <script>
+    // Clic simple para toggle en el select múltiple de actividades (Consolidado)
+    document.getElementById('cons_actividad').addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        var opt = e.target;
+        if (opt.tagName !== 'OPTION') return;
+        opt.selected = !opt.selected;
+        this.focus();
+    });
+    </script>
     <?php endif; ?>
 
     <!-- Modal Agregar Masivo -->
@@ -949,10 +959,17 @@ function deleteRegistro($id_registro)
                                 <div class="col-md-6 mb-3 form-floating">
                                     <select class="form-select" id="profesion_masivo" name="profesion">
                                         <option value="" selected>Seleccione Profesión...</option>
-                                        <option value="Trabajo social">Trabajo social</option>
+                                        <option value="Administrador">Administrador</option>
+                                        <option value="Auxiliar administrativo">Auxiliar administrativo</option>
+                                        <option value="Deportes">Deportes</option>
+                                        <option value="Enfermera">Enfermera</option>
+                                        <option value="Fisioterapeuta">Fisioterapeuta</option>
+                                        <option value="Gerontología">Gerontología</option>
+                                        <option value="Nutricionista">Nutricionista</option>
                                         <option value="Psicología">Psicología</option>
                                         <option value="Psicosocial">Psicosocial</option>
-                                        <option value="Gerontología">Gerontología</option>
+                                        <option value="Tallerista">Tallerista</option>
+                                        <option value="Trabajo social">Trabajo social</option>
                                     </select>
                                     <label for="profesion_masivo">Profesión</label>
                                 </div>
@@ -1076,19 +1093,10 @@ function deleteRegistro($id_registro)
                                 <label for="cedula_persona">Cédula</label>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="id_condicion" name="id_condicion" required>
-                                    <option value="" selected>Seleccione...</option>
-                                    <?php foreach ($result_condiciones as $condicion) { 
-                                        // Filtrar opciones que empiecen con CPSAM o C.M.
-                                        $descripcion = $condicion['descripcion_condicion'];
-                                        if (substr($descripcion, 0, 5) === 'CPSAM' || substr($descripcion, 0, 4) === 'C.M.' || substr($descripcion, 0, 4) === 'C.M ') {
-                                            continue;
-                                        }
-                                    ?>
-                                        <option value="<?= $condicion['id_condicion']; ?>"><?= $condicion['descripcion_condicion']; ?></option>
-                                    <?php } ?>
-                                    <option value="otra">Otra</option>
+                                <select class="form-select" id="id_condicion" disabled style="background-color:#e9ecef; pointer-events:none;">
+                                    <option value="5" selected>C.V BENEFICIARIO ACTIVO</option>
                                 </select>
+                                <input type="hidden" name="id_condicion" value="5">
                                 <label for="id_condicion">Condición</label>
                             </div>
                         </div>
@@ -1096,6 +1104,16 @@ function deleteRegistro($id_registro)
                             <div class="col-md-6 mb-3 form-floating">
                                 <input type="text" class="form-control" id="condicion_otra_individual" name="condicion_otra" placeholder="Especifique condición">
                                 <label for="condicion_otra_individual">Especifique condición</label>
+                            </div>
+                        </div>
+
+                        <!-- Nombre persona encontrada -->
+                        <div class="row" id="nombre_persona_found_row" style="display:none;">
+                            <div class="col-md-12 mb-2">
+                                <div class="alert alert-success py-2 mb-0 d-flex align-items-center">
+                                    <i class="bi bi-person-check-fill me-2 fs-5"></i>
+                                    <span id="nombre_persona_found_text" class="fw-semibold"></span>
+                                </div>
                             </div>
                         </div>
 
@@ -1204,10 +1222,17 @@ function deleteRegistro($id_registro)
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="profesion_individual" name="profesion">
                                     <option value="" selected>Seleccione Profesión...</option>
-                                    <option value="Trabajo social">Trabajo social</option>
+                                    <option value="Administrador">Administrador</option>
+                                    <option value="Auxiliar administrativo">Auxiliar administrativo</option>
+                                    <option value="Deportes">Deportes</option>
+                                    <option value="Enfermera">Enfermera</option>
+                                    <option value="Fisioterapeuta">Fisioterapeuta</option>
+                                    <option value="Gerontología">Gerontología</option>
+                                    <option value="Nutricionista">Nutricionista</option>
                                     <option value="Psicología">Psicología</option>
                                     <option value="Psicosocial">Psicosocial</option>
-                                    <option value="Gerontología">Gerontología</option>
+                                    <option value="Tallerista">Tallerista</option>
+                                    <option value="Trabajo social">Trabajo social</option>
                                 </select>
                                 <label for="profesion_individual">Profesión</label>
                             </div>
@@ -1670,6 +1695,10 @@ function deleteRegistro($id_registro)
                             $('#cedula_persona').removeClass('is-invalid').addClass('is-valid');
                             cedulaValida = true;
 
+                            // Mostrar nombre de la persona encontrada
+                            $('#nombre_persona_found_text').text(response.nombres + ' ' + response.apellidos);
+                            $('#nombre_persona_found_row').show();
+
                             // Mensaje corto
                             Swal.fire({
                                 icon: 'success',
@@ -1680,29 +1709,6 @@ function deleteRegistro($id_registro)
                                 toast: true,
                                 position: 'top-end'
                             });
-
-                            // Precargar condición: condicion_componente es texto, hay que buscar la opción cuyo texto coincida
-                            if (response.condicion_componente) {
-                                let foundCond = false;
-                                const normalize = s => s.trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ');
-                                const condText = normalize(response.condicion_componente);
-                                $('#id_condicion option').each(function() {
-                                    if (normalize($(this).text()) === condText) {
-                                        $('#id_condicion').val($(this).val());
-                                        foundCond = true;
-                                        return false;
-                                    }
-                                });
-                                if (!foundCond && response.id_condicion) {
-                                    $('#id_condicion').val(response.id_condicion);
-                                }
-                            } else if (response.id_condicion) {
-                                $('#id_condicion').val(response.id_condicion);
-                            }
-                            if ($('#id_condicion').val() === 'otra') {
-                                $('#condicion_otra_individual_row').show();
-                                $('#condicion_otra_individual').prop('required', true);
-                            }
 
                             // Precargar Jornada
                             if (response.jornada) {
@@ -1821,6 +1827,8 @@ function deleteRegistro($id_registro)
                 console.log('✏️ Usuario escribiendo en cédula (modal)');
                 $(this).removeClass('is-valid is-invalid');
                 cedulaValida = false;
+                $('#nombre_persona_found_row').hide();
+                $('#nombre_persona_found_text').text('');
             });
 
             // Limpiar formulario cuando se cierre el modal
@@ -1837,6 +1845,9 @@ function deleteRegistro($id_registro)
                 // Ocultar campo condicion_otra
                 $('#condicion_otra_individual_row').hide();
                 $('#condicion_otra_individual').val('').prop('required', false);
+                // Ocultar nombre persona encontrada
+                $('#nombre_persona_found_row').hide();
+                $('#nombre_persona_found_text').text('');
                 // Resetear grupos externos
                 resetGruposExternosInd();
 

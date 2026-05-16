@@ -577,28 +577,27 @@ function deleteMember($cedula_persona)
                         </div>
                         <!-- Fila: Patologías, Factores de Riesgo -->
                         <div class="row">
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="patologias" name="patologias">
-                                    <option value="" selected disabled>Seleccione...</option>
-                                    <option>Osteomuscular</option>
-                                    <option>Respiratoria</option>
-                                    <option>Diabetes</option>
-                                    <option>EPOC</option>
-                                    <option>Trastorno afectivo bipolar</option>
-                                    <option>Física</option>
-                                    <option>Cataratas senil nuclear</option>
-                                    <option>Hipertensión arterial</option>
-                                    <option>HTA</option>
-                                    <option>Hipertensión senecial</option>
-                                    <option>Hipotiroidismo</option>
-                                    <option>ICC</option>
-                                    <option>Mental</option>
-                                    <option>Ninguna</option>
-                                    <option>No aplica</option>
-                                    <option>Osteoastromuscular</option>
-                                    <option>Otras</option>
-                                </select>
-                                <label for="patologias">Patologías</label>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Patologías</label>
+                                <div class="border rounded p-2" style="max-height:180px;overflow-y:auto;">
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Osteomuscular" id="pat_add_1"><label class="form-check-label" for="pat_add_1">Osteomuscular</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Respiratoria" id="pat_add_2"><label class="form-check-label" for="pat_add_2">Respiratoria</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Diabetes" id="pat_add_3"><label class="form-check-label" for="pat_add_3">Diabetes</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="EPOC" id="pat_add_4"><label class="form-check-label" for="pat_add_4">EPOC</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Trastorno afectivo bipolar" id="pat_add_5"><label class="form-check-label" for="pat_add_5">Trastorno afectivo bipolar</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Física" id="pat_add_6"><label class="form-check-label" for="pat_add_6">Física</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Cataratas senil nuclear" id="pat_add_7"><label class="form-check-label" for="pat_add_7">Cataratas senil nuclear</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Hipertensión arterial" id="pat_add_8"><label class="form-check-label" for="pat_add_8">Hipertensión arterial</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="HTA" id="pat_add_9"><label class="form-check-label" for="pat_add_9">HTA</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Hipertensión senecial" id="pat_add_10"><label class="form-check-label" for="pat_add_10">Hipertensión senecial</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Hipotiroidismo" id="pat_add_11"><label class="form-check-label" for="pat_add_11">Hipotiroidismo</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="ICC" id="pat_add_12"><label class="form-check-label" for="pat_add_12">ICC</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Mental" id="pat_add_13"><label class="form-check-label" for="pat_add_13">Mental</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Ninguna" id="pat_add_14"><label class="form-check-label" for="pat_add_14">Ninguna</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="No aplica" id="pat_add_15"><label class="form-check-label" for="pat_add_15">No aplica</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Osteoastromuscular" id="pat_add_16"><label class="form-check-label" for="pat_add_16">Osteoastromuscular</label></div>
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="patologias[]" value="Otras" id="pat_add_17"><label class="form-check-label" for="pat_add_17">Otras</label></div>
+                                </div>
                             </div>
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="factores_riesgo" name="factores_riesgo">
@@ -1099,27 +1098,26 @@ function deleteMember($cedula_persona)
                         <!-- Fila: Patologías, Factores de Riesgo (Edición) -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="edit-patologias" class="form-label">Patologías</label>
-                                <select class="form-select" id="edit-patologias" name="patologias">
-                                    <option value="" selected disabled>Seleccione...</option>
-                                    <option>Osteomuscular</option>
-                                    <option>Respiratoria</option>
-                                    <option>Diabetes</option>
-                                    <option>EPOC</option>
-                                    <option>Trastorno afectivo bipolar</option>
-                                    <option>Física</option>
-                                    <option>Cataratas senil nuclear</option>
-                                    <option>Hipertensión arterial</option>
-                                    <option>HTA</option>
-                                    <option>Hipertensión senecial</option>
-                                    <option>Hipotiroidismo</option>
-                                    <option>ICC</option>
-                                    <option>Mental</option>
-                                    <option>Ninguna</option>
-                                    <option>No aplica</option>
-                                    <option>Osteoastromuscular</option>
-                                    <option>Otras</option>
-                                </select>
+                                <label class="form-label">Patologías</label>
+                                <div id="edit-patologias-container" class="border rounded p-2" style="max-height:180px;overflow-y:auto;">
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Osteomuscular" id="pat_edit_1"><label class="form-check-label" for="pat_edit_1">Osteomuscular</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Respiratoria" id="pat_edit_2"><label class="form-check-label" for="pat_edit_2">Respiratoria</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Diabetes" id="pat_edit_3"><label class="form-check-label" for="pat_edit_3">Diabetes</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="EPOC" id="pat_edit_4"><label class="form-check-label" for="pat_edit_4">EPOC</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Trastorno afectivo bipolar" id="pat_edit_5"><label class="form-check-label" for="pat_edit_5">Trastorno afectivo bipolar</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Física" id="pat_edit_6"><label class="form-check-label" for="pat_edit_6">Física</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Cataratas senil nuclear" id="pat_edit_7"><label class="form-check-label" for="pat_edit_7">Cataratas senil nuclear</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Hipertensión arterial" id="pat_edit_8"><label class="form-check-label" for="pat_edit_8">Hipertensión arterial</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="HTA" id="pat_edit_9"><label class="form-check-label" for="pat_edit_9">HTA</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Hipertensión senecial" id="pat_edit_10"><label class="form-check-label" for="pat_edit_10">Hipertensión senecial</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Hipotiroidismo" id="pat_edit_11"><label class="form-check-label" for="pat_edit_11">Hipotiroidismo</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="ICC" id="pat_edit_12"><label class="form-check-label" for="pat_edit_12">ICC</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Mental" id="pat_edit_13"><label class="form-check-label" for="pat_edit_13">Mental</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Ninguna" id="pat_edit_14"><label class="form-check-label" for="pat_edit_14">Ninguna</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="No aplica" id="pat_edit_15"><label class="form-check-label" for="pat_edit_15">No aplica</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Osteoastromuscular" id="pat_edit_16"><label class="form-check-label" for="pat_edit_16">Osteoastromuscular</label></div>
+                                    <div class="form-check"><input class="form-check-input edit-pat-cb" type="checkbox" name="patologias[]" value="Otras" id="pat_edit_17"><label class="form-check-label" for="pat_edit_17">Otras</label></div>
+                                </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="edit-factores-riesgo" class="form-label">Factores de Riesgo</label>
@@ -2310,8 +2308,12 @@ function deleteMember($cedula_persona)
                         if (document.getElementById("edit-talla")) {
                             document.getElementById("edit-talla").value = button.getAttribute("data-talla");
                         }
-                        if (document.getElementById("edit-patologias")) {
-                            document.getElementById("edit-patologias").value = button.getAttribute("data-patologias");
+                        if (document.getElementById("edit-patologias-container")) {
+                            const _patVal = button.getAttribute("data-patologias") || '';
+                            const _patVals = _patVal.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+                            document.querySelectorAll('.edit-pat-cb').forEach(function(cb) {
+                                cb.checked = _patVals.includes(cb.value);
+                            });
                         }
                         if (document.getElementById("edit-factores-riesgo")) {
                             document.getElementById("edit-factores-riesgo").value = button.getAttribute("data-factores-riesgo");
