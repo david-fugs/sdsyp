@@ -15,10 +15,20 @@ $actividades_cv = $mysqli->query("SELECT id_actividad_centro_vida, descripcion_a
 $usuarios = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11 , 12) ORDER BY nombre ASC");
 $grupos = $mysqli->query("SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC");
 
-// Queries filtradas para modal (tipos 10 y 11 solo ven su grupo)
-if (in_array($tipo_usuario, [10, 11]) && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+// Queries filtradas para modal
+// Tipo 11: ve todos los funcionarios (lista completa), solo su grupo
+// Tipos 10 y 12: solo se ven a sí mismos
+if (($tipo_usuario == 10 || $tipo_usuario == 12) && $id_usuario) {
+    $usuarios_modal = $mysqli->query("SELECT id, nombre FROM usuarios WHERE id = " . intval($id_usuario));
+    if (isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+        $id_grupo_modal = intval($_SESSION['id_grupo']);
+        $grupos_modal = $mysqli->query("SELECT g.* FROM grupos g WHERE g.id_grupo = $id_grupo_modal ORDER BY g.descripcion_grupo ASC");
+    } else {
+        $grupos_modal = null;
+    }
+} elseif ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
     $id_grupo_modal = intval($_SESSION['id_grupo']);
-    $usuarios_modal = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11, 12) AND id_grupo = $id_grupo_modal ORDER BY nombre ASC");
+    $usuarios_modal = null; // tipo 11 ve todos los funcionarios (usará $usuarios)
     $grupos_modal   = $mysqli->query("SELECT g.* FROM grupos g WHERE g.id_grupo = $id_grupo_modal ORDER BY g.descripcion_grupo ASC");
 } else {
     $usuarios_modal = null; // usará $usuarios con seek
@@ -543,17 +553,25 @@ $result = $mysqli->query($query);
                                 <label for="fecha_atencion">Fecha Atención</label>
                             </div>
                             <div class="col-md-4 mb-3 form-floating">
-                                <select name="funcionario_responsable" id="funcionario_responsable" class="form-select">
-                                    <option value="" selected>Seleccione funcionario...</option>
-                                    <?php
-                                    $usuarios_modal_use = $usuarios_modal ?? $usuarios;
-                                    if ($usuarios_modal === null) { mysqli_data_seek($usuarios, 0); }
-                                    if ($usuarios_modal_use) {
-                                        while ($u = $usuarios_modal_use->fetch_assoc()) {
+                                <select name="funcionario_responsable" id="funcionario_responsable" class="form-select" <?= ($tipo_usuario == 10 || $tipo_usuario == 12) ? 'disabled' : '' ?>>
+                                    <?php if ($tipo_usuario == 10 || $tipo_usuario == 12): ?>
+                                        <?php
+                                        $self_func = $usuarios_modal ? $usuarios_modal->fetch_assoc() : null;
+                                        if ($self_func): ?>
+                                            <option value="<?= $self_func['id'] ?>" selected><?= htmlspecialchars($self_func['nombre']) ?></option>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <option value="" selected>Seleccione funcionario...</option>
+                                        <?php
+                                        mysqli_data_seek($usuarios, 0);
+                                        while ($u = $usuarios->fetch_assoc()) {
                                             echo "<option value='{$u['id']}'>" . htmlspecialchars($u['nombre']) . "</option>";
-                                        }
-                                    } ?>
+                                        } ?>
+                                    <?php endif; ?>
                                 </select>
+                                <?php if ($tipo_usuario == 10 || $tipo_usuario == 12): ?>
+                                    <input type="hidden" name="funcionario_responsable" value="<?= intval($id_usuario) ?>">
+                                <?php endif; ?>
                                 <label for="funcionario_responsable">Funcionario Responsable</label>
                             </div>
                         </div>
