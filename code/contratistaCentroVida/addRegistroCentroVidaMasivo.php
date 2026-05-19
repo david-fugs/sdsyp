@@ -53,6 +53,19 @@ try {
         throw new Exception('Debe seleccionar al menos una fecha de atención.');
     }
 
+    // Pre-cargar jornada de cada persona desde la tabla personas
+    $jornadas_map = [];
+    if (!empty($cedulas)) {
+        $cedulas_esc_pre = array_map(fn($c) => "'" . $mysqli->real_escape_string(trim($c)) . "'", $cedulas);
+        $in_pre = implode(',', $cedulas_esc_pre);
+        $jorn_res = $mysqli->query("SELECT cedula_persona, jornada FROM personas WHERE cedula_persona IN ($in_pre)");
+        if ($jorn_res) {
+            while ($jr = $jorn_res->fetch_assoc()) {
+                $jornadas_map[$jr['cedula_persona']] = $jr['jornada'];
+            }
+        }
+    }
+
     // Iniciar transacción
     $mysqli->autocommit(FALSE);
 
@@ -78,11 +91,14 @@ try {
         $ced = trim($ced);
         if ($ced === '') continue;
 
+        // Jornada tomada de la tabla personas para esta cédula
+        $jornada_persona = $jornadas_map[$ced] ?? $jornada;
+
         foreach ($fechas as $f) {
             if (empty($f)) continue;
 
             // 1 registro por persona por fecha
-            $stmt->bind_param('sisiiiisssssi', $ced, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $profesion, $jornada, $funcionario_registro);
+            $stmt->bind_param('sisiiiisssssi', $ced, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $profesion, $jornada_persona, $funcionario_registro);
             if (!$stmt->execute()) {
                 $failures[] = ['cedula' => $ced, 'fecha' => $f, 'error' => $stmt->error];
                 continue;
