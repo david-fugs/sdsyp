@@ -1691,6 +1691,28 @@ function deleteRegistro($id_registro)
                                 return;
                             }
 
+                            // Verificar si la condición contiene la palabra 'inactivo'
+                            // Se revisa tanto condicion_componente (personas) como descripcion_condicion (último movimiento)
+                            const condicionComp = (response.condicion_componente || '').toLowerCase();
+                            const descCondicion = (response.descripcion_condicion || '').toLowerCase();
+                            const estadoInactivo = condicionComp.includes('inactivo') || descCondicion.includes('inactivo');
+                            const estadoLabel = response.condicion_componente || response.descripcion_condicion || 'Inactivo';
+                            if (estadoInactivo) {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Persona inactiva',
+                                    text: 'No se puede registrar porque la persona se encuentra en estado: ' + estadoLabel,
+                                    confirmButtonText: 'OK'
+                                }).then(function() {
+                                    $('#cedula_persona').val('').focus();
+                                    $('#cedula_persona').removeClass('is-valid').addClass('is-invalid');
+                                    cedulaValida = false;
+                                    $('#nombre_persona_found_row').hide();
+                                    $('#nombre_persona_found_text').text('');
+                                });
+                                return;
+                            }
+
                             // Marcar cédula válida
                             $('#cedula_persona').removeClass('is-invalid').addClass('is-valid');
                             cedulaValida = true;

@@ -62,13 +62,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             // Obtener la última condición y departamento_de_procedencia desde movimiento_persona (si existe)
             $lastCond = null;
             $lastDept = null;
-            $stmt_last = $mysqli->prepare("SELECT id_condicion, departamento_procedencia FROM movimiento_persona WHERE cedula_persona = ? ORDER BY fecha_movimiento DESC LIMIT 1");
+            $stmt_last = $mysqli->prepare("
+                SELECT mp.id_condicion, mp.departamento_procedencia, cc.descripcion_condicion
+                FROM movimiento_persona mp
+                LEFT JOIN condiciones_componente cc ON mp.id_condicion = cc.id_condicion
+                WHERE mp.cedula_persona = ?
+                ORDER BY mp.fecha_movimiento DESC LIMIT 1
+            ");
             $stmt_last->bind_param("s", $cedula);
             $stmt_last->execute();
             $res_last = $stmt_last->get_result();
+            $lastDescCondicion = null;
             if ($r = $res_last->fetch_assoc()) {
                 $lastCond = $r['id_condicion'];
                 $lastDept = $r['departamento_procedencia'];
+                $lastDescCondicion = $r['descripcion_condicion'];
             }
             $stmt_last->close();
 
@@ -86,6 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 'descripcion_politica' => $row['descripcion_politica'],
                 'fallecido' => $fallecido,
                 'id_condicion' => $lastCond,
+                'descripcion_condicion' => $lastDescCondicion,
                 'departamento_procedencia' => $lastDept,
                 'condicion_componente' => $row['condicion_componente'],
                 'jornada' => $row['jornada'],
