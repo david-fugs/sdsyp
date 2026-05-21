@@ -905,6 +905,47 @@ if ($result_count) {
                 
                 return true;
             };
+
+            // Función para eliminar un registro masivo
+            window.eliminarRegistro = function(id) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¿Eliminar registro?',
+                    text: 'Esta acción no se puede deshacer.',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: 'deleteRegistroMasivoCM.php',
+                            type: 'POST',
+                            data: { id: id },
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Eliminado',
+                                        text: response.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    }).then(function() {
+                                        cargarRegistros();
+                                    });
+                                } else {
+                                    Swal.fire('Error', response.message, 'error');
+                                }
+                            },
+                            error: function() {
+                                Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+                            }
+                        });
+                    }
+                });
+            };
         });
     </script>
 
