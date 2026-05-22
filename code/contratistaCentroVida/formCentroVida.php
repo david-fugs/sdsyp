@@ -707,7 +707,7 @@ function deleteRegistro($id_registro)
                                 </select>
                                 <label for="exp_actividad">Actividad Centro Vida</label>
                             </div>
-                            <?php if (in_array($tipo_usuario_cv, [5, 11,1])): ?>
+                            <?php if (in_array($tipo_usuario_cv, [5, 11, 1])): ?>
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="exp_tipo_usuario" name="filtro_tipo_usuario">
                                     <option value="">Todos</option>
@@ -719,7 +719,7 @@ function deleteRegistro($id_registro)
                             </div>
                             <?php endif; ?>
                         </div>
-                        <?php if (in_array($tipo_usuario_cv, [5, 11])): ?>
+                        <?php if (in_array($tipo_usuario_cv, [5, 11,1])): ?>
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="exp_funcionario" name="funcionario">
