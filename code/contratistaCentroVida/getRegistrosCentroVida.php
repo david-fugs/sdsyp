@@ -39,7 +39,7 @@ $query = "
         rcv.departamento_procedencia,
         rcv.observacion,
         rcv.funcionario_registro,
-        COALESCE(u.nombre, rcv.funcionario_registro) AS nombre_funcionario,
+        IFNULL(u.nombre, '') AS nombre_funcionario,
         rcv.fecha_registro,
         GROUP_CONCAT(rcvf.fecha_atencion ORDER BY rcvf.fecha_atencion ASC SEPARATOR ', ') as fechas_programadas
     FROM registro_centro_vida rcv

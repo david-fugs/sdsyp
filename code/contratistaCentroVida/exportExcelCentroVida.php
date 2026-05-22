@@ -63,7 +63,7 @@ try {
             rcv.jornada,
             rcv.observacion,
             rcv.funcionario_registro,
-            COALESCE(u.nombre, rcv.funcionario_registro) AS nombre_funcionario,
+            IFNULL(u.nombre, '') AS nombre_funcionario,
             rcv.fecha_registro,
             GROUP_CONCAT(DISTINCT rcvf.fecha_atencion ORDER BY rcvf.fecha_atencion ASC SEPARATOR ', ') as fechas_programadas,
             GROUP_CONCAT(DISTINCT ge.nombre_grupo_externo ORDER BY ge.nombre_grupo_externo ASC SEPARATOR ', ') as nombres_grupos_externos,

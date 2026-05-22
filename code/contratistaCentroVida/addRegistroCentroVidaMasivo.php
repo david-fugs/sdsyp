@@ -40,6 +40,9 @@ try {
     $jornada = $_POST['jornada'] ?? null;
     // Guardar el ID numérico del usuario para filtrado (el nombre se resuelve por JOIN)
     $funcionario_registro = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
+    if ($funcionario_registro <= 0) {
+        throw new Exception('Sesión no válida. Por favor, recargue la página e inicie sesión nuevamente.');
+    }
 
     $fechas_json = $_POST['fechas_seleccionadas'] ?? ($_POST['fechas_atencion'] ?? '[]');
     // Intentar parsear JSON; si no es JSON, aceptar formato coma-separado

@@ -29,6 +29,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $grupos_externos_post = array_values(array_filter(array_map('intval', $_POST['grupos_externos'] ?? []), function($v){ return $v > 0; }));
         // Guardar el ID numérico del usuario para filtrado (el nombre se resuelve por JOIN)
         $funcionario_registro = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
+        if ($funcionario_registro <= 0) {
+            throw new Exception("Sesión no válida. Por favor, recargue la página e inicie sesión nuevamente.");
+        }
 
         // Obtener las fechas del nuevo parámetro
         $fechas_atencion_json = $_POST['fechas_atencion'] ?? '[]';
