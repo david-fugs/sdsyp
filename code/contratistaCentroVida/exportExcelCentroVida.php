@@ -114,6 +114,11 @@ try {
         $params[] = intval($_GET['funcionario']);
         $types .= 'i';
     }
+    if (isset($_GET['filtro_tipo_usuario']) && $_GET['filtro_tipo_usuario'] !== '' && is_numeric($_GET['filtro_tipo_usuario'])) {
+        $where[] = "u.tipo_usuario = ?";
+        $params[] = intval($_GET['filtro_tipo_usuario']);
+        $types .= 'i';
+    }
     if (isset($_GET['id_grupo_cv']) && $_GET['id_grupo_cv'] !== '') {
         $where[] = "p.id_grupo = ?";
         $params[] = intval($_GET['id_grupo_cv']);

@@ -903,7 +903,20 @@ $result = $mysqli->query($query);
                                 </select>
                                 <label for="exp_m_tipo">Tipo Registro</label>
                             </div>
-                            <?php if (in_array($tipo_usuario, [5, 11])): ?>
+                            <?php if (in_array($tipo_usuario, [5, 11,1])): ?>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="exp_m_tipo_usuario" name="filtro_tipo_usuario">
+                                    <option value="">Todos</option>
+                                    <option value="10">Centro vida propio</option>
+                                    <option value="11">Ingeniero centro vida</option>
+                                    <option value="12">Centro vida alcaldía</option>
+                                </select>
+                                <label for="exp_m_tipo_usuario">Tipo de Usuario</label>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php if (in_array($tipo_usuario, [5, 11,1])): ?>
+                        <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="exp_m_func" name="filtro_funcionario">
                                     <option value="">Todos los funcionarios</option>
@@ -919,8 +932,8 @@ $result = $mysqli->query($query);
                                 </select>
                                 <label for="exp_m_func">Funcionario</label>
                             </div>
-                            <?php endif; ?>
                         </div>
+                        <?php endif; ?>
                     </div>
                     <div class="modal-footer justify-content-between">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

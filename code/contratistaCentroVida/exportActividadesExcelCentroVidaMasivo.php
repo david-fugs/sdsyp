@@ -13,11 +13,13 @@ $filtro_anio = isset($_GET['filtro_anio']) ? intval($_GET['filtro_anio']) : '';
 $filtro_mes = isset($_GET['filtro_mes']) ? intval($_GET['filtro_mes']) : '';
 $filtro_funcionario = isset($_GET['filtro_funcionario']) ? intval($_GET['filtro_funcionario']) : '';
 $filtro_tipo_registro = isset($_GET['filtro_tipo_registro']) ? $mysqli->real_escape_string($_GET['filtro_tipo_registro']) : '';
+$filtro_tipo_usuario = isset($_GET['filtro_tipo_usuario']) && is_numeric($_GET['filtro_tipo_usuario']) ? intval($_GET['filtro_tipo_usuario']) : '';
 $where_base='';
 if($filtro_anio){ $where_base.=" AND YEAR(mcv.fecha_atencion)=$filtro_anio"; }
 if($filtro_mes){ $where_base.=" AND MONTH(mcv.fecha_atencion)=$filtro_mes"; }
 if($filtro_funcionario){ $where_base.=" AND mcv.id_usuario=$filtro_funcionario"; }
 if($filtro_tipo_registro){ $where_base.=" AND mcv.tipo_registro='$filtro_tipo_registro'"; }
+if($filtro_tipo_usuario){ $where_base.=" AND u1.tipo_usuario=$filtro_tipo_usuario"; }
 
 // Aplicar filtro por grupo de usuario (tipo 11: INGENIERO CENTRO VIDA)
 if (debeAplicarFiltroGrupo($_SESSION['tipo_usuario'] ?? null) && isset($_SESSION['id_grupo'])) {

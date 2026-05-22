@@ -707,7 +707,20 @@ function deleteRegistro($id_registro)
                                 </select>
                                 <label for="exp_actividad">Actividad Centro Vida</label>
                             </div>
-                            <?php if (in_array($tipo_usuario_cv, [5, 11])): ?>
+                            <?php if (in_array($tipo_usuario_cv, [5, 11,1])): ?>
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="exp_tipo_usuario" name="filtro_tipo_usuario">
+                                    <option value="">Todos</option>
+                                    <option value="10">Centro vida propio</option>
+                                    <option value="11">Ingeniero centro vida</option>
+                                    <option value="12">Centro vida alcaldía</option>
+                                </select>
+                                <label for="exp_tipo_usuario">Tipo de Usuario</label>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php if (in_array($tipo_usuario_cv, [5, 11])): ?>
+                        <div class="row">
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="exp_funcionario" name="funcionario">
                                     <option value="">Todos los funcionarios</option>
@@ -717,8 +730,8 @@ function deleteRegistro($id_registro)
                                 </select>
                                 <label for="exp_funcionario">Funcionario</label>
                             </div>
-                            <?php endif; ?>
                         </div>
+                        <?php endif; ?>
                         <?php if ($tipo_usuario_cv === 5): ?>
                         <div class="row">
                             <div class="col-md-6 mb-3 form-floating">

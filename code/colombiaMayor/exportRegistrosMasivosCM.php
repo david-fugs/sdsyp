@@ -26,24 +26,21 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
 $usuario_id = $_SESSION['id'];
 
 // Obtener filtros de GET
-$filtro_fecha_inicio = isset($_GET['filtro_fecha_inicio']) && !empty($_GET['filtro_fecha_inicio']) ? $_GET['filtro_fecha_inicio'] : null;
-$filtro_fecha_fin = isset($_GET['filtro_fecha_fin']) && !empty($_GET['filtro_fecha_fin']) ? $_GET['filtro_fecha_fin'] : null;
-$filtro_usuario = isset($_GET['filtro_usuario']) && !empty($_GET['filtro_usuario']) ? intval($_GET['filtro_usuario']) : null;
+$filtro_fecha_inicio  = isset($_GET['filtro_fecha_inicio'])  && !empty($_GET['filtro_fecha_inicio'])  ? $_GET['filtro_fecha_inicio']  : null;
+$filtro_fecha_fin     = isset($_GET['filtro_fecha_fin'])     && !empty($_GET['filtro_fecha_fin'])     ? $_GET['filtro_fecha_fin']     : null;
+$filtro_usuario      = isset($_GET['filtro_usuario'])      && is_numeric($_GET['filtro_usuario'])   ? intval($_GET['filtro_usuario']) : null;
+$filtro_tipo_usuario = isset($_GET['filtro_tipo_usuario']) && is_numeric($_GET['filtro_tipo_usuario']) ? intval($_GET['filtro_tipo_usuario']) : null;
 
 // Filtro por usuario según permisos
 $where = "1=1";
 
 // Tipo 9 solo ve sus propios registros (sin importar el filtro)
-if($tipo_usuario == 9) {
-    $where .= " AND r.usuario_registro = '$usuario_id'";
-}
-// Tipo 8 puede filtrar por usuarios 8 y 9 si se pasa el filtro
-elseif($tipo_usuario == 8 && $filtro_usuario) {
+if ($tipo_usuario == 9) {
+    $where .= " AND r.usuario_registro = " . $usuario_id;
+} elseif ($filtro_usuario) {
     $where .= " AND r.usuario_registro = " . $filtro_usuario;
-}
-// Tipo 1 (Admin) puede filtrar por usuario si se pasa
-elseif($tipo_usuario == 1 && $filtro_usuario) {
-    $where .= " AND r.usuario_registro = " . $filtro_usuario;
+} elseif ($filtro_tipo_usuario) {
+    $where .= " AND u.tipo_usuario = " . $filtro_tipo_usuario;
 }
 
 // Aplicar filtros de fecha

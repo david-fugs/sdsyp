@@ -974,13 +974,26 @@ if ($result_count) {
                         </div>
                         
                         <?php if ($tipo_usuario == 1 || $tipo_usuario == 8): ?>
+                        <!-- Filtro tipo de usuario -->
+                        <div class="mb-3">
+                            <label for="filtro_tipo_usuario" class="form-label">Tipo de Usuario</label>
+                            <select class="form-select" id="filtro_tipo_usuario" name="filtro_tipo_usuario">
+                                <option value="">-- Todos --</option>
+                                <option value="8">Técnico Colombia Mayor</option>
+                                <option value="9">Contratista Colombia Mayor</option>
+                            </select>
+                        </div>
                         <!-- Filtro de usuario (solo para tipo 1 y 8) -->
                         <div class="mb-3">
                             <label for="filtro_usuario" class="form-label">Usuario</label>
                             <select class="form-select" id="filtro_usuario" name="filtro_usuario">
                                 <option value="">-- Todos --</option>
-                                <?php foreach ($usuarios_filtro as $usuario): ?>
-                                    <option value="<?= $usuario['id'] ?>"><?= htmlspecialchars($usuario['nombre']) ?></option>
+                                <?php
+                                $tipo_labels = [1 => 'Admin', 8 => 'Técnico CM', 9 => 'Contratista CM'];
+                                foreach ($usuarios_filtro as $usuario):
+                                    $label = $tipo_labels[$usuario['tipo_usuario']] ?? '';
+                                ?>
+                                    <option value="<?= $usuario['id'] ?>"><?= htmlspecialchars($usuario['nombre']) ?><?= $label ? ' (' . $label . ')' : '' ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
