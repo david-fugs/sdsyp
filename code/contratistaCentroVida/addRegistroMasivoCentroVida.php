@@ -1,10 +1,14 @@
 <?php
 session_start();
+ob_start();
 include("../../conexion.php");
+header('Content-Type: application/json');
 
 // Validar método
 if($_SERVER['REQUEST_METHOD']!=='POST'){
-    echo "<script>alert('Método no permitido');window.location='formMasivoCentroVida.php';</script>";exit;
+    ob_clean();
+    echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+    exit;
 }
 
 $id_meta = intval($_POST['id_meta'] ?? 0);
@@ -63,14 +67,20 @@ $vals = [
 
 $sql = "INSERT INTO masiva_centro_vida (" . $cols . ") VALUES (" . implode(',', $vals) . ")";
 
+$numero_grupo_ind = null;
+
 if ($mysqli->query($sql)) {
     // Si tipo_registro = Registro Actividad, generar registros individuales en registro_centro_vida
     if ($tipo_registro === 'Registro Actividad' && !empty($cedulas_json)) {
         $cedulas = json_decode($cedulas_json, true);
         if (is_array($cedulas) && count($cedulas) > 0) {
+            // Calcular próximo numero_grupo para los inserts individuales
+            $ng_res = $mysqli->query("SELECT COALESCE(MAX(numero_grupo), 0) + 1 AS next_ng FROM registro_centro_vida");
+            $numero_grupo_ind = $ng_res ? (int)$ng_res->fetch_assoc()['next_ng'] : 1;
+
             $stmt_ind = $mysqli->prepare(
-                "INSERT INTO registro_centro_vida (cedula_persona, id_meta, id_actividad, id_accion, id_actividad_centro_vida, politica_publica, departamento_procedencia, observacion, profesion, jornada, funcionario_registro, fecha_registro)
-                 VALUES (?, ?, ?, ?, ?, ?, '', ?, ?, ?, ?, NOW())"
+                "INSERT INTO registro_centro_vida (cedula_persona, id_meta, id_actividad, id_accion, id_actividad_centro_vida, politica_publica, departamento_procedencia, observacion, profesion, jornada, funcionario_registro, numero_grupo, fecha_registro)
+                 VALUES (?, ?, ?, ?, ?, ?, '', ?, ?, ?, ?, ?, NOW())"
             );
             $stmt_ge_ind = $mysqli->prepare(
                 "INSERT IGNORE INTO registro_centro_vida_grupo_externo (id_registro_centro_vida, id_grupo_externo)
@@ -80,7 +90,7 @@ if ($mysqli->query($sql)) {
                 foreach ($cedulas as $ced) {
                     $ced = trim($ced);
                     if (empty($ced)) continue;
-                    $stmt_ind->bind_param('siiiissssi',
+                    $stmt_ind->bind_param('siiiissssii',
                         $ced,
                         $id_meta,
                         $id_actividad,
@@ -90,7 +100,8 @@ if ($mysqli->query($sql)) {
                         $observacion_actividad,
                         $profesion,
                         $jornada,
-                        $id_usuario
+                        $id_usuario,
+                        $numero_grupo_ind
                     );
                     $stmt_ind->execute();
                     $id_reg_ind = $mysqli->insert_id;
@@ -111,10 +122,17 @@ if ($mysqli->query($sql)) {
             }
         }
     }
-    echo "<script>alert('Registro guardado correctamente');window.location='formMasivoCentroVida.php';</script>";
+    ob_clean();
+    $msg = 'Registro guardado correctamente';
+    if ($numero_grupo_ind !== null) {
+        $msg .= '. Quedó registrado con el Número de Grupo: ' . $numero_grupo_ind;
+    }
+    echo json_encode(['success' => true, 'message' => $msg, 'numero_grupo' => $numero_grupo_ind]);
 } else {
     $error = $mysqli->error;
-    echo "<script>alert('Error al guardar: " . addslashes($error) . "');window.location='formMasivoCentroVida.php';</script>";
+    ob_clean();
+    echo json_encode(['success' => false, 'message' => 'Error al guardar: ' . $error]);
 }
 
 $mysqli->close();
+

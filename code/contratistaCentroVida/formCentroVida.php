@@ -150,9 +150,26 @@ require_once('../filtros_grupos.php');
         }
 
         /* Tabla moderna */
+        .table-scroll-outer {
+            position: relative;
+        }
+        .table-top-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+            height: 12px;
+            margin-bottom: 2px;
+        }
+        .table-top-scroll-inner {
+            height: 1px;
+        }
         .modern-table-wrapper {
             padding: 0;
             overflow-x: auto;
+            cursor: grab;
+        }
+        .modern-table-wrapper.is-dragging {
+            cursor: grabbing;
+            user-select: none;
         }
 
         .modern-table {
@@ -515,6 +532,10 @@ function deleteRegistro($id_registro)
                         <i class="bi bi-people-fill"></i>
                         Agregar Grupal 
                     </button>
+                    <button type="button" id="btnGestionarGrupo" class="btn-modern" style="background:rgba(156,39,176,0.55);border-color:rgba(156,39,176,0.8);">
+                        <i class="bi bi-pencil-square"></i>
+                        Actualizar/Eliminar Grupo
+                    </button>
                     <button type="button" class="btn-modern" style="background:rgba(0,188,212,0.35);border-color:rgba(0,188,212,0.6);" data-bs-toggle="modal" data-bs-target="#modalControlAsistencia">
                         <i class="bi bi-calendar-check-fill"></i>
                         Control Asistencia
@@ -592,7 +613,9 @@ function deleteRegistro($id_registro)
             </div>
 
             <!-- Tabla moderna -->
-            <div class="modern-table-wrapper">
+            <div class="table-scroll-outer">
+            <div class="table-top-scroll" id="tableTopScroll"><div class="table-top-scroll-inner" id="tableTopScrollInner"></div></div>
+            <div class="modern-table-wrapper" id="tableWrapper">
                 <table class="modern-table" id="registrosTable">
                     <thead>
                         <tr>
@@ -606,6 +629,7 @@ function deleteRegistro($id_registro)
                             <th>Nombre actividad,evento o asunto</th>
                             <th>Funcionario</th>
                             <th>Fecha Registro</th>
+                            <th>N° Grupo</th>
                             <th class="col-actions">Acciones</th>
                         </tr>
                     </thead>
@@ -614,6 +638,7 @@ function deleteRegistro($id_registro)
                     </tbody>
                 </table>
             </div>
+            </div><!-- /.table-scroll-outer -->
             <!-- Paginación servidor -->
             <?php
             $pag_total     = isset($total_pages)      ? $total_pages      : 1;
@@ -2274,13 +2299,12 @@ function deleteRegistro($id_registro)
                     success: function(resp) {
                         Swal.close();
                         if (resp.success) {
+                            $('#modalMasivo').modal('hide');
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Hecho',
-                                text: resp.message
-                            });
-                            $('#modalMasivo').modal('hide');
-                            setTimeout(() => location.reload(), 1000);
+                                text: resp.message + '. Quedó registrado con el Número de Grupo: ' + resp.numero_grupo
+                            }).then(function() { location.reload(); });
                         } else {
                             Swal.fire({
                                 icon: 'error',
@@ -2468,6 +2492,60 @@ function deleteRegistro($id_registro)
         };
     </script>
 
+    <!-- ====== Tabla: scroll superior sincronizado + arrastrar ====== -->
+    <script>
+    (function() {
+        var wrapper = document.getElementById('tableWrapper');
+        var topBar  = document.getElementById('tableTopScroll');
+        var topInner = document.getElementById('tableTopScrollInner');
+        if (!wrapper || !topBar || !topInner) return;
+
+        // Ajustar el ancho del inner para que el scrollbar superior sea real
+        function syncWidth() {
+            topInner.style.width = wrapper.scrollWidth + 'px';
+        }
+        syncWidth();
+        window.addEventListener('resize', syncWidth);
+
+        // Sincronizar scroll mutuo sin bucle
+        var syncing = false;
+        wrapper.addEventListener('scroll', function() {
+            if (syncing) return;
+            syncing = true;
+            topBar.scrollLeft = wrapper.scrollLeft;
+            syncing = false;
+        });
+        topBar.addEventListener('scroll', function() {
+            if (syncing) return;
+            syncing = true;
+            wrapper.scrollLeft = topBar.scrollLeft;
+            syncing = false;
+        });
+
+        // Arrastrar con click sostenido
+        var isDragging = false, startX = 0, startScroll = 0;
+        wrapper.addEventListener('mousedown', function(e) {
+            // Ignorar clicks en botones o inputs dentro de la tabla
+            if (e.target.closest('button, a, input, select, textarea')) return;
+            isDragging = true;
+            startX = e.pageX;
+            startScroll = wrapper.scrollLeft;
+            wrapper.classList.add('is-dragging');
+            e.preventDefault();
+        });
+        document.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            var dx = e.pageX - startX;
+            wrapper.scrollLeft = startScroll - dx;
+        });
+        document.addEventListener('mouseup', function() {
+            if (!isDragging) return;
+            isDragging = false;
+            wrapper.classList.remove('is-dragging');
+        });
+    })();
+    </script>
+
     <!-- ====== Control de Asistencia JS ====== -->
     <script>
     $(function() {
@@ -2652,6 +2730,412 @@ function deleteRegistro($id_registro)
 
     });
     </script>
-</body>
+    <!-- Modal Gestionar Grupo -->
+    <div class="modal fade" id="modalGrupo" tabindex="-1" aria-labelledby="modalGrupoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#9c27b0,#e91e63);color:#fff;">
+                    <h5 class="modal-title" id="modalGrupoLabel">
+                        <i class="bi bi-pencil-square me-2"></i>Actualizar / Eliminar Registros por Grupo
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Paso 1: ingresar número de grupo -->
+                    <div id="grupoStep1">
+                        <p class="text-muted">Ingrese el número de grupo para cargar todos sus registros.</p>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Número de Grupo</label>
+                                <input type="number" class="form-control" id="input_numero_grupo" min="1" placeholder="Ej: 5">
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-primary w-100" id="btn_cargar_grupo">
+                                    <i class="bi bi-search"></i> Cargar Grupo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Paso 2: formulario preloaded -->
+                    <div id="grupoStep2" style="display:none;">
+                        <div class="alert alert-info d-flex align-items-center mb-3" id="grupo_info_banner">
+                            <i class="bi bi-people-fill me-2 fs-5"></i>
+                            <span id="grupo_info_texto"></span>
+                        </div>
+                        <!-- Lista de personas del grupo -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Personas del Grupo:</label>
+                            <div id="grupo_lista_personas" style="max-height:180px;overflow-y:auto;border:1px solid #e5e7eb;padding:8px;border-radius:6px;background:#f9fafb;"></div>
+                        </div>
+                        <hr>
+                        <!-- Formulario de encuesta (mismo que masivo) -->
+                        <form id="formGrupoUpdate">
+                            <input type="hidden" name="numero_grupo" id="hd_numero_grupo">
+                            <input type="hidden" name="fechas_seleccionadas" id="grupoFechasSeleccionadas">
 
+                            <div class="row">
+                                <div class="col-md-6 mb-3 form-floating">
+                                    <select class="form-select" id="gu_id_meta" name="id_meta" required>
+                                        <option value="">Seleccione Meta...</option>
+                                        <?php foreach ($result_metas as $meta) { ?>
+                                            <option value="<?= $meta['id_meta'] ?>"><?= htmlspecialchars($meta['descripcion_meta']) ?></option>
+                                        <?php } ?>
+                                    </select>
+                                    <label>Meta</label>
+                                </div>
+                                <div class="col-md-3 mb-3 form-floating">
+                                    <select class="form-select" id="gu_id_actividad" name="id_actividad" required disabled>
+                                        <option value="">Seleccione Actividad...</option>
+                                    </select>
+                                    <label>Actividad</label>
+                                </div>
+                                <div class="col-md-3 mb-3 form-floating">
+                                    <select class="form-select" id="gu_id_accion" name="id_accion" required disabled>
+                                        <option value="">Seleccione Acción...</option>
+                                    </select>
+                                    <label>Acción</label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3 form-floating">
+                                    <select class="form-select" id="gu_actividad_cv" name="id_actividad_centro_vida" required>
+                                        <option value="">Seleccione Actividad Centro Vida...</option>
+                                        <?php foreach ($result_actividades_cv as $acv) { ?>
+                                            <option value="<?= $acv['id_actividad_centro_vida'] ?>"><?= htmlspecialchars($acv['descripcion_actividad']) ?></option>
+                                        <?php } ?>
+                                    </select>
+                                    <label>Actividad Centro Vida</label>
+                                </div>
+                                <div class="col-md-6 mb-3 form-floating">
+                                    <select class="form-select" id="gu_politica" name="politica_publica">
+                                        <option value="">Seleccione Política Pública...</option>
+                                    </select>
+                                    <label>Política Pública</label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <input type="hidden" name="departamento_procedencia" value="Risaralda">
+                                <div class="col-md-6 mb-3 form-floating">
+                                    <select class="form-select" id="gu_profesion" name="profesion">
+                                        <option value="">Seleccione Profesión...</option>
+                                        <option value="Administrador">Administrador</option>
+                                        <option value="Auxiliar administrativo">Auxiliar administrativo</option>
+                                        <option value="Deportes">Deportes</option>
+                                        <option value="Enfermera">Enfermera</option>
+                                        <option value="Fisioterapeuta">Fisioterapeuta</option>
+                                        <option value="Gerontología">Gerontología</option>
+                                        <option value="Nutricionista">Nutricionista</option>
+                                        <option value="Psicología">Psicología</option>
+                                        <option value="Psicosocial">Psicosocial</option>
+                                        <option value="Tallerista">Tallerista</option>
+                                        <option value="Trabajo social">Trabajo social</option>
+                                    </select>
+                                    <label>Profesión</label>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Jornada</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="jornada" id="gu_jornada_manana" value="Mañana">
+                                            <label class="form-check-label" for="gu_jornada_manana">Mañana</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="jornada" id="gu_jornada_tarde" value="Tarde">
+                                            <label class="form-check-label" for="gu_jornada_tarde">Tarde</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label fw-bold">Fechas de Atención</label>
+                                    <input type="text" class="form-control" id="gu_fechas_atencion" placeholder="Seleccione fechas..." readonly required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="gu_observacion" name="observacion" style="height:80px;"></textarea>
+                                        <label>Nombre actividad, evento o asunto</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between" id="grupoFooter" style="display:none!important;">
+                    <div>
+                        <button type="button" class="btn btn-danger me-2" id="btn_eliminar_grupo">
+                            <i class="bi bi-trash-fill"></i> Eliminar Todo el Grupo
+                        </button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="btn_actualizar_grupo">
+                            <i class="bi bi-save"></i> Actualizar Grupo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // -------------------- JS Modal Gestionar Grupo --------------------
+    $(document).ready(function() {
+        let grupoFlatpickrInstance = null;
+        let grupoFechasArr = [];
+
+        $('#btnGestionarGrupo').on('click', function() {
+            // Reset modal
+            $('#grupoStep1').show();
+            $('#grupoStep2').hide();
+            $('#grupoFooter').hide().css('display', '');
+            $('#input_numero_grupo').val('');
+            $('#modalGrupo').modal('show');
+        });
+
+        // Inicializar flatpickr para fechas del grupo
+        $('#modalGrupo').on('shown.bs.modal', function() {
+            if (!grupoFlatpickrInstance) {
+                grupoFlatpickrInstance = flatpickr('#gu_fechas_atencion', {
+                    mode: 'multiple',
+                    dateFormat: 'Y-m-d',
+                    locale: 'es',
+                    onChange: function(dates) {
+                        grupoFechasArr = dates.map(d => d.toISOString().slice(0, 10));
+                        $('#grupoFechasSeleccionadas').val(JSON.stringify(grupoFechasArr));
+                    }
+                });
+            }
+        });
+
+        $('#btn_cargar_grupo').on('click', function() {
+            const ng = parseInt($('#input_numero_grupo').val());
+            if (!ng || ng <= 0) {
+                Swal.fire({ icon: 'warning', title: 'Número requerido', text: 'Ingrese un número de grupo válido.', toast: true, position: 'top-end', timer: 2500, showConfirmButton: false });
+                return;
+            }
+            const $btn = $(this);
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+            $.ajax({
+                url: 'getRegistrosByGrupo.php',
+                type: 'GET',
+                data: { numero_grupo: ng },
+                dataType: 'json',
+                success: function(resp) {
+                    if (!resp.success) {
+                        Swal.fire({ icon: 'error', title: 'Sin resultados', text: resp.message });
+                        return;
+                    }
+                    // Mostrar info banner
+                    const nPersonas = resp.registros.length;
+                    $('#grupo_info_texto').html('<strong>Grupo #' + ng + '</strong>: ' + nPersonas + ' persona(s) encontrada(s).');
+                    // Listar personas
+                    let html = '';
+                    resp.registros.forEach(function(r) {
+                        html += '<div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-person-fill text-primary"></i><span><strong>' +
+                            (r.nombre_completo || 'Sin nombre') + '</strong> — <small class="text-muted">' + r.cedula_persona + '</small></span></div>';
+                    });
+                    $('#grupo_lista_personas').html(html);
+
+                    // Precargar formulario con plantilla del grupo
+                    const p = resp.plantilla;
+                    $('#hd_numero_grupo').val(ng);
+                    $('#gu_actividad_cv').val(p.id_actividad_centro_vida || '');
+                    $('#gu_profesion').val(p.profesion || '');
+                    if (p.jornada) {
+                        $('input[name="jornada"][value="' + p.jornada.trim() + '"]').prop('checked', true);
+                    }
+                    $('#gu_observacion').val(p.observacion || '');
+
+                    // Cargar cascada Meta -> Actividad -> Acción -> Política
+                    cargarCascadaGrupo(p.id_meta, p.id_actividad, p.id_accion, p.politica_publica);
+
+                    // Cargar fechas
+                    if (resp.fechas && resp.fechas.length > 0) {
+                        grupoFechasArr = resp.fechas;
+                        $('#grupoFechasSeleccionadas').val(JSON.stringify(grupoFechasArr));
+                        if (grupoFlatpickrInstance) {
+                            grupoFlatpickrInstance.setDate(grupoFechasArr, true);
+                        }
+                    }
+
+                    $('#grupoStep2').show();
+                    $('#grupoFooter').show().css('display', 'flex');
+                },
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html('<i class="bi bi-search"></i> Cargar Grupo');
+                }
+            });
+        });
+
+        function cargarCascadaGrupo(idMeta, idActividad, idAccion, politicaPub) {
+            $('#gu_id_meta').val(idMeta || '');
+            $('#gu_id_actividad').empty().append('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
+            $('#gu_id_accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+            $('#gu_politica').empty().append('<option value="">Seleccione Política Pública...</option>');
+
+            if (!idMeta) return;
+            $.ajax({
+                url: '../personMovement/getActividades.php',
+                type: 'POST',
+                data: { id_meta: idMeta },
+                success: function(resp) {
+                    $('#gu_id_actividad').append(resp).prop('disabled', false);
+                    if (idActividad) {
+                        $('#gu_id_actividad').val(idActividad);
+                        $.ajax({
+                            url: '../personMovement/getAcciones.php',
+                            type: 'POST',
+                            data: { id_actividad: idActividad },
+                            success: function(resp2) {
+                                $('#gu_id_accion').append(resp2).prop('disabled', false);
+                                if (idAccion) {
+                                    $('#gu_id_accion').val(idAccion);
+                                    $.ajax({
+                                        url: '../personMovement/getPoliticaPublica.php',
+                                        type: 'POST',
+                                        data: { id_accion: idAccion },
+                                        dataType: 'json',
+                                        success: function(resp3) {
+                                            if (resp3 && resp3.politicas) {
+                                                resp3.politicas.forEach(function(pp) {
+                                                    $('#gu_politica').append('<option value="' + pp.id_politica + '">' + pp.descripcion_politica + '</option>');
+                                                });
+                                            }
+                                            if (politicaPub) $('#gu_politica').val(politicaPub);
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        // Cascada desde el modal de grupo cuando el usuario cambia manualmente
+        $('#gu_id_meta').on('change', function() {
+            const idMeta = $(this).val();
+            $('#gu_id_actividad').empty().append('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
+            $('#gu_id_accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+            $('#gu_politica').empty().append('<option value="">Seleccione Política Pública...</option>');
+            if (idMeta) {
+                $.ajax({ url: '../personMovement/getActividades.php', type: 'POST', data: { id_meta: idMeta },
+                    success: function(r) { $('#gu_id_actividad').append(r).prop('disabled', false); }
+                });
+            }
+        });
+        $('#gu_id_actividad').on('change', function() {
+            const idAct = $(this).val();
+            $('#gu_id_accion').empty().append('<option value="">Seleccione Acción...</option>').prop('disabled', true);
+            $('#gu_politica').empty().append('<option value="">Seleccione Política Pública...</option>');
+            if (idAct) {
+                $.ajax({ url: '../personMovement/getAcciones.php', type: 'POST', data: { id_actividad: idAct },
+                    success: function(r) { $('#gu_id_accion').append(r).prop('disabled', false); }
+                });
+            }
+        });
+        $('#gu_id_accion').on('change', function() {
+            const idAcc = $(this).val();
+            $('#gu_politica').empty().append('<option value="">Seleccione Política Pública...</option>');
+            if (idAcc) {
+                $.ajax({ url: '../personMovement/getPoliticaPublica.php', type: 'POST', data: { id_accion: idAcc }, dataType: 'json',
+                    success: function(r) {
+                        if (r && r.politicas) r.politicas.forEach(function(pp) {
+                            $('#gu_politica').append('<option value="' + pp.id_politica + '">' + pp.descripcion_politica + '</option>');
+                        });
+                    }
+                });
+            }
+        });
+
+        // Actualizar grupo
+        $('#btn_actualizar_grupo').on('click', function() {
+            const fechasVal = $('#grupoFechasSeleccionadas').val();
+            let fechasArr = [];
+            try { fechasArr = fechasVal ? JSON.parse(fechasVal) : []; } catch(e) { fechasArr = []; }
+            if (!fechasArr.length) {
+                Swal.fire({ icon: 'warning', title: 'Fechas requeridas', text: 'Seleccione al menos una fecha.', toast: true, position: 'top-end', timer: 2500, showConfirmButton: false });
+                return;
+            }
+            Swal.fire({
+                title: '¿Actualizar grupo?',
+                text: 'Se actualizarán todos los registros del grupo con los datos del formulario.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, actualizar',
+                cancelButtonText: 'Cancelar'
+            }).then(function(res) {
+                if (!res.isConfirmed) return;
+                const payload = $('#formGrupoUpdate').serializeArray();
+                const $btn = $('#btn_actualizar_grupo');
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+                $.ajax({
+                    url: 'updateRegistrosByGrupo.php',
+                    type: 'POST',
+                    data: $.param(payload) + '&accion=update',
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (resp.success) {
+                            $('#modalGrupo').modal('hide');
+                            Swal.fire({ icon: 'success', title: 'Actualizado', text: resp.message }).then(function() { location.reload(); });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Error', text: resp.message });
+                        }
+                    },
+                    error: function() { Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar.' }); },
+                    complete: function() { $btn.prop('disabled', false).html('<i class="bi bi-save"></i> Actualizar Grupo'); }
+                });
+            });
+        });
+
+        // Eliminar grupo
+        $('#btn_eliminar_grupo').on('click', function() {
+            const ng = $('#hd_numero_grupo').val();
+            Swal.fire({
+                title: '¿Eliminar todo el grupo?',
+                text: 'Se eliminarán TODOS los registros del grupo ' + ng + '. Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then(function(res) {
+                if (!res.isConfirmed) return;
+                $.ajax({
+                    url: 'updateRegistrosByGrupo.php',
+                    type: 'POST',
+                    data: { accion: 'delete', numero_grupo: ng },
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (resp.success) {
+                            $('#modalGrupo').modal('hide');
+                            Swal.fire({ icon: 'success', title: 'Eliminado', text: resp.message }).then(function() { location.reload(); });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Error', text: resp.message });
+                        }
+                    },
+                    error: function() { Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar.' }); }
+                });
+            });
+        });
+
+        // Limpiar al cerrar
+        $('#modalGrupo').on('hidden.bs.modal', function() {
+            $('#grupoStep1').show();
+            $('#grupoStep2').hide();
+            $('#grupoFooter').hide();
+            $('#input_numero_grupo').val('');
+            grupoFechasArr = [];
+            if (grupoFlatpickrInstance) grupoFlatpickrInstance.clear();
+        });
+    });
+    </script>
+
+</body>
 </html>

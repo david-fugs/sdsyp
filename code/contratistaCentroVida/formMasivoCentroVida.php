@@ -1544,6 +1544,43 @@ $result = $mysqli->query($query);
             $(document).on('input', '#cantidad_masculino, #cantidad_femenino', function() {
                 actualizarContadoresCV();
             });
+
+            // AJAX submit para #formAdd (solo para modal Agregar/Guardar)
+            $('#formAdd').on('submit', function(e) {
+                // Solo interceptar cuando action es addRegistroMasivoCentroVida.php (modo agregar)
+                if ($(this).attr('action') !== 'addRegistroMasivoCentroVida.php') return;
+                e.preventDefault();
+                const $btn = $('#btnSubmit');
+                $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Guardando...');
+                const formData = new FormData(this);
+                $.ajax({
+                    url: 'addRegistroMasivoCentroVida.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'json',
+                    success: function(resp) {
+                        $btn.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar');
+                        if (resp && resp.success) {
+                            const tipoReg = $('#tipo_registro').val();
+                            let msg = resp.message || 'Registro guardado correctamente';
+                            if (tipoReg === 'Registro Actividad' && resp.numero_grupo) {
+                                msg = 'Registro guardado correctamente. Quedó registrado con el Número de Grupo: ' + resp.numero_grupo;
+                            }
+                            Swal.fire({ icon: 'success', title: 'Hecho', text: msg }).then(function() {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Error', text: (resp && resp.message) ? resp.message : 'Error al guardar' });
+                        }
+                    },
+                    error: function(xhr) {
+                        $btn.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar');
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Error de comunicación con el servidor' });
+                    }
+                });
+            });
         });
     </script>
 

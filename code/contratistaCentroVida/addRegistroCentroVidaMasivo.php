@@ -56,6 +56,10 @@ try {
         throw new Exception('Debe seleccionar al menos una fecha de atención.');
     }
 
+    // Calcular próximo numero_grupo (autoincremental)
+    $ng_result = $mysqli->query("SELECT COALESCE(MAX(numero_grupo), 0) + 1 AS next_ng FROM registro_centro_vida");
+    $numero_grupo = $ng_result ? (int)$ng_result->fetch_assoc()['next_ng'] : 1;
+
     // Pre-cargar jornada de cada persona desde la tabla personas
     $jornadas_map = [];
     if (!empty($cedulas)) {
@@ -73,7 +77,7 @@ try {
     $mysqli->autocommit(FALSE);
 
     // INSERT: 1 registro por persona por fecha
-    $sql_insert = "INSERT INTO registro_centro_vida (cedula_persona, id_condicion, condicion_otra, id_meta, id_actividad, id_accion, id_actividad_centro_vida, politica_publica, departamento_procedencia, observacion, profesion, jornada, funcionario_registro, fecha_registro) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+    $sql_insert = "INSERT INTO registro_centro_vida (cedula_persona, id_condicion, condicion_otra, id_meta, id_actividad, id_accion, id_actividad_centro_vida, politica_publica, departamento_procedencia, observacion, profesion, jornada, funcionario_registro, numero_grupo, fecha_registro) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
     $stmt = $mysqli->prepare($sql_insert);
     if (!$stmt) throw new Exception('Error al preparar consulta principal: ' . $mysqli->error);
 
@@ -101,7 +105,7 @@ try {
             if (empty($f)) continue;
 
             // 1 registro por persona por fecha
-            $stmt->bind_param('sisiiiisssssi', $ced, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $profesion, $jornada_persona, $funcionario_registro);
+            $stmt->bind_param('sisiiiisssssii', $ced, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $profesion, $jornada_persona, $funcionario_registro, $numero_grupo);
             if (!$stmt->execute()) {
                 $failures[] = ['cedula' => $ced, 'fecha' => $f, 'error' => $stmt->error];
                 continue;
@@ -191,7 +195,7 @@ try {
     // ────────────────────────────────────────────────────────────────────────
 
     ob_clean();
-    echo json_encode(['success' => true, 'message' => "Registros agregados: $inserted"]);
+    echo json_encode(['success' => true, 'message' => "Registros agregados: $inserted", 'numero_grupo' => $numero_grupo]);
     exit;
 
 } catch (Exception $e) {
