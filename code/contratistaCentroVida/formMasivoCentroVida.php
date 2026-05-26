@@ -57,10 +57,10 @@ if (isset($_GET['delete'])) {
     }
 }
 if ($filtro_anio) {
-    $where .= " AND YEAR(ra.fecha_atencion) = $filtro_anio";
+    $where .= " AND YEAR(mcv.fecha_atencion) = $filtro_anio";
 }
 if ($filtro_mes) {
-    $where .= " AND MONTH(ra.fecha_atencion) = $filtro_mes";
+    $where .= " AND MONTH(mcv.fecha_atencion) = $filtro_mes";
 }
 if ($filtro_funcionario) {
     $where .= " AND mcv.id_usuario = $filtro_funcionario";

@@ -41,7 +41,7 @@ $stmt = $mysqli->prepare($sql);
 if(!$stmt){
   echo "<script>alert('Error preparando actualización: {$mysqli->error}');window.location='formMasivoCentroVida.php';</script>";exit;
 }
- $stmt->bind_param('iiisisssisiissssssiii',
+ $stmt->bind_param('iiisisssisiisssssiii',
  $id_meta,
  $id_actividad,
  $id_accion,
