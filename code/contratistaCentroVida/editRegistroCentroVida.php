@@ -11,6 +11,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// Sesión requerida — si expiró, rechazar en lugar de guardar datos sin usuario
+if (empty($_SESSION['id'])) {
+    echo json_encode(['success' => false, 'message' => 'Sesión expirada. Por favor recarga la página e inicia sesión nuevamente.']);
+    exit;
+}
+
 $id_registro = isset($_POST['id_registro_centro_vida']) ? intval($_POST['id_registro_centro_vida']) : 0;
 $cedula_persona = $_POST['cedula_persona'] ?? null;
 $id_condicion_raw = $_POST['id_condicion'] ?? null;
@@ -26,7 +32,7 @@ $observacion = $_POST['observacion'] ?? '';
 $profesion = $_POST['profesion'] ?? null;
 $jornada = $_POST['jornada'] ?? null;
 $grupos_externos_post = array_values(array_filter(array_map('intval', $_POST['grupos_externos'] ?? []), function($v){ return $v > 0; }));
-$funcionario_registro = isset($_SESSION['nombre']) ? $_SESSION['nombre'] : 'Sistema';
+$funcionario_registro = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
 
 $fechas_atencion_json = $_POST['fechas_atencion'] ?? '[]';
 
@@ -63,7 +69,7 @@ try {
     $stmt = $mysqli->prepare($sql_update);
     if (!$stmt) throw new Exception('Error al preparar consulta de actualización: ' . $mysqli->error);
 
-    $stmt->bind_param('sisiiiissssssi', $cedula_persona, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $profesion, $jornada, $funcionario_registro, $id_registro);
+    $stmt->bind_param('sisiiiisssssii', $cedula_persona, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $profesion, $jornada, $funcionario_registro, $id_registro);
 
     if (!$stmt->execute()) {
         throw new Exception('Error al actualizar registro: ' . $stmt->error);
