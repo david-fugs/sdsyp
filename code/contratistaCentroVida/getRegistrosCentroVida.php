@@ -42,6 +42,7 @@ $query = "
         IFNULL(u.nombre, '') AS nombre_funcionario,
         rcv.fecha_registro,
         rcv.numero_grupo,
+        rcv.jornada,
         GROUP_CONCAT(rcvf.fecha_atencion ORDER BY rcvf.fecha_atencion ASC SEPARATOR ', ') as fechas_programadas
     FROM registro_centro_vida rcv
     INNER JOIN personas p ON rcv.cedula_persona = p.cedula_persona
@@ -186,6 +187,17 @@ if ($result && $result->num_rows > 0) {
         echo "<td>" . htmlspecialchars($row['nombre_funcionario']) . "</td>";
         echo "<td>" . date('d/m/Y H:i', strtotime($row['fecha_registro'])) . "</td>";
         echo "<td>" . ($row['numero_grupo'] ? htmlspecialchars($row['numero_grupo']) : '-') . "</td>";
+        // Jornada
+        $jornada_val = $row['jornada'] ?? '';
+        $jornada_badge = '';
+        if ($jornada_val === 'Mañana') {
+            $jornada_badge = '<span class="badge" style="background:#1976d2">Mañana</span>';
+        } elseif ($jornada_val === 'Tarde') {
+            $jornada_badge = '<span class="badge" style="background:#f57c00">Tarde</span>';
+        } else {
+            $jornada_badge = '<span class="text-muted">—</span>';
+        }
+        echo "<td>" . $jornada_badge . "</td>";
 
         // Botones de acción
         $editarOnclick = 'editarRegistro(' . $row['id_registro_centro_vida'] . ')';
@@ -204,7 +216,7 @@ if ($result && $result->num_rows > 0) {
 } else {
     echo "<tr>";
     // Ajustar colspan tras remover columna 'actividad_realizada'
-    echo "<td colspan='12' class='text-center text-muted py-4'>";
+    echo "<td colspan='13' class='text-center text-muted py-4'>";
     echo "<i class='bi bi-inbox fs-1 d-block mb-2' style='color: #e5e7eb;'></i>";
     echo "No hay registros de centro vida";
     echo "</td>";

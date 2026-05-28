@@ -56,7 +56,7 @@ $sql_personas = "SELECT p.cedula_persona,
                         p.jornada
                  FROM personas p
                  WHERE p.id_grupo = $id_grupo_ses
-                 ORDER BY p.apellidos_persona ASC, p.nombres_persona ASC";
+                 ORDER BY p.apellidos_persona ASC";
 $res_personas = $mysqli->query($sql_personas);
 $personas_all = $res_personas ? $res_personas->fetch_all(MYSQLI_ASSOC) : [];
 
@@ -156,7 +156,8 @@ function llenarHojaConsolidado($sheet, $personas, $jornada_hoja, $id_grupo_ses, 
                 FROM registro_centro_vida rcv
                 INNER JOIN registro_centro_vida_fechas rcvf ON rcvf.id_registro_centro_vida = rcv.id_registro_centro_vida
                 INNER JOIN personas p ON p.cedula_persona = rcv.cedula_persona
-                WHERE $where_rec";
+                WHERE $where_rec
+                ORDER BY p.apellidos_persona ASC, p.nombres_persona ASC";
     $res_reg = $mysqli->query($sql_reg);
     $matriz = [];
     if ($res_reg) {
@@ -172,7 +173,7 @@ function llenarHojaConsolidado($sheet, $personas, $jornada_hoja, $id_grupo_ses, 
 
     foreach ($personas_jornada as $per) {
         $ced    = $per['cedula_persona'];
-        $nombre = $per['nombres_persona'] . ' ' . $per['apellidos_persona'];
+        $nombre = $per['apellidos_persona'] . ' ' . $per['nombres_persona'];
         $genero = $per['genero_persona'] ?? '';
 
         $sheet->setCellValue('A' . $fila, $ced);

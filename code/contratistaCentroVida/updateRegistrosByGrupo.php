@@ -38,6 +38,105 @@ if ($accion === 'delete') {
     exit;
 }
 
+if ($accion === 'delete_persona') {
+    $id_reg = isset($_POST['id_registro_centro_vida']) ? intval($_POST['id_registro_centro_vida']) : 0;
+    if ($id_reg <= 0) {
+        echo json_encode(['success' => false, 'message' => 'ID de registro inválido.']);
+        exit;
+    }
+    $mysqli->query("DELETE FROM registro_centro_vida_fechas WHERE id_registro_centro_vida = " . $id_reg);
+    $mysqli->query("DELETE FROM registro_centro_vida_grupo_externo WHERE id_registro_centro_vida = " . $id_reg);
+    $del = $mysqli->query("DELETE FROM registro_centro_vida WHERE id_registro_centro_vida = " . $id_reg);
+    if ($del) {
+        echo json_encode(['success' => true, 'message' => 'Registro eliminado correctamente.']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Error al eliminar: ' . $mysqli->error]);
+    }
+    exit;
+}
+
+if ($accion === 'add_persona') {
+    $cedula_persona = trim($_POST['cedula_persona'] ?? '');
+    if (empty($cedula_persona)) {
+        echo json_encode(['success' => false, 'message' => 'La cédula es requerida.']);
+        exit;
+    }
+    // Verify person exists
+    $chk = $mysqli->prepare("SELECT cedula_persona FROM personas WHERE cedula_persona = ?");
+    if (!$chk) { echo json_encode(['success' => false, 'message' => 'Error BD.']); exit; }
+    $chk->bind_param('s', $cedula_persona);
+    $chk->execute();
+    $chk->store_result();
+    if ($chk->num_rows === 0) {
+        $chk->close();
+        echo json_encode(['success' => false, 'message' => 'No se encontró una persona con esa cédula.']);
+        exit;
+    }
+    $chk->close();
+
+    $id_meta                  = intval($_POST['id_meta'] ?? 0);
+    $id_actividad             = intval($_POST['id_actividad'] ?? 0);
+    $id_accion                = intval($_POST['id_accion'] ?? 0);
+    $id_actividad_centro_vida = intval($_POST['id_actividad_centro_vida'] ?? 0);
+    $politica_publica         = $_POST['politica_publica'] ?? '';
+    $departamento_procedencia = $_POST['departamento_procedencia'] ?? 'Risaralda';
+    $observacion              = $_POST['observacion'] ?? '';
+    $profesion                = $_POST['profesion'] ?? '';
+    $jornada                  = trim($_POST['jornada'] ?? '');
+    $fechas_json              = $_POST['fechas_seleccionadas'] ?? '[]';
+    $funcionario_registro     = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
+    // Get id_condicion from group template
+    $cond_res = $mysqli->query("SELECT id_condicion, condicion_otra FROM registro_centro_vida WHERE numero_grupo = " . intval($numero_grupo) . " LIMIT 1");
+    $id_condicion = 5; $condicion_otra = null;
+    if ($cond_res && $row_c = $cond_res->fetch_assoc()) {
+        $id_condicion = $row_c['id_condicion'];
+        $condicion_otra = $row_c['condicion_otra'];
+    }
+
+    $fechas = json_decode($fechas_json, true);
+    if (!is_array($fechas) || empty($fechas)) {
+        echo json_encode(['success' => false, 'message' => 'Debe seleccionar al menos una fecha.']);
+        exit;
+    }
+
+    $mysqli->autocommit(FALSE);
+    try {
+        $sql_ins = "INSERT INTO registro_centro_vida
+            (cedula_persona, id_condicion, condicion_otra, id_meta, id_actividad, id_accion,
+             id_actividad_centro_vida, politica_publica, departamento_procedencia, observacion,
+             profesion, jornada, funcionario_registro, numero_grupo, fecha_registro)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        $stmt_ins = $mysqli->prepare($sql_ins);
+        if (!$stmt_ins) throw new Exception('Error preparando INSERT: ' . $mysqli->error);
+        $stmt_ins->bind_param('ssiiiiiissssii',
+            $cedula_persona, $id_condicion, $condicion_otra,
+            $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida,
+            $politica_publica, $departamento_procedencia, $observacion,
+            $profesion, $jornada, $funcionario_registro, $numero_grupo);
+        if (!$stmt_ins->execute()) throw new Exception('Error al insertar: ' . $stmt_ins->error);
+        $new_id = $mysqli->insert_id;
+        $stmt_ins->close();
+
+        $stmt_f = $mysqli->prepare("INSERT INTO registro_centro_vida_fechas (id_registro_centro_vida, fecha_atencion) VALUES (?, ?)");
+        if (!$stmt_f) throw new Exception('Error preparando fechas: ' . $mysqli->error);
+        foreach ($fechas as $f) {
+            if (empty(trim($f))) continue;
+            $stmt_f->bind_param('is', $new_id, $f);
+            $stmt_f->execute();
+        }
+        $stmt_f->close();
+
+        $mysqli->commit();
+        $mysqli->autocommit(TRUE);
+        echo json_encode(['success' => true, 'message' => 'Persona agregada al grupo correctamente.', 'id_registro' => $new_id]);
+    } catch (Exception $e) {
+        $mysqli->rollback();
+        $mysqli->autocommit(TRUE);
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+
 // Acción update
 $id_meta                 = intval($_POST['id_meta'] ?? 0);
 $id_actividad            = intval($_POST['id_actividad'] ?? 0);

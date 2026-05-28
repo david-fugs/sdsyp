@@ -392,6 +392,7 @@ $result_personas = $result_personas_query->fetch_all(MYSQLI_ASSOC);
 
 // Variables de sesión para control de permisos
 $tipo_usuario_cv = isset($_SESSION['tipo_usuario']) ? (int)$_SESSION['tipo_usuario'] : 0;
+
 $id_usuario_cv   = isset($_SESSION['id'])           ? (int)$_SESSION['id']           : 0;
 
 // Grupos CV para el modal de exportación
@@ -544,7 +545,7 @@ function deleteRegistro($id_registro)
                         <i class="bi bi-file-excel"></i>
                         Exportar Excel
                     </button>
-                    <?php if ($tipo_usuario_cv === 11): ?>
+                    <?php if ($tipo_usuario_cv === 11 ): ?>
                     <button type="button" class="btn-modern" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.4);" data-bs-toggle="modal" data-bs-target="#modalConsolidado">
                         <i class="bi bi-calendar3"></i>
                         Consolidado por Mes
@@ -630,6 +631,7 @@ function deleteRegistro($id_registro)
                             <th>Funcionario</th>
                             <th>Fecha Registro</th>
                             <th>N° Grupo</th>
+                            <th>Jornada</th>
                             <th class="col-actions">Acciones</th>
                         </tr>
                     </thead>
@@ -782,7 +784,8 @@ function deleteRegistro($id_registro)
         </div>
     </div>
 
-    <?php if ($tipo_usuario_cv === 11): ?>
+    <?php 
+     if ($tipo_usuario_cv === 11 ):      ?>
     <!-- Modal Consolidado por Mes (solo tipo_usuario 11) -->
     <div class="modal fade" id="modalConsolidado" tabindex="-1" aria-labelledby="modalConsolidadoLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -986,7 +989,7 @@ function deleteRegistro($id_registro)
                             <div class="row">
                                 <input type="hidden" name="departamento_procedencia" value="Risaralda">
                                 <div class="col-md-6 mb-3 form-floating">
-                                    <select class="form-select" id="politica_publica_masivo" name="politica_publica">
+                                    <select class="form-select" id="politica_publica_masivo" name="politica_publica" required>
                                         <option value="" selected>Seleccione Política Pública...</option>
                                     </select>
                                     <label for="politica_publica_masivo">Política Pública</label>
@@ -1299,7 +1302,7 @@ function deleteRegistro($id_registro)
                                 <label class="form-label fw-bold">Grupos Externos</label>
                                 <div id="grupos_externos_ind_container">
                                     <div class="input-group mb-2 grupo-externo-row-ind">
-                                        <select class="form-select" name="grupos_externos[]">
+                                        <select class="form-select" name="grupos_externos[]" required>
                                             <?= $grupoExternoOptionsHtml ?>
                                         </select>
                                         <button type="button" class="btn btn-danger btn-remove-ge-ind" tabindex="-1">
@@ -2765,7 +2768,29 @@ function deleteRegistro($id_registro)
                         <!-- Lista de personas del grupo -->
                         <div class="mb-3">
                             <label class="form-label fw-bold">Personas del Grupo:</label>
-                            <div id="grupo_lista_personas" style="max-height:180px;overflow-y:auto;border:1px solid #e5e7eb;padding:8px;border-radius:6px;background:#f9fafb;"></div>
+                            <div id="grupo_lista_personas" style="max-height:200px;overflow-y:auto;border:1px solid #e5e7eb;padding:8px;border-radius:6px;background:#f9fafb;"></div>
+                        </div>
+                        <!-- Agregar persona al grupo -->
+                        <div class="mb-3 p-3" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
+                            <label class="form-label fw-bold text-success"><i class="bi bi-person-plus-fill me-1"></i>Agregar Persona al Grupo</label>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-5">
+                                    <input type="number" class="form-control" id="gu_nueva_cedula" placeholder="Número de documento...">
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="button" class="btn btn-outline-success w-100" id="btn_buscar_persona_grupo">
+                                        <i class="bi bi-search"></i> Buscar
+                                    </button>
+                                </div>
+                                <div class="col-md-4" id="gu_persona_encontrada_wrap" style="display:none;">
+                                    <div class="alert alert-success py-2 mb-0 d-flex align-items-center justify-content-between">
+                                        <span id="gu_persona_encontrada_nombre" class="fw-semibold small"></span>
+                                        <button type="button" class="btn btn-success btn-sm ms-2" id="btn_agregar_persona_grupo">
+                                            <i class="bi bi-plus-circle-fill"></i> Agregar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <hr>
                         <!-- Formulario de encuesta (mismo que masivo) -->
@@ -2885,6 +2910,142 @@ function deleteRegistro($id_registro)
     $(document).ready(function() {
         let grupoFlatpickrInstance = null;
         let grupoFechasArr = [];
+        let grupoRegistrosActuales = []; // cache de registros del grupo cargado
+
+        function renderGrupoPersonas(registros) {
+            grupoRegistrosActuales = registros;
+            let html = '';
+            registros.forEach(function(r) {
+                html += '<div class="d-flex align-items-center justify-content-between mb-1" id="gp_row_' + r.id_registro_centro_vida + '">'
+                    + '<span><i class="bi bi-person-fill text-primary me-1"></i><strong>'
+                    + (r.nombre_completo || 'Sin nombre') + '</strong> — <small class="text-muted">' + r.cedula_persona + '</small></span>'
+                    + '<button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-persona-grupo" data-id="' + r.id_registro_centro_vida + '" title="Eliminar este registro">'
+                    + '<i class="bi bi-trash-fill"></i></button>'
+                    + '</div>';
+            });
+            $('#grupo_lista_personas').html(html || '<span class="text-muted small">Sin personas en el grupo.</span>');
+            const ng = $('#hd_numero_grupo').val();
+            $('#grupo_info_texto').html('<strong>Grupo #' + ng + '</strong>: ' + registros.length + ' persona(s) encontrada(s).');
+        }
+
+        // Eliminar persona individual del grupo
+        $(document).on('click', '.btn-eliminar-persona-grupo', function() {
+            const idReg = $(this).data('id');
+            Swal.fire({
+                title: '¿Eliminar persona?',
+                text: 'Se eliminará este registro del grupo.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then(function(res) {
+                if (!res.isConfirmed) return;
+                $.ajax({
+                    url: 'updateRegistrosByGrupo.php',
+                    type: 'POST',
+                    data: { accion: 'delete_persona', numero_grupo: $('#hd_numero_grupo').val(), id_registro_centro_vida: idReg },
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (resp.success) {
+                            const nuevos = grupoRegistrosActuales.filter(function(r) { return r.id_registro_centro_vida != idReg; });
+                            renderGrupoPersonas(nuevos);
+                            Swal.fire({ icon: 'success', title: 'Eliminado', text: resp.message, toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Error', text: resp.message });
+                        }
+                    },
+                    error: function() { Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar.' }); }
+                });
+            });
+        });
+
+        // Buscar persona para agregar al grupo
+        $('#btn_buscar_persona_grupo').on('click', function() {
+            const cedula = $('#gu_nueva_cedula').val().trim();
+            if (!cedula) { Swal.fire({ icon: 'warning', title: 'Cédula requerida', text: 'Ingrese el número de documento.', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false }); return; }
+            $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+            $('#gu_persona_encontrada_wrap').hide();
+            $.ajax({
+                url: '../buscar_persona.php',
+                type: 'POST',
+                data: { cedula: cedula },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.encontrado) {
+                        const nombre = ((response.nombres || '') + ' ' + (response.apellidos || '')).trim();
+                        $('#gu_persona_encontrada_nombre').text(nombre || cedula);
+                        $('#gu_persona_encontrada_wrap').show();
+                    } else {
+                        Swal.fire({ icon: 'warning', title: 'No encontrado', text: 'No se encontró ninguna persona con esa cédula.', toast: true, position: 'top-end', timer: 2500, showConfirmButton: false });
+                    }
+                },
+                error: function() { Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo consultar la persona.' }); },
+                complete: function() { $('#btn_buscar_persona_grupo').prop('disabled', false).html('<i class="bi bi-search"></i> Buscar'); }
+            });
+        });
+
+        // Agregar persona al grupo
+        $('#btn_agregar_persona_grupo').on('click', function() {
+            const cedula = $('#gu_nueva_cedula').val().trim();
+            const ng = $('#hd_numero_grupo').val();
+            if (!cedula || !ng) return;
+            // Validate form data
+            const idMeta = $('#gu_id_meta').val();
+            const idAct  = $('#gu_id_actividad').val();
+            const idAcc  = $('#gu_id_accion').val();
+            const idActCV = $('#gu_actividad_cv').val();
+            const fechasVal = $('#grupoFechasSeleccionadas').val();
+            let fechasArr = [];
+            try { fechasArr = fechasVal ? JSON.parse(fechasVal) : []; } catch(e) { fechasArr = []; }
+            if (!fechasArr.length) {
+                Swal.fire({ icon: 'warning', title: 'Fechas requeridas', text: 'Seleccione al menos una fecha antes de agregar.', toast: true, position: 'top-end', timer: 2500, showConfirmButton: false });
+                return;
+            }
+            const $btn = $(this);
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+            $.ajax({
+                url: 'updateRegistrosByGrupo.php',
+                type: 'POST',
+                data: {
+                    accion: 'add_persona',
+                    numero_grupo: ng,
+                    cedula_persona: cedula,
+                    id_meta: idMeta,
+                    id_actividad: idAct,
+                    id_accion: idAcc,
+                    id_actividad_centro_vida: idActCV,
+                    politica_publica: $('#gu_politica').val(),
+                    departamento_procedencia: $('input[name="departamento_procedencia"]', '#formGrupoUpdate').val() || 'Risaralda',
+                    observacion: $('#gu_observacion').val(),
+                    profesion: $('#gu_profesion').val(),
+                    jornada: $('input[name="jornada"]:checked').val() || '',
+                    fechas_seleccionadas: fechasVal
+                },
+                dataType: 'json',
+                success: function(resp) {
+                    if (resp.success) {
+                        // Reload group list
+                        $.ajax({
+                            url: 'getRegistrosByGrupo.php',
+                            type: 'GET',
+                            data: { numero_grupo: ng },
+                            dataType: 'json',
+                            success: function(r2) {
+                                if (r2.success) renderGrupoPersonas(r2.registros);
+                            }
+                        });
+                        $('#gu_nueva_cedula').val('');
+                        $('#gu_persona_encontrada_wrap').hide();
+                        Swal.fire({ icon: 'success', title: 'Agregado', text: resp.message, toast: true, position: 'top-end', timer: 2200, showConfirmButton: false });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: resp.message });
+                    }
+                },
+                error: function() { Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar.' }); },
+                complete: function() { $btn.prop('disabled', false).html('<i class="bi bi-plus-circle-fill"></i> Agregar'); }
+            });
+        });
 
         $('#btnGestionarGrupo').on('click', function() {
             // Reset modal
@@ -2931,13 +3092,8 @@ function deleteRegistro($id_registro)
                     // Mostrar info banner
                     const nPersonas = resp.registros.length;
                     $('#grupo_info_texto').html('<strong>Grupo #' + ng + '</strong>: ' + nPersonas + ' persona(s) encontrada(s).');
-                    // Listar personas
-                    let html = '';
-                    resp.registros.forEach(function(r) {
-                        html += '<div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-person-fill text-primary"></i><span><strong>' +
-                            (r.nombre_completo || 'Sin nombre') + '</strong> — <small class="text-muted">' + r.cedula_persona + '</small></span></div>';
-                    });
-                    $('#grupo_lista_personas').html(html);
+                    // Listar personas con botón eliminar
+                    renderGrupoPersonas(resp.registros);
 
                     // Precargar formulario con plantilla del grupo
                     const p = resp.plantilla;
@@ -3132,6 +3288,9 @@ function deleteRegistro($id_registro)
             $('#grupoFooter').hide();
             $('#input_numero_grupo').val('');
             grupoFechasArr = [];
+            grupoRegistrosActuales = [];
+            $('#gu_nueva_cedula').val('');
+            $('#gu_persona_encontrada_wrap').hide();
             if (grupoFlatpickrInstance) grupoFlatpickrInstance.clear();
         });
     });
