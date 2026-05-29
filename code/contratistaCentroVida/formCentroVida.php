@@ -1302,7 +1302,7 @@ function deleteRegistro($id_registro)
                                 <label class="form-label fw-bold">Grupos Externos</label>
                                 <div id="grupos_externos_ind_container">
                                     <div class="input-group mb-2 grupo-externo-row-ind">
-                                        <select class="form-select" name="grupos_externos[]" required>
+                                        <select class="form-select" name="grupos_externos[]" >
                                             <?= $grupoExternoOptionsHtml ?>
                                         </select>
                                         <button type="button" class="btn btn-danger btn-remove-ge-ind" tabindex="-1">

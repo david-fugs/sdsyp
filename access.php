@@ -881,7 +881,7 @@ $mysqli->close();
                 <a href="code/reports/seeReports.php" class="nav_link sublink">Informes Anuales</a>
               </ul>
             </li>
-            <?php if ($tipo_usuario != 4) { ?>
+            <?php if ($tipo_usuario != 4 && $tipo_usuario != 2) { ?>
               <li class="item">
                 <div href="#" class="nav_link submenu_item">
                   <span class="navlink_icon">
