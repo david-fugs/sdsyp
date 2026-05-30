@@ -11,48 +11,6 @@ if (!isset($_SESSION['tipo_usuario']) || !in_array($_SESSION['tipo_usuario'], [1
 $tipo_usuario = $_SESSION['tipo_usuario'];
 $id_usuario = $_SESSION['id'];
 
-// Construir query base para personas
-$where = "WHERE 1=1";
-
-// Si es contratista (tipo 9), solo ver sus propios registros
-if ($tipo_usuario == 9) {
-    $where .= " AND usuario_registro = '$id_usuario'";
-}
-
-// Filtro por cédula (búsqueda parcial)
-if (!empty($_GET['cedula'])) {
-    $cedula = $mysqli->real_escape_string($_GET['cedula']);
-    $where .= " AND cedula_persona_cm LIKE '%$cedula%'";
-}
-
-// Filtro por nombre
-if (!empty($_GET['nombre'])) {
-    $nombre = $mysqli->real_escape_string($_GET['nombre']);
-    $where .= " AND (nombres_persona_cm LIKE '%$nombre%' OR apellidos_persona_cm LIKE '%$nombre%')";
-}
-
-// Filtro por estado
-if (!empty($_GET['estado'])) {
-    $estado = $mysqli->real_escape_string($_GET['estado']);
-    $where .= " AND estado_cm LIKE '%$estado%'";
-}
-
-// Consulta de personas con filtros
-$query_personas = "
-    SELECT 
-        p.*,
-        u.nombre AS nombre_contratista
-    FROM personas_colombia_mayor p
-    LEFT JOIN usuarios u ON p.usuario_registro = u.id
-    $where
-    ORDER BY p.apellidos_persona_cm ASC, p.nombres_persona_cm ASC
-";
-
-$result_personas = $mysqli->query($query_personas);
-if (!$result_personas) {
-    die("Error en la consulta de personas: " . $mysqli->error);
-}
-
 // Consultas para selectores
 $metas = "SELECT * FROM metas ORDER BY descripcion_meta ASC";
 $result_metas = $mysqli->query($metas);
@@ -271,130 +229,7 @@ function deleteMember($cedula_persona_cm)
                         </tr>
                     </thead>
                     <tbody>
-                        <?php
-                        if ($result_personas && $result_personas->num_rows > 0) {
-                            while ($row = $result_personas->fetch_assoc()) {
-                                // Calcular edad si tiene fecha de nacimiento
-                                $edad_texto = 'N/A';
-                                if ($row['fecha_nacimiento_cm'] && $row['fecha_nacimiento_cm'] != '0000-00-00') {
-                                    $hoy = new DateTime();
-                                    $nacimiento = new DateTime($row['fecha_nacimiento_cm']);
-                                    $edad = $hoy->diff($nacimiento)->y;
-                                    $edad_texto = $edad . ' años';
-                                } elseif ($row['edad_cm']) {
-                                    $edad_texto = $row['edad_cm'] . ' años';
-                                }
-
-                                // Determinar badge de estado
-                                $badge_class = 'status-badge status-secondary';
-                                $estado_icon = '<i class="bi bi-circle-fill"></i>';
-                                $estado_value = strtoupper($row['estado_cm'] ?? '');
-                                
-                                // Detectar estado por palabras clave
-                                if ($estado_value === 'ACTIVO' || stripos($estado_value, 'ACTIVO') !== false) {
-                                    $badge_class = 'status-badge status-active';
-                                    $estado_icon = '<i class="bi bi-check-circle-fill"></i>';
-                                } elseif (stripos($estado_value, 'FALLECIDO') !== false || stripos($estado_value, 'FALLECIDA') !== false) {
-                                    $badge_class = 'status-badge status-secondary';
-                                    $estado_icon = '<i class="bi bi-x-circle-fill"></i>';
-                                } elseif (stripos($estado_value, 'RETIRO') !== false || stripos($estado_value, 'RETIRADO') !== false) {
-                                    $badge_class = 'status-badge status-info';
-                                    $estado_icon = '<i class="bi bi-arrow-left-circle-fill"></i>';
-                                } elseif (stripos($estado_value, 'SUSPENDIDO') !== false || stripos($estado_value, 'SUSPENDIDA') !== false) {
-                                    $badge_class = 'status-badge status-warning';
-                                    $estado_icon = '<i class="bi bi-pause-circle-fill"></i>';
-                                } elseif (stripos($estado_value, 'POTENCIAL') !== false || stripos($estado_value, 'BENEFICIARIO') !== false) {
-                                    $badge_class = 'status-badge status-info';
-                                    $estado_icon = '<i class="bi bi-person-fill-add"></i>';
-                                } elseif ($estado_value === 'INSCRITO') {
-                                    $badge_class = 'status-badge status-primary';
-                                    $estado_icon = '<i class="bi bi-person-check-fill"></i>';
-                                } elseif (stripos($estado_value, 'ESPERA') !== false || stripos($estado_value, 'LISTA') !== false) {
-                                    $badge_class = 'status-badge status-warning';
-                                    $estado_icon = '<i class="bi bi-clock-fill"></i>';
-                                } elseif (stripos($estado_value, 'BDUA') !== false || stripos($estado_value, 'BLOQUEO') !== false || stripos($estado_value, 'DUPLICIDAD') !== false) {
-                                    $badge_class = 'status-badge status-danger';
-                                    $estado_icon = '<i class="bi bi-exclamation-triangle-fill"></i>';
-                                }
-
-                                // Formatear fecha de ingreso
-                                $fecha_ingreso = 'N/A';
-                                if ($row['fecha_ingreso_cm'] && $row['fecha_ingreso_cm'] != '0000-00-00') {
-                                    $fecha_ingreso = date('d/m/Y', strtotime($row['fecha_ingreso_cm']));
-                                }
-
-                                echo "<tr class='fade-in'>";
-                                echo "<td><strong>" . htmlspecialchars($row['cedula_persona_cm']) . "</strong></td>";
-                                echo "<td>";
-                                echo "<b>" . htmlspecialchars($row['nombres_persona_cm'] . ' ' . $row['apellidos_persona_cm']) . "</b><br>";
-                                echo "<span class='cm-badge'><i class='bi bi-award-fill'></i> Colombia Mayor</span>";
-                                echo "</td>";
-                                echo "<td>" . htmlspecialchars($row['genero_persona_cm'] ?? 'N/A') . "</td>";
-                                echo "<td><span class='badge bg-primary'>" . $edad_texto . "</span></td>";
-                                echo "<td>" . htmlspecialchars($row['telefono_persona_cm'] ?? 'N/A') . "</td>";
-                                echo "<td>" . $fecha_ingreso . "</td>";
-                                echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('_', ' ', $row['estado_cm']) . "</span></td>";
-
-                                // Botones de acción
-                                echo '<td class="col-actions">
-                                        <div class="action-buttons">
-                                            <button type="button" class="btn-action btn-edit" 
-                                                title="Editar persona"
-                                                data-bs-toggle="modal" data-bs-target="#modalEdicion"
-                                                data-cedula="' . htmlspecialchars($row['cedula_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-tipo-identificacion="' . htmlspecialchars($row['tipo_identificacion_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-nombres="' . htmlspecialchars($row['nombres_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-apellidos="' . htmlspecialchars($row['apellidos_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-genero="' . htmlspecialchars($row['genero_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-telefono="' . htmlspecialchars($row['telefono_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-telefono-referencia="' . htmlspecialchars($row['telefono_referencia_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-referencia="' . htmlspecialchars($row['referencia_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-fecha-nacimiento="' . htmlspecialchars($row['fecha_nacimiento_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-edad="' . htmlspecialchars($row['edad_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-grupo-sisben="' . htmlspecialchars($row['grupo_sisben'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-direccion="' . htmlspecialchars($row['direccion_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-barrio="' . htmlspecialchars($row['barrio_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-comuna="' . htmlspecialchars($row['comuna_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-zona="' . htmlspecialchars($row['zona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-departamento="' . htmlspecialchars($row['departamento_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-municipio="' . htmlspecialchars($row['municipio_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-convivencia-actual="' . htmlspecialchars($row['convivencia_actual'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-persona-discapacidad="' . htmlspecialchars($row['persona_discapacidad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-cual-discapacidad="' . htmlspecialchars($row['cual_discapacidad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-cabeza-hogar="' . htmlspecialchars($row['cabeza_hogar'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-se-reconoce-como="' . htmlspecialchars($row['se_reconoce_como'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-orientacion-sexual="' . htmlspecialchars($row['orientacion_sexual'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-grupo-etnico="' . htmlspecialchars($row['grupo_etnico'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-tipo-salud="' . htmlspecialchars($row['tipo_salud'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-condicion-ocupacion="' . htmlspecialchars($row['condicion_ocupacion'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-condicion-componente="' . htmlspecialchars($row['condicion_componente'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-fecha-ingreso="' . htmlspecialchars($row['fecha_ingreso_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-estado="' . htmlspecialchars($row['estado_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-id-meta="' . htmlspecialchars($row['id_meta'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-id-actividad="' . htmlspecialchars($row['id_actividad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-id-accion="' . htmlspecialchars($row['id_accion'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-id-politica-publica="' . htmlspecialchars($row['id_politica_publica'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                                                data-observaciones="' . htmlspecialchars($row['observaciones_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </button>
-                                            <button type="button" class="btn-action btn-delete" 
-                                                title="Eliminar persona"
-                                                data-cedula="' . htmlspecialchars($row['cedula_persona_cm']) . '">
-                                                <i class="bi bi-trash3"></i>
-                                            </button>
-                                            <a href="exportPersonaCM.php?cedula=' . htmlspecialchars($row['cedula_persona_cm']) . '" 
-                                               class="btn-action btn-info" 
-                                               title="Exportar a Excel">
-                                                <i class="bi bi-file-earmark-excel"></i>
-                                            </a>
-                                        </div>
-                                      </td>';
-                                echo "</tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='8' class='text-center'>No se encontraron registros</td></tr>";
-                        }
-                        ?>
+                        <!-- Rows loaded via AJAX (server-side DataTables) -->
                     </tbody>
                 </table>
             </div>
@@ -698,6 +533,7 @@ function deleteMember($cedula_persona_cm)
                                     <option value="C.M Retirado">C.M Retirado</option>
                                     <option value="C.M Suspendido">C.M Suspendido</option>
                                     <option value="Visita psicosocial fallida">Visita psicosocial fallida</option>
+                                    <option value="C.M Otro">C.M Otro</option>
                                 </select>
                                 <label for="condicion_componente">Condición Componente</label>
                             </div>
@@ -1064,6 +900,7 @@ function deleteMember($cedula_persona_cm)
                                     <option value="C.M Inscrito">C.M Inscrito</option>
                                     <option value="C.M Potencial beneficiario">C.M Potencial beneficiario</option>
                                     <option value="Visita psicosocial fallida">Visita psicosocial fallida</option>
+                                    <option value="C.M Otro">C.M Otro</option>
                                 </select>
                             </div>
                         </div>
@@ -1151,16 +988,78 @@ function deleteMember($cedula_persona_cm)
 
     <script>
         $(document).ready(function() {
-            // Inicializar DataTable con datos ya cargados
-            $('#salesTable').DataTable({
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
+            // Inicializar DataTable con paginación server-side
+            var table = $('#salesTable').DataTable({
+                serverSide: true,
+                processing: true,
+                searching: false,
+                ajax: {
+                    url: 'getPersonasCM.php',
+                    type: 'POST',
+                    data: function(d) {
+                        d.cedula = <?= json_encode($_GET['cedula'] ?? '') ?>;
+                        d.nombre = <?= json_encode($_GET['nombre'] ?? '') ?>;
+                        d.estado = <?= json_encode($_GET['estado'] ?? '') ?>;
+                    }
                 },
-                "pageLength": 25,
-                "order": [[1, "asc"]],
-                "columnDefs": [
-                    { "orderable": false, "targets": 7 } // Columna de acciones no ordenable
-                ]
+                columns: [
+                    {
+                        data: 'cedula',
+                        render: function(data) {
+                            return '<strong>' + data + '</strong>';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            return '<b>' + row.nombre_completo + '</b><br>' +
+                                   '<span class="cm-badge"><i class="bi bi-award-fill"></i> Colombia Mayor</span>';
+                        }
+                    },
+                    { data: 'genero' },
+                    {
+                        data: 'edad',
+                        render: function(data) {
+                            return '<span class="badge bg-primary">' + data + '</span>';
+                        }
+                    },
+                    { data: 'telefono' },
+                    { data: 'fecha_ingreso' },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            return '<span class="' + row.badge_class + '">' +
+                                   '<i class="bi ' + row.estado_icon + '"></i> ' +
+                                   row.estado_display + '</span>';
+                        }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        render: function(data, type, row) {
+                            return '<div class="action-buttons">' +
+                                '<button type="button" class="btn-action btn-edit" ' +
+                                    'title="Editar persona" ' +
+                                    'data-bs-toggle="modal" data-bs-target="#modalEdicion" ' +
+                                    'data-cedula="' + row.cedula + '">' +
+                                    '<i class="bi bi-pencil-square"></i>' +
+                                '</button>' +
+                                '<button type="button" class="btn-action btn-delete" ' +
+                                    'title="Eliminar persona" ' +
+                                    'data-cedula="' + row.cedula + '">' +
+                                    '<i class="bi bi-trash3"></i>' +
+                                '</button>' +
+                                '<a href="exportPersonaCM.php?cedula=' + encodeURIComponent(row.cedula) + '" ' +
+                                   'class="btn-action btn-info" title="Exportar a Excel">' +
+                                    '<i class="bi bi-file-earmark-excel"></i>' +
+                                '</a>' +
+                            '</div>';
+                        }
+                    }
+                ],
+                language: { url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json' },
+                pageLength: 25,
+                order: [[1, 'asc']]
             });
 
             // Calcular edad automáticamente
@@ -1173,117 +1072,6 @@ function deleteMember($cedula_persona_cm)
                     edad--;
                 }
                 $('#edad').val(edad);
-            });
-
-            // Cargar datos en modal de edición
-            $('#modalEdicion').on('show.bs.modal', function(event) {
-                var button = $(event.relatedTarget);
-                var modal = $(this);
-                
-                console.log('=== ABRIENDO MODAL EDICIÓN ===');
-                console.log('Cédula recibida:', button.data('cedula'));
-                console.log('Estado recibido:', button.data('estado'));
-                
-                // Datos básicos
-                modal.find('#edit-cedula-original').val(button.data('cedula'));
-                modal.find('#edit-cedula').val(button.data('cedula'));
-                
-                console.log('Cedula original asignada:', modal.find('#edit-cedula-original').val());
-                console.log('Cedula asignada:', modal.find('#edit-cedula').val());
-                modal.find('#edit-tipo-identificacion').val(button.data('tipo-identificacion'));
-                modal.find('#edit-nombres').val(button.data('nombres'));
-                modal.find('#edit-apellidos').val(button.data('apellidos'));
-                modal.find('#edit-genero').val(button.data('genero'));
-                modal.find('#edit-telefono').val(button.data('telefono'));
-                modal.find('#edit-telefono-referencia').val(button.data('telefono-referencia'));
-                modal.find('#edit-referencia').val(button.data('referencia'));
-                modal.find('#edit-fecha-nacimiento').val(button.data('fecha-nacimiento'));
-                modal.find('#edit-edad').val(button.data('edad'));
-                modal.find('#edit-grupo-sisben').val(button.data('grupo-sisben'));
-                
-                // Ubicación
-                modal.find('#edit-direccion').val(button.data('direccion'));
-                modal.find('#edit-barrio').val(button.data('barrio'));
-                modal.find('#edit-comuna').val(button.data('comuna'));
-                modal.find('#edit-zona').val(button.data('zona'));
-                modal.find('#edit-departamento').val(button.data('departamento'));
-                modal.find('#edit-municipio').val(button.data('municipio'));
-                
-                // Salud
-                modal.find('#edit-convivencia-actual').val(button.data('convivencia-actual'));
-                
-                // Caracterización
-                modal.find('#edit-persona-discapacidad').val(button.data('persona-discapacidad'));
-                modal.find('#edit-cual-discapacidad').val(button.data('cual-discapacidad'));
-                modal.find('#edit-cabeza-hogar').val(button.data('cabeza-hogar'));
-                modal.find('#edit-se-reconoce-como').val(button.data('se-reconoce-como'));
-                modal.find('#edit-orientacion-sexual').val(button.data('orientacion-sexual'));
-                modal.find('#edit-grupo-etnico').val(button.data('grupo-etnico'));
-                modal.find('#edit-tipo-salud').val(button.data('tipo-salud'));
-                modal.find('#edit-condicion-ocupacion').val(button.data('condicion-ocupacion'));
-                modal.find('#edit-condicion-componente').val(button.data('condicion-componente'));
-                
-                // Estado y fecha de ingreso
-                modal.find('#edit-fecha-ingreso').val(button.data('fecha-ingreso'));
-                var estadoValue = button.data('estado');
-                console.log('Cargando estado:', estadoValue);
-                modal.find('#edit-estado').val(estadoValue);
-                
-                // Verificar si se seleccionó correctamente
-                if (modal.find('#edit-estado').val() !== estadoValue) {
-                    console.warn('El estado "' + estadoValue + '" no coincide con ninguna opción del select');
-                    console.log('Opciones disponibles:', $('#edit-estado option').map(function() { return $(this).val(); }).get());
-                }
-                
-                // Meta, actividad, acción y política pública
-                modal.find('#edit-id-meta').val(button.data('id-meta'));
-                modal.find('#edit-id-actividad').val(button.data('id-actividad'));
-                modal.find('#edit-id-accion').val(button.data('id-accion'));
-                modal.find('#edit-id-politica-publica').val(button.data('id-politica-publica'));
-                
-                // Observaciones
-                modal.find('#edit-observaciones').val(button.data('observaciones'));
-                
-                // Manejar el campo de discapacidad
-                if (button.data('persona-discapacidad') === 'Si') {
-                    modal.find('#edit-div-cual-discapacidad').show();
-                } else {
-                    modal.find('#edit-div-cual-discapacidad').hide();
-                }
-                
-                // Trigger para disparar cambios en metas/actividades si es necesario
-                modal.find('#edit-id-meta').trigger('change');
-            });
-            
-            // Debug: Mostrar valor del select de estado cuando cambie
-            $('#edit-estado').on('change', function() {
-                console.log('Estado seleccionado:', $(this).val());
-            });
-            
-            // Debug: Interceptar submit del formulario de edición
-            $('#modalEdicion form').on('submit', function(e) {
-                var cedulaOriginal = $('#edit-cedula-original').val();
-                var estadoSeleccionado = $('#edit-estado').val();
-                
-                console.log('=== ENVIANDO FORMULARIO DE EDICIÓN ===');
-                console.log('Cédula original:', cedulaOriginal);
-                console.log('Estado seleccionado:', estadoSeleccionado);
-                console.log('Nombres:', $('#edit-nombres').val());
-                
-                if (!cedulaOriginal) {
-                    e.preventDefault();
-                    alert('ERROR: No se ha cargado la cédula original. No se puede actualizar.');
-                    return false;
-                }
-                
-                if (!estadoSeleccionado) {
-                    e.preventDefault();
-                    alert('ERROR: Debe seleccionar un estado.');
-                    return false;
-                }
-                
-                console.log('Formulario válido, enviando...');
-                // Permitir que el formulario se envíe normalmente
             });
 
             // Confirmar eliminación (usando delegación de eventos)
@@ -1687,64 +1475,64 @@ function deleteMember($cedula_persona_cm)
 
             // Poblar modal de edición cuando se hace clic en el botón editar
             $(document).on('click', '.btn-edit', function() {
-                const btn = $(this);
-                
+                var row = table.row($(this).closest('tr')).data();
+                if (!row) return;
+
                 // Datos básicos
-                $('#edit-cedula-original').val(btn.data('cedula'));
-                $('#edit-tipo-identificacion').val(btn.data('tipo-identificacion'));
-                $('#edit-cedula').val(btn.data('cedula'));
-                $('#edit-nombres').val(btn.data('nombres'));
-                $('#edit-apellidos').val(btn.data('apellidos'));
-                $('#edit-genero').val(btn.data('genero'));
-                $('#edit-telefono').val(btn.data('telefono'));
-                $('#edit-telefono-referencia').val(btn.data('telefono-referencia'));
-                $('#edit-referencia').val(btn.data('referencia'));
-                $('#edit-fecha-nacimiento').val(btn.data('fecha-nacimiento'));
-                $('#edit-edad').val(btn.data('edad'));
-                $('#edit-grupo-sisben').val(btn.data('grupo-sisben'));
-                
+                $('#edit-cedula-original').val(row.cedula);
+                $('#edit-tipo-identificacion').val(row.tipo_identificacion);
+                $('#edit-cedula').val(row.cedula);
+                $('#edit-nombres').val(row.nombres);
+                $('#edit-apellidos').val(row.apellidos);
+                $('#edit-genero').val(row.genero);
+                $('#edit-telefono').val(row.telefono);
+                $('#edit-telefono-referencia').val(row.telefono_referencia);
+                $('#edit-referencia').val(row.referencia);
+                $('#edit-fecha-nacimiento').val(row.fecha_nacimiento);
+                $('#edit-edad').val(row.edad_num);
+                $('#edit-grupo-sisben').val(row.grupo_sisben);
+
                 // Dirección
-                $('#edit-direccion').val(btn.data('direccion'));
-                $('#edit-barrio').val(btn.data('barrio'));
-                $('#edit-comuna').val(btn.data('comuna'));
-                $('#edit-zona').val(btn.data('zona'));
-                $('#edit-departamento').val(btn.data('departamento'));
-                $('#edit-municipio').val(btn.data('municipio'));
-                
+                $('#edit-direccion').val(row.direccion);
+                $('#edit-barrio').val(row.barrio);
+                $('#edit-comuna').val(row.comuna);
+                $('#edit-zona').val(row.zona);
+                $('#edit-departamento').val(row.departamento);
+                $('#edit-municipio').val(row.municipio);
+
                 // Salud
-                $('#edit-convivencia-actual').val(btn.data('convivencia-actual'));
-                
+                $('#edit-convivencia-actual').val(row.convivencia_actual);
+
                 // Caracterización
-                const personaDiscapacidad = btn.data('persona-discapacidad');
-                $('#edit-persona-discapacidad').val(personaDiscapacidad);
-                if (personaDiscapacidad === 'Si') {
+                $('#edit-persona-discapacidad').val(row.persona_discapacidad);
+                if (row.persona_discapacidad === 'Si') {
                     $('#edit-div-cual-discapacidad').show();
-                    $('#edit-cual-discapacidad').val(btn.data('cual-discapacidad'));
+                    $('#edit-cual-discapacidad').val(row.cual_discapacidad);
                 } else {
                     $('#edit-div-cual-discapacidad').hide();
                     $('#edit-cual-discapacidad').val('');
                 }
-                
-                $('#edit-cabeza-hogar').val(btn.data('cabeza-hogar'));
-                $('#edit-se-reconoce-como').val(btn.data('se-reconoce-como'));
-                $('#edit-orientacion-sexual').val(btn.data('orientacion-sexual'));
-                $('#edit-grupo-etnico').val(btn.data('grupo-etnico'));
-                $('#edit-tipo-salud').val(btn.data('tipo-salud'));
-                $('#edit-condicion-ocupacion').val(btn.data('condicion-ocupacion'));
-                $('#edit-condicion-componente').val(btn.data('condicion-componente'));
-                
+
+                $('#edit-cabeza-hogar').val(row.cabeza_hogar);
+                $('#edit-se-reconoce-como').val(row.se_reconoce_como);
+                $('#edit-orientacion-sexual').val(row.orientacion_sexual);
+                $('#edit-grupo-etnico').val(row.grupo_etnico);
+                $('#edit-tipo-salud').val(row.tipo_salud);
+                $('#edit-condicion-ocupacion').val(row.condicion_ocupacion);
+                $('#edit-condicion-componente').val(row.condicion_componente);
+
                 // Fecha ingreso y estado
-                $('#edit-fecha-ingreso').val(btn.data('fecha-ingreso'));
-                $('#edit-estado').val(btn.data('estado'));
-                
+                $('#edit-fecha-ingreso').val(row.fecha_ingreso_raw);
+                $('#edit-estado').val(row.estado_raw);
+
                 // Meta, Actividad, Acción, Política Pública
-                const idMeta = btn.data('id-meta');
-                const idActividad = btn.data('id-actividad');
-                const idAccion = btn.data('id-accion');
-                const idPoliticaPublica = btn.data('id-politica-publica');
-                
+                var idMeta          = row.id_meta;
+                var idActividad     = row.id_actividad;
+                var idAccion        = row.id_accion;
+                var idPoliticaPublica = row.id_politica_publica;
+
                 $('#edit-meta').val(idMeta || '');
-                
+
                 // Si hay meta, cargar las actividades
                 if (idMeta) {
                     $.ajax({
@@ -1754,8 +1542,7 @@ function deleteMember($cedula_persona_cm)
                         success: function(response) {
                             $('#edit-actividad').html('<option value="">Seleccione Actividad...</option>' + response).prop('disabled', false);
                             $('#edit-actividad').val(idActividad || '');
-                            
-                            // Si hay actividad, cargar las acciones
+
                             if (idActividad) {
                                 $.ajax({
                                     url: 'getAcciones.php',
@@ -1764,8 +1551,7 @@ function deleteMember($cedula_persona_cm)
                                     success: function(response) {
                                         $('#edit-accion').html('<option value="">Seleccione Acción...</option>' + response).prop('disabled', false);
                                         $('#edit-accion').val(idAccion || '');
-                                        
-                                        // Si hay acción, cargar políticas públicas
+
                                         if (idAccion) {
                                             $.ajax({
                                                 url: 'getPoliticaPublica.php',
@@ -1773,7 +1559,7 @@ function deleteMember($cedula_persona_cm)
                                                 data: { id_accion: idAccion },
                                                 dataType: 'json',
                                                 success: function(response) {
-                                                    let options = '<option value="">Seleccione Política Pública...</option>';
+                                                    var options = '<option value="">Seleccione Política Pública...</option>';
                                                     if (response && response.politicas && response.politicas.length > 0) {
                                                         response.politicas.forEach(function(p) {
                                                             options += '<option value="' + p.id_politica + '">' + p.descripcion_politica + '</option>';
@@ -1790,9 +1576,9 @@ function deleteMember($cedula_persona_cm)
                         }
                     });
                 }
-                
+
                 // Observaciones
-                $('#edit-observaciones').val(btn.data('observaciones'));
+                $('#edit-observaciones').val(row.observaciones);
             });
         });
     </script>

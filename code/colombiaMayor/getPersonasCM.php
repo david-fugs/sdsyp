@@ -1,195 +1,197 @@
 <?php
-// Este archivo puede ser incluido o llamado vía AJAX
+// Endpoint DataTables server-side para personas Colombia Mayor
 session_start();
 include("../../conexion.php");
 
-// Verificar acceso
-if (!isset($_SESSION['tipo_usuario']) || !in_array($_SESSION['tipo_usuario'], [8, 9])) {
-    echo "<tr><td colspan='8' class='text-center text-danger'>Acceso denegado</td></tr>";
+if (!isset($_SESSION['tipo_usuario']) || !in_array($_SESSION['tipo_usuario'], [1, 8, 9])) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Acceso denegado']);
     exit();
 }
 
+header('Content-Type: application/json');
+
 $tipo_usuario = $_SESSION['tipo_usuario'];
-$id_usuario = $_SESSION['id'];
+$id_usuario   = $_SESSION['id'];
 
-// DEBUG: Registrar los parámetros recibidos
-error_log("Filtros recibidos - Cedula: " . ($_GET['cedula'] ?? 'vacío') . 
-          ", Nombre: " . ($_GET['nombre'] ?? 'vacío') . 
-          ", Estado: " . ($_GET['estado'] ?? 'vacío'));
+// DataTables params
+$draw   = intval($_POST['draw'] ?? 1);
+$start  = intval($_POST['start'] ?? 0);
+$length = intval($_POST['length'] ?? 25);
 
-// Construir query base
+// Custom filter params
+$cedula = trim($_POST['cedula'] ?? '');
+$nombre = trim($_POST['nombre'] ?? '');
+$estado = trim($_POST['estado'] ?? '');
+
+// Column map: DataTables column index → DB column for ORDER BY
+$column_map = [
+    0 => 'p.cedula_persona_cm',
+    1 => 'p.apellidos_persona_cm',
+    2 => 'p.genero_persona_cm',
+    3 => 'p.fecha_nacimiento_cm',
+    4 => 'p.telefono_persona_cm',
+    5 => 'p.fecha_ingreso_cm',
+    6 => 'p.estado_cm',
+];
+$order_col_idx = intval($_POST['order'][0]['column'] ?? 1);
+$order_dir     = (($_POST['order'][0]['dir'] ?? 'asc') === 'desc') ? 'DESC' : 'ASC';
+$order_col     = $column_map[$order_col_idx] ?? 'p.apellidos_persona_cm';
+
+// Build WHERE
 $where = "WHERE 1=1";
 
-// Si es contratista (tipo 9), solo ver sus propios registros
 if ($tipo_usuario == 9) {
-    $where .= " AND usuario_registro = '$id_usuario'";
+    $where .= " AND p.usuario_registro = '" . $mysqli->real_escape_string($id_usuario) . "'";
+}
+if (!empty($cedula)) {
+    $where .= " AND p.cedula_persona_cm LIKE '%" . $mysqli->real_escape_string($cedula) . "%'";
+}
+if (!empty($nombre)) {
+    $n = $mysqli->real_escape_string($nombre);
+    $where .= " AND (p.nombres_persona_cm LIKE '%$n%' OR p.apellidos_persona_cm LIKE '%$n%')";
+}
+if (!empty($estado)) {
+    $where .= " AND p.estado_cm LIKE '%" . $mysqli->real_escape_string($estado) . "%'";
 }
 
-// Filtro por cédula (búsqueda parcial)
-if (!empty($_GET['cedula'])) {
-    $cedula = $mysqli->real_escape_string($_GET['cedula']);
-    $where .= " AND cedula_persona_cm LIKE '%$cedula%'";
-}
+// Total unfiltered
+$res_total     = $mysqli->query("SELECT COUNT(*) AS cnt FROM personas_colombia_mayor p");
+$total_records = (int)$res_total->fetch_assoc()['cnt'];
 
-// Filtro por nombre
-if (!empty($_GET['nombre'])) {
-    $nombre = $mysqli->real_escape_string($_GET['nombre']);
-    $where .= " AND (nombres_persona_cm LIKE '%$nombre%' OR apellidos_persona_cm LIKE '%$nombre%')";
-}
+// Total filtered
+$res_filtered     = $mysqli->query("SELECT COUNT(*) AS cnt FROM personas_colombia_mayor p $where");
+$filtered_records = (int)$res_filtered->fetch_assoc()['cnt'];
 
-// Filtro por estado
-if (!empty($_GET['estado'])) {
-    $estado = $mysqli->real_escape_string($_GET['estado']);
-    $where .= " AND estado_cm LIKE '%$estado%'";
-}
+// Data query
+$limit_clause = ($length >= 0)
+    ? "LIMIT " . intval($start) . ", " . intval($length)
+    : "";
 
-// Consulta SQL
 $query = "
-    SELECT 
-        p.*,
-        u.nombre AS nombre_contratista
+    SELECT p.*, u.nombre AS nombre_contratista
     FROM personas_colombia_mayor p
     LEFT JOIN usuarios u ON p.usuario_registro = u.id
     $where
-    ORDER BY p.apellidos_persona_cm ASC, p.nombres_persona_cm ASC
+    ORDER BY $order_col $order_dir, p.nombres_persona_cm $order_dir
+    $limit_clause
 ";
 
-// DEBUG: Registrar la consulta generada
-error_log("Query generada: " . $query);
-
 $result = $mysqli->query($query);
-
-if ($result && $result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        // Calcular edad si tiene fecha de nacimiento
-        $edad_texto = 'N/A';
-        if ($row['fecha_nacimiento_cm'] && $row['fecha_nacimiento_cm'] != '0000-00-00') {
-            $hoy = new DateTime();
-            $nacimiento = new DateTime($row['fecha_nacimiento_cm']);
-            $edad = $hoy->diff($nacimiento)->y;
-            $edad_texto = $edad . ' años';
-        } elseif ($row['edad_cm']) {
-            $edad_texto = $row['edad_cm'] . ' años';
-        }
-
-        // Determinar badge de estado
-        $badge_class = '';
-        $estado_icon = '';
-        switch ($row['estado_cm']) {
-            case 'ACTIVO':
-                $badge_class = 'status-badge status-active';
-                $estado_icon = '<i class="bi bi-check-circle-fill"></i>';
-                break;
-            case 'SUSPENDIDO':
-                $badge_class = 'status-badge status-warning';
-                $estado_icon = '<i class="bi bi-pause-circle-fill"></i>';
-                break;
-            case 'FALLECIDO':
-                $badge_class = 'status-badge status-secondary';
-                $estado_icon = '<i class="bi bi-x-circle-fill"></i>';
-                break;
-            case 'RETIRO_VOLUNTARIO':
-                $badge_class = 'status-badge status-info';
-                $estado_icon = '<i class="bi bi-arrow-left-circle-fill"></i>';
-                break;
-            case 'POTENCIAL_BENEFICIARIO':
-                $badge_class = 'status-badge status-info';
-                $estado_icon = '<i class="bi bi-person-fill-add"></i>';
-                break;
-            case 'INSCRITO':
-                $badge_class = 'status-badge status-primary';
-                $estado_icon = '<i class="bi bi-person-check-fill"></i>';
-                break;
-        }
-
-        // Formatear fecha de ingreso
-        $fecha_ingreso = 'N/A';
-        if ($row['fecha_ingreso_cm'] && $row['fecha_ingreso_cm'] != '0000-00-00') {
-            $fecha_ingreso = date('d/m/Y', strtotime($row['fecha_ingreso_cm']));
-        }
-
-        echo "<tr class='fade-in'>";
-        echo "<td><strong>" . htmlspecialchars($row['cedula_persona_cm']) . "</strong></td>";
-        echo "<td>";
-        echo "<b>" . htmlspecialchars($row['nombres_persona_cm'] . ' ' . $row['apellidos_persona_cm']) . "</b><br>";
-        echo "<span class='cm-badge'><i class='bi bi-award-fill'></i> Colombia Mayor</span>";
-        echo "</td>";
-        echo "<td>" . htmlspecialchars($row['genero_persona_cm'] ?? 'N/A') . "</td>";
-        echo "<td><span class='badge bg-primary'>" . $edad_texto . "</span></td>";
-        echo "<td>" . htmlspecialchars($row['telefono_persona_cm'] ?? 'N/A') . "</td>";
-        echo "<td>" . $fecha_ingreso . "</td>";
-        echo "<td class='col-status'><span class='$badge_class'>$estado_icon " . str_replace('_', ' ', $row['estado_cm']) . "</span></td>";
-
-        // Botones de acción
-        echo '<td class="col-actions">
-                <div class="action-buttons">
-                    <button type="button" class="btn-action btn-edit" 
-                        title="Editar persona"
-                        data-bs-toggle="modal" data-bs-target="#modalEdicion"
-                        data-cedula="' . htmlspecialchars($row['cedula_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-tipo-identificacion="' . htmlspecialchars($row['tipo_identificacion_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-nombres="' . htmlspecialchars($row['nombres_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-apellidos="' . htmlspecialchars($row['apellidos_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-genero="' . htmlspecialchars($row['genero_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-telefono="' . htmlspecialchars($row['telefono_persona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-telefono-referencia="' . htmlspecialchars($row['telefono_referencia_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-referencia="' . htmlspecialchars($row['referencia_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-correo="' . htmlspecialchars($row['correo_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-fecha-nacimiento="' . htmlspecialchars($row['fecha_nacimiento_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-edad="' . htmlspecialchars($row['edad_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-grupo-sisben="' . htmlspecialchars($row['grupo_sisben'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-direccion="' . htmlspecialchars($row['direccion_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-barrio="' . htmlspecialchars($row['barrio_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-comuna="' . htmlspecialchars($row['comuna_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-zona="' . htmlspecialchars($row['zona_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-departamento="' . htmlspecialchars($row['departamento_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-municipio="' . htmlspecialchars($row['municipio_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-eps="' . htmlspecialchars($row['eps'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-peso="' . htmlspecialchars($row['peso'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-talla="' . htmlspecialchars($row['talla'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-patologias="' . htmlspecialchars($row['patologias'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-factores-riesgo="' . htmlspecialchars($row['factores_riesgo'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-factores-preventivos="' . htmlspecialchars($row['factores_preventivos'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-ingresos-economicos="' . htmlspecialchars($row['ingresos_economicos'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-convivencia-actual="' . htmlspecialchars($row['convivencia_actual'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-resultado-actividad="' . htmlspecialchars($row['resultado_actividad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-remision="' . htmlspecialchars($row['remision'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-persona-discapacidad="' . htmlspecialchars($row['persona_discapacidad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-cual-discapacidad="' . htmlspecialchars($row['cual_discapacidad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-cabeza-hogar="' . htmlspecialchars($row['cabeza_hogar'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-lider-comunidad="' . htmlspecialchars($row['lider_comunidad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-se-reconoce-como="' . htmlspecialchars($row['se_reconoce_como'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-orientacion-sexual="' . htmlspecialchars($row['orientacion_sexual'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-experiencia-migratoria="' . htmlspecialchars($row['experiencia_migratoria'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-grupo-etnico="' . htmlspecialchars($row['grupo_etnico'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-tipo-salud="' . htmlspecialchars($row['tipo_salud'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-nivel-educativo="' . htmlspecialchars($row['nivel_educativo'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-condicion-ocupacion="' . htmlspecialchars($row['condicion_ocupacion'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-condicion-componente="' . htmlspecialchars($row['condicion_componente'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-fecha-ingreso="' . htmlspecialchars($row['fecha_ingreso_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-estado="' . htmlspecialchars($row['estado_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-id-meta="' . htmlspecialchars($row['id_meta'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-id-actividad="' . htmlspecialchars($row['id_actividad'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-id-accion="' . htmlspecialchars($row['id_accion'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-id-politica-publica="' . htmlspecialchars($row['id_politica_publica'] ?? '', ENT_QUOTES, 'UTF-8') . '"
-                        data-observaciones="' . htmlspecialchars($row['observaciones_cm'] ?? '', ENT_QUOTES, 'UTF-8') . '">
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button type="button" class="btn-action btn-delete" 
-                        title="Eliminar persona"
-                        data-cedula="' . htmlspecialchars($row['cedula_persona_cm']) . '">
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                    <a href="exportPersonaCM.php?cedula=' . htmlspecialchars($row['cedula_persona_cm']) . '" 
-                       class="btn-action btn-info" 
-                       title="Exportar a Excel">
-                        <i class="bi bi-file-earmark-excel"></i>
-                    </a>
-                </div>
-              </td>';
-        echo "</tr>";
-    }
-} else {
-    echo "<tr><td colspan='8' class='text-center'>No se encontraron registros</td></tr>";
+if (!$result) {
+    echo json_encode([
+        'draw'            => $draw,
+        'recordsTotal'    => 0,
+        'recordsFiltered' => 0,
+        'data'            => [],
+        'error'           => $mysqli->error,
+    ]);
+    exit();
 }
-?>
+
+$data = [];
+while ($row = $result->fetch_assoc()) {
+
+    // Compute age
+    $edad_texto = 'N/A';
+    if (!empty($row['fecha_nacimiento_cm']) && $row['fecha_nacimiento_cm'] !== '0000-00-00') {
+        $hoy = new DateTime();
+        $nac = new DateTime($row['fecha_nacimiento_cm']);
+        $edad_texto = $hoy->diff($nac)->y . ' años';
+    } elseif (!empty($row['edad_cm'])) {
+        $edad_texto = $row['edad_cm'] . ' años';
+    }
+
+    // Format fecha ingreso
+    $fecha_ingreso_fmt = 'N/A';
+    if (!empty($row['fecha_ingreso_cm']) && $row['fecha_ingreso_cm'] !== '0000-00-00') {
+        $fecha_ingreso_fmt = date('d/m/Y', strtotime($row['fecha_ingreso_cm']));
+    }
+
+    // Estado badge
+    $badge_class  = 'status-badge status-secondary';
+    $estado_icon  = 'bi-circle-fill';
+    $estado_upper = strtoupper($row['estado_cm'] ?? '');
+
+    if ($estado_upper === 'ACTIVO' || stripos($estado_upper, 'ACTIVO') !== false) {
+        $badge_class = 'status-badge status-active';
+        $estado_icon = 'bi-check-circle-fill';
+    } elseif (stripos($estado_upper, 'FALLECIDO') !== false || stripos($estado_upper, 'FALLECIDA') !== false) {
+        $badge_class = 'status-badge status-secondary';
+        $estado_icon = 'bi-x-circle-fill';
+    } elseif (stripos($estado_upper, 'RETIRO') !== false || stripos($estado_upper, 'RETIRADO') !== false) {
+        $badge_class = 'status-badge status-info';
+        $estado_icon = 'bi-arrow-left-circle-fill';
+    } elseif (stripos($estado_upper, 'SUSPENDIDO') !== false || stripos($estado_upper, 'SUSPENDIDA') !== false) {
+        $badge_class = 'status-badge status-warning';
+        $estado_icon = 'bi-pause-circle-fill';
+    } elseif (stripos($estado_upper, 'POTENCIAL') !== false || stripos($estado_upper, 'BENEFICIARIO') !== false) {
+        $badge_class = 'status-badge status-info';
+        $estado_icon = 'bi-person-fill-add';
+    } elseif ($estado_upper === 'INSCRITO') {
+        $badge_class = 'status-badge status-primary';
+        $estado_icon = 'bi-person-check-fill';
+    } elseif (stripos($estado_upper, 'ESPERA') !== false || stripos($estado_upper, 'LISTA') !== false) {
+        $badge_class = 'status-badge status-warning';
+        $estado_icon = 'bi-clock-fill';
+    } elseif (
+        stripos($estado_upper, 'BDUA')       !== false ||
+        stripos($estado_upper, 'BLOQUEO')    !== false ||
+        stripos($estado_upper, 'DUPLICIDAD') !== false
+    ) {
+        $badge_class = 'status-badge status-danger';
+        $estado_icon = 'bi-exclamation-triangle-fill';
+    }
+
+    $data[] = [
+        // Display columns
+        'cedula'               => htmlspecialchars($row['cedula_persona_cm'] ?? ''),
+        'nombre_completo'      => htmlspecialchars(trim(($row['nombres_persona_cm'] ?? '') . ' ' . ($row['apellidos_persona_cm'] ?? ''))),
+        'genero'               => htmlspecialchars($row['genero_persona_cm'] ?? 'N/A'),
+        'edad'                 => $edad_texto,
+        'telefono'             => htmlspecialchars($row['telefono_persona_cm'] ?? 'N/A'),
+        'fecha_ingreso'        => $fecha_ingreso_fmt,
+        'estado_display'       => str_replace('_', ' ', $row['estado_cm'] ?? ''),
+        'badge_class'          => $badge_class,
+        'estado_icon'          => $estado_icon,
+        // Edit modal data
+        'tipo_identificacion'  => htmlspecialchars($row['tipo_identificacion_cm'] ?? ''),
+        'nombres'              => htmlspecialchars($row['nombres_persona_cm'] ?? ''),
+        'apellidos'            => htmlspecialchars($row['apellidos_persona_cm'] ?? ''),
+        'telefono_referencia'  => htmlspecialchars($row['telefono_referencia_cm'] ?? ''),
+        'referencia'           => htmlspecialchars($row['referencia_cm'] ?? ''),
+        'fecha_nacimiento'     => htmlspecialchars($row['fecha_nacimiento_cm'] ?? ''),
+        'edad_num'             => htmlspecialchars($row['edad_cm'] ?? ''),
+        'grupo_sisben'         => htmlspecialchars($row['grupo_sisben'] ?? ''),
+        'direccion'            => htmlspecialchars($row['direccion_cm'] ?? ''),
+        'barrio'               => htmlspecialchars($row['barrio_cm'] ?? ''),
+        'comuna'               => htmlspecialchars($row['comuna_cm'] ?? ''),
+        'zona'                 => htmlspecialchars($row['zona_cm'] ?? ''),
+        'departamento'         => htmlspecialchars($row['departamento_cm'] ?? ''),
+        'municipio'            => htmlspecialchars($row['municipio_cm'] ?? ''),
+        'convivencia_actual'   => htmlspecialchars($row['convivencia_actual'] ?? ''),
+        'persona_discapacidad' => htmlspecialchars($row['persona_discapacidad'] ?? ''),
+        'cual_discapacidad'    => htmlspecialchars($row['cual_discapacidad'] ?? ''),
+        'cabeza_hogar'         => htmlspecialchars($row['cabeza_hogar'] ?? ''),
+        'se_reconoce_como'     => htmlspecialchars($row['se_reconoce_como'] ?? ''),
+        'orientacion_sexual'   => htmlspecialchars($row['orientacion_sexual'] ?? ''),
+        'grupo_etnico'         => htmlspecialchars($row['grupo_etnico'] ?? ''),
+        'tipo_salud'           => htmlspecialchars($row['tipo_salud'] ?? ''),
+        'condicion_ocupacion'  => htmlspecialchars($row['condicion_ocupacion'] ?? ''),
+        'condicion_componente' => htmlspecialchars($row['condicion_componente'] ?? ''),
+        'fecha_ingreso_raw'    => htmlspecialchars($row['fecha_ingreso_cm'] ?? ''),
+        'estado_raw'           => htmlspecialchars($row['estado_cm'] ?? ''),
+        'id_meta'              => htmlspecialchars($row['id_meta'] ?? ''),
+        'id_actividad'         => htmlspecialchars($row['id_actividad'] ?? ''),
+        'id_accion'            => htmlspecialchars($row['id_accion'] ?? ''),
+        'id_politica_publica'  => htmlspecialchars($row['id_politica_publica'] ?? ''),
+        'observaciones'        => htmlspecialchars($row['observaciones_cm'] ?? ''),
+    ];
+}
+
+echo json_encode([
+    'draw'            => $draw,
+    'recordsTotal'    => $total_records,
+    'recordsFiltered' => $filtered_records,
+    'data'            => $data,
+]);
