@@ -364,9 +364,8 @@ if (!$result_actividades_cv_query) {
 $result_actividades_cv = $result_actividades_cv_query->fetch_all(MYSQLI_ASSOC);
 
 // Obtener lista de personas para el modal masivo (ordenadas alfabéticamente)
-// Solo personas relacionadas con grupos que inician con "CV"
-// Excluir personas cuya condicion_componente contenga "Inactivo" (ej: "C.V Beneficiario Inactivo")
-$personas_sql = "SELECT p.cedula_persona, CONCAT(p.nombres_persona, ' ', p.apellidos_persona) AS nombre_completo, p.jornada
+// Solo personas de grupos que inician con "CV", excluyendo personas inactivas
+$personas_sql = "SELECT p.cedula_persona, CONCAT(p.nombres_persona, ' ', p.apellidos_persona) AS nombre_completo, p.jornada, g.descripcion_grupo
                  FROM personas p
                  INNER JOIN grupos g ON p.id_grupo = g.id_grupo
                  WHERE g.descripcion_grupo LIKE 'CV%'
@@ -916,7 +915,7 @@ function deleteRegistro($id_registro)
                                 <?php foreach ($result_personas as $p) { ?>
                                     <div class="form-check persona-item" data-jornada="<?= htmlspecialchars($p['jornada'] ?? '') ?>">
                                         <input class="form-check-input persona-checkbox" type="checkbox" value="<?= htmlspecialchars($p['cedula_persona']) ?>" id="persona_<?= htmlspecialchars($p['cedula_persona']) ?>">
-                                        <label class="form-check-label" for="persona_<?= htmlspecialchars($p['cedula_persona']) ?>"><?= htmlspecialchars($p['nombre_completo']) ?> — <small><?= htmlspecialchars($p['cedula_persona']) ?></small><?= !empty($p['jornada']) ? ' <span class="badge bg-secondary">' . htmlspecialchars($p['jornada']) . '</span>' : '' ?></label>
+                                        <label class="form-check-label" for="persona_<?= htmlspecialchars($p['cedula_persona']) ?>"><?= htmlspecialchars($p['nombre_completo']) ?> — <small><?= htmlspecialchars($p['cedula_persona']) ?></small><?= !empty($p['jornada']) ? ' <span class="badge bg-secondary">' . htmlspecialchars($p['jornada']) . '</span>' : '' ?><?= !empty($p['descripcion_grupo']) ? ' <span class="badge bg-info text-dark">' . htmlspecialchars($p['descripcion_grupo']) . '</span>' : '' ?></label>
                                     </div>
                                 <?php } ?>
                             </div>
@@ -1016,6 +1015,21 @@ function deleteRegistro($id_registro)
                                 </div>
                             </div>
 
+                            <?php if ($tipo_usuario_cv === 12): ?>
+                            <!-- Area psicosocial alcaldía - solo tipo_usuario 12 -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3 form-floating">
+                                    <select class="form-select" id="area_psicosocial_masivo" name="area_psicosocial_alcaldia">
+                                        <option value="" selected>Seleccione área...</option>
+                                        <option value="Trabajo social">Trabajo social</option>
+                                        <option value="Psicologia">Psicologia</option>
+                                        <option value="Trabajo social y psicologia">Trabajo social y psicologia</option>
+                                    </select>
+                                    <label for="area_psicosocial_masivo">Area psicosocial alcaldia - CV1</label>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+
                             <div class="row">
                                 <div class="col-md-12 mb-3">
                                     <label for="fechas_atencion_masivo" class="form-label"><strong>Fechas de Atención</strong></label>
@@ -1094,6 +1108,7 @@ function deleteRegistro($id_registro)
                                         <?= htmlspecialchars($p['nombre_completo']) ?>
                                         — <small><?= htmlspecialchars($p['cedula_persona']) ?></small>
                                         <?= !empty($p['jornada']) ? ' <span class="badge bg-secondary">' . htmlspecialchars($p['jornada']) . '</span>' : '' ?>
+                                        <?= !empty($p['descripcion_grupo']) ? ' <span class="badge bg-info text-dark">' . htmlspecialchars($p['descripcion_grupo']) . '</span>' : '' ?>
                                     </label>
                                 </div>
                             <?php } ?>
@@ -1278,6 +1293,21 @@ function deleteRegistro($id_registro)
                                 <label for="profesion_individual">Profesión</label>
                             </div>
                         </div>
+
+                        <?php if ($tipo_usuario_cv === 12): ?>
+                        <!-- Area psicosocial alcaldía - solo tipo_usuario 12 -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-floating">
+                                <select class="form-select" id="area_psicosocial_ind" name="area_psicosocial_alcaldia">
+                                    <option value="" selected>Seleccione área...</option>
+                                    <option value="Trabajo social">Trabajo social</option>
+                                    <option value="Psicologia">Psicologia</option>
+                                    <option value="Trabajo social y psicologia">Trabajo social y psicologia</option>
+                                </select>
+                                <label for="area_psicosocial_ind">Area psicosocial alcaldia - CV1</label>
+                            </div>
+                        </div>
+                        <?php endif; ?>
 
                         <!-- Jornada -->
                         <div class="row">
@@ -2302,12 +2332,17 @@ function deleteRegistro($id_registro)
                     success: function(resp) {
                         Swal.close();
                         if (resp.success) {
-                            $('#modalMasivo').modal('hide');
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Hecho',
-                                text: resp.message + '. Quedó registrado con el Número de Grupo: ' + resp.numero_grupo
-                            }).then(function() { location.reload(); });
+                                text: resp.message + '. Quedó registrado con el Número de Grupo: ' + resp.numero_grupo,
+                                toast: true,
+                                position: 'top-end',
+                                timer: 4000,
+                                showConfirmButton: false
+                            });
+                            // No se cierra el modal ni se recarga: el usuario puede
+                            // modificar datos y volver a enviar si es necesario.
                         } else {
                             Swal.fire({
                                 icon: 'error',

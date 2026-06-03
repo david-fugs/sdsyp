@@ -26,6 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $observacion = $_POST['observacion'] ?? '';
         $profesion = $_POST['profesion'] ?? null;
         $jornada = $_POST['jornada'] ?? null;
+        $area_psicosocial_alcaldia = $_POST['area_psicosocial_alcaldia'] ?? null;
         $grupos_externos_post = array_values(array_filter(array_map('intval', $_POST['grupos_externos'] ?? []), function($v){ return $v > 0; }));
         // Guardar el ID numérico del usuario para filtrado (el nombre se resuelve por JOIN)
         $funcionario_registro = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
@@ -62,8 +63,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         // Preparar sentencias: 1 registro por cada fecha seleccionada
         $sql_insert_registro = "INSERT INTO registro_centro_vida 
             (cedula_persona, id_condicion, condicion_otra, id_meta, id_actividad, id_accion, id_actividad_centro_vida, 
-             politica_publica, departamento_procedencia, observacion, profesion, jornada, funcionario_registro, fecha_registro) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+             politica_publica, departamento_procedencia, observacion, profesion, jornada, area_psicosocial_alcaldia, funcionario_registro, fecha_registro) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
         $stmt = $mysqli->prepare($sql_insert_registro);
         if (!$stmt) {
@@ -91,9 +92,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         foreach ($fechas_array as $fecha) {
             if (empty($fecha)) continue;
 
-            $stmt->bind_param("sisiiiisssssi", $cedula_persona, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion,
+            $stmt->bind_param("sisiiiissssssi", $cedula_persona, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion,
                      $id_actividad_centro_vida, $politica_publica,
-                     $departamento_procedencia, $observacion, $profesion, $jornada, $funcionario_registro);
+                     $departamento_procedencia, $observacion, $profesion, $jornada, $area_psicosocial_alcaldia, $funcionario_registro);
 
             if (!$stmt->execute()) {
                 throw new Exception("Error al insertar registro para fecha '$fecha': " . $stmt->error);

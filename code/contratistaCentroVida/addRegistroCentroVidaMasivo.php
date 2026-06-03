@@ -38,6 +38,7 @@ try {
     $observacion = $_POST['observacion'] ?? '';
     $profesion = $_POST['profesion'] ?? null;
     $jornada = $_POST['jornada'] ?? null;
+    $area_psicosocial_alcaldia = $_POST['area_psicosocial_alcaldia'] ?? null;
     // Guardar el ID numérico del usuario para filtrado (el nombre se resuelve por JOIN)
     $funcionario_registro = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
     if ($funcionario_registro <= 0) {
@@ -77,7 +78,7 @@ try {
     $mysqli->autocommit(FALSE);
 
     // INSERT: 1 registro por persona por fecha
-    $sql_insert = "INSERT INTO registro_centro_vida (cedula_persona, id_condicion, condicion_otra, id_meta, id_actividad, id_accion, id_actividad_centro_vida, politica_publica, departamento_procedencia, observacion, profesion, jornada, funcionario_registro, numero_grupo, fecha_registro) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+    $sql_insert = "INSERT INTO registro_centro_vida (cedula_persona, id_condicion, condicion_otra, id_meta, id_actividad, id_accion, id_actividad_centro_vida, politica_publica, departamento_procedencia, observacion, profesion, jornada, area_psicosocial_alcaldia, funcionario_registro, numero_grupo, fecha_registro) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
     $stmt = $mysqli->prepare($sql_insert);
     if (!$stmt) throw new Exception('Error al preparar consulta principal: ' . $mysqli->error);
 
@@ -105,7 +106,7 @@ try {
             if (empty($f)) continue;
 
             // 1 registro por persona por fecha
-            $stmt->bind_param('sisiiiisssssii', $ced, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $profesion, $jornada_persona, $funcionario_registro, $numero_grupo);
+            $stmt->bind_param('sisiiiissssssii', $ced, $id_condicion, $condicion_otra, $id_meta, $id_actividad, $id_accion, $id_actividad_centro_vida, $politica_publica, $departamento_procedencia, $observacion, $profesion, $jornada_persona, $area_psicosocial_alcaldia, $funcionario_registro, $numero_grupo);
             if (!$stmt->execute()) {
                 $failures[] = ['cedula' => $ced, 'fecha' => $f, 'error' => $stmt->error];
                 continue;
