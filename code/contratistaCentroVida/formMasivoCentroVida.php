@@ -155,10 +155,15 @@ $result = $mysqli->query($query);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <!-- Flatpickr para el calendario -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Flatpickr JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
     <style>
         body {
             font-size: 16px;
@@ -306,6 +311,35 @@ $result = $mysqli->query($query);
         .btn-delete:hover {
             background: #dc2626
         }
+
+        /* Estilos para el calendario multi-selección */
+        .flatpickr-calendar {
+            font-size: 14px;
+        }
+
+        .flatpickr-day.selected {
+            background: #e91e63 !important;
+            border-color: #e91e63 !important;
+        }
+
+        .selected-dates-display {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+            min-height: 40px;
+        }
+
+        .date-tag {
+            display: inline-block;
+            background: #e91e63;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 12px;
+        }
     </style>
 </head>
 
@@ -329,7 +363,7 @@ $result = $mysqli->query($query);
             <!-- Mensaje informativo de filtro por grupo -->
             <?php echo generarMensajeFiltroGrupo($mysqli); ?>
             <?php echo generarMensajeFiltroPropio(); ?>
-            
+
             <div class="modern-filters">
                 <form action="formMasivoCentroVida.php" method="get" class="filter-row">
                     <div class="filter-group">
@@ -549,10 +583,6 @@ $result = $mysqli->query($query);
                                 <label for="tipo_registro">Tipo de Registro</label>
                             </div>
                             <div class="col-md-4 mb-3 form-floating">
-                                <input type="date" class="form-control" id="fecha_atencion" name="fecha_atencion" required>
-                                <label for="fecha_atencion">Fecha Atención</label>
-                            </div>
-                            <div class="col-md-4 mb-3 form-floating">
                                 <select name="funcionario_responsable" id="funcionario_responsable" class="form-select" <?= ($tipo_usuario == 10 || $tipo_usuario == 12) ? 'disabled' : '' ?>>
                                     <?php if ($tipo_usuario == 10 || $tipo_usuario == 12): ?>
                                         <?php
@@ -573,6 +603,16 @@ $result = $mysqli->query($query);
                                     <input type="hidden" name="funcionario_responsable" value="<?= intval($id_usuario) ?>">
                                 <?php endif; ?>
                                 <label for="funcionario_responsable">Funcionario Responsable</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="fecha_atencion" class="form-label"><strong>Fechas de Atención</strong></label>
+                                <input type="text" class="form-control" id="fecha_atencion" name="fecha_atencion" placeholder="Haga clic para seleccionar múltiples fechas..." readonly required>
+                                <input type="hidden" id="fechas_seleccionadas" name="fechas_seleccionadas">
+                                <div class="selected-dates-display" id="selected-dates-display">
+                                    <small class="text-muted">Las fechas seleccionadas aparecerán aquí</small>
+                                </div>
                             </div>
                         </div>
                         <div class="row">
@@ -612,11 +652,11 @@ $result = $mysqli->query($query);
                                 <label for="medio_verificacion">Medio de Verificación</label>
                             </div>
                             <div class="col-md-4 mb-3 form-floating">
-                                <input type="number" name="cantidad_masculino" id="cantidad_masculino" class="form-control" placeholder="Masculino" min="0">
+                                <input type="number" name="cantidad_masculino" id="cantidad_masculino" class="form-control" placeholder="Masculino" min="0" required>
                                 <label for="cantidad_masculino">Cantidad Masculino</label>
                             </div>
                             <div class="col-md-4 mb-3 form-floating">
-                                <input type="number" name="cantidad_femenino" id="cantidad_femenino" class="form-control" placeholder="Femenino" min="0">
+                                <input type="number" name="cantidad_femenino" id="cantidad_femenino" class="form-control" placeholder="Femenino" min="0" required>
                                 <label for="cantidad_femenino">Cantidad Femenino</label>
                             </div>
                         </div>
@@ -624,9 +664,11 @@ $result = $mysqli->query($query);
                             <div class="col-md-4 mb-3 form-floating">
                                 <select class="form-select" id="centro_vida" name="id_centro_vida">
                                     <option value="" selected>Seleccione...</option>
-                                    <?php 
+                                    <?php
                                     $grupos_modal_use = $grupos_modal ?? $grupos;
-                                    if ($grupos_modal === null) { mysqli_data_seek($grupos, 0); }
+                                    if ($grupos_modal === null) {
+                                        mysqli_data_seek($grupos, 0);
+                                    }
                                     if ($grupos_modal_use) {
                                         while ($g = $grupos_modal_use->fetch_assoc()) {
                                             $descripcion = $g['descripcion_grupo'];
@@ -707,7 +749,14 @@ $result = $mysqli->query($query);
                                     <div class="table-responsive" style="max-height:300px;overflow-y:auto;border:1px solid #dee2e6;border-radius:4px;">
                                         <table class="table table-sm table-hover mb-0">
                                             <thead class="table-light sticky-top">
-                                                <tr><th style="width:50px"><input type="checkbox" class="form-check-input" id="chk_all_personas_cv"></th><th>Cédula</th><th>Nombres</th><th>Apellidos</th><th>Género</th><th>Jornada</th></tr>
+                                                <tr>
+                                                    <th style="width:50px"><input type="checkbox" class="form-check-input" id="chk_all_personas_cv"></th>
+                                                    <th>Cédula</th>
+                                                    <th>Nombres</th>
+                                                    <th>Apellidos</th>
+                                                    <th>Género</th>
+                                                    <th>Jornada</th>
+                                                </tr>
                                             </thead>
                                             <tbody id="tbody_personas_cv"></tbody>
                                         </table>
@@ -878,7 +927,8 @@ $result = $mysqli->query($query);
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="exp_m_anio" name="filtro_anio">
                                     <option value="">Todos los años</option>
-                                    <?php $yr = date('Y'); for ($y = 2023; $y <= $yr; $y++) echo "<option value=\"$y\">$y</option>"; ?>
+                                    <?php $yr = date('Y');
+                                    for ($y = 2023; $y <= $yr; $y++) echo "<option value=\"$y\">$y</option>"; ?>
                                 </select>
                                 <label for="exp_m_anio">Año</label>
                             </div>
@@ -886,8 +936,20 @@ $result = $mysqli->query($query);
                                 <select class="form-select" id="exp_m_mes" name="filtro_mes">
                                     <option value="">Todos los meses</option>
                                     <?php
-                                    $meses_m = [1=>'Enero',2=>'Febrero',3=>'Marzo',4=>'Abril',5=>'Mayo',6=>'Junio',
-                                                7=>'Julio',8=>'Agosto',9=>'Septiembre',10=>'Octubre',11=>'Noviembre',12=>'Diciembre'];
+                                    $meses_m = [
+                                        1 => 'Enero',
+                                        2 => 'Febrero',
+                                        3 => 'Marzo',
+                                        4 => 'Abril',
+                                        5 => 'Mayo',
+                                        6 => 'Junio',
+                                        7 => 'Julio',
+                                        8 => 'Agosto',
+                                        9 => 'Septiembre',
+                                        10 => 'Octubre',
+                                        11 => 'Noviembre',
+                                        12 => 'Diciembre'
+                                    ];
                                     foreach ($meses_m as $nm => $nom_m) echo "<option value=\"$nm\">$nom_m</option>"; ?>
                                 </select>
                                 <label for="exp_m_mes">Mes</label>
@@ -904,21 +966,23 @@ $result = $mysqli->query($query);
                                 <label for="exp_m_tipo">Tipo Registro</label>
                             </div>
                             <?php if (in_array($tipo_usuario, [5, 11])): ?>
-                            <div class="col-md-6 mb-3 form-floating">
-                                <select class="form-select" id="exp_m_func" name="filtro_funcionario">
-                                    <option value="">Todos los funcionarios</option>
-                                    <?php
-                                    if ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
-                                        $id_grupo_exp_m = intval($_SESSION['id_grupo']);
-                                        $func_m = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (10,11,12) AND id_grupo = $id_grupo_exp_m ORDER BY nombre ASC");
-                                    } else {
-                                        $func_m = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5,10,11,12) ORDER BY nombre ASC");
-                                    }
-                                    if ($func_m) { while ($fu = $func_m->fetch_assoc()) echo "<option value=\"{$fu['id']}\">" . htmlspecialchars($fu['nombre']) . "</option>"; }
-                                    ?>
-                                </select>
-                                <label for="exp_m_func">Funcionario</label>
-                            </div>
+                                <div class="col-md-6 mb-3 form-floating">
+                                    <select class="form-select" id="exp_m_func" name="filtro_funcionario">
+                                        <option value="">Todos los funcionarios</option>
+                                        <?php
+                                        if ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                                            $id_grupo_exp_m = intval($_SESSION['id_grupo']);
+                                            $func_m = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (10,11,12) AND id_grupo = $id_grupo_exp_m ORDER BY nombre ASC");
+                                        } else {
+                                            $func_m = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5,10,11,12) ORDER BY nombre ASC");
+                                        }
+                                        if ($func_m) {
+                                            while ($fu = $func_m->fetch_assoc()) echo "<option value=\"{$fu['id']}\">" . htmlspecialchars($fu['nombre']) . "</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                    <label for="exp_m_func">Funcionario</label>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -932,6 +996,49 @@ $result = $mysqli->query($query);
     </div>
 
     <script>
+        // Variables globales para fechas seleccionadas
+        let selectedDates = [];
+
+        // Función para actualizar el display de fechas seleccionadas
+        function updateSelectedDatesDisplay(dates) {
+            selectedDates = dates;
+            const displayDiv = document.getElementById('selected-dates-display');
+            if (dates.length === 0) {
+                displayDiv.innerHTML = '<small class="text-muted">Las fechas seleccionadas aparecerán aquí</small>';
+            } else {
+                let html = '';
+                dates.forEach(date => {
+                    const dateStr = date.toLocaleDateString('es-CO', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
+                    html += '<span class="date-tag">' + dateStr + '</span>';
+                });
+                displayDiv.innerHTML = html;
+            }
+        }
+
+        // Inicializar Flatpickr para selección múltiple de fechas
+        document.addEventListener('DOMContentLoaded', function() {
+            flatpickr("#fecha_atencion", {
+                mode: "multiple",
+                dateFormat: "Y-m-d",
+                locale: "es",
+                placeholder: "Selecciona las fechas de atención...",
+                allowInput: false,
+                clickOpens: true,
+                onReady: function() {
+                    console.log('Flatpickr listo');
+                },
+                onChange: function(selectedDatesArray, dateStr, instance) {
+                    console.log("Fechas seleccionadas:", dateStr);
+                    updateSelectedDatesDisplay(selectedDatesArray);
+                    document.getElementById('fechas_seleccionadas').value = dateStr;
+                }
+            });
+        });
+
         $(function() {
             // Inicialización DataTables con verificación de consistencia columnas
             if ($.fn.DataTable) {
@@ -1077,14 +1184,24 @@ $result = $mysqli->query($query);
                     if (result.isConfirmed) {
                         Swal.fire({
                             title: 'Seleccione la fecha',
-                            html: '<input type="date" id="swal_cam_fecha" class="swal2-input" max="' + (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})() + '">',
-                            didOpen: function() { document.getElementById('swal_cam_fecha').value = (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})(); },
+                            html: '<input type="date" id="swal_cam_fecha" class="swal2-input" max="' + (function() {
+                                var d = new Date();
+                                return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                            })() + '">',
+                            didOpen: function() {
+                                document.getElementById('swal_cam_fecha').value = (function() {
+                                    var d = new Date();
+                                    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                                })();
+                            },
                             confirmButtonText: 'Cargar',
                             showCancelButton: true,
                             cancelButtonText: 'Cancelar',
                             preConfirm: function() {
                                 const f = document.getElementById('swal_cam_fecha').value;
-                                if (!f) { Swal.showValidationMessage('Seleccione una fecha'); }
+                                if (!f) {
+                                    Swal.showValidationMessage('Seleccione una fecha');
+                                }
                                 return f;
                             }
                         }).then(function(dateResult) {
@@ -1092,19 +1209,37 @@ $result = $mysqli->query($query);
                                 $.ajax({
                                     url: 'getControlAsistencia.php',
                                     type: 'GET',
-                                    data: { fecha: dateResult.value },
+                                    data: {
+                                        fecha: dateResult.value
+                                    },
                                     dataType: 'json',
                                     success: function(resp) {
                                         if (resp.success && resp.cedulas.length > 0) {
                                             window._caCedulasToLoad = resp.cedulas;
                                         } else {
                                             window._caCedulasToLoad = null;
-                                            Swal.fire({ icon: 'info', title: 'Sin registros', text: 'No hay control de asistencia para esa fecha.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                            Swal.fire({
+                                                icon: 'info',
+                                                title: 'Sin registros',
+                                                text: 'No hay control de asistencia para esa fecha.',
+                                                toast: true,
+                                                position: 'top-end',
+                                                timer: 3000,
+                                                showConfirmButton: false
+                                            });
                                         }
                                     },
                                     error: function() {
                                         window._caCedulasToLoad = null;
-                                        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo obtener el control de asistencia.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error',
+                                            text: 'No se pudo obtener el control de asistencia.',
+                                            toast: true,
+                                            position: 'top-end',
+                                            timer: 3000,
+                                            showConfirmButton: false
+                                        });
                                     },
                                     complete: function() {
                                         _skipCAQuery = true;
@@ -1138,37 +1273,45 @@ $result = $mysqli->query($query);
                     $('input[name="jornada"]').prop('checked', false);
                     resetPersonasCVSection();
                     resetActividad();
-                    
+
                     // Precargar meta que empieza por "2." y luego actividad que empieza por "2.1."
                     const metaOption = $meta.find('option').filter(function() {
                         const text = $(this).text().trim();
                         return text.startsWith('2.');
                     }).first();
-                    
+
+                    // Limpiar Flatpickr
+                    const fpInstance = document.getElementById('fecha_atencion')._flatpickr;
+                    if (fpInstance) {
+                        fpInstance.clear();
+                    }
+                    selectedDates = [];
+                    updateSelectedDatesDisplay([]);
+
                     if (metaOption.length) {
                         const metaId = metaOption.val();
                         $meta.val(metaId);
-                        
+
                         // Cargar actividades para esta meta
                         $actividad.prop('disabled', true).html('<option value="">Cargando...</option>');
                         $.post('../contratista/getActividades.php', {
                             id_meta: metaId
                         }, function(r) {
                             $actividad.html('<option value="">Seleccione Actividad...</option>' + r).prop('disabled', false);
-                            
+
                             // Buscar actividad que empieza por "2.1."
                             const actividadOption = $actividad.find('option').filter(function() {
                                 const text = $(this).text().trim();
                                 return text.startsWith('2.1.');
                             }).first();
-                            
+
                             if (actividadOption.length) {
                                 $actividad.val(actividadOption.val());
                                 $actividad.trigger('change');
                             }
                         });
                     }
-                    
+
                     return;
                 }
                 // modo edición
@@ -1177,7 +1320,19 @@ $result = $mysqli->query($query);
                 $title.text('Editar Actividad Masiva Centro Vida');
                 $('#btnSubmit').html('<i class="bi bi-save"></i> Actualizar');
                 $idHidden.val(data.id_registro);
-                $('#fecha_atencion').val(data.fecha_atencion || '');
+                // Cargar fecha en Flatpickr si existe
+                if (data.fecha_atencion) {
+                    const fpInstance = document.getElementById('fecha_atencion')._flatpickr;
+                    if (fpInstance) {
+                        fpInstance.setDate(data.fecha_atencion);
+                    }
+                } else {
+                    // Limpiar Flatpickr
+                    const fpInstance = document.getElementById('fecha_atencion')._flatpickr;
+                    if (fpInstance) {
+                        fpInstance.clear();
+                    }
+                }
                 $('#nombre_lider').val(data.nombre_lider || '');
                 $('#telefono_contacto').val(data.telefono_contacto || '');
                 $('#centro_vida').val(data.id_centro_vida || '');
@@ -1254,12 +1409,19 @@ $result = $mysqli->query($query);
             $('#modalAdd').on('hidden.bs.modal', function() {
                 $form.attr('action', originalAction);
                 $title.text('Agregar Actividad Masiva Centro Vida');
-                $('#btnSubmit').html('<i class=\"bi bi-save\"></i> Guardar');
+                $('#btnSubmit').html('<i class="bi bi-save"></i> Guardar');
                 $idHidden.val('');
                 $form[0].reset();
                 $('input[name="jornada"]').prop('checked', false);
                 resetPersonasCVSection();
                 resetActividad();
+                // Limpiar Flatpickr
+                const fpInstance = document.getElementById('fecha_atencion')._flatpickr;
+                if (fpInstance) {
+                    fpInstance.clear();
+                }
+                selectedDates = [];
+                updateSelectedDatesDisplay([]);
             });
 
             // Eliminar
@@ -1336,11 +1498,21 @@ $result = $mysqli->query($query);
                         $.ajax({
                             url: 'getPersonasByCedulas.php',
                             type: 'POST',
-                            data: { cedulas: JSON.stringify(cedulasPendientes) },
+                            data: {
+                                cedulas: JSON.stringify(cedulasPendientes)
+                            },
                             dataType: 'json',
                             success: function(resp) {
                                 if (!resp.success || !resp.personas.length) {
-                                    Swal.fire({ icon: 'warning', title: 'Control de Asistencia', text: 'No se encontraron personas para las cédulas guardadas.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Control de Asistencia',
+                                        text: 'No se encontraron personas para las cédulas guardadas.',
+                                        toast: true,
+                                        position: 'top-end',
+                                        timer: 3000,
+                                        showConfirmButton: false
+                                    });
                                     return;
                                 }
                                 let agregadas = 0;
@@ -1348,14 +1520,22 @@ $result = $mysqli->query($query);
                                     const cedula = p.cedula_persona;
                                     const nombre = p.nombres_persona + ' ' + p.apellidos_persona;
                                     const genero = p.genero_persona || '';
-                                    if (!personasAgregadasCV.find(function(x){ return x.cedula === cedula; })) {
-                                        personasAgregadasCV.push({ cedula: cedula, nombre: nombre, genero: genero });
+                                    if (!personasAgregadasCV.find(function(x) {
+                                            return x.cedula === cedula;
+                                        })) {
+                                        personasAgregadasCV.push({
+                                            cedula: cedula,
+                                            nombre: nombre,
+                                            genero: genero
+                                        });
                                         const item = $('<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"></div>');
                                         item.append('<span><i class="bi bi-person-fill me-2"></i>' + nombre + ' — <small>' + cedula + '</small></span>');
                                         const btnRem = $('<button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>');
                                         (function(c, itm) {
                                             btnRem.on('click', function() {
-                                                personasAgregadasCV = personasAgregadasCV.filter(function(x){ return x.cedula !== c; });
+                                                personasAgregadasCV = personasAgregadasCV.filter(function(x) {
+                                                    return x.cedula !== c;
+                                                });
                                                 itm.remove();
                                                 if (personasAgregadasCV.length === 0) $('#cedulas_cv_container').hide();
                                                 actualizarContadoresCV();
@@ -1369,7 +1549,8 @@ $result = $mysqli->query($query);
                                 if (agregadas > 0) {
                                     $('#cedulas_cv_container').show();
                                     // Contar géneros y actualizar inputs
-                                    let cntMasc = 0, cntFem = 0;
+                                    let cntMasc = 0,
+                                        cntFem = 0;
                                     personasAgregadasCV.forEach(function(px) {
                                         const g = (px.genero || '').toLowerCase();
                                         if (g === 'masculino') cntMasc++;
@@ -1378,11 +1559,27 @@ $result = $mysqli->query($query);
                                     $('#cantidad_masculino').val(cntMasc);
                                     $('#cantidad_femenino').val(cntFem);
                                     actualizarContadoresCV();
-                                    Swal.fire({ icon: 'success', title: 'Control de Asistencia', text: agregadas + ' persona(s) precargadas: ' + cntMasc + ' masculino(s), ' + cntFem + ' femenino(s).', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Control de Asistencia',
+                                        text: agregadas + ' persona(s) precargadas: ' + cntMasc + ' masculino(s), ' + cntFem + ' femenino(s).',
+                                        toast: true,
+                                        position: 'top-end',
+                                        timer: 4000,
+                                        showConfirmButton: false
+                                    });
                                 }
                             },
                             error: function() {
-                                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar las personas del control de asistencia.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'No se pudieron cargar las personas del control de asistencia.',
+                                    toast: true,
+                                    position: 'top-end',
+                                    timer: 3000,
+                                    showConfirmButton: false
+                                });
                             }
                         });
                     }
@@ -1438,12 +1635,24 @@ $result = $mysqli->query($query);
             // Cargar personas del CV seleccionado
             $('#btn_cargar_personas_cv').on('click', function() {
                 const idGrupo = $('#filtro_grupo_cv_personas').val();
-                if (!idGrupo) { Swal.fire({icon:'warning',title:'Seleccione un Centro de Vida',toast:true,position:'top-end',timer:2000,showConfirmButton:false}); return; }
+                if (!idGrupo) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Seleccione un Centro de Vida',
+                        toast: true,
+                        position: 'top-end',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    return;
+                }
                 $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
                 $.ajax({
                     url: 'obtenerPersonasCentroVida.php',
                     type: 'POST',
-                    data: { id_grupo: idGrupo },
+                    data: {
+                        id_grupo: idGrupo
+                    },
                     dataType: 'json',
                     success: function(personas) {
                         $('#tbody_personas_cv').empty();
@@ -1482,12 +1691,27 @@ $result = $mysqli->query($query);
                             if (marcadas > 0) {
                                 // Agregar automáticamente las personas marcadas a "Personas Agregadas"
                                 $('#btn_agregar_sel_cv').trigger('click');
-                                Swal.fire({ icon: 'success', title: 'Control de Asistencia', text: marcadas + ' persona(s) del control de asistencia fueron agregadas automáticamente.', toast: true, position: 'top-end', timer: 3500, showConfirmButton: false });
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Control de Asistencia',
+                                    text: marcadas + ' persona(s) del control de asistencia fueron agregadas automáticamente.',
+                                    toast: true,
+                                    position: 'top-end',
+                                    timer: 3500,
+                                    showConfirmButton: false
+                                });
                             }
                         }
                     },
                     error: function() {
-                        Swal.fire({icon:'error',title:'Error al cargar personas',toast:true,position:'top-end',timer:2000,showConfirmButton:false});
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error al cargar personas',
+                            toast: true,
+                            position: 'top-end',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                     },
                     complete: function() {
                         $('#btn_cargar_personas_cv').prop('disabled', false).html('<i class="bi bi-arrow-clockwise"></i> Cargar Personas');
@@ -1498,8 +1722,12 @@ $result = $mysqli->query($query);
             $('#chk_all_personas_cv').on('change', function() {
                 $('.chk_persona_cv:visible').prop('checked', $(this).is(':checked'));
             });
-            $('#btn_sel_todas_cv').on('click', function() { $('.chk_persona_cv:visible').prop('checked', true); });
-            $('#btn_desel_todas_cv').on('click', function() { $('.chk_persona_cv:visible').prop('checked', false); });
+            $('#btn_sel_todas_cv').on('click', function() {
+                $('.chk_persona_cv:visible').prop('checked', true);
+            });
+            $('#btn_desel_todas_cv').on('click', function() {
+                $('.chk_persona_cv:visible').prop('checked', false);
+            });
 
             $('#btn_agregar_sel_cv').on('click', function() {
                 $('.chk_persona_cv:checked').each(function() {
@@ -1507,7 +1735,11 @@ $result = $mysqli->query($query);
                     const nombre = $(this).data('nombre');
                     const genero = $(this).data('genero');
                     if (!personasAgregadasCV.find(p => p.cedula === cedula)) {
-                        personasAgregadasCV.push({ cedula, nombre, genero });
+                        personasAgregadasCV.push({
+                            cedula,
+                            nombre,
+                            genero
+                        });
                         const item = $('<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"></div>');
                         item.append('<span><i class="bi bi-person-fill me-2"></i>' + nombre + ' — <small>' + cedula + '</small></span>');
                         const btnRem = $('<button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>');
@@ -1531,175 +1763,319 @@ $result = $mysqli->query($query);
             $(document).on('input', '#cantidad_masculino, #cantidad_femenino', function() {
                 actualizarContadoresCV();
             });
+
+            // Validación del formulario: verificar fechas seleccionadas
+            $('#formAdd').on('submit', function(e) {
+                // Siempre prevenir el submit normal para usar AJAX
+                e.preventDefault();
+
+                console.log('Fechas seleccionadas:', selectedDates.length);
+
+                // Verificar que se hayan seleccionado fechas
+                if (selectedDates.length === 0) {
+                    console.log('❌ Formulario bloqueado: Sin fechas');
+                    Swal.fire({
+                        title: 'Fechas Requeridas',
+                        text: 'Debe seleccionar al menos una fecha de atención.',
+                        icon: 'warning',
+                        confirmButtonText: 'Entendido'
+                    });
+                    $('#fecha_atencion').focus();
+                    return false;
+                }
+
+                console.log('✅ Validación pasada, enviando formulario por AJAX...');
+
+                // Preparar datos del formulario
+                let formData = $(this).serialize();
+
+                // Agregar las fechas seleccionadas como JSON
+                formData += '&fechas_atencion=' + encodeURIComponent(JSON.stringify(selectedDates.map(d => d.toISOString().split('T')[0])));
+
+                console.log('📋 Datos del formulario completos');
+
+                // Enviar por AJAX
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    dataType: 'json',
+                    beforeSend: function() {
+                        console.log('📤 Enviando solicitud AJAX...');
+                        // Deshabilitar botón de envío
+                        const $submitBtn = $('#formAdd button[type="submit"]');
+                        $submitBtn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm me-2"></i>Guardando...');
+                    },
+                    success: function(response) {
+                        console.log('✅ Respuesta AJAX exitosa:', response);
+
+                        if (response.success) {
+                            Swal.fire({
+                                title: '¡Éxito!',
+                                text: response.message || 'Registros guardados correctamente',
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Recargar página
+                                window.location.href = 'formMasivoCentroVida.php';
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.message || 'Error al guardar',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                            const $submitBtn = $('#formAdd button[type="submit"]');
+                            $submitBtn.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('❌ Error AJAX:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Error al conectar con el servidor: ' + error,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        const $submitBtn = $('#formAdd button[type="submit"]');
+                        $submitBtn.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar');
+                    }
+                });
+
+                return false;
+            });
         });
     </script>
 
     <!-- ====== Control de Asistencia (Masivo) JS ====== -->
     <script>
-    $(function() {
+        $(function() {
 
-        // ---- Cargar personas en modal CAM ----
-        $('#cam_btnCargar').on('click', function() {
-            const idGrupo = $('#cam_filtro_grupo').val();
-            if (!idGrupo) {
-                Swal.fire({ icon: 'warning', title: 'Seleccione un Centro de Vida', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
-                return;
-            }
-            const $btn = $(this);
-            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
-            $.ajax({
-                url: 'obtenerPersonasCentroVida.php',
-                type: 'POST',
-                data: { id_grupo: idGrupo },
-                dataType: 'json',
-                success: function(personas) {
-                    $('#cam_listaPersonas').empty();
-                    $('#cam_selectAll').prop('checked', false);
-                    if (!personas || personas.length === 0) {
-                        $('#cam_listaPersonas').html('<p class="text-muted text-center">No hay personas en este Centro de Vida.</p>');
-                    } else {
-                        personas.forEach(function(p) {
-                            const jornBadge = p.jornada ? ' <span class="badge bg-secondary">' + p.jornada + '</span>' : '';
-                            const item = $('<div class="form-check persona-cam-item"></div>')
-                                .attr('data-jornada', p.jornada || '');
-                            const chk  = $('<input class="form-check-input persona-cam-checkbox" type="checkbox">')
-                                .val(p.cedula_persona);
-                            const lbl  = $('<label class="form-check-label"></label>')
-                                .html(p.nombres_persona + ' ' + p.apellidos_persona + ' — <small>' + p.cedula_persona + '</small>' + jornBadge);
-                            item.append(chk).append(lbl);
-                            $('#cam_listaPersonas').append(item);
-                        });
-                    }
-                    $('#cam_areaPersonas').show();
-                    filtrarCAM();
-                    // Si ya hay fecha seleccionada, precargar asistencia guardada
-                    const fechaActual = $('#cam_fecha').val();
-                    if (fechaActual) cargarAsistenciaGuardadaCAM(fechaActual);
-                },
-                error: function() {
-                    Swal.fire({ icon: 'error', title: 'Error al cargar personas', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
-                },
-                complete: function() {
-                    $btn.prop('disabled', false).html('<i class="bi bi-arrow-clockwise"></i> Cargar Personas');
+            // ---- Cargar personas en modal CAM ----
+            $('#cam_btnCargar').on('click', function() {
+                const idGrupo = $('#cam_filtro_grupo').val();
+                if (!idGrupo) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Seleccione un Centro de Vida',
+                        toast: true,
+                        position: 'top-end',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    return;
                 }
-            });
-        });
-
-        // ---- Precargar asistencia guardada al cambiar fecha (CAM) ----
-        function cargarAsistenciaGuardadaCAM(fecha) {
-            if (!fecha) return;
-            // Solo si ya hay personas cargadas en la lista
-            if ($('#cam_listaPersonas .persona-cam-checkbox').length === 0) return;
-            $.ajax({
-                url: 'getControlAsistencia.php',
-                type: 'GET',
-                data: { fecha: fecha },
-                dataType: 'json',
-                success: function(resp) {
-                    $('#cam_listaPersonas .persona-cam-checkbox').prop('checked', false);
-                    if (resp.success && resp.cedulas.length > 0) {
-                        let marcadas = 0;
-                        $('#cam_listaPersonas .persona-cam-checkbox').each(function() {
-                            if (resp.cedulas.indexOf($(this).val()) !== -1) {
-                                $(this).prop('checked', true);
-                                marcadas++;
-                            }
-                        });
-                        if (marcadas > 0) {
-                            Swal.fire({ icon: 'info', title: 'Asistencia cargada', text: marcadas + ' persona(s) precargadas del registro guardado para esta fecha.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                const $btn = $(this);
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+                $.ajax({
+                    url: 'obtenerPersonasCentroVida.php',
+                    type: 'POST',
+                    data: {
+                        id_grupo: idGrupo
+                    },
+                    dataType: 'json',
+                    success: function(personas) {
+                        $('#cam_listaPersonas').empty();
+                        $('#cam_selectAll').prop('checked', false);
+                        if (!personas || personas.length === 0) {
+                            $('#cam_listaPersonas').html('<p class="text-muted text-center">No hay personas en este Centro de Vida.</p>');
+                        } else {
+                            personas.forEach(function(p) {
+                                const jornBadge = p.jornada ? ' <span class="badge bg-secondary">' + p.jornada + '</span>' : '';
+                                const item = $('<div class="form-check persona-cam-item"></div>')
+                                    .attr('data-jornada', p.jornada || '');
+                                const chk = $('<input class="form-check-input persona-cam-checkbox" type="checkbox">')
+                                    .val(p.cedula_persona);
+                                const lbl = $('<label class="form-check-label"></label>')
+                                    .html(p.nombres_persona + ' ' + p.apellidos_persona + ' — <small>' + p.cedula_persona + '</small>' + jornBadge);
+                                item.append(chk).append(lbl);
+                                $('#cam_listaPersonas').append(item);
+                            });
                         }
+                        $('#cam_areaPersonas').show();
+                        filtrarCAM();
+                        // Si ya hay fecha seleccionada, precargar asistencia guardada
+                        const fechaActual = $('#cam_fecha').val();
+                        if (fechaActual) cargarAsistenciaGuardadaCAM(fechaActual);
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error al cargar personas',
+                            toast: true,
+                            position: 'top-end',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).html('<i class="bi bi-arrow-clockwise"></i> Cargar Personas');
                     }
-                    updateCAMCounter();
-                }
+                });
             });
-        }
 
-        $('#cam_fecha').on('change', function() {
-            cargarAsistenciaGuardadaCAM($(this).val());
-        });
-
-        // ---- Filtros modal CAM ----
-        function filtrarCAM() {
-            const q       = $('#cam_searchPersona').val().toLowerCase().trim();
-            const jornada = $('input[name="cam_filtroJornada"]:checked').val();
-            $('#cam_listaPersonas .persona-cam-item').each(function() {
-                const txt      = $(this).text().toLowerCase();
-                const pJornada = $(this).data('jornada') || '';
-                const mText    = !q || txt.indexOf(q) !== -1;
-                const mJorn    = jornada === 'todos' || pJornada === jornada;
-                $(this).toggle(mText && mJorn);
-            });
-            updateCAMCounter();
-        }
-
-        function updateCAMCounter() {
-            const total   = $('#cam_listaPersonas .persona-cam-checkbox:checked').length;
-            const visible = $('#cam_listaPersonas .persona-cam-checkbox:visible').length;
-            const chkVis  = $('#cam_listaPersonas .persona-cam-checkbox:visible:checked').length;
-            $('#cam_contador').text(total);
-            $('#cam_selectAll').prop('checked', visible > 0 && visible === chkVis);
-        }
-
-        $('#cam_searchPersona').on('input', filtrarCAM);
-        $('input[name="cam_filtroJornada"]').on('change', filtrarCAM);
-
-        $('#cam_selectAll').on('change', function() {
-            $('#cam_listaPersonas .persona-cam-checkbox:visible').prop('checked', $(this).is(':checked'));
-            updateCAMCounter();
-        });
-
-        $(document).on('change', '#cam_listaPersonas .persona-cam-checkbox', updateCAMCounter);
-
-        // Limpiar al cerrar
-        $('#modalControlAsistenciaM').on('hidden.bs.modal', function() {
-            $('#cam_listaPersonas').empty();
-            $('#cam_areaPersonas').hide();
-            $('#cam_selectAll').prop('checked', false);
-            $('#cam_searchPersona').val('');
-            $('#cam_fecha').val('');
-            $('input[name="cam_filtroJornada"][value="todos"]').prop('checked', true);
-        });
-
-        // ---- Guardar Control de Asistencia (Masivo) ----
-        $('#cam_btnGuardar').on('click', function() {
-            const fecha = $('#cam_fecha').val();
-            if (!fecha) {
-                Swal.fire({ icon: 'warning', title: 'Fecha requerida', text: 'Seleccione una fecha de asistencia.', toast: true, position: 'top-end', timer: 2500, showConfirmButton: false });
-                return;
-            }
-            const cedulas = [];
-            $('#cam_listaPersonas .persona-cam-checkbox:checked').each(function() {
-                cedulas.push($(this).val());
-            });
-            if (cedulas.length === 0) {
-                Swal.fire({ icon: 'warning', title: 'Sin personas', text: 'Seleccione al menos una persona.', toast: true, position: 'top-end', timer: 2500, showConfirmButton: false });
-                return;
-            }
-            const $btn = $(this);
-            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Guardando...');
-            $.ajax({
-                url: 'saveControlAsistencia.php',
-                type: 'POST',
-                data: { cedulas: JSON.stringify(cedulas), fecha_asistencia: fecha },
-                dataType: 'json',
-                success: function(resp) {
-                    if (resp.success) {
-                        Swal.fire({ icon: 'success', title: 'Asistencia guardada', text: resp.count + ' persona(s) registradas para el ' + fecha + '.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
-                        $('#modalControlAsistenciaM').modal('hide');
-                    } else {
-                        Swal.fire({ icon: 'error', title: 'Error', text: resp.message || 'No se pudo guardar.' });
+            // ---- Precargar asistencia guardada al cambiar fecha (CAM) ----
+            function cargarAsistenciaGuardadaCAM(fecha) {
+                if (!fecha) return;
+                // Solo si ya hay personas cargadas en la lista
+                if ($('#cam_listaPersonas .persona-cam-checkbox').length === 0) return;
+                $.ajax({
+                    url: 'getControlAsistencia.php',
+                    type: 'GET',
+                    data: {
+                        fecha: fecha
+                    },
+                    dataType: 'json',
+                    success: function(resp) {
+                        $('#cam_listaPersonas .persona-cam-checkbox').prop('checked', false);
+                        if (resp.success && resp.cedulas.length > 0) {
+                            let marcadas = 0;
+                            $('#cam_listaPersonas .persona-cam-checkbox').each(function() {
+                                if (resp.cedulas.indexOf($(this).val()) !== -1) {
+                                    $(this).prop('checked', true);
+                                    marcadas++;
+                                }
+                            });
+                            if (marcadas > 0) {
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'Asistencia cargada',
+                                    text: marcadas + ' persona(s) precargadas del registro guardado para esta fecha.',
+                                    toast: true,
+                                    position: 'top-end',
+                                    timer: 3000,
+                                    showConfirmButton: false
+                                });
+                            }
+                        }
+                        updateCAMCounter();
                     }
-                },
-                error: function() {
-                    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
-                },
-                complete: function() {
-                    $btn.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar Asistencia');
-                }
-            });
-        });
+                });
+            }
 
-    });
+            $('#cam_fecha').on('change', function() {
+                cargarAsistenciaGuardadaCAM($(this).val());
+            });
+
+            // ---- Filtros modal CAM ----
+            function filtrarCAM() {
+                const q = $('#cam_searchPersona').val().toLowerCase().trim();
+                const jornada = $('input[name="cam_filtroJornada"]:checked').val();
+                $('#cam_listaPersonas .persona-cam-item').each(function() {
+                    const txt = $(this).text().toLowerCase();
+                    const pJornada = $(this).data('jornada') || '';
+                    const mText = !q || txt.indexOf(q) !== -1;
+                    const mJorn = jornada === 'todos' || pJornada === jornada;
+                    $(this).toggle(mText && mJorn);
+                });
+                updateCAMCounter();
+            }
+
+            function updateCAMCounter() {
+                const total = $('#cam_listaPersonas .persona-cam-checkbox:checked').length;
+                const visible = $('#cam_listaPersonas .persona-cam-checkbox:visible').length;
+                const chkVis = $('#cam_listaPersonas .persona-cam-checkbox:visible:checked').length;
+                $('#cam_contador').text(total);
+                $('#cam_selectAll').prop('checked', visible > 0 && visible === chkVis);
+            }
+
+            $('#cam_searchPersona').on('input', filtrarCAM);
+            $('input[name="cam_filtroJornada"]').on('change', filtrarCAM);
+
+            $('#cam_selectAll').on('change', function() {
+                $('#cam_listaPersonas .persona-cam-checkbox:visible').prop('checked', $(this).is(':checked'));
+                updateCAMCounter();
+            });
+
+            $(document).on('change', '#cam_listaPersonas .persona-cam-checkbox', updateCAMCounter);
+
+            // Limpiar al cerrar
+            $('#modalControlAsistenciaM').on('hidden.bs.modal', function() {
+                $('#cam_listaPersonas').empty();
+                $('#cam_areaPersonas').hide();
+                $('#cam_selectAll').prop('checked', false);
+                $('#cam_searchPersona').val('');
+                $('#cam_fecha').val('');
+                $('input[name="cam_filtroJornada"][value="todos"]').prop('checked', true);
+            });
+
+            // ---- Guardar Control de Asistencia (Masivo) ----
+            $('#cam_btnGuardar').on('click', function() {
+                const fecha = $('#cam_fecha').val();
+                if (!fecha) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Fecha requerida',
+                        text: 'Seleccione una fecha de asistencia.',
+                        toast: true,
+                        position: 'top-end',
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                    return;
+                }
+                const cedulas = [];
+                $('#cam_listaPersonas .persona-cam-checkbox:checked').each(function() {
+                    cedulas.push($(this).val());
+                });
+                if (cedulas.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Sin personas',
+                        text: 'Seleccione al menos una persona.',
+                        toast: true,
+                        position: 'top-end',
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                    return;
+                }
+                const $btn = $(this);
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Guardando...');
+                $.ajax({
+                    url: 'saveControlAsistencia.php',
+                    type: 'POST',
+                    data: {
+                        cedulas: JSON.stringify(cedulas),
+                        fecha_asistencia: fecha
+                    },
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (resp.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Asistencia guardada',
+                                text: resp.count + ' persona(s) registradas para el ' + fecha + '.',
+                                toast: true,
+                                position: 'top-end',
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+                            $('#modalControlAsistenciaM').modal('hide');
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: resp.message || 'No se pudo guardar.'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudo conectar con el servidor.'
+                        });
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar Asistencia');
+                    }
+                });
+            });
+
+        });
     </script>
 </body>
 
