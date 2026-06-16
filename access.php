@@ -706,7 +706,7 @@ $mysqli->close();
 
   <?php } ?>
   <!-- sidebar -->
-  <?php if ($tipo_usuario != 3 && $tipo_usuario != 10 && $tipo_usuario != 11) { ?>
+  <?php if ($tipo_usuario != 3 && $tipo_usuario != 10 && $tipo_usuario != 11 && $tipo_usuario != 13) { ?>
     <nav class="sidebar">
       <div class="menu_content">
         <ul class="menu_items">
@@ -1135,6 +1135,80 @@ $mysqli->close();
             </div>
             <ul class="menu_items submenu">
               <a href="code/gruposExternos/seeGruposExternos.php" class="nav_link sublink">Gestionar Grupos</a>
+            </ul>
+          </li>
+
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+              </span>
+              <span class="navlink">Mi Cuenta</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="reset-password.php" class="nav_link sublink">Cambiar Contraseña</a>
+            </ul>
+          </li>
+          <div class="bottom_content">
+            <div class="bottom expand_sidebar">
+              <span> Expand</span>
+              <i class='bx bx-log-in'></i>
+            </div>
+            <div class="bottom collapse_sidebar">
+              <span> Collapse</span>
+              <i class='bx bx-log-out'></i>
+            </div>
+          </div>
+        </ul>
+
+      </div>
+    </nav>
+  <?php } ?>
+
+  <!-- Menu para TRABAJO SOCIAL (Tipo 13) - Acceso Restringido por Grupo -->
+  <?php if ($tipo_usuario == 13) { ?>
+    <nav class="sidebar">
+      <div class="menu_content">
+        <ul class="menu_items">
+          <div class="menu_title menu_dahsboard"></div>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-users"></i>
+              </span>
+              <span class="navlink">Personas</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/persons/seePerson.php" class="nav_link sublink">Ver Personas</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-user-pen"></i>
+              </span>
+              <span class="navlink">Usuarios Plataforma</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/users/showusers.php" class="nav_link sublink">Permisos</a>
+              <a href="code/users/register.php" class="nav_link sublink">Crear Nuevo</a>
+              <a href="code/users/exportUsersExcel.php" class="nav_link sublink"><i class="bi bi-file-earmark-excel-fill" style="color:#1D6F42;"></i> Descargar Informe</a>
+            </ul>
+          </li>
+          <li class="item">
+            <div href="#" class="nav_link submenu_item">
+              <span class="navlink_icon">
+                <i class="fa-solid fa-bullseye"></i>
+              </span>
+              <span class="navlink">Registro art masivas</span>
+              <i class="bx bx-chevron-right arrow-left"></i>
+            </div>
+            <ul class="menu_items submenu">
+              <a href="code/contratistaCentroVida/formCentroVida.php" class="nav_link sublink">Registros indiv Centro Vida</a>
+              <a href="code/contratistaCentroVida/formMasivoCentroVida.php" class="nav_link sublink">Registros masiva Centro Vida</a>
             </ul>
           </li>
 

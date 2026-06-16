@@ -152,8 +152,8 @@ try {
         $query .= $where_grupo_usuario;
     }
 
-    // Tipo 10 y 12: solo sus propios registros (filtro por ID numérico)
-    if (in_array($tipo_usuario_export, [10, 12])) {
+    // Tipo 10, 12 y 13: solo sus propios registros (filtro por ID numérico)
+    if (in_array($tipo_usuario_export, [10, 12, 13])) {
         $id_usuario_export = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
         if ($id_usuario_export === 0) {
             if (stripos($query, 'WHERE') === false) { $query .= ' WHERE 1=1'; }

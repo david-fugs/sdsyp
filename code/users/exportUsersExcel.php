@@ -6,9 +6,9 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-// Solo tipo_usuario 1 (admin) y 11 (ingeniero centro vida) pueden acceder
+// Solo tipo_usuario 1 (admin), 11 (ingeniero centro vida) y 13 (trabajo social) pueden acceder
 $tipo_usuario_session = $_SESSION['tipo_usuario'];
-if ($tipo_usuario_session != 1 && $tipo_usuario_session != 11) {
+if ($tipo_usuario_session != 1 && $tipo_usuario_session != 11 && $tipo_usuario_session != 13) {
     header("Location: ../../access.php");
     exit;
 }
@@ -30,9 +30,9 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 
-// Restringir por grupo si es tipo 11
+// Restringir por grupo si es tipo 11 o 13
 $where_tipo_11 = '';
-if ($tipo_usuario_session == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+if (($tipo_usuario_session == 11 || $tipo_usuario_session == 13) && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
     $id_grupo_session = intval($_SESSION['id_grupo']);
     $where_tipo_11 = " AND u.id_grupo = $id_grupo_session";
 }
@@ -51,6 +51,7 @@ function getTipoUsuarioTexto($tipo) {
         case 10: return 'CONTRATISTA CENTRO VIDA';
         case 11: return 'INGENIERO CENTRO VIDA';
         case 12: return 'CONTRATISTA CENTRO VIDA ALCALDIA';
+        case 13: return 'TRABAJO SOCIAL';
         default: return 'DESCONOCIDO';
     }
 }

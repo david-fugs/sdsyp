@@ -12,13 +12,13 @@ $where_grupos = getWhereGruposPermitidos($mysqli, $tipo_usuario, 'g');
 // Cargar listas necesarias
 $metas = $mysqli->query("SELECT * FROM metas ORDER BY descripcion_meta ASC");
 $actividades_cv = $mysqli->query("SELECT id_actividad_centro_vida, descripcion_actividad FROM actividad_centro_vida ORDER BY descripcion_actividad ASC");
-$usuarios = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11 , 12) ORDER BY nombre ASC");
+$usuarios = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11, 12, 13) ORDER BY nombre ASC");
 $grupos = $mysqli->query("SELECT g.* FROM grupos g WHERE 1=1 $where_grupos ORDER BY g.descripcion_grupo ASC");
 
 // Queries filtradas para modal
 // Tipo 11: ve todos los funcionarios (lista completa), solo su grupo
-// Tipos 10 y 12: solo se ven a sí mismos
-if (($tipo_usuario == 10 || $tipo_usuario == 12) && $id_usuario) {
+// Tipos 10, 12 y 13: solo se ven a sí mismos
+if (($tipo_usuario == 10 || $tipo_usuario == 12 || $tipo_usuario == 13) && $id_usuario) {
     $usuarios_modal = $mysqli->query("SELECT id, nombre FROM usuarios WHERE id = " . intval($id_usuario));
     if (isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
         $id_grupo_modal = intval($_SESSION['id_grupo']);
@@ -81,8 +81,8 @@ if ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']
     $where .= " AND mcv.id_centro_vida = $id_grupo_session";
 }
 
-// Filtro para tipo usuario 10 y 12: solo ver sus propios registros
-if (($tipo_usuario == 10 || $tipo_usuario == 12) && $id_usuario) {
+// Filtro para tipo usuario 10, 12 y 13: solo ver sus propios registros
+if (($tipo_usuario == 10 || $tipo_usuario == 12 || $tipo_usuario == 13) && $id_usuario) {
     $where .= " AND mcv.id_usuario = " . intval($id_usuario);
 }
 // Tipo usuario 5 puede ver todo (no se agrega filtro adicional)
@@ -583,8 +583,8 @@ $result = $mysqli->query($query);
                                 <label for="tipo_registro">Tipo de Registro</label>
                             </div>
                             <div class="col-md-4 mb-3 form-floating">
-                                <select name="funcionario_responsable" id="funcionario_responsable" class="form-select" <?= ($tipo_usuario == 10 || $tipo_usuario == 12) ? 'disabled' : '' ?>>
-                                    <?php if ($tipo_usuario == 10 || $tipo_usuario == 12): ?>
+                                <select name="funcionario_responsable" id="funcionario_responsable" class="form-select" <?= ($tipo_usuario == 10 || $tipo_usuario == 12 || $tipo_usuario == 13) ? 'disabled' : '' ?>>
+                                    <?php if ($tipo_usuario == 10 || $tipo_usuario == 12 || $tipo_usuario == 13): ?>
                                         <?php
                                         $self_func = $usuarios_modal ? $usuarios_modal->fetch_assoc() : null;
                                         if ($self_func): ?>
@@ -599,7 +599,7 @@ $result = $mysqli->query($query);
                                         } ?>
                                     <?php endif; ?>
                                 </select>
-                                <?php if ($tipo_usuario == 10 || $tipo_usuario == 12): ?>
+                                <?php if ($tipo_usuario == 10 || $tipo_usuario == 12 || $tipo_usuario == 13): ?>
                                     <input type="hidden" name="funcionario_responsable" value="<?= intval($id_usuario) ?>">
                                 <?php endif; ?>
                                 <label for="funcionario_responsable">Funcionario Responsable</label>
@@ -717,7 +717,7 @@ $result = $mysqli->query($query);
                                         <select class="form-select form-select-sm" id="filtro_grupo_cv_personas">
                                             <option value="">Seleccione un Centro de Vida...</option>
                                             <?php
-                                            if ($tipo_usuario == 10 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                                            if (($tipo_usuario == 10 || $tipo_usuario == 13) && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
                                                 $cvs_modal = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE id_grupo = " . intval($_SESSION['id_grupo']));
                                             } else {
                                                 $cvs_modal = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC");
@@ -851,7 +851,7 @@ $result = $mysqli->query($query);
                             <select class="form-select" id="cam_filtro_grupo">
                                 <option value="">Seleccione un Centro de Vida para cargar personas...</option>
                                 <?php
-                                if ($tipo_usuario == 10 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                                if (($tipo_usuario == 10 || $tipo_usuario == 13) && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
                                     $cvs_cam = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE id_grupo = " . intval($_SESSION['id_grupo']));
                                 } else {
                                     $cvs_cam = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC");

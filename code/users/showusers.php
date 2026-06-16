@@ -238,9 +238,9 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                 @$usuario = ($_GET['usuario']);
                 @$nombre = ($_GET['nombre']);
 
-                // Filtrar usuarios por centro asociado si es tipo usuario 11
+                // Filtrar usuarios por centro asociado si es tipo usuario 11 o 13
                 $where_tipo_11 = '';
-                if ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                if (($tipo_usuario == 11 || $tipo_usuario == 13) && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
                     $id_grupo_session = intval($_SESSION['id_grupo']);
                     $where_tipo_11 = " AND usuarios.id_grupo = $id_grupo_session";
                 }
@@ -321,6 +321,10 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                                 case 12:
                                     $tipo_usuario_texto = 'CONTRATISTA CENTRO VIDA ALCALDIA';
                                     $badge_class = 'badge bg-info';
+                                    break;
+                                case 13:
+                                    $tipo_usuario_texto = 'TRABAJO SOCIAL';
+                                    $badge_class = 'badge bg-secondary';
                                     break;
 
                                 default:
@@ -454,8 +458,8 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                                         <select class="form-control" id="edit_id_grupo" name="id_grupo" required>
                                             <option value="">Seleccione un centro</option>
                                             <?php
-                                            // Si es tipo usuario 11, solo mostrar su centro asociado
-                                            if ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                                            // Si es tipo usuario 11 o 13, solo mostrar su centro asociado
+                                            if (($tipo_usuario == 11 || $tipo_usuario == 13) && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
                                                 $id_grupo_filtro = intval($_SESSION['id_grupo']);
                                                 $query_grupos = "SELECT id_grupo, descripcion_grupo FROM grupos WHERE id_grupo = $id_grupo_filtro ORDER BY descripcion_grupo ASC";
                                             } else {
@@ -472,11 +476,12 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                                         <label for="edit_tipo_usuario">Tipo Usuario</label>
                                         <select class="form-control" id="edit_tipo_usuario" name="tipo_usuario" required>
                                             <option value="">Seleccione tipo usuario</option>
-                                            <?php if ($tipo_usuario == 11) { // Solo mostrar tipos relacionados con CENTRO VIDA 
+                                            <?php if ($tipo_usuario == 11 || $tipo_usuario == 13) { // Solo mostrar tipos relacionados con CENTRO VIDA 
                                             ?>
                                                 <option value="10">CONTRATISTA CENTRO VIDA PROPIO</option>
                                                 <option value="11">INGENIERO CENTRO VIDA</option>
-                                            <?php } else { // Usuarios no tipo 11 pueden ver todos los tipos 
+                                                <option value="13">TRABAJO SOCIAL</option>
+                                            <?php } else { // Usuarios no tipo 11/13 pueden ver todos los tipos 
                                             ?>
                                                 <option value="1">ADMINISTRADOR</option>
                                                 <option value="3">CONTRATISTA CPSAM</option>
@@ -488,6 +493,7 @@ $tipo_usuario = $_SESSION['tipo_usuario'];
                                                 <option value="10">CONTRATISTA CENTRO VIDA PROPIO</option>
                                                 <option value="12">CONTRATISTA CENTRO VIDA ALCALDIA</option>
                                                 <option value="11">INGENIERO CENTRO VIDA</option>
+                                                <option value="13">TRABAJO SOCIAL</option>
                                             <?php } ?>
                                         </select>
                                     </div>

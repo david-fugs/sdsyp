@@ -373,9 +373,9 @@ $personas_sql = "SELECT p.cedula_persona, CONCAT(p.nombres_persona, ' ', p.apell
 
 // Aplicar filtro por grupo de usuario si corresponde (tipo 11: INGENIERO CENTRO VIDA)
 $personas_sql .= obtenerCondicionFiltroGrupo('p');
-// Para tipo 10 (CONTRATISTA CV): solo personas de su centro asignado
+// Para tipo 10 (CONTRATISTA CV) y tipo 13 (TRABAJO SOCIAL): solo personas de su centro asignado
 $_tipo_u_temp = isset($_SESSION['tipo_usuario']) ? (int)$_SESSION['tipo_usuario'] : 0;
-if ($_tipo_u_temp === 10) {
+if ($_tipo_u_temp === 10 || $_tipo_u_temp === 13) {
     $_id_grupo_temp = isset($_SESSION['id_grupo']) ? (int)$_SESSION['id_grupo'] : 0;
     if ($_id_grupo_temp > 0) {
         $personas_sql .= " AND p.id_grupo = $_id_grupo_temp";
@@ -402,13 +402,13 @@ if ($cvs_export_res) { $cvs_export = $cvs_export_res->fetch_all(MYSQLI_ASSOC); }
 
 // Usuarios funcionarios para el modal de exportación
 $funcionarios_export = [];
-if (in_array($tipo_usuario_cv, [5, 11])) {
-    $func_query = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11, 12) ORDER BY nombre ASC";
-    if ($tipo_usuario_cv === 11) {
+if (in_array($tipo_usuario_cv, [5, 11, 13])) {
+    $func_query = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11, 12, 13) ORDER BY nombre ASC";
+    if ($tipo_usuario_cv === 11 || $tipo_usuario_cv === 13) {
         // Solo funcionarios de su grupo
         $id_grupo_func = isset($_SESSION['id_grupo']) ? (int)$_SESSION['id_grupo'] : 0;
         if ($id_grupo_func > 0) {
-            $func_query = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (10, 11, 12) AND id_grupo = $id_grupo_func ORDER BY nombre ASC";
+            $func_query = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (10, 11, 12, 13) AND id_grupo = $id_grupo_func ORDER BY nombre ASC";
         }
     }
     $func_res = $mysqli->query($func_query);
@@ -544,7 +544,7 @@ function deleteRegistro($id_registro)
                         <i class="bi bi-file-excel"></i>
                         Exportar Excel
                     </button>
-                    <?php if ($tipo_usuario_cv === 11 ): ?>
+                    <?php if ($tipo_usuario_cv === 11 || $tipo_usuario_cv === 13): ?>
                     <button type="button" class="btn-modern" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.4);" data-bs-toggle="modal" data-bs-target="#modalConsolidado">
                         <i class="bi bi-calendar3"></i>
                         Consolidado por Mes

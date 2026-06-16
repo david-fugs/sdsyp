@@ -1,5 +1,5 @@
 <?php
-// Consolidado Mensual Centro Vida — solo tipo_usuario 11 (2 hojas: Mañana y Tarde)
+// Consolidado Mensual Centro Vida — solo tipo_usuario 11 y 13 (2 hojas: Mañana y Tarde)
 ob_start();
 session_start();
 require_once '../../conexion.php';
@@ -13,9 +13,9 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
-// Acceso solo para tipo_usuario 11
+// Acceso solo para tipo_usuario 11 y 13
 $tipo_usuario_ses = isset($_SESSION['tipo_usuario']) ? (int)$_SESSION['tipo_usuario'] : 0;
-if ($tipo_usuario_ses !== 11) {
+if ($tipo_usuario_ses !== 11 && $tipo_usuario_ses !== 13) {
     http_response_code(403);
     die('Acceso no autorizado');
 }
