@@ -717,7 +717,7 @@ $result = $mysqli->query($query);
                                         <select class="form-select form-select-sm" id="filtro_grupo_cv_personas">
                                             <option value="">Seleccione un Centro de Vida...</option>
                                             <?php
-                                            if (($tipo_usuario == 10 || $tipo_usuario == 13) && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                                            if (($tipo_usuario == 10 || $tipo_usuario == 11 || $tipo_usuario == 13) && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
                                                 $cvs_modal = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE id_grupo = " . intval($_SESSION['id_grupo']));
                                             } else {
                                                 $cvs_modal = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC");
@@ -851,7 +851,7 @@ $result = $mysqli->query($query);
                             <select class="form-select" id="cam_filtro_grupo">
                                 <option value="">Seleccione un Centro de Vida para cargar personas...</option>
                                 <?php
-                                if (($tipo_usuario == 10 || $tipo_usuario == 13) && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                                if (($tipo_usuario == 10 || $tipo_usuario == 11 || $tipo_usuario == 13) && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
                                     $cvs_cam = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE id_grupo = " . intval($_SESSION['id_grupo']));
                                 } else {
                                     $cvs_cam = $mysqli->query("SELECT id_grupo, descripcion_grupo FROM grupos WHERE descripcion_grupo LIKE 'CV%' ORDER BY descripcion_grupo ASC");
@@ -1590,6 +1590,41 @@ $result = $mysqli->query($query);
             }
 
             function actualizarContadoresCV() {
+                const sel = personasAgregadasCV.length;
+                
+                // Calcular cantidad de hombres y mujeres de las personas agregadas
+                let contMasc = 0, contFem = 0;
+                personasAgregadasCV.forEach(p => {
+                    if (p.genero && p.genero.toLowerCase().includes('masculino')) {
+                        contMasc++;
+                    } else if (p.genero && p.genero.toLowerCase().includes('femenino')) {
+                        contFem++;
+                    }
+                });
+                
+                // Actualizar automáticamente los campos de cantidad si hay personas agregadas
+                if (sel > 0) {
+                    $('#cantidad_masculino').val(contMasc);
+                    $('#cantidad_femenino').val(contFem);
+                }
+                
+                // Actualizar contadores informativos
+                const req = contMasc + contFem; // Basado en personas agregadas
+                $('#contador_req_cv').text(req + ' requeridas');
+                $('#contador_sel_cv').text(sel + ' agregadas');
+                $('#contador_cedulas_cv').text(sel);
+                
+                if (sel > 0 && sel === req) {
+                    $('#contador_sel_cv').removeClass('bg-danger bg-warning').addClass('bg-success');
+                } else if (sel > 0) {
+                    $('#contador_sel_cv').removeClass('bg-success bg-danger').addClass('bg-warning');
+                } else {
+                    $('#contador_sel_cv').removeClass('bg-success bg-warning').addClass('bg-danger');
+                }
+                $('#cedulas_json_cv').val(JSON.stringify(personasAgregadasCV.map(p => p.cedula)));
+            }
+
+            function actualizarContadoresCV_SoloContadores() {
                 const req = (parseInt($('#cantidad_masculino').val()) || 0) + (parseInt($('#cantidad_femenino').val()) || 0);
                 const sel = personasAgregadasCV.length;
                 $('#contador_req_cv').text(req + ' requeridas');
@@ -1759,9 +1794,9 @@ $result = $mysqli->query($query);
                 actualizarContadoresCV();
             });
 
-            // Actualizar contadores cuando cambian cantidades
+            // Actualizar contadores cuando cambian cantidades (solo contadores, NO recalcular desde géneros)
             $(document).on('input', '#cantidad_masculino, #cantidad_femenino', function() {
-                actualizarContadoresCV();
+                actualizarContadoresCV_SoloContadores();
             });
 
             // Validación del formulario: verificar fechas seleccionadas
