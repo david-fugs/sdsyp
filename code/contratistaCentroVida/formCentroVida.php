@@ -402,13 +402,13 @@ if ($cvs_export_res) { $cvs_export = $cvs_export_res->fetch_all(MYSQLI_ASSOC); }
 
 // Usuarios funcionarios para el modal de exportación
 $funcionarios_export = [];
-if (in_array($tipo_usuario_cv, [5, 11, 13])) {
-    $func_query = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5, 10, 11, 12, 13) ORDER BY nombre ASC";
-    if ($tipo_usuario_cv === 11 || $tipo_usuario_cv === 13) {
+if (in_array($tipo_usuario_cv, [1, 5, 11, 13])) {
+    $func_query = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (10, 11, 12) ORDER BY nombre ASC";
+    if ($tipo_usuario_cv === 1 || $tipo_usuario_cv === 11 || $tipo_usuario_cv === 13) {
         // Solo funcionarios de su grupo
         $id_grupo_func = isset($_SESSION['id_grupo']) ? (int)$_SESSION['id_grupo'] : 0;
         if ($id_grupo_func > 0) {
-            $func_query = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (10, 11, 12, 13) AND id_grupo = $id_grupo_func ORDER BY nombre ASC";
+            $func_query = "SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (10, 11, 12) AND id_grupo = $id_grupo_func ORDER BY nombre ASC";
         }
     }
     $func_res = $mysqli->query($func_query);

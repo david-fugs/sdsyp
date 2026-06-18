@@ -874,7 +874,7 @@ $mysqli->close();
                 <span class="navlink_icon">
                   <i class="fa-solid fa-chart-bar"></i>
                 </span>
-                <span class="navlink">Informes</span>
+                <span class="navlink">Informes CPSAM</span>
                 <i class="bx bx-chevron-right arrow-left"></i>
               </div>
               <ul class="menu_items submenu">

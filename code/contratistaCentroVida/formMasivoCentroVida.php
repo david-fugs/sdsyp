@@ -965,16 +965,16 @@ $result = $mysqli->query($query);
                                 </select>
                                 <label for="exp_m_tipo">Tipo Registro</label>
                             </div>
-                            <?php if (in_array($tipo_usuario, [5, 11])): ?>
+                            <?php if (in_array($tipo_usuario, [1, 5, 11])): ?>
                                 <div class="col-md-6 mb-3 form-floating">
                                     <select class="form-select" id="exp_m_func" name="filtro_funcionario">
                                         <option value="">Todos los funcionarios</option>
                                         <?php
-                                        if ($tipo_usuario == 11 && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
+                                        if (($tipo_usuario == 11 || $tipo_usuario == 1) && isset($_SESSION['id_grupo']) && $_SESSION['id_grupo']) {
                                             $id_grupo_exp_m = intval($_SESSION['id_grupo']);
-                                            $func_m = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (10,11,12) AND id_grupo = $id_grupo_exp_m ORDER BY nombre ASC");
+                                            $func_m = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (10,11,12,13) AND id_grupo = $id_grupo_exp_m ORDER BY nombre ASC");
                                         } else {
-                                            $func_m = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (5,10,11,12) ORDER BY nombre ASC");
+                                            $func_m = $mysqli->query("SELECT id, nombre FROM usuarios WHERE tipo_usuario IN (10,11,12) ORDER BY nombre ASC");
                                         }
                                         if ($func_m) {
                                             while ($fu = $func_m->fetch_assoc()) echo "<option value=\"{$fu['id']}\">" . htmlspecialchars($fu['nombre']) . "</option>";
