@@ -774,9 +774,14 @@ function deleteRegistro($id_registro)
                     </div>
                     <div class="modal-footer justify-content-between">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-file-earmark-excel"></i> Descargar Excel
-                        </button>
+                        <div>
+                            <button type="button" class="btn btn-info text-white" id="btnExportCsv">
+                                <i class="bi bi-file-text"></i> Descargar CSV (Rápido)
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-file-earmark-excel"></i> Descargar Excel
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -3328,6 +3333,29 @@ function deleteRegistro($id_registro)
             $('#gu_persona_encontrada_wrap').hide();
             if (grupoFlatpickrInstance) grupoFlatpickrInstance.clear();
         });
+    });
+
+    // ---- Botón Exportar CSV ----
+    $('#btnExportCsv').on('click', function() {
+        // Obtener los mismos valores del formulario de exportación
+        const params = new URLSearchParams();
+        params.append('cedula_persona', $('#exp_cedula').val() || '');
+        params.append('nombre', $('#exp_nombre').val() || '');
+        params.append('anio', $('#exp_anio').val() || '');
+        params.append('mes', $('#exp_mes').val() || '');
+        params.append('actividad', $('#exp_actividad').val() || '');
+        params.append('funcionario', $('#exp_funcionario').val() || '');
+        params.append('filtro_tipo_usuario', $('#exp_tipo_usuario').val() || '');
+        const id_grupo = $('#exp_centro_vida').val();
+        if (id_grupo && id_grupo !== 'undefined') {
+            params.append('id_grupo_cv', id_grupo);
+        }
+
+        // Redirigir a exportación CSV
+        window.location.href = 'exportCsvCentroVida.php?' + params.toString();
+
+        // Cerrar modal
+        $('#modalExportCentroVida').modal('hide');
     });
     </script>
 
