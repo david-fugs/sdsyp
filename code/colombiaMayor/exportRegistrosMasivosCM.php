@@ -84,7 +84,7 @@ $sheet = $spreadsheet->getActiveSheet();
 $sheet->setTitle('Registros Masivos CM');
 
 // Encabezados
-$headers = ['ID', 'Fecha Registro', 'Meta', 'Actividad', 'Acción', 'Política Pública', 'Masculino', 'Femenino', 'Total', 'Observaciones', 'Registrado por'];
+$headers = ['Fecha Registro', 'Meta', 'Actividad', 'Acción', 'Política Pública', 'Masculino', 'Femenino', 'Total', 'Observaciones', 'Registrado por'];
 $col = 'A';
 foreach($headers as $header) {
     $sheet->setCellValue($col.'1', $header);
@@ -92,12 +92,12 @@ foreach($headers as $header) {
 }
 
 // Estilo encabezados - Bonito y amplio
-$sheet->getStyle('A1:K1')->getFont()->setBold(true)->setSize(12);
-$sheet->getStyle('A1:K1')->getFill()
+$sheet->getStyle('A1:J1')->getFont()->setBold(true)->setSize(12);
+$sheet->getStyle('A1:J1')->getFill()
     ->setFillType(Fill::FILL_SOLID)
     ->getStartColor()->setRGB('2E75B6');
-$sheet->getStyle('A1:K1')->getFont()->getColor()->setRGB('FFFFFF');
-$sheet->getStyle('A1:K1')->getAlignment()
+$sheet->getStyle('A1:J1')->getFont()->getColor()->setRGB('FFFFFF');
+$sheet->getStyle('A1:J1')->getAlignment()
     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
     ->setVertical(Alignment::VERTICAL_CENTER);
 $sheet->getRowDimension(1)->setRowHeight(25);
@@ -108,21 +108,20 @@ $sheet->freezePane('A2');
 // Datos
 $fila = 2;
 while($row = $result->fetch_assoc()) {
-    $sheet->setCellValue('A'.$fila, $row['id_registro_masivo_cm'] ?? '');
-    $sheet->setCellValue('B'.$fila, !empty($row['fecha_registro']) ? date('d/m/Y', strtotime($row['fecha_registro'])) : '');
-    $sheet->setCellValue('C'.$fila, $row['descripcion_meta'] ?? 'N/A');
-    $sheet->setCellValue('D'.$fila, $row['descripcion_actividad'] ?? 'N/A');
-    $sheet->setCellValue('E'.$fila, $row['descripcion_accion'] ?? 'N/A');
-    $sheet->setCellValue('F'.$fila, $row['descripcion_politica'] ?? 'N/A');
-    $sheet->setCellValue('G'.$fila, $row['cantidad_masculino'] ?? 0);
-    $sheet->setCellValue('H'.$fila, $row['cantidad_femenino'] ?? 0);
-    $sheet->setCellValue('I'.$fila, $row['total_personas'] ?? 0);
-    $sheet->setCellValue('J'.$fila, $row['observaciones'] ?? '');
-    $sheet->setCellValue('K'.$fila, $row['registrado_por'] ?? 'N/A');
+    $sheet->setCellValue('A'.$fila, !empty($row['fecha_registro']) ? date('d/m/Y', strtotime($row['fecha_registro'])) : '');
+    $sheet->setCellValue('B'.$fila, $row['descripcion_meta'] ?? 'N/A');
+    $sheet->setCellValue('C'.$fila, $row['descripcion_actividad'] ?? 'N/A');
+    $sheet->setCellValue('D'.$fila, $row['descripcion_accion'] ?? 'N/A');
+    $sheet->setCellValue('E'.$fila, $row['descripcion_politica'] ?? 'N/A');
+    $sheet->setCellValue('F'.$fila, $row['cantidad_masculino'] ?? 0);
+    $sheet->setCellValue('G'.$fila, $row['cantidad_femenino'] ?? 0);
+    $sheet->setCellValue('H'.$fila, $row['total_personas'] ?? 0);
+    $sheet->setCellValue('I'.$fila, $row['observaciones'] ?? '');
+    $sheet->setCellValue('J'.$fila, $row['registrado_por'] ?? 'N/A');
     
     // Filas alternadas con color
     if ($fila % 2 == 0) {
-        $sheet->getStyle('A'.$fila.':K'.$fila)->getFill()
+        $sheet->getStyle('A'.$fila.':J'.$fila)->getFill()
             ->setFillType(Fill::FILL_SOLID)
             ->getStartColor()->setRGB('E7F0FF');
     }
@@ -134,17 +133,16 @@ while($row = $result->fetch_assoc()) {
 
 // Ajustar columnas más amplias
 $columnWidths = [
-    'A' => 10,  // ID
-    'B' => 15,  // Fecha Registro
-    'C' => 30,  // Meta
-    'D' => 35,  // Actividad
-    'E' => 35,  // Acción
-    'F' => 35,  // Política Pública
-    'G' => 12,  // Masculino
-    'H' => 12,  // Femenino
-    'I' => 10,  // Total
-    'J' => 40,  // Observaciones
-    'K' => 20   // Registrado por
+    'A' => 15,  // Fecha Registro
+    'B' => 30,  // Meta
+    'C' => 35,  // Actividad
+    'D' => 35,  // Acción
+    'E' => 35,  // Política Pública
+    'F' => 12,  // Masculino
+    'G' => 12,  // Femenino
+    'H' => 10,  // Total
+    'I' => 40,  // Observaciones
+    'J' => 20   // Registrado por
 ];
 foreach($columnWidths as $col => $width) {
     $sheet->getColumnDimension($col)->setWidth($width);
@@ -163,13 +161,13 @@ $styleArray = [
         ]
     ],
 ];
-$sheet->getStyle('A1:K'.($fila-1))->applyFromArray($styleArray);
+$sheet->getStyle('A1:J'.($fila-1))->applyFromArray($styleArray);
 
 // Alineación vertical centrada para todos los datos
-$sheet->getStyle('A2:K'.($fila-1))->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+$sheet->getStyle('A2:J'.($fila-1))->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
 
 // Alineación centrada para columnas numéricas
-$sheet->getStyle('G2:I'.($fila-1))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+$sheet->getStyle('F2:H'.($fila-1))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
 $mysqli->close();
 
