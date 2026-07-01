@@ -67,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         ? array_filter(array_map('intval', $_POST['grupos_externos']))
         : [];
 
-    // Actualizar persona
+    // PRIMERO: Actualizar persona
     $sql_update_persona = "UPDATE personas SET
         cedula_persona='$cedula_persona',
         tipo_identificacion='$tipo_identificacion',
@@ -116,40 +116,41 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         sin_convenio='$sin_convenio',
         jornada=" . ($jornada !== null ? "'" . $mysqli->real_escape_string($jornada) . "'" : 'NULL') . "
         WHERE cedula_persona='$cedula_original'";
-    // Ejecutar consulta
-    if ($mysqli->query($sql_update_persona)) {
+    
+    // Ejecutar consulta de actualización
+    if (!$mysqli->query($sql_update_persona)) {
+        echo "<script>
+            alert('Error al actualizar persona: " . $mysqli->error . "');
+            window.location.href = 'seePerson.php';
+          </script>";
+        exit();
+    }
 
-        // Eliminar registros existentes en persona_programa
-        $sql_delete_persona_programa = "DELETE FROM persona_programa WHERE cedula_persona='$cedula_original'";
-        $mysqli->query($sql_delete_persona_programa);
-
-        // Insertar nuevos registros en persona_programa
-        foreach ($programa as $id_programa) {
-            $sql_insert_persona_programa = "INSERT INTO persona_programa (cedula_persona, id_programa) VALUES ('$cedula_persona', '$id_programa')";
-
-            if ($mysqli->query($sql_insert_persona_programa)) {
-                echo "✅ Programa ID $id_programa insertado correctamente.<br>";
-            } else {
-                echo "❌ Error al insertar programa ID $id_programa: " . $mysqli->error . "<br>";
-            }
-        }
-        // Actualizar grupos externos (borrar y reinsertar)
+    // SEGUNDO: Actualizar/eliminar referencias en tablas relacionadas según cambie la cédula
+    if ($cedula_original !== $cedula_persona) {
+        // Si la cédula cambió, ELIMINAR los registros antiguos con cédula original
+        // (porque no se puede tener registros huérfanos)
+        $mysqli->query("DELETE FROM persona_programa WHERE cedula_persona='$cedula_original'");
         $mysqli->query("DELETE FROM persona_grupo_externo WHERE cedula_persona='$cedula_original'");
+    }
+
+    // TERCERO: Insertar nuevos programas (sin eliminar los existentes)
+        foreach ($programa as $id_programa) {
+            $sql_insert_persona_programa = "INSERT IGNORE INTO persona_programa (cedula_persona, id_programa) VALUES ('$cedula_persona', '$id_programa')";
+            $mysqli->query($sql_insert_persona_programa);
+        }
+        
+        // CUARTO: Insertar grupos externos sin eliminar los existentes
         foreach ($grupos_externos_post as $id_ge) {
             if ((int)$id_ge > 0) {
                 $mysqli->query("INSERT IGNORE INTO persona_grupo_externo (cedula_persona, id_grupo_externo) VALUES ('$cedula_persona', " . (int)$id_ge . ")");
             }
         }
+        
         echo "<script>
             alert('Actualizado correctamente');
             window.location.href = 'seePerson.php';
           </script>";
-    } else {
-        echo "<script>
-            alert('Error  " . $mysqli->error . "');
-            window.location.href = 'seePerson.php';
-          </script>";
-    }
 
 }
 
