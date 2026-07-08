@@ -1324,7 +1324,7 @@ $result = $mysqli->query($query);
                 if (data.fecha_atencion) {
                     const fpInstance = document.getElementById('fecha_atencion')._flatpickr;
                     if (fpInstance) {
-                        fpInstance.setDate(data.fecha_atencion);
+                        fpInstance.setDate(data.fecha_atencion, true);
                     }
                 } else {
                     // Limpiar Flatpickr
