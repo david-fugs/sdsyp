@@ -59,12 +59,23 @@ try {
     // Iniciar transacción
     $mysqli->autocommit(FALSE);
 
+    // Si es Registro Actividad y hay cédulas, calcular el numero_grupo antes de insertar
+    // las filas de masiva_centro_vida, para poder guardarlo en cada una y así poder
+    // recuperar luego las personas asociadas al editar.
+    if ($tipo_registro === 'Registro Actividad' && !empty($cedulas_json)) {
+        $cedulas_check = json_decode($cedulas_json, true);
+        if (is_array($cedulas_check) && count($cedulas_check) > 0) {
+            $ng_res = $mysqli->query("SELECT COALESCE(MAX(numero_grupo), 0) + 1 AS next_ng FROM registro_centro_vida");
+            $numero_grupo_ind = $ng_res ? (int)$ng_res->fetch_assoc()['next_ng'] : 1;
+        }
+    }
+
     // Por cada fecha, insertar un registro en masiva_centro_vida
     foreach ($fechas_array as $fecha) {
         if (empty($fecha)) continue;
 
         // Construir consulta SQL plana (escapando valores de texto y casteando enteros)
-        $cols = "id_meta,id_actividad,id_accion,politica_publica,id_centro_vida,fecha_atencion,nombre_lider,telefono_contacto,id_comuna,medio_verificacion,cantidad_masculino,cantidad_femenino,tipo_actividad,observacion_actividad,id_usuario,funcionario_responsable,id_actividad_centro_vida,tipo_registro,jornada,profesion";
+        $cols = "id_meta,id_actividad,id_accion,politica_publica,id_centro_vida,fecha_atencion,nombre_lider,telefono_contacto,id_comuna,medio_verificacion,cantidad_masculino,cantidad_femenino,tipo_actividad,observacion_actividad,id_usuario,funcionario_responsable,id_actividad_centro_vida,tipo_registro,jornada,profesion,numero_grupo";
 
         // Escapar y formatear valores
         $vals = [
@@ -87,7 +98,8 @@ try {
             intval($id_actividad_centro_vida),
             "'" . $mysqli->real_escape_string($tipo_registro) . "'",
             "'" . $mysqli->real_escape_string($jornada) . "'",
-            "'" . $mysqli->real_escape_string($profesion) . "'"
+            "'" . $mysqli->real_escape_string($profesion) . "'",
+            $numero_grupo_ind === null ? "NULL" : intval($numero_grupo_ind)
         ];
 
         $sql = "INSERT INTO masiva_centro_vida (" . $cols . ") VALUES (" . implode(',', $vals) . ")";
@@ -102,11 +114,6 @@ try {
         if ($tipo_registro === 'Registro Actividad' && !empty($cedulas_json)) {
             $cedulas = json_decode($cedulas_json, true);
             if (is_array($cedulas) && count($cedulas) > 0) {
-                // Calcular próximo numero_grupo para los inserts individuales (una sola vez)
-                if ($numero_grupo_ind === null) {
-                    $ng_res = $mysqli->query("SELECT COALESCE(MAX(numero_grupo), 0) + 1 AS next_ng FROM registro_centro_vida");
-                    $numero_grupo_ind = $ng_res ? (int)$ng_res->fetch_assoc()['next_ng'] : 1;
-                }
 
                 $stmt_ind = $mysqli->prepare(
                     "INSERT INTO registro_centro_vida (cedula_persona, id_meta, id_actividad, id_accion, id_actividad_centro_vida, politica_publica, departamento_procedencia, observacion, profesion, jornada, funcionario_registro, numero_grupo, fecha_registro)

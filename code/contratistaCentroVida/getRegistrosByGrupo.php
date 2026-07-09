@@ -19,7 +19,8 @@ $sql = "SELECT rcv.id_registro_centro_vida, rcv.cedula_persona, rcv.id_condicion
                rcv.id_meta, rcv.id_actividad, rcv.id_accion, rcv.id_actividad_centro_vida,
                rcv.politica_publica, rcv.departamento_procedencia, rcv.observacion,
                rcv.profesion, rcv.jornada, rcv.numero_grupo,
-               CONCAT(p.nombres_persona, ' ', p.apellidos_persona) AS nombre_completo
+               CONCAT(p.nombres_persona, ' ', p.apellidos_persona) AS nombre_completo,
+               p.genero_persona AS genero
         FROM registro_centro_vida rcv
         LEFT JOIN personas p ON rcv.cedula_persona = p.cedula_persona
         WHERE rcv.numero_grupo = ?

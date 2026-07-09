@@ -119,6 +119,7 @@ $query = "SELECT
     mcv.observacion_actividad,
     mcv.jornada,
     mcv.profesion,
+    mcv.numero_grupo,
     u1.nombre AS digitado_por,
     u2.nombre AS funcionario_responsable_nombre,
     acv.descripcion_actividad AS actividad_centro_vida
@@ -247,8 +248,29 @@ $result = $mysqli->query($query);
             font-size: 14px
         }
 
+        .table-scroll-outer {
+            position: relative;
+        }
+
+        .table-top-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+            height: 12px;
+            margin-bottom: 2px;
+        }
+
+        .table-top-scroll-inner {
+            height: 1px;
+        }
+
         .modern-table-wrapper {
-            overflow-x: auto
+            overflow-x: auto;
+            cursor: grab;
+        }
+
+        .modern-table-wrapper.is-dragging {
+            cursor: grabbing;
+            user-select: none;
         }
 
         .modern-table {
@@ -414,7 +436,9 @@ $result = $mysqli->query($query);
                     </div>
                 </form>
             </div>
-            <div class="modern-table-wrapper">
+            <div class="table-scroll-outer">
+            <div class="table-top-scroll" id="tableTopScroll"><div class="table-top-scroll-inner" id="tableTopScrollInner"></div></div>
+            <div class="modern-table-wrapper" id="tableWrapper">
                 <table class="modern-table" id="tabla">
                     <thead>
                         <tr>
@@ -435,6 +459,7 @@ $result = $mysqli->query($query);
                             <th>Nombre actividad,evento o asunto</th>
                             <th>Digitado por</th>
                             <th>Funcionario Resp.</th>
+                            <th>Jornada</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -459,6 +484,7 @@ $result = $mysqli->query($query);
                                     <td><?= $row['observacion_actividad'] ?? '' ?></td>
                                     <td><?= $row['digitado_por'] ?? '' ?></td>
                                     <td><?= $row['funcionario_responsable_nombre'] ?? '' ?></td>
+                                    <td><?= htmlspecialchars($row['jornada'] ?? '') ?></td>
                                     <td>
                                         <div class="action-buttons">
                                             <button class="btn-action btn-edit" data-bs-toggle="modal" data-bs-target="#modalAdd"
@@ -471,7 +497,7 @@ $result = $mysqli->query($query);
                         } else {
                             // Fila vacía compatible con DataTables (sin colspan)
                             echo "<tr class='no-data'>";
-                            for ($i = 0; $i < 18; $i++) {
+                            for ($i = 0; $i < 19; $i++) {
                                 echo "<td class='text-muted'></td>";
                             }
                             echo "</tr>";
@@ -479,6 +505,7 @@ $result = $mysqli->query($query);
                     </tbody>
                 </table>
             </div>
+            </div><!-- /.table-scroll-outer -->
             <!-- Paginación servidor -->
             <?php
             if ($total_pages_m > 1 || $total_registros_m > 0) {
@@ -1071,6 +1098,7 @@ $result = $mysqli->query($query);
             const $idHidden = $('#id_masiva_centro_vida');
             const $title = $('#modalAddTitle .mode-text');
             const originalAction = $form.attr('action');
+            let isEditMode = false;
 
             function resetActividad() {
                 $actividad.html('<option value="">Seleccione Actividad...</option>').prop('disabled', true);
@@ -1265,6 +1293,7 @@ $result = $mysqli->query($query);
                 const btn = $(e.relatedTarget);
                 if (!btn || !btn.hasClass('btn-edit')) {
                     // modo agregar
+                    isEditMode = false;
                     $form.attr('action', 'addRegistroMasivoCentroVida.php');
                     $title.text('Agregar Actividad Masiva Centro Vida');
                     $('#btnSubmit').html('<i class="bi bi-save"></i> Guardar');
@@ -1315,6 +1344,7 @@ $result = $mysqli->query($query);
                     return;
                 }
                 // modo edición
+                isEditMode = true;
                 const data = btn.data('json');
                 $form.attr('action', 'editRegistroMasivoCentroVida.php');
                 $title.text('Editar Actividad Masiva Centro Vida');
@@ -1324,7 +1354,9 @@ $result = $mysqli->query($query);
                 if (data.fecha_atencion) {
                     const fpInstance = document.getElementById('fecha_atencion')._flatpickr;
                     if (fpInstance) {
-                        fpInstance.setDate(data.fecha_atencion, true);
+                        // false: no disparar 'change', evita que fetchCountsForSelection()
+                        // sobreescriba con 0 los valores de cantidad_masculino/femenino recién cargados
+                        fpInstance.setDate(data.fecha_atencion, false);
                     }
                 } else {
                     // Limpiar Flatpickr
@@ -1347,6 +1379,10 @@ $result = $mysqli->query($query);
                 // tipo_registro preload
                 $('#tipo_registro').val(data.tipo_registro || '');
                 toggleSeccionPersonasCV(data.tipo_registro || '');
+                // Precargar personas ya asociadas a este registro (si es Registro Actividad)
+                if (data.tipo_registro === 'Registro Actividad' && data.numero_grupo) {
+                    precargarPersonasGrupoEdicion(data.numero_grupo);
+                }
                 // jornada preload (radio)
                 $('input[name="jornada"]').prop('checked', false);
                 if (data.jornada) {
@@ -1407,6 +1443,7 @@ $result = $mysqli->query($query);
 
             // Restaurar a modo agregar al cerrar
             $('#modalAdd').on('hidden.bs.modal', function() {
+                isEditMode = false;
                 $form.attr('action', originalAction);
                 $title.text('Agregar Actividad Masiva Centro Vida');
                 $('#btnSubmit').html('<i class="bi bi-save"></i> Guardar');
@@ -1448,6 +1485,11 @@ $result = $mysqli->query($query);
             let _countTimer = null;
 
             function fetchCountsForSelection() {
+                if (isEditMode) {
+                    // En edición no se auto-calculan/limpian estos campos: se respetan
+                    // los valores guardados salvo que el usuario los modifique a mano.
+                    return;
+                }
                 clearTimeout(_countTimer);
                 _countTimer = setTimeout(function() {
                     const actividad = $('#actividad_centro_vida').val();
@@ -1638,6 +1680,50 @@ $result = $mysqli->query($query);
                     $('#contador_sel_cv').removeClass('bg-success bg-warning').addClass('bg-danger');
                 }
                 $('#cedulas_json_cv').val(JSON.stringify(personasAgregadasCV.map(p => p.cedula)));
+            }
+
+            // Precarga, en modo edición, las personas ya guardadas para este numero_grupo
+            function precargarPersonasGrupoEdicion(numeroGrupo) {
+                $.ajax({
+                    url: 'getRegistrosByGrupo.php',
+                    type: 'GET',
+                    data: {
+                        numero_grupo: numeroGrupo
+                    },
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (!resp || !resp.success || !resp.registros) return;
+                        personasAgregadasCV = [];
+                        $('#lista_cedulas_cv').empty();
+                        resp.registros.forEach(function(r) {
+                            const cedula = r.cedula_persona;
+                            const nombre = r.nombre_completo;
+                            const genero = r.genero || '';
+                            personasAgregadasCV.push({
+                                cedula: cedula,
+                                nombre: nombre,
+                                genero: genero
+                            });
+                            const item = $('<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"></div>');
+                            item.append('<span><i class="bi bi-person-fill me-2"></i>' + nombre + ' — <small>' + cedula + '</small></span>');
+                            const btnRem = $('<button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>');
+                            btnRem.on('click', function() {
+                                personasAgregadasCV = personasAgregadasCV.filter(function(x) {
+                                    return x.cedula !== cedula;
+                                });
+                                item.remove();
+                                if (personasAgregadasCV.length === 0) $('#cedulas_cv_container').hide();
+                                actualizarContadoresCV();
+                            });
+                            item.append(btnRem);
+                            $('#lista_cedulas_cv').append(item);
+                        });
+                        if (personasAgregadasCV.length > 0) {
+                            $('#cedulas_cv_container').show();
+                        }
+                        actualizarContadoresCV();
+                    }
+                });
             }
 
             function resetPersonasCVSection() {
@@ -1882,6 +1968,61 @@ $result = $mysqli->query($query);
                 return false;
             });
         });
+    </script>
+
+    <!-- ====== Scroll superior + arrastre de la tabla ====== -->
+    <script>
+    (function() {
+        var wrapper = document.getElementById('tableWrapper');
+        var topBar  = document.getElementById('tableTopScroll');
+        var topInner = document.getElementById('tableTopScrollInner');
+        if (!wrapper || !topBar || !topInner) return;
+
+        // Ajustar el ancho del inner para que el scrollbar superior sea real
+        function syncWidth() {
+            topInner.style.width = wrapper.scrollWidth + 'px';
+        }
+        syncWidth();
+        window.addEventListener('resize', syncWidth);
+        setTimeout(syncWidth, 200);
+
+        // Sincronizar scroll mutuo sin bucle
+        var syncing = false;
+        wrapper.addEventListener('scroll', function() {
+            if (syncing) return;
+            syncing = true;
+            topBar.scrollLeft = wrapper.scrollLeft;
+            syncing = false;
+        });
+        topBar.addEventListener('scroll', function() {
+            if (syncing) return;
+            syncing = true;
+            wrapper.scrollLeft = topBar.scrollLeft;
+            syncing = false;
+        });
+
+        // Arrastrar con click sostenido
+        var isDragging = false, startX = 0, startScroll = 0;
+        wrapper.addEventListener('mousedown', function(e) {
+            // Ignorar clicks en botones o inputs dentro de la tabla
+            if (e.target.closest('button, a, input, select, textarea')) return;
+            isDragging = true;
+            startX = e.pageX;
+            startScroll = wrapper.scrollLeft;
+            wrapper.classList.add('is-dragging');
+            e.preventDefault();
+        });
+        document.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            var dx = e.pageX - startX;
+            wrapper.scrollLeft = startScroll - dx;
+        });
+        document.addEventListener('mouseup', function() {
+            if (!isDragging) return;
+            isDragging = false;
+            wrapper.classList.remove('is-dragging');
+        });
+    })();
     </script>
 
     <!-- ====== Control de Asistencia (Masivo) JS ====== -->
