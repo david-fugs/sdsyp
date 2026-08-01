@@ -807,6 +807,7 @@ function deleteMember($cedula_persona)
                             <div class="col-md-6 mb-3 form-floating">
                                 <select class="form-select" id="nivel_educativo" name="nivel_educativo">
                                     <option value="" selected disabled>Nivel educativo...</option>
+                                    <option value="Ninguno">Ninguno</option>
                                     <option value="Preescolar">Preescolar</option>
                                     <option value="Básica primaria">Básica primaria</option>
                                     <option value="Básica secundaria">Básica secundaria</option>
@@ -1329,6 +1330,7 @@ function deleteMember($cedula_persona)
                                 <label for="edit-nivel-educativo" class="form-label">Nivel educativo</label>
                                 <select class="form-select" id="edit-nivel-educativo" name="nivel_educativo">
                                     <option value="" selected disabled>Nivel educativo...</option>
+                                    <option value="Ninguno">Ninguno</option>
                                     <option value="Preescolar">Preescolar</option>
                                     <option value="Básica primaria">Básica primaria</option>
                                     <option value="Básica secundaria">Básica secundaria</option>
