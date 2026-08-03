@@ -73,7 +73,8 @@ try {
             COALESCE(c.nombre_com, '') as nombre_comuna,
             COALESCE(m.descripcion_meta, '') as descripcion_meta,
             COALESCE(a.descripcion_actividad, '') as descripcion_actividad_persona,
-            COALESCE(ac.descripcion_accion, '') as descripcion_accion_persona
+            COALESCE(ac.descripcion_accion, '') as descripcion_accion_persona,
+            GROUP_CONCAT(DISTINCT rcvf.fecha_atencion ORDER BY rcvf.fecha_atencion ASC SEPARATOR ', ') as fechas_actividad
         FROM registro_centro_vida rcv
         INNER JOIN personas p ON rcv.cedula_persona = p.cedula_persona
         LEFT JOIN grupos g ON p.id_grupo = g.id_grupo
@@ -191,6 +192,7 @@ try {
 
     // Encabezados CSV
     $headers = [
+        'FECHAS ACTIVIDAD',
         'CÉDULA', 'TIPO ID', 'NOMBRES', 'APELLIDOS', 'FECHA NAC', 'TELÉFONO', 'GÉNERO', 'SISBEN', 'DISCAPACIDAD', 'CUAL DISC.',
         'CABEZA HOGAR', 'LÍDER COM', 'RECONOCE COMO', 'ORIENT. SEXUAL', 'MIGRACIÓN', 'ETNIA', 'TIPO SALUD', 'NIVEL EDU', 'ZONA', 'REFERENCIA',
         'EPS', 'PESO', 'TALLA', 'PATOLOGÍAS', 'FACTORES RIESGO', 'FACT. PREV', 'INGRESOS', 'CONVIVENCIA', 'RESULTADO', 'REMISIÓN', 'CORREO', 'TEL REF',
@@ -231,7 +233,19 @@ try {
             $activo_desde = date('d/m/Y', strtotime($row['activo_desde']));
         }
 
+        $fechas_actividad = '';
+        if (!empty($row['fechas_actividad'])) {
+            $formatted_dates = [];
+            foreach (explode(', ', $row['fechas_actividad']) as $f) {
+                if (!empty($f) && $f != '0000-00-00') {
+                    $formatted_dates[] = date('d/m/Y', strtotime($f));
+                }
+            }
+            $fechas_actividad = implode(', ', $formatted_dates);
+        }
+
         $data = [
+            $fechas_actividad,
             $row['cedula_persona'] ?? '',
             $row['tipo_identificacion'] ?? '',
             $row['nombres_persona'] ?? '',
