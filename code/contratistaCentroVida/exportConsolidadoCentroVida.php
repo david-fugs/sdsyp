@@ -188,14 +188,14 @@ function llenarHojaConsolidado($sheet, $personas, $jornada_hoja, $id_grupo_ses, 
             $col_ltr = Coordinate::stringFromColumnIndex(3 + $d);
             $es_dom  = (date('w', mktime(0, 0, 0, $mes, $d, $anio)) == 0);
             $celda   = $col_ltr . $fila;
-            if ($es_dom) {
-                $sheet->getStyle($celda)->applyFromArray(['fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_DOMINGO_BG]], 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '90A4AE']]]]);
-            } elseif (isset($matriz[$ced][$d])) {
+            if (isset($matriz[$ced][$d])) {
                 $sheet->setCellValue($celda, 1);
                 $sheet->getStyle($celda)->applyFromArray(['fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_ASISTIO_BG]], 'font' => ['bold' => true], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER], 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '90A4AE']]]]);
                 $gen_upper = strtoupper(trim($genero));
                 if ($gen_upper === 'M' || $gen_upper === 'MASCULINO') $totales_m[$d]++;
                 elseif ($gen_upper === 'F' || $gen_upper === 'FEMENINO') $totales_f[$d]++;
+            } elseif ($es_dom) {
+                $sheet->getStyle($celda)->applyFromArray(['fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_DOMINGO_BG]], 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '90A4AE']]]]);
             } else {
                 $sheet->getStyle($celda)->applyFromArray(['borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'ECEFF1']]], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]]);
             }
@@ -212,8 +212,10 @@ function llenarHojaConsolidado($sheet, $personas, $jornada_hoja, $id_grupo_ses, 
         $col_ltr = Coordinate::stringFromColumnIndex(3 + $d);
         $es_dom  = (date('w', mktime(0, 0, 0, $mes, $d, $anio)) == 0);
         $celda   = $col_ltr . $fila;
-        if ($es_dom) { $sheet->getStyle($celda)->applyFromArray(['fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_DOMINGO_BG]]]); }
-        else { $val = $totales_m[$d]; $sheet->setCellValue($celda, $val > 0 ? $val : ''); $sheet->getStyle($celda)->applyFromArray(['font' => ['bold' => true], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_TOT_M_BG]], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER], 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '90A4AE']]]]); }
+        $val = $totales_m[$d];
+        if ($val > 0) { $sheet->setCellValue($celda, $val); $sheet->getStyle($celda)->applyFromArray(['font' => ['bold' => true], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_TOT_M_BG]], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER], 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '90A4AE']]]]); }
+        elseif ($es_dom) { $sheet->getStyle($celda)->applyFromArray(['fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_DOMINGO_BG]]]); }
+        else { $sheet->getStyle($celda)->applyFromArray(['fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_TOT_M_BG]], 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '90A4AE']]]]); }
     }
     $sheet->getRowDimension($fila)->setRowHeight(22);
     $fila_tot_f = $fila + 1;
@@ -226,8 +228,10 @@ function llenarHojaConsolidado($sheet, $personas, $jornada_hoja, $id_grupo_ses, 
         $col_ltr = Coordinate::stringFromColumnIndex(3 + $d);
         $es_dom  = (date('w', mktime(0, 0, 0, $mes, $d, $anio)) == 0);
         $celda   = $col_ltr . $fila_tot_f;
-        if ($es_dom) { $sheet->getStyle($celda)->applyFromArray(['fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_DOMINGO_BG]]]); }
-        else { $val = $totales_f[$d]; $sheet->setCellValue($celda, $val > 0 ? $val : ''); $sheet->getStyle($celda)->applyFromArray(['font' => ['bold' => true], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_TOT_F_BG]], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER], 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '90A4AE']]]]); }
+        $val = $totales_f[$d];
+        if ($val > 0) { $sheet->setCellValue($celda, $val); $sheet->getStyle($celda)->applyFromArray(['font' => ['bold' => true], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_TOT_F_BG]], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER], 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '90A4AE']]]]); }
+        elseif ($es_dom) { $sheet->getStyle($celda)->applyFromArray(['fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_DOMINGO_BG]]]); }
+        else { $sheet->getStyle($celda)->applyFromArray(['fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $COLOR_TOT_F_BG]], 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '90A4AE']]]]); }
     }
     $sheet->getRowDimension($fila_tot_f)->setRowHeight(22);
 
